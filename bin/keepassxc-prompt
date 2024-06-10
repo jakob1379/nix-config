@@ -1,0 +1,10 @@
+#!/bin/bash
+
+until ssh-add -l &> /dev/null
+do
+  echo "Waiting for agent. Please unlock the database."
+  keepassxc &> /dev/null
+  sleep 1
+done
+
+/usr/bin/env nc "$1" "$2"

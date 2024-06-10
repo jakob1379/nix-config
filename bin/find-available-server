@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n,'
+
+# Header for the table
+function check_servers {
+    echo -e "Hostname,Active Users,Slurm Jobs"
+
+    for server_num in {1..7}; do
+	# Construct the server name
+	server_name="utopia-$server_num"
+
+	# Get the number of logged-in users
+	user_list=$(ssh "$server_name" 'w -uh | awk '\''{print $1}'\'' | sort | uniq')
+	user_count=$(echo "$user_list" | wc -l)
+
+	# Get the number of Slurm jobs
+	slurm_jobs=$(ssh "$server_name" 'squeue -w $(hostname) --noheader | wc -l')
+
+	# Output the server name, user count, and Slurm job count
+	echo -e "$server_name,$user_count,$slurm_jobs"
+    done
+}
+
+check_servers | sort -k 3 -k 2 -k 1 --reverse

@@ -1,0 +1,18 @@
+#!/bin/sh
+if [ "$#" -ne 1 ]; then
+    echo "Usage: dragon-scp remote_server:path_to_file"
+    exit 1
+fi
+
+remote_path="$1"
+file_name=$(basename "$remote_path")
+temp_file=$(mktemp --suffix="-$file_name")
+
+if scp "$remote_path" "$temp_file"; then
+    dragon "$temp_file"
+    rm "$temp_file"
+else
+    echo "Error in copying file from remote server."
+    rm "$temp_file"
+    exit 1
+fi
