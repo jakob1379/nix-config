@@ -1,0 +1,67 @@
+function up() {
+    # Parse command-line arguments
+    while [[ $# -gt 0 ]]; do
+	case "$1" in
+	    -r|--read)
+		export UP_USE_READ=1
+		;;
+	    -h|--help)
+		printf 'up - Navigate to a parent directory by choosing from a list of options
+
+usage:  up [-h]
+	up
+
+options:
+  -h, --help     display this help and return
+
+description:
+  The `up` function navigates to a parent directory by presenting a list of options to choose from.
+  The function first counts the number of elements in the current working directory path, and then
+  generates a list of choices by cutting the path at different points. The choices are presented to
+  the user via the `gum` command, and the selected choice is passed to the `cd` command to change
+  to the corresponding directory.
+
+  Note that this function requires the `gum` command to be installed, which is a utility for presenting
+  a graphical selection menu in the terminal. You can install it with the following command:
+
+  $ pip install gum
+
+example:
+  $ up
+
+  This will present a list of directories to choose from, based on the current working directory.
+  Selecting a directory from the list will change the working directory to the selected directory.
+u'
+		return 0
+		;;
+	    *)
+		echo "Invalid option: $1. Use -h or --help to see the usage."
+		return 1
+		;;
+	esac
+    done
+
+    shift $((OPTIND-1))
+
+    # Get the number of elements in the current working directory path
+    num_elements=$(pwd | awk -F'/' '{print NF}')
+
+    # Generate a list of choices by cutting the path at different points
+    choices=$(for i in $(seq $num_elements); do pwd | cut -d '/' -f -$i; done)
+
+    if [ ! -n "$UP_USE_READ" ] && [ "$UP_USE_READ" != "1" ] && command -v gum > /dev/null; then
+	# Use gum to present a selection menu and change to the selected directory
+	selected_dir=$(echo "$choices" | tac | gum choose)
+	if [ -n "$selected_dir" ]; then
+	    cd "$selected_dir"
+	fi
+    else
+	echo "$choices" | nl
+	read -p "Choose a directory: " choice
+	if [ "$choice" -gt 0 ] && [ "$choice" -le "$num_elements" ]; then
+	    cd "$(echo $choices | tac | sed -n "${choice}p")"
+	else
+	    echo "Invalid choice."
+	fi
+    fi
+}
