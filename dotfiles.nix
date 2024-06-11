@@ -18,7 +18,7 @@
 
       Host rpi
           HostName 192.168.8.114
-    '';
+   '';
   };
 
   home.sessionVariables = {

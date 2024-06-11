@@ -4,17 +4,27 @@ let
     Unit = {
       Description = "Rclone mount service for ${name}";
       After = [ "network-online.target" ];
+      Requires = [ "network-online.target" ];
     };
 
     Service = {
       ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${mountPath}";
-      ExecStart = "${pkgs.rclone}/bin/rclone mount --config /home/${config.home.username}/.config/rclone/rclone.conf --vfs-fast-fingerprint --vfs-cache-mode full ${remote}:${remotePath} ${mountPath}";
-      Type = "simple";
+      ExecStart = ''
+        ${pkgs.rclone}/bin/rclone mount \
+          --config /home/${config.home.username}/.config/rclone/rclone.conf \
+          --vfs-fast-fingerprint \
+          --vfs-cache-mode full \
+          ${remote}:${remotePath} ${mountPath}
+        '';
+      ExecStop = "${pkgs.fuse3}/bin/fusermount -u ${mountPath}";
+      Type = "notify";
+      Restart = "on-failure";
+      RestartSec = "10s";
       Environment = [ "PATH=/run/wrappers/bin/:$PATH" ];
     };
 
     Install = {
-      WantedBy = [ "default.target" "network-online.target" ];
+      WantedBy = [ "default.target" ];
     };
   };
 
@@ -23,6 +33,7 @@ in
 
   home.packages = with pkgs; [
     rclone
+    fuse3
   ];
 
   services = {
@@ -43,10 +54,10 @@ in
       name = "dropbox-private";
       remote = "dropbox-private";
     };
-    rclone-mount-gdrive-private = createRcloneMountService {
-      name = "gdrive-private";
-      remote = "gdrive-private";
-    };
+    # rclone-mount-gdrive-private = createRcloneMountService {
+    #   name = "gdrive-private";
+    #   remote = "gdrive-private";
+    # };
   };
 
 }

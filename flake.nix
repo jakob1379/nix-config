@@ -29,7 +29,6 @@
           ./services.nix
           ./ubuntu.nix
           ./Anemo.nix
-          ./Home.nix
         ];
 
         # Optionally use extraSpecialArgs
