@@ -1,5 +1,4 @@
-{ pkgs, inputs, ... }:
-
+{ pkgs, ... }:
 let
   hyprLandPackages = with pkgs; [
     dolphin
@@ -7,65 +6,37 @@ let
     wdisplays
   ];
 
-
-  lspPackages = with pkgs; [
-    powershell
-  ];
-
-  cliPackages = with pkgs; [
-    apacheHttpd # webserver and htpasswd
-    aspellDicts.da
-    aspellDicts.en
-    aspellDicts.en-computers
-    aspellDicts.en-science
+  corePackages = with pkgs; [
     atuin
     bat
     btop
-    clinfo
+    cookiecutter
     dconf
     dig
     duf
     entr
     fd
-    fira-code-nerdfont
-    fira-code-symbols
-    fzf
     gdu
     gitleaks
     glib
-    glxinfo
-    gnome.cheese
     gnumake
-    gum
-    hunspell
-    imagemagick
-    inkscape
     iputils
     ispell
     jq
-    killall
-    libjpeg
     libqalculate
     neofetch
-    nil
     nix-index
     nix-prefetch-github
-    nodejs
     pandoc
-    pciutils
     poetry
-    python311Packages.python-lsp-server
+    rename
     sonar-scanner-cli
     speedtest-go
     t-rec
     taplo
-    termdown
-    texlab
-    rename
     texlive.combined.scheme-full
     texlivePackages.fontawesome5
     tldr
-    unixtools.ping
     unzip
     wakatime
     wget
@@ -73,23 +44,17 @@ let
     xdragon
     zip
   ];
+
   guiPackages = with pkgs; [
     konsole
-    gnome.gnome-boxes
-    alacritty
     brave
     dbeaver-bin
     feh
     firefox
-    gimp
     gnome.pomodoro
-    kazam
     keepassxc
     onlyoffice-bin
-    openscad
-    pika-backup
-    prusa-slicer
-    screenkey
+    # pika-backup
     nodePackages.prettier
     signal-desktop
     slack
@@ -99,6 +64,22 @@ let
     spotify
     yubikey-personalization-gui
   ];
+
+  devProdPackages = with pkgs; [
+    aspellDicts.da
+    aspellDicts.en
+    aspellDicts.en-computers
+    aspellDicts.en-science
+    fira-code-nerdfont
+    fira-code-symbols
+    hunspell
+    nil
+    nodejs
+    powershell
+    python312Packages.python-lsp-server
+    texlab
+  ];
+
   customScripts = [
     (pkgs.writeShellScriptBin "dragon-scp" (builtins.readFile ./bin/dragon-scp))
     (pkgs.writeScriptBin "find-available-server" (builtins.readFile ./bin/find-available-server))
@@ -109,5 +90,5 @@ let
   ];
 in
 {
-  home.packages = cliPackages ++ guiPackages ++ customScripts ++ hyprLandPackages;
+  home.packages = corePackages ++ guiPackages ++ devProdPackages ++ customScripts ++ hyprLandPackages;
 }
