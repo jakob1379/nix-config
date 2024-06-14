@@ -100,6 +100,11 @@
       package = pkgs.emacs29-gtk3;
     };
     ssh.forwardAgent = true;
+
+    fzf = {
+      enable = true;
+      enableBashIntegration = true;
+    };
   };
 
   home.shellAliases = {
