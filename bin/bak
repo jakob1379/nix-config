@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+# Check if the script received exactly one argument
+if [ "$#" -ne 1 ]; then
+    echo "Error: bak requires exactly one path"
+    exit 1
+fi
+
+# Check if the argument is a directory or a file
+if [ ! -d "$1" ] && [ ! -f "$1" ]; then
+    echo "Error: the specified path is neither a file nor a directory"
+    exit 1
+fi
+
+# Define the backup path
+backup_path="$1.bak"
+
+# Copy the file or directory to the backup path
+if cp -r "$1" "$backup_path"; then
+    echo "Backup of '$1' created at '$backup_path'"
+else
+    echo "Error: failed to create backup"
+    exit 1
+fi

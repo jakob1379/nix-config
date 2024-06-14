@@ -103,6 +103,9 @@ let
     (pkgs.writeShellScriptBin "dragon-scp" (builtins.readFile ./bin/dragon-scp))
     (pkgs.writeScriptBin "find-available-server" (builtins.readFile ./bin/find-available-server))
     (pkgs.writeShellScriptBin "unzipd" (builtins.readFile ./bin/unzipd))
+    (pkgs.writeShellScriptBin "bak" (builtins.readFile ./bin/bak))
+    (pkgs.writeShellScriptBin "pyenv-here" (builtins.readFile ./bin/pyenv-here))
+    (pkgs.writeShellScriptBin "emacs-clean" (builtins.readFile ./bin/emacs-clean))
   ];
 in
 {

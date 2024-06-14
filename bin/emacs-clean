@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+# Function to delete files using fd
+delete_with_fd() {
+    echo "Using fd to delete files..."
+    fd '~$' -x rm -v '{}'
+    fd -t d '__pycache__' -x rm -rv '{}'
+    fd '^#.*#$' -x rm -v '{}'
+}
+
+# Function to find files using fd
+list_with_fd() {
+    echo "Using fd to list files to be deleted..."
+    fd '~$'
+    fd -t d '__pycache__'
+    fd '^#.*#$'
+}
+
+# Function to delete files using find
+delete_with_find() {
+    echo "Using find to delete files..."
+    find . -name '*~' -exec rm -v "{}" \;
+    find . -name '__pycache__' -exec rm -rv "{}" \;
+    find . -name '*#*' -exec rm -v "{}" \;
+}
+
+# Function to find files using find
+list_with_find() {
+    echo "Using find to list files to be deleted..."
+    find . -name '*~'
+    find . -name '__pycache__'
+    find . -name '*#*'
+}
+
+# Default action is to delete files
+ACTION="delete"
+
+# Parse arguments
+if [ "$#" -gt 0 ]; then
+    if [ "$1" = "--dry-run" ]; then
+        ACTION="list"
+    else
+        echo "Usage: $0 [--dry-run]"
+        exit 1
+    fi
+fi
+
+# Check if fd is available and perform the appropriate action
+if command -v fd &> /dev/null; then
+    if [ "$ACTION" = "delete" ]; then
+        delete_with_fd
+    else
+        list_with_fd
+    fi
+else
+    if [ "$ACTION" = "delete" ]; then
+        delete_with_find
+    else
+        list_with_find
+    fi
+fi

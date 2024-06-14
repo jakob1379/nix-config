@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+# Ensure pyenv is installed
+if ! command -v pyenv &> /dev/null; then
+    echo "Error: pyenv is not installed or not in PATH" >&2
+    exit 1
+fi
+
+# Set default Python version
+PYVER="$(pyenv versions | grep -Po "\s+\K\d+\.\d+\.\d+" | uniq | head -1)"
+
+# Display usage information
+displayUsage() {
+    echo "
+An extension for pyenv virtualenv to instantiate a virtual environment and
+associate the local folder with the same virtual environment.
+Usage: pyenv-here [options] <name>
+Options:
+    -h            Display this help message.
+    -l            List available Python versions.
+    -p <version>  Specify Python version to use. Default: $PYVER
+
+Operations:
+    pyenv-here {-h help}       Show this dialogue.
+    pyenv-here {-l list}       List available Python versions.
+    pyenv-here {-p python version} Specify Python version to use.
+"
+}
+
+# Parse optional arguments
+while getopts ":hlp:" opt; do
+    case ${opt} in
+        l)
+            echo "Available virtual Python versions:"
+            pyenv versions
+            exit 0
+            ;;
+        p)
+            PYVER=${OPTARG}
+            ;;
+        h)
+            displayUsage
+            exit 0
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            displayUsage
+            exit 2
+            ;;
+        :)
+            echo "Option -$OPTARG requires an argument" >&2
+            displayUsage
+            exit 2
+            ;;
+    esac
+done
+shift $(( OPTIND - 1 ))
+
+# Check for mandatory arguments
+if [ $# -lt 1 ]; then
+    echo "Error: Not enough arguents provided. At least provide a name." >&2
+    displayUsage
+    exit 1
+fi
+
+ENVNAME=$1
+
+# Initialize and associate pyenv virtualenv
+if ! pyenv virtualenv "$PYVER" "$ENVNAME"; then
+    echo "Error: Failed to create virtual environment." >&2
+    exit 1
+fi
+
+if ! pyenv local "$ENVNAME"; then
+    echo "Error: Failed to set local virtual environment." >&2
+    exit 1
+fi
+
+echo "Successfully created and set the local virtual environment: $ENVNAME"
