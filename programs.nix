@@ -121,5 +121,6 @@
     eda = "nix-shell -p python312Packages.requests python312Packages.rich python312Packages.ipython python312Packages.pandas python312Packages.seaborn python312Packages.plotly";
     dcview = "docker compose config | bat -l yml";
     dcup = "docker compose up --remove-orphans";
+    q = "qalc";
   };
 }
