@@ -86,10 +86,13 @@
       };
       extraConfig = {
         push.autoSetupRemote = true;
+        init.defaultBranch = "main";
       };
       aliases = {
         adog = "log --all --decorate --oneline --graph";
+        plog = "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches --all";
       };
+
     };
 
     emacs = {
