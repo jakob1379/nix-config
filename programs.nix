@@ -53,11 +53,11 @@
           settings = {
             # WebGL configs
             "gfx.webrender.all" = true;
-            # "media.av1.enabled" = false;
-            # "media.ffmpeg.vaapi.enabled" = true;
-            # "media.ffvpx.enabled" = false;
             "webgl.force-enabled" = true;
             "webgl.msaa-force" = true;
+
+            # backspace should to back to previous page
+            "browser.backspace_action" = 0;
 
             # Enable css to hide tab bar
             "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
