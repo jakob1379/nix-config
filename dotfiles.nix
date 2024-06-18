@@ -24,6 +24,6 @@
   home.sessionVariables = {
     EDITOR = "emacsclient";
     PAGER = "bat -p";
-    MANPAGER="bat -l man -p";
+    MANPAGER = "sh -c 'col -bx | bat -l man -p'";
   };
 }
