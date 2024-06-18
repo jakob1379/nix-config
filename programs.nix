@@ -87,6 +87,7 @@
       extraConfig = {
         push.autoSetupRemote = true;
         init.defaultBranch = "main";
+        color.ui = true;
       };
       aliases = {
         adog = "log --all --decorate --oneline --graph";
