@@ -28,7 +28,22 @@ In Emacs 27+, package initialization occurs before ~user-init-file~ is loaded, b
 
 #+BEGIN_SRC emacs-lisp
 ;;; -*- lexical-binding: t; -*-
+(setq package-enable-at-startup nil)
 #+END_SRC
+** Straight
+Straight is an package manager for emacs making it easier to fetch packages from anywhere.
+
+We want it to integrate nicely with usepackage
+#+BEGIN_SRC emacs-lisp
+(setq straight-use-package-by-default t
+      use-package-always-defer t
+      straight-cache-autoloads t
+      straight-vc-git-default-clone-depth 1
+      straight-check-for-modifications '(find-when-checking)
+      package-enable-at-startup nil
+      vc-follow-symlinks t)
+#+END_SRC
+
 ** Defer Compliations
 
 #+BEGIN_SRC emacs-lisp

@@ -79,3 +79,4 @@ __pycache__/
 /dotfiles/emacs/request/
 /dotfiles/emacs/transient/
 /dotfiles/emacs/tree-sitter/
+/dotfiles/emacs/straight/
