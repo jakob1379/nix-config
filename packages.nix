@@ -20,7 +20,6 @@ let
     gitleaks
     glib
     gnumake
-    iputils
     ispell
     jq
     libqalculate
@@ -30,7 +29,6 @@ let
     pandoc
     poetry
     rename
-    sonar-scanner-cli
     speedtest-go
     t-rec
     taplo
@@ -71,6 +69,7 @@ let
     aspellDicts.en-computers
     aspellDicts.en-science
     fira-code-nerdfont
+    meslo-lgs-nf
     fira-code-symbols
     hunspell
     nil
@@ -78,6 +77,9 @@ let
     powershell
     python312Packages.python-lsp-server
     texlab
+    sonar-scanner-cli
+    jdk
+
   ];
 
   customScripts = [

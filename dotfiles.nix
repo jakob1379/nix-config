@@ -26,4 +26,6 @@
     PAGER = "bat -p";
     MANPAGER = "sh -c 'col -bx | bat -l man -p'";
   };
+
+  fonts.fontconfig.enable = true;
 }

@@ -42,6 +42,11 @@
       icons = true;
       git = true;
     };
+    thefuck = {
+      enable = true;
+      enableBashIntegration = true;
+      enableInstantMode = true;
+    };
 
     firefox = {
       enable = true;
