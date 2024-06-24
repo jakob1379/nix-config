@@ -22,5 +22,9 @@
 ;; Load Org mode as early as possible
 (straight-use-package 'org)
 
+;; add the readthedocs theme as safe
+(setq org-safe-remote-resources
+      '("\\`https://fniessen\\.github\\.io/org-html-themes/org/theme-readtheorg\\.setup\\'"))
+
 ;; load the config
 (org-babel-load-file "~/.emacs.d/config.org")
