@@ -305,13 +305,6 @@ Emacs is very conservative about assuming encoding. Everything is utf-8 these da
                                 (unless (frame-focus-state)
                                   (garbage-collect))))
 #+END_SRC
-** Set snazzy theme
-#+BEGIN_SRC emacs-lisp
-(use-package snazzy-theme
-  :config
-  (load-theme 'snazzy t)
-  )
-#+END_SRC
 ** restart emacs function
 #+BEGIN_SRC emacs-lisp
 (use-package restart-emacs)
