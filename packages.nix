@@ -64,6 +64,7 @@ let
   ];
 
   devProdPackages = with pkgs; [
+    graphviz
     aspellDicts.da
     aspellDicts.en
     aspellDicts.en-computers
