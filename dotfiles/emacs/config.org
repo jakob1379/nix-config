@@ -247,7 +247,7 @@ Emacs is very conservative about assuming encoding. Everything is utf-8 these da
 #+RESULTS:
 ** Desktop mode save and load
 #+BEGIN_SRC emacs-lisp
-(setq desktop-path '("~/.emacs.d/.cache/"))
+(setq desktop-path '("~/.emacs.d/var/desktop/"))
 (desktop-save-mode)
 (desktop-read)
 #+END_SRC
