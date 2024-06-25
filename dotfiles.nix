@@ -24,7 +24,7 @@
   home.sessionVariables = {
     EDITOR = "emacsclient";
     PAGER = "bat -p";
-    MANPAGER = "sh -c 'col -bx | bat -l man -p'";
+    MANPAGER = "bat -pl ma";
   };
 
   fonts.fontconfig.enable = true;
