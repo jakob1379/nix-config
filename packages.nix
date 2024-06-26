@@ -65,22 +65,25 @@ let
 
   devProdPackages = with pkgs; [
     graphviz
+    fira-code-nerdfont
+    meslo-lgs-nf
+    fira-code-symbols
+    sonar-scanner-cli
+    jdk
+    nodejs
+  ];
+
+  emacs_packages = with pkgs; [
+    python312Packages.python-lsp-server
+    powershell
+    hunspell
+    nil
+    texlab
+    silver-searcher
     aspellDicts.da
     aspellDicts.en
     aspellDicts.en-computers
     aspellDicts.en-science
-    fira-code-nerdfont
-    meslo-lgs-nf
-    fira-code-symbols
-    hunspell
-    nil
-    nodejs
-    powershell
-    python312Packages.python-lsp-server
-    texlab
-    sonar-scanner-cli
-    jdk
-
   ];
 
   customScripts = [
@@ -93,5 +96,5 @@ let
   ];
 in
 {
-  home.packages = corePackages ++ guiPackages ++ devProdPackages ++ customScripts ++ hyprLandPackages;
+  home.packages = corePackages ++ guiPackages ++ devProdPackages ++ customScripts ++ emacs_packages ++ hyprLandPackages;
 }
