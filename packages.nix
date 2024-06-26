@@ -27,7 +27,6 @@ let
     nix-index
     nix-prefetch-github
     pandoc
-    poetry
     rename
     speedtest-go
     t-rec
