@@ -22,11 +22,31 @@
     readline = {
       enable = true;
       extraConfig = ''
-      set completion-ignore-case On
-      set completion-prefix-display-length 3
-      set mark-symlinked-directories On
-      set show-all-if-ambiguous On
-      set show-all-if-unmodified On
+        # Include the system-wide settings from /etc/inputrc
+        $include /etc/inputrc
+
+        # Enable case-insensitive completion (e.g., 'foo' will match 'Foo' and 'FOO')
+        # Example: Typing 'ls foo' will match 'Foo.txt', 'foo.txt', and 'FOO.txt'
+        set completion-ignore-case On
+
+        # Set the minimum number of characters to display prefix matches during completion
+        # Example: tabbing will show this
+        # $ cat .bash
+        #  ..._history  ..._logout
+        # very useful for long filenames!
+        set completion-prefix-display-length 3
+
+        # Mark directories that are symlinked with a trailing slash
+        # Example: If 'mydir' is a symlink to a directory, typing 'ls mydir' will display 'mydir/' to indicate it's a directory
+        set mark-symlinked-directories On
+
+        # Show all possible completions when the input is ambiguous (e.g., multiple matches)
+        # Example: Typing 'ls f' when there are 'foo.txt' and 'file.txt' will immediately list both options
+        set show-all-if-ambiguous On
+
+        # Show all possible completions even if the input is not modified after the first attempt
+        # Example: If you press Tab and there are multiple completions, pressing Tab again without typing more will show all options
+        set show-all-if-unmodified On
       '';
     };
 
@@ -111,22 +131,46 @@
       enable = true;
       enableBashIntegration = true;
     };
+
+    poetry = {
+      enable = true;
+      settings = {
+        virtualenvs.create = true;
+        virtualenvs.in-project = true;
+      };
+    };
   };
 
   home.shellAliases = {
-    tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
+    # docker
+    dcup = "docker compose up --remove-orphans";
+    dcview = "docker compose config | bat -l yml";
+
+    # dragon
+    dk = "dragon --keep";
+    dx = "dragon --and-exit";
+
+    # eda
+    eda = "nix-shell -p python312Packages.requests python312Packages.rich python312Packages.ipython python312Packages.pandas python312Packages.seaborn python312Packages.plotly";
+
+    bhelp = "bat --plain --language=help";
     ec = "emacsclient -n";
     grep = "grep --color=auto";
-    hu = "nix flake update --flake /home/jga/.config/home-manager/";
+
+    # nix update and switch
     hs = "home-manager switch";
+    hu = "nix flake update --flake /home/jga/.config/home-manager/";
     nhu = "sudo nixos-rebuild switch --flake ~/.config/nixos# --upgrade-all && cd ~/.config/home-manager && nix flake update && home-manager switch";
     nixu = "sudo nixos-rebuild switch --flake ~/.config/nixos# --upgrade-all";
     ns = "sudo nixos-rebuild switch --flake ~/.config/nixos#";
-    dx = "dragon --and-exit";
-    dk = "dragon --keep";
-    eda = "nix-shell -p python312Packages.requests python312Packages.rich python312Packages.ipython python312Packages.pandas python312Packages.seaborn python312Packages.plotly";
-    dcview = "docker compose config | bat -l yml";
-    dcup = "docker compose up --remove-orphans";
     q = "qalc";
+    tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
+
+    # better help
+    bathelp = "bat --plain --language=help";
+    help = ''help_function() { "$@" --help 2>&1 | bathelp || "$@" -h 2>&1 | bathelp; } && help_function'';
+      # Global aliases for -h and --help
+    "-h" = "-h 2>&1 | bat --language=help --style=plain";
+    "--help" = "--help 2>&1 | bat --language=help --style=plain";
   };
 }
