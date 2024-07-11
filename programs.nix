@@ -62,11 +62,6 @@
       icons = true;
       git = true;
     };
-    thefuck = {
-      enable = true;
-      enableBashIntegration = true;
-      enableInstantMode = true;
-    };
 
     firefox = {
       enable = true;
@@ -117,6 +112,7 @@
       aliases = {
         adog = "log --all --decorate --oneline --graph";
         plog = "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches --all";
+        ignore-change = "update-index --assume-unchanged";
       };
 
     };
@@ -169,8 +165,5 @@
     # better help
     bathelp = "bat --plain --language=help";
     help = ''help_function() { "$@" --help 2>&1 | bathelp || "$@" -h 2>&1 | bathelp; } && help_function'';
-      # Global aliases for -h and --help
-    "-h" = "-h 2>&1 | bat --language=help --style=plain";
-    "--help" = "--help 2>&1 | bat --language=help --style=plain";
   };
 }
