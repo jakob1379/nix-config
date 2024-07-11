@@ -48,7 +48,7 @@ let
     dbeaver-bin
     feh
     firefox
-    gnome.pomodoro
+    gnome-pomodoro
     keepassxc
     onlyoffice-bin
     # pika-backup

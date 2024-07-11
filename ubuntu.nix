@@ -5,7 +5,7 @@ let
   ];
 
   guiPackages = with pkgs; [
-    gnome.gnome-tweaks
+    gnome-tweaks
   ];
 
 in
