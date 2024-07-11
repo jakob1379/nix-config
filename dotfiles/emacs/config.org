@@ -226,13 +226,14 @@ print startup time
 Emacs is very conservative about assuming encoding. Everything is utf-8 these days, lets have that as the default.
 #+BEGIN_SRC emacs-lisp
 (prefer-coding-system 'utf-8)
-(set-default-coding-systems 'utf-8)
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(set-selection-coding-system 'utf-8)
-(set-file-name-coding-system 'utf-8)
-(set-clipboard-coding-system 'utf-8)
 (set-buffer-file-coding-system 'utf-8)
+(set-clipboard-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-file-name-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(set-language-environment "UTF-8")
+(set-selection-coding-system 'utf-8)
+(set-terminal-coding-system 'utf-8)
 #+END_SRC
 ** Narrow region
 #+BEGIN_SRC emacs-lisp
@@ -656,17 +657,19 @@ We set a regular font and a ~variable-pitch~ one, the latter is used by ~mixed-p
     )
 #+END_SRC
 
-*** Firacode
+**** Firacode
 nice ligatures
 #+BEGIN_SRC emacs-lisp
-  (use-package fira-code-mode
-    :custom (fira-code-mode-disabled-ligatures '("[]" "x"))  ; ligatures you don't want
-    :delight
-    :hook
-    (prog-mode . fira-code-mode)
-    (org-mode . fira-code-mode)
-    (text-mode . fira-code-mode)
-    )
+(use-package fira-code-mode
+  :custom (fira-code-mode-disabled-ligatures '("[]" "#{" "#(" "#_" "#_(" "x")) ;; List of ligatures to turn off
+  :delight
+  :hook
+  (prog-mode . fira-code-mode)
+  (org-mode . fira-code-mode)
+  (text-mode . fira-code-mode)
+  :config
+  (fira-code-mode-set-font)
+  )
 #+END_SRC
 ** Format all
 Nice tool that uses prettier to format code
