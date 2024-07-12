@@ -17,6 +17,7 @@ let
     entr
     fd
     gdu
+    gitflow
     gitleaks
     glib
     gnumake
@@ -62,7 +63,7 @@ let
     yubikey-personalization-gui
   ];
 
-  devProdPackages = with pkgs; [
+  devPackages = with pkgs; [
     graphviz
     fira-code-nerdfont
     meslo-lgs-nf
@@ -95,5 +96,5 @@ let
   ];
 in
 {
-  home.packages = corePackages ++ guiPackages ++ devProdPackages ++ customScripts ++ emacs_packages ++ hyprLandPackages;
+  home.packages = corePackages ++ guiPackages ++ devPackages ++ customScripts ++ emacs_packages ++ hyprLandPackages;
 }
