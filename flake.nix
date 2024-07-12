@@ -8,7 +8,6 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    hyprland.url = "github:hyprwm/hyprland";
     flake-utils.url = "github:numtide/flake-utils";
     poetry2nix.url = "github:nix-community/poetry2nix";
   };
