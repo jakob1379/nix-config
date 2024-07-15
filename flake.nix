@@ -17,6 +17,15 @@
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
 
+      forAllSystems = function:
+        nixpkgs.lib.genAttrs [ "x86_64-linux" ]
+          (system: function nixpkgs.legacyPackages.${system});
+
+      generalPackages = pkgs: with pkgs; [
+        nodejs
+        pre-commit
+        yamllint
+      ];
     in {
       homeConfigurations."jga" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
@@ -33,5 +42,17 @@
         # Optionally use extraSpecialArgs
         # to pass through arguments to home.nix
       };
+
+      devShells = forAllSystems (pkgs: {
+        default = pkgs.mkShell {
+          packages = (generalPackages pkgs);
+
+          DOCKER_BUILDKIT = 1;
+
+          shellHook = ''
+          export PS1="(dotfiles-shell 🫥) $PS1"
+          '';
+        };
+      });
     };
 }
