@@ -113,6 +113,7 @@
         adog = "log --all --decorate --oneline --graph";
         plog = "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches --all";
         ignore-change = "update-index --assume-unchanged";
+        prune-branches-deep = "git fetch --prune ; git branch -r | awk '{print $1}' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '{print $1}' | xargs git branch -d";
       };
 
     };
