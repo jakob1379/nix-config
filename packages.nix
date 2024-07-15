@@ -64,6 +64,7 @@ let
   ];
 
   devPackages = with pkgs; [
+    lurk
     graphviz
     fira-code-nerdfont
     meslo-lgs-nf
