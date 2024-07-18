@@ -94,6 +94,7 @@ let
     (pkgs.writeShellScriptBin "bak" (builtins.readFile ./bin/bak))
     (pkgs.writeShellScriptBin "pyenv-here" (builtins.readFile ./bin/pyenv-here))
     (pkgs.writeShellScriptBin "emacs-clean" (builtins.readFile ./bin/emacs-clean))
+    (pkgs.writeShellScriptBin "time-stats" (builtins.readFile ./bin/time-stats))
   ];
 in
 {
