@@ -13,12 +13,7 @@
     # '';
 
     ".ssh/keepassxc-prompt".source = ./bin/keepassxc-prompt;
-    ".ssh/config".text = ''
-      ProxyCommand $HOME/.ssh/keepassxc-prompt %h %p
-
-      Host rpi
-          HostName 192.168.8.114
-   '';
+    ".ssh/config".text = builtins.readFile ./dotfiles/ssh/config;
   };
 
   home.sessionVariables = {
