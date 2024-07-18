@@ -573,7 +573,6 @@ Copilot is not really a LSP per sé, BUT the functionality is close hence the lo
 **** Extra Snippets
 #+BEGIN_SRC emacs-lisp
   (use-package yasnippet-snippets
-    :after yasnippet
     :config
     (yasnippet-snippets-initialize)
     )
