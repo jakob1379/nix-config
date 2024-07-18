@@ -14,6 +14,11 @@
 
     ".ssh/keepassxc-prompt".source = ./bin/keepassxc-prompt;
     ".ssh/config".text = builtins.readFile ./dotfiles/ssh/config;
+    ".config/pipewire/media-session.d/bluez-monitor.conf".text = ''
+    properties = {
+      bluez5.msbc-support = true
+    }
+    '';
   };
 
   home.sessionVariables = {

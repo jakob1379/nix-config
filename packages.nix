@@ -61,6 +61,7 @@ let
     xorg.xkill
     spotify
     yubikey-personalization-gui
+    xdg-desktop-portal-wlr
   ];
 
   devPackages = with pkgs; [
