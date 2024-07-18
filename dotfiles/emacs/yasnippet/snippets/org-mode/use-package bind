@@ -1,0 +1,5 @@
+# key: :bind
+# name: use-package bind
+# --
+
+:bind ("${1:C-${2:c}}" . ${2:command})

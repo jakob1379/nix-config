@@ -213,12 +213,13 @@ print startup time
 (electric-pair-mode 1)
 (global-auto-revert-mode 1)                         ;; refresh a buffer if changed on disk
 (global-display-fill-column-indicator-mode 1)       ;; Show this indicator > | <
+(global-display-line-numbers-mode 1)                ;; show the left column with line numbers
 (global-font-lock-mode t)                           ;; always highlight code
 (global-so-long-mode 1)
 (global-visual-line-mode 1)                         ;; Wrap line
+(menu-bar-mode 1)
 (save-place-mode 1)                                 ;; continue where you left off
 (tool-bar-mode 0)                                   ;; it's not used anyways
-(menu-bar-mode 1)
 ;; (windmove-default-keybindings)
 #+END_SRC
 ** UTF-8 by Default
@@ -256,8 +257,6 @@ Emacs is very conservative about assuming encoding. Everything is utf-8 these da
 ** default hooks
 #+BEGIN_SRC emacs-lisp
 (add-hook 'before-save-hook 'whitespace-cleanup)
-(add-hook 'prog-mode-hook (lambda() (display-line-numbers-mode 1)))
-(add-hook 'text-mode-hook (lambda() (display-line-numbers-mode 1)))
 #+END_SRC
 ** y-or-n-p instead of yes/no
 #+BEGIN_SRC emacs-lisp
@@ -387,7 +386,7 @@ section and not here.
 #+BEGIN_SRC emacs-lisp
 (use-package company
   :init
-  (global-company-mode 1)
+  (global-company-mode t)
 
   :config
   ;; Separate general backends and mode-specific backends
@@ -453,7 +452,9 @@ Yes - we can have fuzzy search here too.
     (company-box)
     :config
     (company-box-mode))
+
 #+END_SRC
+
 **** Prescient
 Teaches company to sort better
 #+BEGIN_SRC emacs-lisp
@@ -475,6 +476,7 @@ Teaches company to sort better
     (nix-mode . lsp-deferred)
     (rst-mode . lsp-deferred)
     (latex-mode . lsp-deferred)
+    (css-mode . lsp-deferred)
     :config
     ;; Register lsp clients
     (lsp-register-client
@@ -505,12 +507,13 @@ Teaches company to sort better
     (lsp-face-highlight-read ((t (:underline t))))
     (lsp-face-highlight-textual ((t (:underline t))))
     (lsp-face-highlight-write ((t (:underline t))))
+    (lsp-file-watch-threshold 5000)
     (lsp-headerline-breadcrumb-enable t)
     (lsp-intelephense-multi-root nil)
+    (lsp-keep-workspace-alive nil)
     (lsp-keymap-prefix "C-c l") ;; Set prefix for lsp-command-map
     (lsp-modeline-diagnostics-enable t)
     ;; (lsp-prefer-flymake nil)
-    (lsp-keep-workspace-alive nil)
     )
 #+END_SRC
 **** LSP ui
@@ -539,7 +542,6 @@ Teaches company to sort better
 #+END_SRC
 **** Copilot
 Copilot is not really a LSP per sé, BUT the functionality is close hence the location here
-
 #+BEGIN_SRC emacs-lisp
 (use-package jsonrpc)
 
@@ -961,17 +963,19 @@ This section is dedicated to various git tools
 
 #+BEGIN_SRC emacs-lisp
   (use-package hideshow
-
     :bind (("C-c TAB" . hs-toggle-hiding)
            ("C-c C--" . 'hs-hide-all)
            ("C-c C-+" . 'hs-show-all))
     :delight hs-minor-mode
     :hook
-    (prog-mode . hs-minor-mode)
-    :config
+    (prog-mode . (lambda ()
+                 (unless (eq major-mode 'fundamental-mode)
+                   (hs-minor-mode x1))))
+    :custom
     ;; Automatically open a block if you search for something where it matches
-    (setq hs-isearch-open t)
+    (hs-isearch-open t)
 
+    :config
     ;; Add `json-mode' and `javascript-mode' to the list
     (setq hs-special-modes-alist (mapcar 'purecopy '((c-mode "{" "}" "/[*/]" nil nil)
                                                      (c++-mode "{" "}" "/[*/]" nil nil)
@@ -979,7 +983,6 @@ This section is dedicated to various git tools
                                                      (js-mode "{" "}" "/[*/]" nil)
                                                      (json-mode "{" "}" "/[*/]" nil)
                                                      (javascript-mode  "{" "}" "/[*/]" nil)))))
-
 #+END_SRC
 *** Highlight Symbol
 #+BEGIN_SRC emacs-lisp
@@ -1351,14 +1354,14 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
                 (pyvenv-tracking-mode 1)
                 (pyvenv-workon venv))))
 
-;; (use-package pyvenv
-;;   :ensure t
-;;   :init
-;;   (setenv "WORKON_HOME" "~/.pyenv/versions")
-;;   (add-hook 'find-file-hook 'pyvenv-parent-env)
-;;   :hook (python-mode . pyvenv-parent-env)
-;;   :config
-;;   )
+(use-package pyvenv
+  :ensure t
+  :init
+  (setenv "WORKON_HOME" "~/.pyenv/versions")
+  ;; (add-hook 'find-file-hook 'pyvenv-parent-env)
+  ;; :hook (python-mode . pyvenv-parent-env)
+  :config
+  )
 
 #+END_SRC
 **** DAB - python debuggin
@@ -1542,5 +1545,3 @@ If emacs is not running as a server, start one. It should've been started by sys
   ("\\.yml'" . yaml-mode)
   ("\\.yaml" . yaml-mode))
 #+END_SRC
-
-emacs
