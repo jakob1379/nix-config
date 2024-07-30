@@ -27,6 +27,7 @@ let
     neofetch
     nix-index
     nix-prefetch-github
+    nixfmt
     pandoc
     rename
     speedtest-go
