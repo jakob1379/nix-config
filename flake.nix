@@ -27,6 +27,13 @@
         yamllint
       ];
     in {
+      nix.gc = {
+        automatic = true;
+        dates = "weekly";
+        options = "--delete-older-than 1w";
+      };
+      nix.settings.auto-optimise-store = true;
+
       homeConfigurations."jga" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         modules = [
