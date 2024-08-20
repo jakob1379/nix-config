@@ -111,7 +111,7 @@
       };
       aliases = {
         adog = "log --all --decorate --oneline --graph";
-        plog = "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches --all";
+        plog = "log  --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
         ignore-change = "update-index --assume-unchanged";
         prune-deep = ''!git fetch --prune; branches=$(git branch -r | awk '"'"'{print $1}'"'"' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '"'"'{print $1}'"'"'); echo -e "branches:\n$branches"; read -p "Do you want to delete all these branches? (y/n): " confirm; if [ "$confirm" = "y" ]; then echo "$branches" | xargs git branch -d; else echo "No branches were deleted"; fi'';
       };
@@ -141,6 +141,8 @@
   };
 
   home.shellAliases = {
+    cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
+
     # docker
     dcup = "docker compose up --remove-orphans";
     dcview = "docker compose config | bat -l yml";
@@ -152,7 +154,6 @@
     # eda
     eda = "nix-shell -p python312Packages.requests python312Packages.rich python312Packages.ipython python312Packages.pandas python312Packages.seaborn python312Packages.plotly";
 
-    bhelp = "bat --plain --language=help";
     ec = "emacsclient -n";
     grep = "grep --color=auto";
 
