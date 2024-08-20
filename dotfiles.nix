@@ -12,17 +12,23 @@
     #   org.gradle.daemon.idletimeout=3600000
     # '';
 
+    # ssh
     ".ssh/keepassxc-prompt".source = ./bin/keepassxc-prompt;
     ".ssh/config".text = builtins.readFile ./dotfiles/ssh/config;
+
+    # improved codecs
     ".config/pipewire/media-session.d/bluez-monitor.conf".text = ''
     properties = {
       bluez5.msbc-support = true
-    }
+      }
     '';
-  };
+
+    # emacs
+    ".emacs.d/config.org".source = ./dotfiles/emacs/config.org;
+    ".emacs.d/init.el".source = ./dotfiles/emacs/init.el;
+ };
 
   home.sessionVariables = {
-    EDITOR = "emacsclient";
     PAGER = "bat -p";
     MANPAGER = "bat -pl man";
     LC_TIME = "en_GB.utf8";

@@ -80,3 +80,6 @@ __pycache__/
 /dotfiles/emacs/transient/
 /dotfiles/emacs/tree-sitter/
 /dotfiles/emacs/straight/
+/node_modules/
+/package.json
+/package-lock.json
