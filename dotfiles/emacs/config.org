@@ -1346,6 +1346,7 @@ We want to be able to view pdfs in emacs
   :custom
   (pdf-view-display-size 'fit-page)
   :mode ("\\.pdf\\'" . pdf-view-mode)
+  :hook (pdf-view-mode . (lambda () (display-line-numbers-mode -1)))
   :bind (:map pdf-view-mode-map
               ;; Custom keybindings for navigating in pdf-view-mode
               ("C-s" . isearch-forward)
