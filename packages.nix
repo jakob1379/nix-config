@@ -26,7 +26,9 @@ let
     libqalculate
     nix-index
     nix-prefetch-github
-    nixfmt
+    nixfmt-classic
+    nixgl.nixGLIntel
+    nmap
     pandoc
     rename
     speedtest-go
@@ -39,29 +41,29 @@ let
     wakatime
     wget
     xclip
-    xdragon
     zip
   ];
 
   guiPackages = with pkgs; [
-    konsole
+    # pika-backup
     brave
     dbeaver-bin
     feh
     firefox
     gnome-pomodoro
     keepassxc
-    onlyoffice-bin
-    # pika-backup
+    konsole
     nodePackages.prettier
+    onlyoffice-bin
     signal-desktop
     slack
+    spotify
     variety
     virt-manager
-    xorg.xkill
-    spotify
-    yubikey-personalization-gui
     xdg-desktop-portal-wlr
+    xdragon
+    xorg.xkill
+    yubikey-personalization-gui
   ];
 
   devPackages = with pkgs; [
@@ -96,7 +98,7 @@ let
     (pkgs.writeShellScriptBin "pyenv-here" (builtins.readFile ./bin/pyenv-here))
     (pkgs.writeShellScriptBin "emacs-clean" (builtins.readFile ./bin/emacs-clean))
     (pkgs.writeShellScriptBin "time-stats" (builtins.readFile ./bin/time-stats))
-    (pkgs.writeShellScriptBin "help" (builtins.readFile ./bin/bathelp))
+    (pkgs.writeShellScriptBin "bhelp" (builtins.readFile ./bin/bathelp))
   ];
 in
 {
