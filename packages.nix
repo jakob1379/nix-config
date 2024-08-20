@@ -24,7 +24,6 @@ let
     ispell
     jq
     libqalculate
-    neofetch
     nix-index
     nix-prefetch-github
     nixfmt
@@ -97,6 +96,7 @@ let
     (pkgs.writeShellScriptBin "pyenv-here" (builtins.readFile ./bin/pyenv-here))
     (pkgs.writeShellScriptBin "emacs-clean" (builtins.readFile ./bin/emacs-clean))
     (pkgs.writeShellScriptBin "time-stats" (builtins.readFile ./bin/time-stats))
+    (pkgs.writeShellScriptBin "help" (builtins.readFile ./bin/bathelp))
   ];
 in
 {

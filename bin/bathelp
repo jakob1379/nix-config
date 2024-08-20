@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# This script executes a command passed as an argument and displays its help message using 'bat' for syntax highlighting.
+# It is useful for quickly viewing the help documentation of any command in a visually appealing format.
+
+set -euo pipefail
+IFS=$'\n\t'
+
+# Display usage information for the script
+displayUsage() {
+    echo '
+usage:  help <command> [...]
+operations:
+  bhelp -h  shows this help message
+  bhelp <command>  executes the given command and displays its help message using bat
+'
+}
+
+# Parse options
+while getopts ":h" opt; do
+    case ${opt} in
+        h)
+            displayUsage
+            exit 1
+            ;;
+        \?)
+            echo "Invalid option: $OPTARG" 1>&2
+            exit 2
+            ;;
+        :)
+            echo "Invalid option: $OPTARG requires an argument" 1>&2
+            exit 2
+            ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+# Check if a command is provided
+if [ $# -eq 0 ]; then
+    echo "Error: No command provided."
+    displayUsage
+    exit 2
+fi
+
+# Assign the command passed as arguments to a variable
+command="$@"
+
+# Try to get the help message of the command
+help_msg="$($command --help || $command -h)"
+
+# Display the help message using bat with syntax highlighting for 'help'
+echo "$help_msg" | bat -pl help

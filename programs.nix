@@ -164,9 +164,5 @@
     ns = "sudo nixos-rebuild switch --flake ~/.config/nixos#";
     q = "qalc";
     tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
-
-    # better help
-    bathelp = "bat --plain --language=help";
-    help = ''help_function() { "$@" --help 2>&1 | bathelp || "$@" -h 2>&1 | bathelp; } && help_function'';
   };
 }
