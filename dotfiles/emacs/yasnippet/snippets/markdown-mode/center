@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: center
+# key: center
+# --
+
+<p align="center">
+  $1
+</p>
+$0

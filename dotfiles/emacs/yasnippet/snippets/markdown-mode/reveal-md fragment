@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: reveal-md fragment
+# key: reveal
+# --
+<!-- .element: class="fragment" -->
+$0
