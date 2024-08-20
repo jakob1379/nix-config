@@ -10,12 +10,16 @@
     };
     flake-utils.url = "github:numtide/flake-utils";
     poetry2nix.url = "github:nix-community/poetry2nix";
+    nixgl.url = "github:nix-community/nixGL";
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, ... }:
+  outputs = inputs@{ self, nixpkgs, home-manager, nixgl, ... }:
     let
       system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [ nixgl.overlay ];  # Apply the nixGL overlay
+      };
 
       forAllSystems = function:
         nixpkgs.lib.genAttrs [ "x86_64-linux" ]
@@ -30,7 +34,7 @@
       nix.gc = {
         automatic = true;
         dates = "weekly";
-        options = "--delete-older-than 1w";
+        options = "--delete-older-than 2w";
       };
       nix.settings.auto-optimise-store = true;
 
@@ -57,6 +61,9 @@
           DOCKER_BUILDKIT = 1;
 
           shellHook = ''
+          pre-commit install && pre-commit autoupdate -j $(nproc)
+          npm install opencommit
+          export PATH=./node_modules/.bin/:$PATH
           export PS1="(dotfiles-shell 🫥) $PS1"
           '';
         };
