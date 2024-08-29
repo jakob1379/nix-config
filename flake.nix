@@ -11,11 +11,14 @@
     flake-utils.url = "github:numtide/flake-utils";
     poetry2nix.url = "github:nix-community/poetry2nix";
     nixgl.url = "github:nix-community/nixGL";
+    zen-browser.url = "github:MarceColl/zen-browser-flake";
+    fabric.url = "path:./flakes/fabric";
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, nixgl, ... }:
     let
       system = "x86_64-linux";
+
       pkgs = import nixpkgs {
         inherit system;
         overlays = [ nixgl.overlay ];  # Apply the nixGL overlay
@@ -40,6 +43,7 @@
 
       homeConfigurations."jga" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
+        extraSpecialArgs = { inherit inputs system; }; # Pass `inputs` and `system` to the modules
         modules = [
           ./home-manager.nix
           ./dotfiles.nix
@@ -50,8 +54,6 @@
           ./Anemo.nix
         ];
 
-        # Optionally use extraSpecialArgs
-        # to pass through arguments to home.nix
       };
 
       devShells = forAllSystems (pkgs: {

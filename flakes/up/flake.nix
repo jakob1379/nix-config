@@ -26,6 +26,13 @@
           '';
         };
 
+        devShell = pkgs.mkShell {
+          buildInputs = [ self.packages.${system}.default ];
+          shellHook = ''
+            export PATH=$PATH:${pkgs.gum}/bin
+          '';
+        };
+
         defaultPackage = self.packages.${system}.default;
         defaultApp = flake-utils.lib.mkApp {
           drv = self.packages.${system}.default;

@@ -42,6 +42,9 @@ let
     wget
     xclip
     zip
+
+    # Include fabric from inputs
+    inputs.fabric.packages.${system}.fabric
   ];
 
   guiPackages = with pkgs; [
