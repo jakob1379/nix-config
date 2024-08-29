@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, system, inputs, ... }:
 let
   hyprLandPackages = with pkgs; [
     dolphin
@@ -64,6 +64,7 @@ let
     xdragon
     xorg.xkill
     yubikey-personalization-gui
+    inputs.zen-browser.packages.${system}.generic
   ];
 
   devPackages = with pkgs; [
