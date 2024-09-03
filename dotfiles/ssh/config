@@ -1,7 +1,0 @@
-ProxyCommand $HOME/.ssh/keepassxc-prompt %h %p
-
-Host *
-  AddKeysToAgent yes
-
-Host rpi
-    HostName 192.168.8.114

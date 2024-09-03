@@ -42,9 +42,9 @@ let
     wget
     xclip
     zip
-
+    nerdfonts
     # Include fabric from inputs
-    inputs.fabric.packages.${system}.fabric
+    # inputs.fabric.packages.${system}.fabric
   ];
 
   guiPackages = with pkgs; [
@@ -71,17 +71,15 @@ let
   ];
 
   devPackages = with pkgs; [
-    lurk
     graphviz
     fira-code-nerdfont
     meslo-lgs-nf
     fira-code-symbols
-    sonar-scanner-cli
     jdk
     nodejs
   ];
 
-  emacs_packages = with pkgs; [
+  emacsPackages = with pkgs; [
     python312Packages.python-lsp-server
     powershell
     hunspell
@@ -106,5 +104,6 @@ let
   ];
 in
 {
-  home.packages = corePackages ++ guiPackages ++ devPackages ++ customScripts ++ emacs_packages ++ hyprLandPackages;
+  home.packages = corePackages ++ guiPackages ++ devPackages ++ customScripts ++ emacsPackages;
+  inherit corePackages guiPackages devPackages emacsPackages customScripts hyprLandPackages;
 }

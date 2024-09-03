@@ -12,7 +12,16 @@ repos:
       - id: trailing-whitespace
     repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.18.4
+  - repo: local
     hooks:
-      - id: gitleaks
+      - id: nix-flake-check
+        name: Nix Flake Check
+        entry: nix flake check --all-systems
+        language: system
+        types: [file]
+        pass_filenames: false
+      - id: gitleaks-system
+        name: Detect hardcoded secrets
+        description: Detect hardcoded secrets using Gitleaks
+        entry: gitleaks protect --verbose --redact --staged
+        language: system

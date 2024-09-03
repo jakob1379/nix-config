@@ -1,3 +1,4 @@
+
 {
   description = "Home Manager configuration of jga";
 
@@ -12,28 +13,32 @@
     poetry2nix.url = "github:nix-community/poetry2nix";
     nixgl.url = "github:nix-community/nixGL";
     zen-browser.url = "github:MarceColl/zen-browser-flake";
-    fabric.url = "path:./flakes/fabric";
+    # fabric.url = "path:./flakes/fabric";
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, nixgl, ... }:
     let
-      system = "x86_64-linux";
+      system = "aarch64-linux";
 
       pkgs = import nixpkgs {
         inherit system;
         overlays = [ nixgl.overlay ];  # Apply the nixGL overlay
       };
 
+      # what systems to build for
       forAllSystems = function:
-        nixpkgs.lib.genAttrs [ "x86_64-linux" ]
+        nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-linux" ]
           (system: function nixpkgs.legacyPackages.${system});
 
+      # Pacakages for nix shell
       generalPackages = pkgs: with pkgs; [
         nodejs
         pre-commit
         yamllint
+        gitleaks
       ];
     in {
+      # general nix configs
       nix.gc = {
         automatic = true;
         dates = "weekly";
@@ -41,21 +46,16 @@
       };
       nix.settings.auto-optimise-store = true;
 
-      homeConfigurations."jga" = home-manager.lib.homeManagerConfiguration {
+      # Home configs
+      homeConfigurations."pi" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        extraSpecialArgs = { inherit inputs system; }; # Pass `inputs` and `system` to the modules
+        extraSpecialArgs = { inherit inputs system; };
         modules = [
-          ./home-manager.nix
-          ./dotfiles.nix
-          ./packages.nix
-          ./programs.nix
-          ./services.nix
-          ./ubuntu.nix
-          ./Anemo.nix
+          ./pi.nix
         ];
-
       };
 
+      # Setup nix shell for this repo
       devShells = forAllSystems (pkgs: {
         default = pkgs.mkShell {
           packages = (generalPackages pkgs);

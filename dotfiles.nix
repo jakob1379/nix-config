@@ -1,38 +1,53 @@
 { pkgs, ... }:
 
-{
-  home.file = {
-    # # Building this configuration will create a copy of 'dotfiles/screenrc' in
-    # # the Nix store. Activating the configuration will then make '~/.screenrc' a
-    # # symlink to the Nix store copy.
-    # ".screenrc".source = dotfiles/screenrc;
-    # # You can also set the file content immediately.
-    # ".gradle/gradle.properties".text = ''
-    #   org.gradle.console=verbose
-    #   org.gradle.daemon.idletimeout=3600000
-    # '';
-
-    # ssh
+let
+  # Define each config section as a separate variable
+  sshConfig = {
     ".ssh/keepassxc-prompt".source = ./bin/keepassxc-prompt;
-    ".ssh/config".text = builtins.readFile ./dotfiles/ssh/config;
+    ".ssh/config".text = ''
+  ProxyCommand $HOME/.ssh/keepassxc-prompt %h %p
 
-    # improved codecs
-    ".config/pipewire/media-session.d/bluez-monitor.conf".text = ''
-    properties = {
-      bluez5.msbc-support = true
-      }
-    '';
+  Host *
+    AddKeysToAgent yes
 
-    # emacs
+  Host rpi
+    HostName 192.168.8.114'';
+  };
+
+  emacsConfig = {
     ".emacs.d/config.org".source = ./dotfiles/emacs/config.org;
     ".emacs.d/init.el".source = ./dotfiles/emacs/init.el;
- };
+  };
 
-  home.sessionVariables = {
+  mediaConfig = {
+    ".config/pipewire/media-session.d/bluez-monitor.conf".text = ''
+      properties = {
+        bluez5.msbc-support = true;
+      }
+    '';
+  };
+
+  # Session variables configuration
+  sessionVariables = {
     PAGER = "bat -p";
     MANPAGER = "bat -pl man";
     LC_TIME = "en_GB.utf8";
   };
 
-  fonts.fontconfig.enable = true;
+  # Fonts configuration
+  fontsConfig = {
+    fontconfig.enable = true;
+  };
+
+in
+{
+  # Export for possible overriding
+  inherit sshConfig emacsConfig mediaConfig sessionVariables fontsConfig;
+
+  # Combine all configs into `home.file`
+  home.file = sshConfig // emacsConfig // mediaConfig;
+
+  # Use separate configurations
+  home.sessionVariables = sessionVariables;
+  fonts = fontsConfig;
 }
