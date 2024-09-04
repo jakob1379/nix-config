@@ -37,6 +37,13 @@
         yamllint
         gitleaks
       ];
+
+      # Home config generator
+      mkHomeConfig = machineModule: system: home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgs { inherit system; };
+        modules = [ machineModule ];
+        extraSpecialArgs = { inherit inputs system; };
+      };
     in {
       # general nix configs
       nix.gc = {
@@ -47,13 +54,7 @@
       nix.settings.auto-optimise-store = true;
 
       # Home configs
-      homeConfigurations."pi" = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        extraSpecialArgs = { inherit inputs system; };
-        modules = [
-          ./pi.nix
-        ];
-      };
+      homeConfigurations."pi" = mkHomeConfig ./pi.nix "aarch64-linux";
 
       # Setup nix shell for this repo
       devShells = forAllSystems (pkgs: {
