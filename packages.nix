@@ -41,7 +41,6 @@ let
     wget
     xclip
     zip
-    nerdfonts
     # Include fabric from inputs
     # inputs.fabric.packages.${system}.fabric
   ];
