@@ -18,8 +18,6 @@
 
   outputs = inputs@{ self, nixpkgs, home-manager, nixgl, ... }:
     let
-      system = "aarch64-linux";
-
       pkgs = import nixpkgs;
 
       # what systems to build for
