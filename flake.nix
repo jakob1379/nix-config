@@ -20,10 +20,7 @@
     let
       system = "aarch64-linux";
 
-      pkgs = import nixpkgs {
-        inherit system;
-        overlays = [ nixgl.overlay ];  # Apply the nixGL overlay
-      };
+      pkgs = import nixpkgs;
 
       # what systems to build for
       forAllSystems = function:

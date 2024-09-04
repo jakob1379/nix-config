@@ -27,7 +27,6 @@ let
     nix-index
     nix-prefetch-github
     nixfmt-classic
-    nixgl.nixGLIntel
     nmap
     pandoc
     rename

@@ -9,7 +9,6 @@ let
     ".ssh/config".text = ''
       Host *
         AddKeysToAgent yes
-        UseKeychain yes
     '';
   };
 in
