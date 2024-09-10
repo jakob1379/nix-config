@@ -1,7 +1,6 @@
 { pkgs, system, inputs, ... }:
 let
   username = "jga";
-  packages = import ./packages.nix { inherit pkgs system inputs; };	
 in
 {
   home.username = "${username}";
@@ -13,10 +12,9 @@ in
   programs.home-manager.enable = true;
 
   imports = [
-    ./services.nix
-    ./dotfiles.nix
+    ./packages.nix
+  #  ./services.nix
+  #  ./dotfiles.nix
   ];
-
-  home.packages = packages.corePackages ++ packages.guiPackages ++ packages.devPackages ++ packages.customScripts ++ packages.emacsPackages;
 
 }
