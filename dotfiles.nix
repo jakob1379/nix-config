@@ -39,15 +39,17 @@ let
     fontconfig.enable = true;
   };
 
+
 in
 {
-  # Export for possible overriding
-  inherit sshConfig emacsConfig mediaConfig sessionVariables fontsConfig;
-
   # Combine all configs into `home.file`
   home.file = sshConfig // emacsConfig // mediaConfig;
 
   # Use separate configurations
   home.sessionVariables = sessionVariables;
   fonts = fontsConfig;
+
+  # Export for possible overriding
+  inherit sshConfig emacsConfig mediaConfig sessionVariables fontsConfig;
+
 }
