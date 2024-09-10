@@ -102,6 +102,5 @@ let
   ];
 in
 {
-  home.packages = corePackages ++ guiPackages ++ devPackages ++ customScripts ++ emacsPackages;
   inherit corePackages guiPackages devPackages emacsPackages customScripts hyprLandPackages;
 }

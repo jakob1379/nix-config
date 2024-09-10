@@ -14,12 +14,16 @@ install-nix:
 		echo "Nix is already installed."; \
 	fi
 
+	@mkdir -p ~/.config/nix && \
+	echo "experimental-features = nix-command flakes" > ~/.config/nix/nix.conf && \
+	echo "Enabled experimental features for Nix: nix-command and flakes."
+
 install-home-manager:
 	@echo "Installing home-manager"
-        @. "~/.nix-profile/etc/profile.d/hm-session-vars.sh"
 	@nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
 	@nix-channel --update
 	@nix-shell '<home-manager>' -A install
 
 	@echo "setting .profile to source nix-profile"
-	@echo "if [ -e ~/.nix-profile/etc/profile.d/nix.sh ]; then . ~/.nix-profile/etc/profile.d/nix.sh; fi" >> ~/.profile
+	@mv ~/.profile ~/.profile.bak
+	@echo "if [ -e ~/.nix-profile/etc/profile.d/nix.sh ]; then . ~/.nix-profile/etc/profile.d/nix.sh; fi" > ~/.profile

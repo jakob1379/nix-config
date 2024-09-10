@@ -51,6 +51,7 @@
       # Home configs
       homeConfigurations."pi" = mkHomeConfig ./pi.nix "aarch64-linux";
       homeConfigurations."fuzie" = mkHomeConfig ./wsl.nix "x86_64-linux";
+      homeConfigurations."jga@nixos" = mkHomeConfig ./home.nix "x86_64-linux";
 
       # Setup nix shell for this repo
       devShells = forAllSystems (pkgs: {
