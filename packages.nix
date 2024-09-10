@@ -1,4 +1,4 @@
-{ pkgs, system, inputs, ... }:
+{ pkgs, system, ... }:
 let
   hyprLandPackages = with pkgs; [
     dolphin
@@ -41,8 +41,6 @@ let
     wget
     xclip
     zip
-    # Include fabric from inputs
-    # inputs.fabric.packages.${system}.fabric
   ];
 
   guiPackages = with pkgs; [
@@ -65,7 +63,6 @@ let
     xdragon
     xorg.xkill
     yubikey-personalization-gui
-    inputs.zen-browser.packages.${system}.generic
   ];
 
   devPackages = with pkgs; [
@@ -77,6 +74,7 @@ let
     nodejs
   ];
 
+  # emacs is enabled in programs.nix
   emacsPackages = with pkgs; [
     python312Packages.python-lsp-server
     powershell
@@ -102,7 +100,8 @@ let
   ];
 in
 {
-  home.packages = corePackages ++ guiPackages ++ devPackages ++ customScripts ++ emacsPackages;
 
-  inherit corePackages guiPackages devPackages emacsPackages customScripts hyprLandPackages;
+  # Combine all packages into `home.packages` with defaults
+  home.packages = (corePackages ++ guiPackages ++ devPackages ++ customScripts ++ emacsPackages);
+
 }

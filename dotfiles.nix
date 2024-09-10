@@ -49,7 +49,4 @@ in
   home.sessionVariables = sessionVariables;
   fonts = fontsConfig;
 
-  # Export for possible overriding
-  inherit sshConfig emacsConfig mediaConfig sessionVariables fontsConfig;
-
 }

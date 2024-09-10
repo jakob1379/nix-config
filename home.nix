@@ -11,10 +11,4 @@ in
 
   programs.home-manager.enable = true;
 
-  imports = [
-    ./packages.nix
-  #  ./services.nix
-  #  ./dotfiles.nix
-  ];
-
 }

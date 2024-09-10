@@ -34,12 +34,20 @@
       ];
 
       # Home config generator
-      mkHomeConfig = machineModule: system: home-manager.lib.homeManagerConfiguration {
+      mkHomeConfig = modules: system: home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs { inherit system; };
-        modules = [ machineModule ];
+        modules = modules; # Accepts a list of modules
         extraSpecialArgs = { inherit inputs system; };
       };
     in {
+      # for nixos
+      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./nixos/configuration.nix
+        ];
+      };
+
       # general nix configs
       nix.gc = {
         automatic = true;
@@ -49,24 +57,37 @@
       nix.settings.auto-optimise-store = true;
 
       # Home configs
-      homeConfigurations."pi" = mkHomeConfig ./pi.nix "aarch64-linux";
-      homeConfigurations."fuzie" = mkHomeConfig ./wsl.nix "x86_64-linux";
-      homeConfigurations."jga@nixos" = mkHomeConfig ./home.nix "x86_64-linux";
+      homeConfigurations."pi" = mkHomeConfig [ ./pi.nix ] "aarch64-linux";
+      homeConfigurations."fuzie" = mkHomeConfig [ ./wsl.nix ] "x86_64-linux";
+      homeConfigurations."jga@nixos" = mkHomeConfig [ ./home.nix ./packages.nix ./dotfiles.nix ./services.nix ./programs.nix ] "x86_64-linux";
 
       # Setup nix shell for this repo
       devShells = forAllSystems (pkgs: {
         default = pkgs.mkShell {
-          packages = (generalPackages pkgs);
+          # Specify the packages that are required
+          packages = (generalPackages pkgs) ++ [
+            pkgs.pre-commit
+            pkgs.nodejs
+          ];
 
-          DOCKER_BUILDKIT = 1;
+          # Use the `buildInputs` to include npm and other tools directly
+          buildInputs = [
+            pkgs.pre-commit
+          ];
 
+          # Define a `shellHook` that only sets the environment, not installs things
           shellHook = ''
-          pre-commit install && pre-commit autoupdate -j $(nproc)
-          npm install opencommit
-          export PATH=./node_modules/.bin/:$PATH
-          export PS1="(dotfiles-shell 🫥) $PS1"
-          '';
+      export PATH=./node_modules/.bin/:$PATH
+      export PS1="(dotfiles-shell 🫥) $PS1"
+    '';
+
+          # Use `postBuild` hook to run actions that need to happen after build
+          postBuild = ''
+      pre-commit install
+      pre-commit autoupdate -j $(nproc)
+    '';
         };
       });
+
     };
 }

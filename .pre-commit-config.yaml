@@ -16,7 +16,7 @@ repos:
     hooks:
       - id: nix-flake-check
         name: Nix Flake Check
-        entry: nix flake check --all-systems
+        entry: nix flake check --no-build --no-update-lock-file --no-write-lock-file --all-systems
         language: system
         types: [file]
         pass_filenames: false

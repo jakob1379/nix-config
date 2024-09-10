@@ -84,6 +84,9 @@
 
             # Don't auto open download panel
             "browser.download.alwaysOpenPanel" = false;
+
+            # backup ui layout
+            "services.sync.prefs.sync.browser.uiCustomization.state" = true;
           };
           userChrome = builtins.readFile ./dotfiles/firefox/firefox_userchrome.css;
         };
