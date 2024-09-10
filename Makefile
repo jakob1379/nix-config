@@ -7,8 +7,12 @@
 install: install-nix install-home-manager
 
 install-nix:
-	@echo "Installing nix"
-	@curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+	@if ! command -v nix &> /dev/null; then \
+		echo "Installing nix"; \
+		curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install; \
+	else \
+		echo "Nix is already installed."; \
+	fi
 
 install-home-manager:
 	@echo "Installing home-manager"
