@@ -31,6 +31,7 @@
         pre-commit
         yamllint
         gitleaks
+        nixfmt
       ];
 
       # Home config generator
@@ -65,10 +66,7 @@
       devShells = forAllSystems (pkgs: {
         default = pkgs.mkShell {
           # Specify the packages that are required
-          packages = (generalPackages pkgs) ++ [
-            pkgs.pre-commit
-            pkgs.nodejs
-          ];
+          packages = (generalPackages pkgs);
 
           # Use the `buildInputs` to include npm and other tools directly
           buildInputs = [
