@@ -13,6 +13,7 @@ let
     entr
     fd
     gdu
+    git
     gitflow
     gitleaks
     glib
@@ -82,6 +83,7 @@ let
     aspellDicts.en
     aspellDicts.en-computers
     aspellDicts.en-science
+    marksman
   ];
 
   customScripts = [
