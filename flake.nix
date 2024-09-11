@@ -31,7 +31,7 @@
           pre-commit
           yamllint
           gitleaks
-          nixfmt
+          nixfmt-rfc-style
         ];
 
       # Home config generator
