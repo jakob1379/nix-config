@@ -1,4 +1,3 @@
-
 {
   description = "Home Manager configuration of jga";
 
@@ -23,30 +22,30 @@
       # what systems to build for
       forAllSystems = function:
         nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-linux" ]
-          (system: function nixpkgs.legacyPackages.${system});
+        (system: function nixpkgs.legacyPackages.${system});
 
       # Pacakages for nix shell
-      generalPackages = pkgs: with pkgs; [
-        nodejs
-        pre-commit
-        yamllint
-        gitleaks
-        nixfmt
-      ];
+      generalPackages = pkgs:
+        with pkgs; [
+          nodejs
+          pre-commit
+          yamllint
+          gitleaks
+          nixfmt
+        ];
 
       # Home config generator
-      mkHomeConfig = modules: system: home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs { inherit system; };
-        modules = modules; # Accepts a list of modules
-        extraSpecialArgs = { inherit inputs system; };
-      };
+      mkHomeConfig = modules: system:
+        home-manager.lib.homeManagerConfiguration {
+          pkgs = import nixpkgs { inherit system; };
+          modules = modules; # Accepts a list of modules
+          extraSpecialArgs = { inherit inputs system; };
+        };
     in {
       # for nixos
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        modules = [
-          ./nixos/configuration.nix
-        ];
+        modules = [ ./nixos/configuration.nix ];
       };
 
       # general nix configs
@@ -60,7 +59,13 @@
       # Home configs
       homeConfigurations."pi" = mkHomeConfig [ ./pi.nix ] "aarch64-linux";
       homeConfigurations."fuzie" = mkHomeConfig [ ./wsl.nix ] "x86_64-linux";
-      homeConfigurations."jga@nixos" = mkHomeConfig [ ./home.nix ./packages.nix ./dotfiles.nix ./services.nix ./programs.nix ] "x86_64-linux";
+      homeConfigurations."jga@nixos" = mkHomeConfig [
+        ./home.nix
+        ./packages.nix
+        ./dotfiles.nix
+        ./services.nix
+        ./programs.nix
+      ] "x86_64-linux";
 
       # Setup nix shell for this repo
       devShells = forAllSystems (pkgs: {
@@ -69,21 +74,19 @@
           packages = (generalPackages pkgs);
 
           # Use the `buildInputs` to include npm and other tools directly
-          buildInputs = [
-            pkgs.pre-commit
-          ];
+          buildInputs = [ pkgs.pre-commit ];
 
           # Define a `shellHook` that only sets the environment, not installs things
           shellHook = ''
-      export PATH=./node_modules/.bin/:$PATH
-      export PS1="(dotfiles-shell 🫥) $PS1"
-    '';
+            export PATH=./node_modules/.bin/:$PATH
+            export PS1="(dotfiles-shell 🫥) $PS1"
+          '';
 
           # Use `postBuild` hook to run actions that need to happen after build
           postBuild = ''
-      pre-commit install
-      pre-commit autoupdate -j $(nproc)
-    '';
+            pre-commit install
+            pre-commit autoupdate -j $(nproc)
+          '';
         };
       });
 

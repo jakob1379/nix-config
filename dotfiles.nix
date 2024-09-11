@@ -5,13 +5,13 @@ let
   sshConfig = {
     ".ssh/keepassxc-prompt".source = ./bin/keepassxc-prompt;
     ".ssh/config".text = ''
-  ProxyCommand $HOME/.ssh/keepassxc-prompt %h %p
+      ProxyCommand $HOME/.ssh/keepassxc-prompt %h %p
 
-  Host *
-    AddKeysToAgent yes
+      Host *
+        AddKeysToAgent yes
 
-  Host rpi
-    HostName 192.168.8.114'';
+      Host rpi
+        HostName 192.168.8.114'';
   };
 
   emacsConfig = {
@@ -35,13 +35,9 @@ let
   };
 
   # Fonts configuration
-  fontsConfig = {
-    fontconfig.enable = true;
-  };
+  fontsConfig = { fontconfig.enable = true; };
 
-
-in
-{
+in {
   # Combine all configs into `home.file`
   home.file = sshConfig // emacsConfig // mediaConfig;
 

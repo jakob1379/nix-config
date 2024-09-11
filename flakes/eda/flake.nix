@@ -11,9 +11,7 @@
       let
         pkgs = import nixpkgs {
           inherit system;
-          config = {
-            allowUnfree = true;
-          };
+          config = { allowUnfree = true; };
         };
 
         dtale = pkgs.python3Packages.buildPythonPackage rec {
@@ -21,26 +19,17 @@
           version = "3.12.0";
           src = pkgs.python3Packages.fetchPypi {
             inherit pname version;
-            sha256 = "4f011fcceabd5708a8aba9665d1e26cf68569c6867a96bed6fb34a9225b26e60";
+            sha256 =
+              "4f011fcceabd5708a8aba9665d1e26cf68569c6867a96bed6fb34a9225b26e60";
           };
           propagatedBuildInputs = with pkgs.python3Packages; [ flask pandas ];
           doCheck = false;
         };
 
-        myPythonEnv = pkgs.python3.withPackages (ps: with ps; [
-          dtale
-          rich
-          ipython
-          pandas
-          seaborn
-          plotly
-        ]);
+        myPythonEnv = pkgs.python3.withPackages
+          (ps: with ps; [ dtale rich ipython pandas seaborn plotly ]);
 
-      in
-      {
-        devShells.default = pkgs.mkShell {
-          buildInputs = [ myPythonEnv ];
-        };
-      }
-    );
+      in {
+        devShells.default = pkgs.mkShell { buildInputs = [ myPythonEnv ]; };
+      });
 }

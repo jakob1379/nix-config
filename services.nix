@@ -1,29 +1,26 @@
 { config, pkgs, lib, ... }:
 let
-  createNativeRcloneMountService = { name, remote, mountPath ? "/home/${config.home.username}/${name}", remotePath ? "/" }: {
-    Unit = {
-      Description = "Rclone mount service for ${name}";
-    };
+  createNativeRcloneMountService = { name, remote
+    , mountPath ? "/home/${config.home.username}/${name}", remotePath ? "/" }: {
+      Unit = { Description = "Rclone mount service for ${name}"; };
 
-    Service = {
-      ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${mountPath}";
-      ExecStart = ''
-        rclone mount \
-          --config /home/${config.home.username}/.config/rclone/rclone.conf \
-          --vfs-fast-fingerprint \
-          --vfs-cache-mode full \
-          --allow-other \
-          ${remote}:${remotePath} ${mountPath}
+      Service = {
+        ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${mountPath}";
+        ExecStart = ''
+          rclone mount \
+            --config /home/${config.home.username}/.config/rclone/rclone.conf \
+            --vfs-fast-fingerprint \
+            --vfs-cache-mode full \
+            --allow-other \
+            ${remote}:${remotePath} ${mountPath}
         '';
-      ExecStop = "fusermount -u ${mountPath}";
-      Type = "notify";
-      Restart = "on-failure";
-      RestartSec = "10s";
+        ExecStop = "fusermount -u ${mountPath}";
+        Type = "notify";
+        Restart = "on-failure";
+        RestartSec = "10s";
+      };
+      Install = { WantedBy = [ "default.target" ]; };
     };
-    Install = {
-      WantedBy = [ "default.target" ];
-    };
-  };
 
   # createRcloneMountService = { name, remote, mountPath ? "/home/${config.home.username}/${name}", remotePath ? "/" }: {
   #   Unit = {
@@ -56,8 +53,7 @@ let
   #   };
   # };
 
-in
-{
+in {
 
   services = {
     copyq.enable = true;

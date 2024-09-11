@@ -8,10 +8,8 @@
 
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs { inherit system; };
-      in
-      {
+      let pkgs = import nixpkgs { inherit system; };
+      in {
         packages.default = pkgs.stdenv.mkDerivation {
           pname = "up-script";
           version = "1.0.0";

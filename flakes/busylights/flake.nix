@@ -34,16 +34,12 @@
           };
           overrides = poetry2nixOverrides;
         };
-      in
-      {
+      in {
         packages = {
           busylight = busylightApp;
           default = busylightApp;
         };
 
-        devShells.default = pkgs.mkShell {
-          inputsFrom = [ busylightApp ];
-        };
-      }
-    );
+        devShells.default = pkgs.mkShell { inputsFrom = [ busylightApp ]; };
+      });
 }

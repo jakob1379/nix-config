@@ -1,14 +1,8 @@
 { config, lib, pkgs, ... }:
 
 let
-  cliPackages = with pkgs; [
-  ];
+  cliPackages = with pkgs; [ ];
 
-  guiPackages = with pkgs; [
-    gnome-tweaks
-  ];
+  guiPackages = with pkgs; [ gnome-tweaks ];
 
-in
-{
-  home.packages = cliPackages ++ guiPackages;
-}
+in { home.packages = cliPackages ++ guiPackages; }
