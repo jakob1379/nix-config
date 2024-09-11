@@ -356,7 +356,6 @@ If emacs is not running as a server, start one. It should've been started by sys
 (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
 #+END_SRC
 * Mode config
-** The usual suspects
 *** Company mode
 This configures the nice dropdown autocompletion system called company modes. It is highly
 extensible but package specific extensions like lsp, yasnippet, etc., should be configures in their
@@ -620,6 +619,19 @@ Copilot is not really a LSP per sé, BUT the functionality is close hence the lo
   :config
   (global-org-modern-mode))
 #+END_SRC
+**** Org Roam - for amazing notes?
+#+begin_src emacs-lisp :tangle yes
+(use-package org-roam
+  :init
+  (setq org-roam-v2-ack t)
+  :custom
+  (org-roam-directory "~/Documnets/RoamNotes")
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n i" . org-roam-node-insert))
+  :config
+  (org-roam-setup))
+#+end_src
 
 **** Extra Export backends
 #+BEGIN_SRC emacs-lisp
@@ -630,7 +642,6 @@ Copilot is not really a LSP per sé, BUT the functionality is close hence the lo
 #+END_SRC
 
 #+RESULTS:
-** should be safe
 *** Doom emacs theme
 #+begin_src emacs-lisp
 (use-package doom-themes
@@ -885,6 +896,7 @@ nice ligatures
 (use-package fira-code-mode
   :custom (fira-code-mode-disabled-ligatures '("[]" "#{" "#(" "#_" "#_(" "x")) ;; List of ligatures to turn off
   :delight
+  :if (display-graphic-p)
   :hook
   (prog-mode . fira-code-mode)
   (org-mode . fira-code-mode)
