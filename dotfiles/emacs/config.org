@@ -625,7 +625,7 @@ Copilot is not really a LSP per sé, BUT the functionality is close hence the lo
   :init
   (setq org-roam-v2-ack t)
   :custom
-  (org-roam-directory "~/Documnets/RoamNotes")
+  (org-roam-directory "~/Documents/RoamNotes")
   :bind (("C-c n l" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
          ("C-c n i" . org-roam-node-insert))

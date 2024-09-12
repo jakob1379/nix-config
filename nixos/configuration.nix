@@ -2,8 +2,39 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
+let
+  LC_LOCALE = "da_DK.UTF-8";
+  createRcloneMountService =
+    {
+      name,
+      remote,
+      mountPath ? "/home/jga/${name}",
+      remotePath ? "/",
+    }:
+    {
+      description = "Rclone mount service for ${name}";
+      after = [ "network-online.target" ];
+      restartIfChanged = true;
+      enable = true;
+      wantedBy = [
+        "default.target"
+        "network-online.target"
+      ];
 
+      serviceConfig = {
+        ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${mountPath}";
+        ExecStart = "${pkgs.rclone}/bin/rclone mount --config /home/jga/.config/rclone/rclone.conf --vfs-fast-fingerprint --vfs-cache-mode full ${remote}:${remotePath} ${mountPath}";
+        Type = "notify";
+        Environment = [ "PATH=/run/wrappers/bin/:$PATH" ];
+      };
+    };
+in
 {
   imports = [
     # Include the results of the hardware scan.
@@ -15,10 +46,20 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   # Enable flakes and nix commands
-  nix.settings.experimental-features = [
-    "nix-command"
-    "flakes"
-  ];
+  nix = {
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 7d";
+    };
+    settings = {
+      auto-optimise-store = true;
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
+    };
+  };
 
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -37,15 +78,15 @@
   i18n.defaultLocale = "en_DK.UTF-8";
 
   i18n.extraLocaleSettings = {
-    LC_ADDRESS = "da_DK.UTF-8";
-    LC_IDENTIFICATION = "da_DK.UTF-8";
-    LC_MEASUREMENT = "da_DK.UTF-8";
-    LC_MONETARY = "da_DK.UTF-8";
-    LC_NAME = "da_DK.UTF-8";
-    LC_NUMERIC = "da_DK.UTF-8";
-    LC_PAPER = "da_DK.UTF-8";
-    LC_TELEPHONE = "da_DK.UTF-8";
-    LC_TIME = "da_DK.UTF-8";
+    LC_ADDRESS = "${LC_LOCALE}";
+    LC_IDENTIFICATION = "${LC_LOCALE}";
+    LC_MEASUREMENT = "${LC_LOCALE}";
+    LC_MONETARY = "${LC_LOCALE}";
+    LC_NAME = "${LC_LOCALE}";
+    LC_NUMERIC = "${LC_LOCALE}";
+    LC_PAPER = "${LC_LOCALE}";
+    LC_TELEPHONE = "${LC_LOCALE}";
+    LC_TIME = "${LC_LOCALE}";
   };
 
   # Enable the X11 windowing system.
@@ -54,6 +95,9 @@
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
+
+  # I want to use KPXC instead
+  # services.gnome.gnome-keyring.enable = lib.mkForce false;
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -70,9 +114,28 @@
   # Enable sensors for lenovo to register screen orientation
   hardware.sensor.iio.enable = true;
 
+  # enable fwupd: a simple daemon allowing you to update some devices' firmware, including UEFI for several machines.
+  services.fwupd.enable = true;
+
+  hardware.graphics = {
+    enable = true;
+  };
+
+  # Enable blutooth
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = true;
+  };
+
+  # Enable docker
+  virtualisation.docker.enable = true;
+
+  # Enable VirtualBox
+  virtualisation.libvirtd.enable = true;
+  programs.dconf.enable = true; # virt-manager requires dconf to remember settings
+
   # Enable sound with pipewire.
   hardware.pulseaudio.enable = false;
-  security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -86,8 +149,10 @@
     #media-session.enable = true;
   };
 
+  security.rtkit.enable = true;
+
   # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
+  services.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.jga = {
@@ -98,9 +163,18 @@
       "wheel"
     ];
     packages = with pkgs; [
+      #  thunder bird
+      libsecret
       rclone
-      #  thunderbird
     ];
+  };
+
+  # Enable user defined systemd services
+  systemd.user.services = {
+    rclone-mount-dropbox-private = createRcloneMountService {
+      name = "dropbox-private";
+      remote = "dropbox-private";
+    };
   };
 
   # Install firefox.
@@ -112,6 +186,7 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
+    git
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     #  wget
   ];
