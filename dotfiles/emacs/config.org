@@ -557,33 +557,39 @@ Copilot is not really a LSP per sé, BUT the functionality is close hence the lo
 *** Org Mode
 **** The org package
 #+BEGIN_SRC emacs-lisp
-  (use-package org
-    :straight (:type built-in)
-    :commands org-babel-do-load-languages
-    :custom
-    (org-cycle-separator-lines -1)
-    (org-edit-src-content-indentation 0)       ;; Spaces from #+BEGIN_SRC
-    (org-fontify-quote-and-verse-blocks t)     ;; Highlight quotes
-    (org-hide-emphasis-markers t)              ;; hide emphasize marker
-    (org-hierarchical-checkbox-statistics nil) ;; Recursively count checkboxes
-    (org-hierarchical-todo-statistics nil)     ;; Recursively count todos
-    (org-pretty-entities t)
-    (org-src-fontify-natively t)               ;; pretty source code fontification
-    (org-src-preserve-indentation t)
-    (org-src-strip-leading-and-trailing-blank-lines t)
-    (org-src-tab-acts-natively t)              ;; Native code block indentation
-    (org-src-window-setup 'other-window)
-    (org-startup-with-inline-images t)         ;; inline images when loading a new Org file
+(use-package org
+  :straight (:type built-in)
+  :commands org-babel-do-load-languages
+  :custom
+  (org-cycle-separator-lines -1)
+  (org-edit-src-content-indentation 0)       ;; Spaces from #+BEGIN_SRC
+  (org-fontify-quote-and-verse-blocks t)     ;; Highlight quotes
+  (org-hide-emphasis-markers t)              ;; hide emphasize marker
+  (org-hierarchical-checkbox-statistics nil) ;; Recursively count checkboxes
+  (org-hierarchical-todo-statistics nil)     ;; Recursively count todos
+  (org-pretty-entities t)
+  (org-src-fontify-natively t)               ;; pretty source code fontification
+  (org-src-preserve-indentation t)
+  (org-src-strip-leading-and-trailing-blank-lines t)
+  (org-src-tab-acts-natively t)              ;; Native code block indentation
+  (org-src-window-setup 'other-window)
+  (org-startup-with-inline-images t)         ;; inline images when loading a new Org file
 
-    (org-file-apps
-     (quote
-      ((auto-mode . emacs)
-       ("\\.mm\\'" . default)
-       ("\\.x?html?\\'" . "/usr/bin/env firefox %s")
-       ("\\.pdf\\'" . default)))
-     )
-    (org-export-backends '(ascii html icalendar pandoc))     ;; Set export backends
-    )
+  (org-file-apps
+   (quote
+    ((auto-mode . emacs)
+     ("\\.mm\\'" . default)
+     ("\\.x?html?\\'" . "/usr/bin/env firefox %s")
+     ("\\.pdf\\'" . default)))
+   )
+  (org-export-backends '(ascii html icalendar pandoc))     ;; Set export backends
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((shell   . t)
+     (python  . t))
+  )
+)
 #+END_SRC
 **** Org modern ui theme
 #+BEGIN_SRC emacs-lisp
@@ -1444,7 +1450,6 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
 (use-package pyvenv
   :ensure t
   :init
-  (setenv "WORKON_HOME" "~/.pyenv/versions")
   ;; (add-hook 'find-file-hook 'pyvenv-parent-env)
   ;; :hook (python-mode . pyvenv-parent-env)
   :config
