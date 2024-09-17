@@ -140,7 +140,7 @@
     poetry = {
       enable = true;
       settings = {
-        virtualenvs.create = true;
+        virtualenvs.create = false;
         virtualenvs.in-project = true;
       };
     };
