@@ -166,12 +166,25 @@
     grep = "grep --color=auto";
 
     # nix update and switch
-    hs = "home-manager switch -j $(nproc)";
-    hu = "nix flake update --flake /home/jga/.config/home-manager/";
-    nhu =
-      "sudo nixos-rebuild switch --flake ~/.config/nixos# --upgrade-all && cd ~/.config/home-manager && nix flake update && home-manager switch";
-    nixu = "sudo nixos-rebuild switch --flake ~/.config/nixos# --upgrade-all";
-    ns = "sudo nixos-rebuild switch --flake ~/.config/nixos#";
+    # Update and switch Home Manager
+    updateHome = ''
+      nix flake update ~/.config/home-manager && \
+      home-manager switch --flake ~/.config/home-manager
+    '';
+
+    # Update and switch NixOS
+    updateNixOS = ''
+      sudo nix-channel --update
+      sudo nixos-rebuild switch --flake ~/.config/home-manager
+    '';
+
+    # Combined update and switch for both Home Manager and NixOS
+    updateAll = ''
+      sudo nix-channel --update && \
+      nix flake update ~/.config/home-manager && \
+      home-manager switch --flake ~/.config/home-manager && \
+      sudo nixos-rebuild switch --flake ~/.config/home-manager
+    '';
     q = "qalc";
     tldr = ''
       tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
