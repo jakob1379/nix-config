@@ -125,6 +125,8 @@
     };
 
     gh.enable = true;
+    
+    fastfetch.enable = true;
 
     emacs = {
       enable = true;
