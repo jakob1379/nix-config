@@ -23,9 +23,10 @@ let
     libqalculate
     nix-index
     nix-prefetch-github
-    nixfmt-classic
+    nixfmt-rfc-style
     nmap
     pandoc
+    rclone
     rename
     speedtest-go
     t-rec
@@ -37,8 +38,8 @@ let
     wakatime
     wget
     xclip
+    yq-go
     zip
-    rclone
   ];
 
   guiPackages = with pkgs; [
@@ -47,7 +48,7 @@ let
     pika-backup
     dbeaver-bin
     feh
-    firefox
+    firefox-unwrapped
     gnome-pomodoro
     keepassxc
     konsole
