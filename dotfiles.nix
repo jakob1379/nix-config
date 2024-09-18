@@ -32,13 +32,17 @@ let
     PAGER = "bat -p";
     MANPAGER = "bat -pl man";
     LC_TIME = "en_GB.utf8";
+    EDITOR = "emacsclient -c -n || emacs";
   };
 
   # Fonts configuration
-  fontsConfig = { fontconfig.enable = true; };
+  fontsConfig = {
+    fontconfig.enable = true;
+  };
 
 in {
   inherit emacsConfig mediaConfig sshConfig;
+  
   # Use separate configurations
   home.sessionVariables = sessionVariables;
   fonts = fontsConfig;
