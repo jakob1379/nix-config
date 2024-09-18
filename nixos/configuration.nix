@@ -92,9 +92,17 @@ in
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
-  # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
+  # enable the KDE
+  services.displayManager = {
+    sddm.enable = true;
+    sddm.wayland.enable = true;
+  };
+  services.desktopManager.plasma6.enable = true;
+  environment.plasma6.excludePackages = with pkgs.kdePackages; [
+    # plasma-browser-integration
+    # konsole
+    # oxygen
+  ];
 
   # I want to use KPXC instead
   # services.gnome.gnome-keyring.enable = lib.mkForce false;
@@ -162,6 +170,7 @@ in
       "networkmanager"
       "wheel"
       "docker"
+      "libvirtd"
     ];
     packages = with pkgs; [
       #  thunder bird
@@ -192,6 +201,20 @@ in
     #  wget
   ];
 
+  # Define variables to dynamically set stuff depending on the desktop environment
+  environment.etc."environment.d/desktop-environment.conf".text = ''
+    [Environment]
+    DESKTOP_SESSION=$XDG_SESSION_DESKTOP
+  '';
+  programs.ssh.askPassword = lib.mkForce (
+    if builtins.getEnv "DESKTOP_SESSION" == "plasma" then
+      "${pkgs.ksshaskpass}/bin/ksshaskpass"
+    else if builtins.getEnv "DESKTOP_SESSION" == "gnome" then
+      "${pkgs.seahorse}/libexec/seahorse/ssh-askpass"
+    else
+      "${pkgs.ksshaskpass}/bin/ksshaskpass" # Default to KDE's program
+  );
+
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
@@ -200,12 +223,21 @@ in
   #   enableSSHSupport = true;
   # };
 
+  # some needs special allowance for FHS
+  programs.nix-ld.enable = true;
+  programs.nix-ld.libraries = with pkgs; [
+    ruff
+  ];
+
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
+  # Others, should not log into this machine
+  services.openssh.enable = false;
 
   # Open ports in the firewall.
+  networking.firewall.enable = true;
+  services.fail2ban.enable = true;
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
