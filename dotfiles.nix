@@ -38,9 +38,7 @@ let
   fontsConfig = { fontconfig.enable = true; };
 
 in {
-  # Combine all configs into `home.file`
-  home.file = sshConfig // emacsConfig // mediaConfig;
-
+  inherit emacsConfig mediaConfig sshConfig;
   # Use separate configurations
   home.sessionVariables = sessionVariables;
   fonts = fontsConfig;
