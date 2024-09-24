@@ -27,4 +27,11 @@
       '("\\`https://fniessen\\.github\\.io/org-html-themes/org/theme-readtheorg\\.setup\\'"))
 
 ;; load the config
+;;; removing caching from the org file did not solve forcing tangling, so we ensure to delete the
+;;; file
+(let ((config-el (expand-file-name "~/.emacs.d/config.el")))
+  (when (file-exists-p config-el)
+    (delete-file config-el)
+    (message "Deleted existing config.el")))
+
 (org-babel-load-file "~/.emacs.d/config.org")

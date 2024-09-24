@@ -7,7 +7,7 @@
 #+OPTIONS: H:4 toc:t num:2
 #+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
 
-#+PROPERTY: header-args :results silent :tangle ~/.emacs.d/config.el :cache yes :padline no
+#+PROPERTY: header-args :results silent :tangle ~/.emacs.d/config.el :padline no
 #+PROPERTY: COOKIE_DATA recursive
 
 But it sure does take a lot of inspiration from it to improve performance.
@@ -587,7 +587,8 @@ Copilot is not really a LSP per sé, BUT the functionality is close hence the lo
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((shell   . t)
-     (python  . t))
+     (python  . t)
+     (ipython . t))
   )
 )
 #+END_SRC
@@ -632,11 +633,42 @@ Copilot is not really a LSP per sé, BUT the functionality is close hence the lo
   (setq org-roam-v2-ack t)
   :custom
   (org-roam-directory "~/Documents/RoamNotes")
+  (org-roam-capture-templates
+   '(("d" "default" plain
+      "%?"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                         "#+title: ${title}\n#+date: %U\n")
+      :unnarrowed t)
+     ("c" "Coursera Video" plain
+      "#+title: ${title}\n#+date: %U\n#+filetags: :learning:coursera:\n\n* Video Link\n[[%?][Video]]\n\n* Notes\n%?"
+      :if-new (file+head "coursera/%<%Y%m%d%H%M%S>-${slug}.org" "")
+      :unnarrowed t)
+
+
+     ))
   :bind (("C-c n l" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
          ("C-c n i" . org-roam-node-insert))
   :config
   (org-roam-setup))
+#+end_src
+***** Org Roam UI
+The native graph viewer of org-roam gets the job done, but it isn't pretty. This package starts a webserver with an beautiful interactive graph-viewer that can preview the notes and much more.
+
+#+begin_src emacs-lisp :tangle yes
+(use-package org-roam-ui
+  :straight
+    (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+    :after org-roam
+;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;;         a hookable mode anymore, you're advised to pick something yourself
+;;         if you don't care about startup time, use
+;;  :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
 #+end_src
 
 **** Extra Export backends
