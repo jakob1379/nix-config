@@ -5,13 +5,10 @@ let
   sshConfig = {
     ".ssh/keepassxc-prompt".source = ./bin/keepassxc-prompt;
     ".ssh/config".text = ''
-      ProxyCommand $HOME/.ssh/keepassxc-prompt %h %p
+      ProxyCommand "$HOME/.ssh/keepassxc-prompt" %h %p
 
       Host *
-        AddKeysToAgent yes
-
-      Host rpi
-        HostName 192.168.8.114'';
+        AddKeysToAgent yes'';
   };
 
   emacsConfig = {
