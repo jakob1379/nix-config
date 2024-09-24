@@ -23,7 +23,7 @@ let
     libqalculate
     nix-index
     nix-prefetch-github
-    nixfmt-rfc-style
+    nixfmt-classic
     nmap
     pandoc
     rclone
@@ -43,9 +43,7 @@ let
   ];
 
   guiPackages = with pkgs; [
-    # pika-backup
     brave
-    pika-backup
     dbeaver-bin
     feh
     firefox-unwrapped
@@ -54,9 +52,11 @@ let
     konsole
     nodePackages.prettier
     onlyoffice-bin
+    pika-backup
     signal-desktop
     slack
     spotify
+    stretchly
     variety
     virt-manager
     xdg-desktop-portal-wlr
