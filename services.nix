@@ -71,6 +71,8 @@ in
 {
 
   services = {
+
+    ssh-agent.enable = true;
     copyq.enable = true;
     easyeffects.enable = true;
     mpris-proxy.enable = true;
