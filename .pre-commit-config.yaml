@@ -29,5 +29,5 @@ repos:
       - id: gitleaks-system
         name: Detect hardcoded secrets
         description: Detect hardcoded secrets using Gitleaks
-        entry: gitleaks protect --verbose --redact --staged
+        entry: gitleaks git --verbose --redact --staged
         language: system
