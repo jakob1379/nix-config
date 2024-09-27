@@ -171,7 +171,7 @@
     # Update and switch Home Manager
     updateHome = ''
       nix flake update ~/.config/home-manager && \
-      home-manager switch --flake ~/.config/home-manager
+      home-manager switch
     '';
 
     # Update and switch NixOS
@@ -184,7 +184,7 @@
     updateAll = ''
       sudo nix-channel --update && \
       nix flake update ~/.config/home-manager && \
-      home-manager switch --flake ~/.config/home-manager && \
+      home-manager switch && \
       sudo nixos-rebuild switch --flake ~/.config/home-manager
     '';
     q = "qalc";
