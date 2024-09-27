@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 until ssh-add -l &> /dev/null
 do
