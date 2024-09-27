@@ -32,8 +32,6 @@ in
 
   nixpkgs.config.allowUnfree = true;
 
-  programs.home-manager.enable = true;
-
   # Override to not include gui packages
   home.packages = lib.mkForce (
     packages.corePackages ++ packages.devPackages ++ packages.customScripts
