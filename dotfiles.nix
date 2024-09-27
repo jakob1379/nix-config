@@ -5,7 +5,9 @@ let
   sshConfig = {
     ".ssh/keepassxc-prompt".source = ./bin/keepassxc-prompt;
     ".ssh/config".text = ''
-      ProxyCommand "$HOME/.ssh/keepassxc-prompt" %h %p
+      # ProxyCommand $HOME/.ssh/keepassxc-prompt %h %p
+
+      Include ~/.ssh/local_config
 
       Host *
         AddKeysToAgent yes'';
@@ -37,11 +39,13 @@ let
     fontconfig.enable = true;
   };
 
-in {
-  inherit emacsConfig mediaConfig sshConfig;
-  
-  # Use separate configurations
-  home.sessionVariables = sessionVariables;
-  fonts = fontsConfig;
-
+in
+{
+  inherit
+    emacsConfig
+    mediaConfig
+    sshConfig
+    sessionVariables
+    fontsConfig
+    ;
 }

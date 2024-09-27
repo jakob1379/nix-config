@@ -62,8 +62,6 @@
       homeConfigurations."fuzie" = mkHomeConfig [ ./wsl.nix ] "x86_64-linux";
       homeConfigurations."jga@nixos" = mkHomeConfig [
         ./home.nix
-        ./packages.nix
-        ./dotfiles.nix
         ./services.nix
         ./programs.nix
       ] "x86_64-linux";
