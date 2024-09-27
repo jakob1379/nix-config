@@ -5,7 +5,7 @@ let
   sshConfig = {
     ".ssh/keepassxc-prompt".source = ./bin/keepassxc-prompt;
     ".ssh/config".text = ''
-      # ProxyCommand $HOME/.ssh/keepassxc-prompt %h %p
+      ProxyCommand $HOME/.ssh/keepassxc-prompt %h %p
 
       Include ~/.ssh/local_config
 
