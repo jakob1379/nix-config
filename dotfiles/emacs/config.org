@@ -356,6 +356,67 @@ If emacs is not running as a server, start one. It should've been started by sys
 (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
 #+END_SRC
 * Mode config
+*** All the icons
+nice developer icons
+#+BEGIN_SRC emacs-lisp
+(use-package all-the-icons
+  :if (display-graphic-p)
+  :demand t)
+(use-package all-the-icons-completion
+  :defer
+  :after all-the-icons
+  :config
+  (add-hook 'marginalia-mode-hook
+            #'all-the-icons-completion-marginalia-setup)
+  (all-the-icons-completion-mode 1))
+#+END_SRC
+*** Ansible
+Ansible is a bit funky in that it should be only be loaded if there is a local variable
+defining that the file indeed is part of an ansible project. This is done by with a in the
+projects with something like in
+
+#+BEGIN_SRC emacs-lisp
+(use-package ansible)
+#+END_SRC
+
+#+RESULTS:
+*** Ansi colors decoding/rendering
+#+BEGIN_SRC emacs-lisp
+(require 'ansi-color)
+(defun display-ansi-colors ()
+  (interactive)
+  (ansi-color-apply-on-region (point-min) (point-max)))
+
+#+END_SRC
+*** Auto Sudoedit
+#+BEGIN_SRC emacs-lisp
+(use-package auto-sudoedit
+  ;; :custom (auto-sudoedit-mode 1)
+  )
+#+END_SRC
+*** Auto update emacs packages
+#+BEGIN_SRC emacs-lisp
+(use-package auto-package-update
+  :config
+  (setq auto-package-update-prompt-before-update t
+                auto-package-update-interval 7)
+  )
+#+END_SRC
+
+#+RESULTS:
+: t
+*** Beacon
+Don't lose your cursor
+#+BEGIN_SRC emacs-lisp
+(use-package beacon
+  :ensure t
+  :diminish
+  :bind ("C-x =" . (lambda ()
+                     (interactive)
+                     (beacon-blink)
+                     (what-cursor-position)))
+  :config (beacon-mode))
+#+END_SRC
 *** Company mode
 This configures the nice dropdown autocompletion system called company modes. It is highly
 extensible but package specific extensions like lsp, yasnippet, etc., should be configures in their
@@ -438,305 +499,38 @@ Teaches company to sort better
     :config
     (prescient-persist-mode 1))
 #+END_SRC
-*** LSP
-**** LSP mode
+*** Conf-mode
+Associate various files with conf-mode
 #+BEGIN_SRC emacs-lisp
-(use-package lsp-mode
-  :commands lsp
-  :hook
-  (lsp-mode . lsp-enable-which-key-integration)
-  (prog-mode . lsp-deferred)
-  (yaml-mode . lsp-deferred)
-  (nix-mode . lsp-deferred)
-  (rst-mode . lsp-deferred)
-  (latex-mode . lsp-deferred)
-  (css-mode . lsp-deferred)
-  :config
-  ;; Register lsp clients
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection "esbonio")
-                    :major-modes '(rst-mode)
-                    :server-id 'esbonio))
-  ;; (lsp-register-client
-  ;;  (make-lsp-client :new-connection (lsp-stdio-connection '("nil"))
-  ;;                   :major-modes '(nix-mode)
-  ;;                   :server-id 'nix))
-
-  ;; Language ID configuration
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection '("nil"))
-                    :major-modes '(nix-mode)
-                    :server-id 'nix))
-
-  ;; File watch ignore list
-  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\.venv\\'")
-  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\virt\\'")
-  :custom
-  (lsp-auto-execute-action nil)
-  (lsp-auto-guess-root t)
-  (lsp-auto-select-workspace t)
-  (lsp-before-save-edits nil)
-  (lsp-completion-provider :none)
-  (lsp-eldoc-enable-hover t)
-  (lsp-enable-links t)
-  (lsp-enable-on-type-formatting t)
-  (lsp-enable-snippet t)
-  (lsp-face-highlight-read ((t (:underline t))))
-  (lsp-face-highlight-textual ((t (:underline t))))
-  (lsp-face-highlight-write ((t (:underline t))))
-  (lsp-file-watch-threshold 5000)
-  (lsp-headerline-breadcrumb-enable t)
-  (lsp-intelephense-multi-root nil)
-  (lsp-keep-workspace-alive nil)
-  (lsp-keymap-prefix "C-c l") ;; Set prefix for lsp-command-map
-  (lsp-modeline-diagnostics-enable t)
-  ;; (lsp-prefer-flymake nil)
-  )
-#+END_SRC
-**** LSP ui
-
-#+BEGIN_SRC emacs-lisp
-(use-package lsp-ui
-  :bind ("C-c l u i" . lsp-ui-imenu)
-  :config
-  (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-  (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
-  (setq
-   lsp-ui-doc-border (face-foreground 'default)
-   lsp-ui-doc-enable t
-   lsp-ui-doc-header t
-   lsp-ui-doc-include-signature t
-   lsp-ui-doc-position 'bottom
-   lsp-ui-imenu-auto-refresh t
-   lsp-ui-sideline-delay 0.05
-   lsp-ui-sideline-enable t
-   lsp-ui-sideline-show-code-actions t
-   lsp-ui-sideline-show-diagnostics t
-   lsp-ui-sideline-show-hover t
-   )
-  :hook (lsp-mode . lsp-ui-mode)
-  )
-#+END_SRC
-**** Copilot
-Copilot is not really a LSP per sé, BUT the functionality is close hence the location here
-#+BEGIN_SRC emacs-lisp
-(use-package jsonrpc)
-
-(use-package copilot
-  :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
-  :requires ( editorconfig jsonrpc )
-  :hook
-  (company-mode . (lambda ()
-                    (add-to-list 'company-backends 'company-yasnippet)))
-  (lsp-mode . copilot-mode)
-  (prog-mode . copilot-mode)
-  (yaml-mode . copilot-mode)
-  (nix-mode . copilot-mode)
-  (rst-mode . copilot-mode)
-  (latex-mode . copilot-mode)
-  (org-mode . copilot-mode)
-  )
-#+END_SRC
-*** Yasnippet
-#+BEGIN_SRC emacs-lisp
-(use-package yasnippet
-  :init
-  (yas-global-mode 1)
-  :config
-  (yas-recompile-all)
-  (yas-reload-all)
-  )
-#+END_SRC
-**** Extra Snippets
-#+BEGIN_SRC emacs-lisp
-  (use-package yasnippet-snippets
-    :config
-    (yasnippet-snippets-initialize)
-    )
-#+END_SRC
-*** Org Mode
-**** The org package
-#+BEGIN_SRC emacs-lisp
-(use-package org
-  :straight (:type built-in)
-  :commands org-babel-do-load-languages
-  :custom
-  (org-cycle-separator-lines -1)
-  (org-edit-src-content-indentation 0)       ;; Spaces from #+BEGIN_SRC
-  (org-fontify-quote-and-verse-blocks t)     ;; Highlight quotes
-  (org-hide-emphasis-markers t)              ;; hide emphasize marker
-  (org-hierarchical-checkbox-statistics nil) ;; Recursively count checkboxes
-  (org-hierarchical-todo-statistics nil)     ;; Recursively count todos
-  (org-pretty-entities t)
-  (org-src-fontify-natively t)               ;; pretty source code fontification
-  (org-src-preserve-indentation t)
-  (org-src-strip-leading-and-trailing-blank-lines t)
-  (org-src-tab-acts-natively t)              ;; Native code block indentation
-  (org-src-window-setup 'other-window)
-  (org-startup-with-inline-images t)         ;; inline images when loading a new Org file
-
-  (org-file-apps
-   (quote
-    ((auto-mode . emacs)
-     ("\\.mm\\'" . default)
-     ("\\.x?html?\\'" . "/usr/bin/env firefox %s")
-     ("\\.pdf\\'" . default)))
-   )
-  (org-export-backends '(ascii html icalendar pandoc))     ;; Set export backends
-  :config
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((shell   . t)
-     (python  . t)
-     (ipython . t))
-  )
+(use-package conf-mode
+  :mode
+  ("\\.cfg\\'"        . conf-mode)
+  ("\\.conf\\'"       . conf-mode)
+  ("\\.env.*\\'"      . conf-mode)  ; Matches .env, .env-*, .env.* etc.
+  ("\\.gitignore\\'"  . conf-mode)
+  ("\\.txt\\'"        . conf-mode)
 )
+
 #+END_SRC
-**** Org modern ui theme
+*** CSV mode
 #+BEGIN_SRC emacs-lisp
-(use-package org-modern
-  :straight (org-modern :type git :host github :repo "minad/org-modern")
-  :hook (org-mode . org-modern-mode)
-  :config
-  (setq
-   ;; Edit settings
-   org-auto-align-tags nil
-   org-tags-column 0
-   org-catch-invisible-edits 'show-and-error
-   org-special-ctrl-a/e t
-   org-insert-heading-respect-content t
-
-   ;; Org styling, hide markup etc.
-   org-hide-emphasis-markers t
-   org-pretty-entities t
-
-   ;; Agenda styling
-   org-agenda-tags-column 0
-   org-agenda-block-separator ?─
-   org-agenda-time-grid
-   '((daily today require-timed)
-     (800 1000 1200 1400 1600 1800 2000)
-     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
-   org-agenda-current-time-string
-   "◀── now ─────────────────────────────────────────────────")
-
-  ;; Ellipsis styling
-  (setq org-ellipsis "…")
-  (set-face-attribute 'org-ellipsis nil :inherit 'default :box nil)
-  :config
-  (global-org-modern-mode))
+(use-package csv-mode
+  :hook ((csv-mode . csv-guess-set-separator)
+         (csv-mode . csv-align-mode)
+         (csv-mode . csv-header-line)
+         (csv-mode . (lambda () (toggle-truncate-lines -1))))
+  :mode (("\\.csv\\'" . csv-mode)
+         ("\\.tsv\\'" . csv-mode)))
 #+END_SRC
-**** Org Roam - for amazing notes?
-#+begin_src emacs-lisp :tangle yes
-(use-package org-roam
-  :init
-  (setq org-roam-v2-ack t)
-  :custom
-  (org-roam-directory "~/Documents/RoamNotes")
-  (org-roam-capture-templates
-   '(("d" "default" plain
-      "%?"
-      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-                         "#+title: ${title}\n#+date: %U\n")
-      :unnarrowed t)
-     ("c" "Coursera Video" plain
-      "#+title: ${title}\n#+date: %U\n#+filetags: :learning:coursera:\n\n* Video Link\n[[%?][Video]]\n\n* Notes\n%?"
-      :if-new (file+head "coursera/%<%Y%m%d%H%M%S>-${slug}.org" "")
-      :unnarrowed t)
+*** Delight and Deminish
+These two packages enable the customization of the mode line to either or customize text.
 
-
-     ))
-  :bind (("C-c n l" . org-roam-buffer-toggle)
-         ("C-c n f" . org-roam-node-find)
-         ("C-c n i" . org-roam-node-insert))
-  :config
-  (org-roam-setup))
-#+end_src
-***** Org Roam UI
-The native graph viewer of org-roam gets the job done, but it isn't pretty. This package starts a webserver with an beautiful interactive graph-viewer that can preview the notes and much more.
-
-#+begin_src emacs-lisp :tangle yes
-(use-package org-roam-ui
-  :straight
-    (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
-    :after org-roam
-;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-;;         a hookable mode anymore, you're advised to pick something yourself
-;;         if you don't care about startup time, use
-;;  :hook (after-init . org-roam-ui-mode)
-    :config
-    (setq org-roam-ui-sync-theme t
-          org-roam-ui-follow t
-          org-roam-ui-update-on-save t
-          org-roam-ui-open-on-start t))
-#+end_src
-
-**** Extra Export backends
 #+BEGIN_SRC emacs-lisp
-(use-package ox-gfm)
-(use-package ox-rst)
-(use-package ox-twbs)
-(use-package ox-pandoc)
+(use-package delight)
+(use-package diminish)
 #+END_SRC
 
 #+RESULTS:
-*** Doom emacs theme
-#+begin_src emacs-lisp
-(use-package doom-themes
-  :straight t
-  :config
-  (doom-themes-org-config))
-(load-theme 'doom-snazzy t)
-#+end_src
-*** All the icons
-nice developer icons
-#+BEGIN_SRC emacs-lisp
-(use-package all-the-icons
-  :if (display-graphic-p)
-  :demand t)
-(use-package all-the-icons-completion
-  :defer
-  :after all-the-icons
-  :config
-  (add-hook 'marginalia-mode-hook
-            #'all-the-icons-completion-marginalia-setup)
-  (all-the-icons-completion-mode 1))
-#+END_SRC
-*** Ansible
-Ansible is a bit funky in that it should be only be loaded if there is a local variable
-defining that the file indeed is part of an ansible project. This is done by with a in the
-projects with something like in
-
-#+BEGIN_SRC emacs-lisp
-(use-package ansible)
-#+END_SRC
-
-#+RESULTS:
-*** Ansi colors decoding/rendering
-#+BEGIN_SRC emacs-lisp
-(require 'ansi-color)
-(defun display-ansi-colors ()
-  (interactive)
-  (ansi-color-apply-on-region (point-min) (point-max)))
-
-#+END_SRC
-*** Auto Sudoedit
-#+BEGIN_SRC emacs-lisp
-(use-package auto-sudoedit
-  ;; :custom (auto-sudoedit-mode 1)
-  )
-#+END_SRC
-*** Auto update emacs packages
-#+BEGIN_SRC emacs-lisp
-(use-package auto-package-update
-  :config
-  (setq auto-package-update-prompt-before-update t
-                auto-package-update-interval 7)
-  )
-#+END_SRC
-
-#+RESULTS:
-: t
 *** Dired mode
 even though dired mode is coming with emacs there are some improvements we can add like git, pretty
 icons, file preview, etc.
@@ -782,50 +576,6 @@ icons, file preview, etc.
   )
 
 #+END_SRC
-*** Beacon
-Don't lose your cursor
-#+BEGIN_SRC emacs-lisp
-(use-package beacon
-  :ensure t
-  :diminish
-  :bind ("C-x =" . (lambda ()
-                     (interactive)
-                     (beacon-blink)
-                     (what-cursor-position)))
-  :config (beacon-mode))
-#+END_SRC
-*** Conf-mode
-Associate various files with conf-mode
-#+BEGIN_SRC emacs-lisp
-(use-package conf-mode
-  :mode
-  ("\\.cfg\\'"        . conf-mode)
-  ("\\.conf\\'"       . conf-mode)
-  ("\\.env.*\\'"      . conf-mode)  ; Matches .env, .env-*, .env.* etc.
-  ("\\.gitignore\\'"  . conf-mode)
-  ("\\.txt\\'"        . conf-mode)
-)
-
-#+END_SRC
-*** CSV mode
-#+BEGIN_SRC emacs-lisp
-(use-package csv-mode
-  :hook ((csv-mode . csv-guess-set-separator)
-         (csv-mode . csv-align-mode)
-         (csv-mode . csv-header-line)
-         (csv-mode . (lambda () (toggle-truncate-lines -1))))
-  :mode (("\\.csv\\'" . csv-mode)
-         ("\\.tsv\\'" . csv-mode)))
-#+END_SRC
-*** Delight and Deminish
-These two packages enable the customization of the mode line to either or customize text.
-
-#+BEGIN_SRC emacs-lisp
-(use-package delight)
-(use-package diminish)
-#+END_SRC
-
-#+RESULTS:
 *** Direnv
 #+BEGIN_SRC emacs-lisp
 (use-package direnv
@@ -845,6 +595,14 @@ We want modes for docker compose and Dockerfiles
   )
 
 #+END_SRC
+*** Doom emacs theme
+#+begin_src emacs-lisp
+(use-package doom-themes
+  :straight t
+  :config
+  (doom-themes-org-config))
+(load-theme 'doom-snazzy t)
+#+end_src
 *** Editorconfig
 read and understand ~.editorconfig~ files
 #+BEGIN_SRC emacs-lisp
@@ -1200,6 +958,105 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
     (LaTeX-mode-hook . reftex-plug-into-AUCTeX)
     )
 #+END_SRC
+*** LSP
+**** LSP mode
+#+BEGIN_SRC emacs-lisp
+(use-package lsp-mode
+  :commands lsp
+  :hook
+  (lsp-mode . lsp-enable-which-key-integration)
+  (prog-mode . lsp-deferred)
+  (yaml-mode . lsp-deferred)
+  (nix-mode . lsp-deferred)
+  (rst-mode . lsp-deferred)
+  (latex-mode . lsp-deferred)
+  (css-mode . lsp-deferred)
+  :config
+  ;; Register lsp clients
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection "esbonio")
+                    :major-modes '(rst-mode)
+                    :server-id 'esbonio))
+  ;; (lsp-register-client
+  ;;  (make-lsp-client :new-connection (lsp-stdio-connection '("nil"))
+  ;;                   :major-modes '(nix-mode)
+  ;;                   :server-id 'nix))
+
+  ;; Language ID configuration
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection '("nil"))
+                    :major-modes '(nix-mode)
+                    :server-id 'nix))
+
+  ;; File watch ignore list
+  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\.venv\\'")
+  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\virt\\'")
+  :custom
+  (lsp-auto-execute-action nil)
+  (lsp-auto-guess-root t)
+  (lsp-auto-select-workspace t)
+  (lsp-before-save-edits nil)
+  (lsp-completion-provider :none)
+  (lsp-eldoc-enable-hover t)
+  (lsp-enable-links t)
+  (lsp-enable-on-type-formatting t)
+  (lsp-enable-snippet t)
+  (lsp-face-highlight-read ((t (:underline t))))
+  (lsp-face-highlight-textual ((t (:underline t))))
+  (lsp-face-highlight-write ((t (:underline t))))
+  (lsp-file-watch-threshold 5000)
+  (lsp-headerline-breadcrumb-enable t)
+  (lsp-intelephense-multi-root nil)
+  (lsp-keep-workspace-alive nil)
+  (lsp-keymap-prefix "C-c l") ;; Set prefix for lsp-command-map
+  (lsp-modeline-diagnostics-enable t)
+  ;; (lsp-prefer-flymake nil)
+  )
+#+END_SRC
+**** LSP ui
+
+#+BEGIN_SRC emacs-lisp
+(use-package lsp-ui
+  :bind ("C-c l u i" . lsp-ui-imenu)
+  :config
+  (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+  (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
+  (setq
+   lsp-ui-doc-border (face-foreground 'default)
+   lsp-ui-doc-enable t
+   lsp-ui-doc-header t
+   lsp-ui-doc-include-signature t
+   lsp-ui-doc-position 'bottom
+   lsp-ui-imenu-auto-refresh t
+   lsp-ui-sideline-delay 0.05
+   lsp-ui-sideline-enable t
+   lsp-ui-sideline-show-code-actions t
+   lsp-ui-sideline-show-diagnostics t
+   lsp-ui-sideline-show-hover t
+   )
+  :hook (lsp-mode . lsp-ui-mode)
+  )
+#+END_SRC
+**** Copilot
+Copilot is not really a LSP per sé, BUT the functionality is close hence the location here
+#+BEGIN_SRC emacs-lisp
+(use-package jsonrpc)
+
+(use-package copilot
+  :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
+  :requires ( editorconfig jsonrpc )
+  :hook
+  (company-mode . (lambda ()
+                    (add-to-list 'company-backends 'company-yasnippet)))
+  (lsp-mode . copilot-mode)
+  (prog-mode . copilot-mode)
+  (yaml-mode . copilot-mode)
+  (nix-mode . copilot-mode)
+  (rst-mode . copilot-mode)
+  (latex-mode . copilot-mode)
+  (org-mode . copilot-mode)
+  )
+#+END_SRC
 *** Magit
 Magit is an amazing git client that can do 90% of what git can, this covers almost all regular
 tasks.
@@ -1233,6 +1090,21 @@ tasks.
   :hook (magit-mode . turn-on-magit-gitflow)
   )
 #+END_SRC
+*** Makefile
+Makefile modes comes with Emacs, but we still want to use it and be able to configure it
+#+begin_src emacs-lisp
+(use-package make-mode
+  :ensure nil
+  :mode (("Makefile\\'" . makefile-mode)
+         ("\\.mk\\'" . makefile-mode))
+  :hook (makefile-mode . (lambda ()
+                           (setq indent-tabs-mode t)))  ;; Use tabs for indentation
+  :custom
+  (makefile-indent-level 4 "Indentation level in makefile-mode")
+  (tab-width 4 "Set the width of a tab to 4 spaces"))
+
+(provide 'init-makefile)
+#+end_src
 *** Man/Woman
 #+BEGIN_SRC emacs-lisp
 (use-package man
@@ -1316,7 +1188,6 @@ tasks.
 #+begin_src emacs-lisp
 (use-package markdown-toc)
 #+end_src
-
 *** Mixed Pitch Mode
 [[https://gitlab.com/jabranham/mixed-pitch][mixed-pitch]] allows us to use proportional fonts to display text that isn't code, and make files more readable.
 
@@ -1386,6 +1257,137 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
 
 #+RESULTS:
 : iso-transl
+*** Org Mode
+**** The org package
+#+BEGIN_SRC emacs-lisp
+(use-package org
+  :straight (:type built-in)
+  :commands org-babel-do-load-languages
+  :custom
+  (org-cycle-separator-lines -1)
+  (org-edit-src-content-indentation 0)       ;; Spaces from #+BEGIN_SRC
+  (org-fontify-quote-and-verse-blocks t)     ;; Highlight quotes
+  (org-hide-emphasis-markers t)              ;; hide emphasize marker
+  (org-hierarchical-checkbox-statistics nil) ;; Recursively count checkboxes
+  (org-hierarchical-todo-statistics nil)     ;; Recursively count todos
+  (org-pretty-entities t)
+  (org-src-fontify-natively t)               ;; pretty source code fontification
+  (org-src-preserve-indentation t)
+  (org-src-strip-leading-and-trailing-blank-lines t)
+  (org-src-tab-acts-natively t)              ;; Native code block indentation
+  (org-src-window-setup 'other-window)
+  (org-startup-with-inline-images t)         ;; inline images when loading a new Org file
+
+  (org-file-apps
+   (quote
+    ((auto-mode . emacs)
+     ("\\.mm\\'" . default)
+     ("\\.x?html?\\'" . "/usr/bin/env firefox %s")
+     ("\\.pdf\\'" . default)))
+   )
+  (org-export-backends '(ascii html icalendar pandoc))     ;; Set export backends
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((shell   . t)
+     (python  . t)
+     (ipython . t))
+  )
+)
+#+END_SRC
+**** Org modern ui theme
+#+BEGIN_SRC emacs-lisp
+(use-package org-modern
+  :straight (org-modern :type git :host github :repo "minad/org-modern")
+  :hook (org-mode . org-modern-mode)
+  :config
+  (setq
+   ;; Edit settings
+   org-auto-align-tags nil
+   org-tags-column 0
+   org-catch-invisible-edits 'show-and-error
+   org-special-ctrl-a/e t
+   org-insert-heading-respect-content t
+
+   ;; Org styling, hide markup etc.
+   org-hide-emphasis-markers t
+   org-pretty-entities t
+
+   ;; Agenda styling
+   org-agenda-tags-column 0
+   org-agenda-block-separator ?─
+   org-agenda-time-grid
+   '((daily today require-timed)
+     (800 1000 1200 1400 1600 1800 2000)
+     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+   org-agenda-current-time-string
+   "◀── now ─────────────────────────────────────────────────")
+
+  ;; Ellipsis styling
+  (setq org-ellipsis "…")
+  (set-face-attribute 'org-ellipsis nil :inherit 'default :box nil)
+  :config
+  (global-org-modern-mode))
+#+END_SRC
+**** Org download - drag and drop images
+#+begin_src emacs-lisp
+(use-package org-download
+  :hook (dired-mode . org-download-enable))
+#+end_src
+
+**** Org Roam - for amazing notes?
+#+begin_src emacs-lisp :tangle yes
+(use-package org-roam
+  :init
+  (setq org-roam-v2-ack t)
+  :custom
+  (org-roam-directory "~/Documents/RoamNotes")
+  (org-roam-capture-templates
+   '(("d" "default" plain
+      "%?"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                         "#+title: ${title}\n#+date: %U\n")
+      :unnarrowed t)
+     ("c" "Coursera Video" plain
+      "#+title: ${title}\n#+date: %U\n#+OPTIONS: tex:t\n#+STARTUP: latexpreview\n#+filetags: :learning:coursera:\n\n* Video Link\n[[%?][Video]]\n\n* Notes\n%?"
+      :if-new (file+head "coursera/%<%Y%m%d%H%M%S>-${slug}.org" "")
+      :unnarrowed t)
+
+
+     ))
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n i" . org-roam-node-insert))
+  :config
+  (org-roam-setup))
+#+end_src
+***** Org Roam UI
+The native graph viewer of org-roam gets the job done, but it isn't pretty. This package starts a webserver with an beautiful interactive graph-viewer that can preview the notes and much more.
+
+#+begin_src emacs-lisp :tangle yes
+(use-package org-roam-ui
+  :straight
+    (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+    :after org-roam
+;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;;         a hookable mode anymore, you're advised to pick something yourself
+;;         if you don't care about startup time, use
+;;  :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
+#+end_src
+**** Extra Export backends
+#+BEGIN_SRC emacs-lisp
+(use-package ox-gfm)
+(use-package ox-rst)
+(use-package ox-twbs)
+(use-package ox-pandoc)
+#+END_SRC
+
+#+RESULTS:
 *** PDF Tools
 We want to be able to view pdfs in emacs
 #+BEGIN_SRC emacs-lisp
@@ -1569,6 +1571,15 @@ If emacs is not running as a server, start one. It should've been started by sys
   ("\\.network'" . systemd-mode)
   ("\\.link'" . systemd-mode))
 #+END_SRC
+*** Titlecase
+simple package that enable titlecasing
+#+BEGIN_SRC emacs-lisp
+(use-package titlecase
+  :bind ("C-c t" . titlecase-dwim)
+  )
+
+#+END_SRC
+
 *** Treemacs
 
 [[https://github.com/Alexander-Miller/treemacs][treemacs]] is a sidebar tree file explorer of the current directory/project.
@@ -1593,15 +1604,6 @@ If emacs is not running as a server, start one. It should've been started by sys
   :config
   (treemacs-load-theme "all-the-icons"))
 #+END_SRC
-*** Titlecase
-simple package that enable titlecasing
-#+BEGIN_SRC emacs-lisp
-(use-package titlecase
-  :bind ("C-c t" . titlecase-dwim)
-  )
-
-#+END_SRC
-
 *** VLF - very large files
 #+BEGIN_SRC emacs-lisp
 (use-package vlf
@@ -1670,18 +1672,20 @@ simple package that enable titlecasing
   ("\\.yml'" . yaml-mode)
   ("\\.yaml'" . yaml-mode))
 #+END_SRC
-*** Makefile
-Makefile modes comes with Emacs, but we still want to use it and be able to configure it
-#+begin_src emacs-lisp
-(use-package make-mode
-  :ensure nil
-  :mode (("Makefile\\'" . makefile-mode)
-         ("\\.mk\\'" . makefile-mode))
-  :hook (makefile-mode . (lambda ()
-                           (setq indent-tabs-mode t)))  ;; Use tabs for indentation
-  :custom
-  (makefile-indent-level 4 "Indentation level in makefile-mode")
-  (tab-width 4 "Set the width of a tab to 4 spaces"))
-
-(provide 'init-makefile)
-#+end_src
+*** Yasnippet
+#+BEGIN_SRC emacs-lisp
+(use-package yasnippet
+  :init
+  (yas-global-mode 1)
+  :config
+  (yas-recompile-all)
+  (yas-reload-all)
+  )
+#+END_SRC
+**** Extra Snippets
+#+BEGIN_SRC emacs-lisp
+  (use-package yasnippet-snippets
+    :config
+    (yasnippet-snippets-initialize)
+    )
+#+END_SRC
