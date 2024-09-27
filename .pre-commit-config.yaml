@@ -26,8 +26,9 @@ repos:
         language: system
         always_run: true
         pass_filenames: false
-      - id: gitleaks-system
+      - id: gitleaks
         name: Detect hardcoded secrets
         description: Detect hardcoded secrets using Gitleaks
-        entry: gitleaks git --verbose --redact --staged
+        entry: "gitleaks git --verbose --redact --staged"
         language: system
+        pass_filenames: false
