@@ -11,22 +11,31 @@
     flake-utils.url = "github:numtide/flake-utils";
     poetry2nix.url = "github:nix-community/poetry2nix";
     nixgl.url = "github:nix-community/nixGL";
-    zen-browser.url = "github:MarceColl/zen-browser-flake";
     # fabric.url = "path:./flakes/fabric";
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, nixgl, ... }:
+  outputs =
+    inputs@{
+      self,
+      nixpkgs,
+      home-manager,
+      nixgl,
+      ...
+    }:
     let
       pkgs = import nixpkgs;
 
       # what systems to build for
-      forAllSystems = function:
-        nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-linux" ]
-        (system: function nixpkgs.legacyPackages.${system});
+      forAllSystems =
+        function:
+        nixpkgs.lib.genAttrs [
+          "x86_64-linux"
+          "aarch64-linux"
+        ] (system: function nixpkgs.legacyPackages.${system});
 
       # Pacakages for nix shell
-      generalPackages = pkgs:
-        with pkgs; [
+      generalPackages =
+        pkgs: with pkgs; [
           nodejs
           pre-commit
           yamllint
@@ -35,13 +44,17 @@
         ];
 
       # Home config generator
-      mkHomeConfig = modules: system:
+      mkHomeConfig =
+        modules: system:
         home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs { inherit system; };
           modules = modules; # Accepts a list of modules
-          extraSpecialArgs = { inherit inputs system; };
+          extraSpecialArgs = {
+            inherit inputs system;
+          };
         };
-    in {
+    in
+    {
       # for nixos
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
@@ -57,8 +70,7 @@
       nix.settings.auto-optimise-store = true;
 
       # Home configs
-      homeConfigurations."pi@raspberrypi" =
-        mkHomeConfig [ ./pi.nix ] "aarch64-linux";
+      homeConfigurations."pi@raspberrypi" = mkHomeConfig [ ./pi.nix ] "aarch64-linux";
       homeConfigurations."fuzie" = mkHomeConfig [ ./wsl.nix ] "x86_64-linux";
       homeConfigurations."jga@nixos" = mkHomeConfig [
         ./home.nix
