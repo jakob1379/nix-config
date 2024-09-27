@@ -35,6 +35,7 @@ let
     texlivePackages.fontawesome5
     tldr
     unzip
+    uv
     wakatime
     wget
     xclip
