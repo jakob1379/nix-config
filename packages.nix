@@ -70,14 +70,16 @@ let
     yubikey-personalization-gui
   ];
 
-  devPackages = with pkgs; [
-    graphviz
-    fira-code-nerdfont
-    meslo-lgs-nf
-    fira-code-symbols
-    jdk
-    nodejs
-  ];
+  devPackages =
+    with pkgs;
+    [
+      graphviz
+      fira-code-nerdfont
+      meslo-lgs-nf
+      fira-code-symbols
+      nodejs
+    ]
+    ++ lib.optionals (system != "aarch64-linux") [ jdk ];
 
   # emacs is enabled in programs.nix
   emacsPackages = with pkgs; [

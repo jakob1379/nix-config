@@ -70,10 +70,13 @@
       nix.settings.auto-optimise-store = true;
 
       # Home configs
-      homeConfigurations."pi@raspberrypi" = mkHomeConfig [ ./pi.nix ] "aarch64-linux";
+      homeConfigurations."pi@raspberrypi" = mkHomeConfig [
+        ./pi.nix
+        ./programs.nix
+      ] "aarch64-linux";
       homeConfigurations."fuzie" = mkHomeConfig [ ./wsl.nix ] "x86_64-linux";
       homeConfigurations."jga@nixos" = mkHomeConfig [
-        ./home.nix
+        ./laptop.nix
         ./services.nix
         ./programs.nix
       ] "x86_64-linux";

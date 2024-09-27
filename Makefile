@@ -27,4 +27,4 @@ install-home-manager:
 	@echo "setting .profile to source nix-profile"
 	@mv ~/.profile ~/.profile.bak
 	@echo "if [ -e ~/.nix-profile/etc/profile.d/nix.sh ]; then . ~/.nix-profile/etc/profile.d/nix.sh; fi" > ~/.profile
-        @echo "if [ -e ~/.nix-profile/etc/profile.d/hm-session-vars.sh ]; then . ~/.nix-profile/etc/profile.d/hm-session-vars.sh; fi" >> ~/.profile
+	@echo "if [ -e ~/.nix-profile/etc/profile.d/hm-session-vars.sh ]; then . ~/.nix-profile/etc/profile.d/hm-session-vars.sh; fi" >> ~/.profile

@@ -1,4 +1,11 @@
-{ config, pkgs, lib, inputs, system, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  inputs,
+  system,
+  ...
+}:
 let
   # Import the exported lists from packages.nix
   packages = import ./packages.nix { inherit pkgs system inputs; };
@@ -10,20 +17,29 @@ let
         AddKeysToAgent yes
     '';
   };
-in {
+in
+{
   # Import common configurations
-  imports = [ ./home.nix ./programs.nix ./services.nix ];
+  imports = [
+    ./home.nix
+    ./services.nix
+  ];
 
   # Override user-specific configurations
   home.username = lib.mkForce "pi";
   home.homeDirectory = lib.mkForce "/home/pi";
   home.stateVersion = lib.mkForce "24.05";
 
+  nixpkgs.config.allowUnfree = true;
+
+  programs.home-manager.enable = true;
+
   # Override to not include gui packages
-  home.packages = packages.corePackages ++ packages.devPackages
-    ++ packages.customScripts ++ packages.emacsPackages;
+  home.packages = lib.mkForce (
+    packages.corePackages ++ packages.devPackages ++ packages.customScripts
+  );
 
   # Override the `sshConfig`
-  home.file = sshConfigOverride
-    // (dotfiles.emacsConfig // dotfiles.mediaConfig);
+  home.file = sshConfigOverride // (dotfiles.emacsConfig // dotfiles.mediaConfig);
+
 }
