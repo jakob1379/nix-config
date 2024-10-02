@@ -8,7 +8,12 @@
       flags = [ "--disable-up-arrow" ];
     };
 
-    bash.enable = true;
+    bash = {
+      enable = true;
+      profileExtra = ''
+      . ~/.nix-profile/etc/profile.d/nix.sh
+      '';
+    }; 
 
     direnv = {
       enable = true;
