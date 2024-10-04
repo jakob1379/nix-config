@@ -1290,6 +1290,11 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
   )
 )
 #+END_SRC
+**** Org Babels
+#+BEGIN_SRC emacs-lisp
+(use-package ob-ipython)
+#+END_SRC
+
 **** Org modern ui theme
 #+BEGIN_SRC emacs-lisp
 (use-package org-modern
