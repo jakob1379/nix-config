@@ -8,7 +8,6 @@ let
 
   corePackages = with pkgs; [
     atuin
-    bat
     btop
     cookiecutter
     dconf
