@@ -852,7 +852,7 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
   :delight
   :custom
   (hungry-delete-join-reluctantly 1)
-  :config 
+  :config
   (global-hungry-delete-mode))
 #+END_SRC
 
@@ -1355,15 +1355,16 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
 
 
      ))
-  :bind (("C-c n l" . org-roam-buffer-toggle)
-         ("C-c n f" . org-roam-node-find)
-         ("C-c n i" . org-roam-node-insert))
+  :bind (
+         ("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n a" . org-roam-alias-add)
+         )
   :config
-  (org-roam-setup))
+  (org-roam-setup)
+  (org-roam-db-autosync-mode))
 #+end_src
 ***** Org Roam UI
 The native graph viewer of org-roam gets the job done, but it isn't pretty. This package starts a webserver with an beautiful interactive graph-viewer that can preview the notes and much more.
-
 #+begin_src emacs-lisp :tangle yes
 (use-package org-roam-ui
   :straight
@@ -1376,6 +1377,16 @@ The native graph viewer of org-roam gets the job done, but it isn't pretty. This
   :bind ("C-c n g" . org-roam-ui-open)
   )
 #+end_src
+***** Org Roam Helm
+#+BEGIN_SRC emacs-lisp
+(use-package helm-roam
+  :config
+  (helm-roam-mode 1)
+  :bind (
+         ("C-c n f" . helm-roam)
+         ("C-c n i" . helm-roam-action-insert))
+  )
+#+END_SRC
 **** Extra Export backends
 #+BEGIN_SRC emacs-lisp
 (use-package ox-gfm)
@@ -1503,7 +1514,7 @@ Following [[https://emacs-lsp.github.io/dap-mode/page/python-poetry-pyenv/][this
 
   (add-hook 'dap-stopped-hook
             (lambda (arg) (call-interactively #'dap-hydra))))
-#+END_SRC 
+#+END_SRC
 *** Rainbow delimiters
 #+BEGIN_SRC emacs-lisp
 (use-package rainbow-delimiters
