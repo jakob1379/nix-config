@@ -10,17 +10,12 @@
 
     bash = {
       enable = true;
-      profileExtra = ''
-      . ~/.nix-profile/etc/profile.d/nix.sh
-      '';
     }; 
 
     direnv = {
       enable = true;
       enableBashIntegration = true;
     };
-
-    pyenv.enable = true;
 
     readline = {
       enable = true;
@@ -131,7 +126,7 @@
 
     emacs = {
       enable = true;
-      package = pkgs.emacs29-gtk3;
+      package = pkgs.emacs-gtk;
     };
     ssh.forwardAgent = true;
 
