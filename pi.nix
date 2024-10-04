@@ -19,12 +19,6 @@ let
   };
 in
 {
-  # Import common configurations
-  imports = [
-    ./home.nix
-    ./services.nix
-  ];
-
   # Override user-specific configurations
   home.username = lib.mkForce "pi";
   home.homeDirectory = lib.mkForce "/home/pi";
@@ -40,4 +34,5 @@ in
   # Override the `sshConfig`
   home.file = sshConfigOverride // (dotfiles.emacsConfig // dotfiles.mediaConfig);
 
+  home.sessionVariables = dotfiles.sessionVariables;
 }

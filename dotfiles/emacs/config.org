@@ -355,6 +355,12 @@ If emacs is not running as a server, start one. It should've been started by sys
 #+BEGIN_SRC elisp
 (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
 #+END_SRC
+
+** Allow space character in minibuffer
+#+BEGIN_SRC emacs-lisp
+(define-key minibuffer-local-map (kbd "SPC") 'self-insert-command)
+#+END_SRC
+
 * Mode config
 *** All the icons
 nice developer icons
@@ -844,12 +850,12 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
 #+BEGIN_SRC emacs-lisp
 (use-package hungry-delete
   :delight
-  :config (setq hungry-delete-join-reluctantly 1)
+  :custom
+  (hungry-delete-join-reluctantly 1)
+  :config
   (global-hungry-delete-mode))
 #+END_SRC
 
-#+RESULTS:
-: t
 *** Iedit
 #+BEGIN_SRC emacs-lisp
 (use-package iedit
@@ -1068,11 +1074,8 @@ tasks.
   :hook (magit-mode . turn-on-magit-gitflow)
   :bind ("C-x g" . magit-status)
   :config
-  (setq magit-git-executable "git"
-        ;; magit-repository-directories '(("~/.dotfiles" . 0)
-        ;;							   ("~/Documents" . 2))
-        )
-
+  (setq magit-process-finish-apply-ansi-colors t
+        magit-git-executable "git")
   )
 #+END_SRC
 **** Magit Todos
@@ -1117,13 +1120,6 @@ Makefile modes comes with Emacs, but we still want to use it and be able to conf
 
 #+RESULTS:
 : t
-*** Marginalia
-#+BEGIN_SRC emacs-lisp
-(use-package marginalia
-  :defer 1
-  :config
-  (marginalia-mode 1))
-#+END_SRC
 *** Markdown
 #+BEGIN_SRC emacs-lisp
 (use-package markdown-mode
@@ -1217,7 +1213,6 @@ Makefile modes comes with Emacs, but we still want to use it and be able to conf
                  ("C->" . mc/mark-next-like-this)
                  ("C-<" . mc/mark-previous-like-this)
                  ("C-c C->" . mc/mark-all-like-this)
-                 ("C-c C-SPC" . mc/edit-lines)
                  ))
 #+END_SRC
 *** Nix
@@ -1295,6 +1290,11 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
   )
 )
 #+END_SRC
+**** Org Babels
+#+BEGIN_SRC emacs-lisp
+(use-package ob-ipython)
+#+END_SRC
+
 **** Org modern ui theme
 #+BEGIN_SRC emacs-lisp
 (use-package org-modern
@@ -1334,8 +1334,8 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
 (use-package org-download
   :hook (dired-mode . org-download-enable))
 #+end_src
-
 **** Org Roam - for amazing notes?
+***** Org Roam
 #+begin_src emacs-lisp :tangle yes
 (use-package org-roam
   :init
@@ -1346,7 +1346,7 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
    '(("d" "default" plain
       "%?"
       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-                         "#+title: ${title}\n#+date: %U\n")
+                         "#+title: ${title}\n#+date: %U\n#+filetags:\n")
       :unnarrowed t)
      ("c" "Coursera Video" plain
       "#+title: ${title}\n#+date: %U\n#+OPTIONS: tex:t\n#+STARTUP: latexpreview\n#+filetags: :learning:coursera:\n\n* Video Link\n[[%?][Video]]\n\n* Notes\n%?"
@@ -1355,30 +1355,38 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
 
 
      ))
-  :bind (("C-c n l" . org-roam-buffer-toggle)
-         ("C-c n f" . org-roam-node-find)
-         ("C-c n i" . org-roam-node-insert))
+  :bind (
+         ("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n a" . org-roam-alias-add)
+         )
   :config
-  (org-roam-setup))
+  (org-roam-setup)
+  (org-roam-db-autosync-mode))
 #+end_src
 ***** Org Roam UI
 The native graph viewer of org-roam gets the job done, but it isn't pretty. This package starts a webserver with an beautiful interactive graph-viewer that can preview the notes and much more.
-
 #+begin_src emacs-lisp :tangle yes
 (use-package org-roam-ui
   :straight
-    (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
-    :after org-roam
-;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-;;         a hookable mode anymore, you're advised to pick something yourself
-;;         if you don't care about startup time, use
-;;  :hook (after-init . org-roam-ui-mode)
-    :config
-    (setq org-roam-ui-sync-theme t
-          org-roam-ui-follow t
-          org-roam-ui-update-on-save t
-          org-roam-ui-open-on-start t))
+  (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t)
+  :bind ("C-c n g" . org-roam-ui-open)
+  )
 #+end_src
+***** Org Roam Helm
+#+BEGIN_SRC emacs-lisp
+(use-package helm-roam
+  :config
+  (helm-roam-mode 1)
+  :bind (
+         ("C-c n f" . helm-roam)
+         ("C-c n i" . helm-roam-action-insert))
+  )
+#+END_SRC
 **** Extra Export backends
 #+BEGIN_SRC emacs-lisp
 (use-package ox-gfm)
@@ -1571,7 +1579,7 @@ If emacs is not running as a server, start one. It should've been started by sys
   ("\\.network'" . systemd-mode)
   ("\\.link'" . systemd-mode))
 #+END_SRC
-*** Titlecase
+*** Title Case
 simple package that enable titlecasing
 #+BEGIN_SRC emacs-lisp
 (use-package titlecase
@@ -1579,7 +1587,6 @@ simple package that enable titlecasing
   )
 
 #+END_SRC
-
 *** Treemacs
 
 [[https://github.com/Alexander-Miller/treemacs][treemacs]] is a sidebar tree file explorer of the current directory/project.

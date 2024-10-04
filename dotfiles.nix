@@ -32,20 +32,10 @@ let
     MANPAGER = "bat -pl man";
     LC_TIME = "en_GB.utf8";
     EDITOR = "emacsclient -c -n || emacs";
+    QT_QPA_PLATFORM = "xcb";
   };
 
   # Fonts configuration
-  fontsConfig = {
-    fontconfig.enable = true;
-  };
+  fontsConfig = { fontconfig.enable = true; };
 
-in
-{
-  inherit
-    emacsConfig
-    mediaConfig
-    sshConfig
-    sessionVariables
-    fontsConfig
-    ;
-}
+in { inherit emacsConfig mediaConfig sshConfig sessionVariables fontsConfig; }
