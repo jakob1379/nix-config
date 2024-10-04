@@ -355,6 +355,12 @@ If emacs is not running as a server, start one. It should've been started by sys
 #+BEGIN_SRC elisp
 (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
 #+END_SRC
+
+** Allow space character in minibuffer
+#+BEGIN_SRC emacs-lisp
+(define-key minibuffer-local-map (kbd "SPC") 'self-insert-command)
+#+END_SRC
+
 * Mode config
 *** All the icons
 nice developer icons
