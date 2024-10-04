@@ -1074,11 +1074,8 @@ tasks.
   :hook (magit-mode . turn-on-magit-gitflow)
   :bind ("C-x g" . magit-status)
   :config
-  (setq magit-git-executable "git"
-        ;; magit-repository-directories '(("~/.dotfiles" . 0)
-        ;;							   ("~/Documents" . 2))
-        )
-
+  (setq magit-process-finish-apply-ansi-colors t
+        magit-git-executable "git")
   )
 #+END_SRC
 **** Magit Todos
