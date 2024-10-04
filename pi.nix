@@ -1,11 +1,4 @@
-{
-  config,
-  pkgs,
-  lib,
-  inputs,
-  system,
-  ...
-}:
+{ config, pkgs, lib, inputs, system, ... }:
 let
   # Import the exported lists from packages.nix
   packages = import ./packages.nix { inherit pkgs system inputs; };
@@ -17,22 +10,29 @@ let
         AddKeysToAgent yes
     '';
   };
-in
-{
-  # Override user-specific configurations
-  home.username = lib.mkForce "pi";
-  home.homeDirectory = lib.mkForce "/home/pi";
-  home.stateVersion = lib.mkForce "24.05";
 
-  nixpkgs.config.allowUnfree = true;
+  packagesToExclude = with pkgs; [
+    texlive.combined.scheme-full
+    texlivePackages.fontawesome5
+  ];
 
-  # Override to not include gui packages
-  home.packages = lib.mkForce (
-    packages.corePackages ++ packages.devPackages ++ packages.customScripts
-  );
+  piPackages = lib.filter (pkg: !(lib.elem pkg packagesToExclude))
+    (packages.corePackages ++ packages.devPackages ++ packages.customScripts);
+in {
+  home.username = "pi";
+  home.homeDirectory = "/home/pi";
 
-  # Override the `sshConfig`
-  home.file = sshConfigOverride // (dotfiles.emacsConfig // dotfiles.mediaConfig);
+  home.stateVersion = "24.05"; # Please read the comment before changing.
+
+  home.packages = piPackages;
+
+  home.file = sshConfigOverride
+    // (dotfiles.emacsConfig // dotfiles.mediaConfig);
 
   home.sessionVariables = dotfiles.sessionVariables;
+
+  programs.home-manager.enable = true;
+  nixpkgs.config.allowUnfree = true;
+
+  fonts = dotfiles.fontsConfig;
 }

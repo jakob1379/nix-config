@@ -8,9 +8,7 @@
       flags = [ "--disable-up-arrow" ];
     };
 
-    bash = {
-      enable = true;
-    }; 
+    bash = { enable = true; };
 
     direnv = {
       enable = true;
@@ -86,7 +84,8 @@
             # backup ui layout
             "services.sync.prefs.sync.browser.uiCustomization.state" = true;
           };
-          userChrome = builtins.readFile ./dotfiles/firefox/firefox_userchrome.css;
+          userChrome =
+            builtins.readFile ./dotfiles/firefox/firefox_userchrome.css;
         };
       };
     };
@@ -94,7 +93,8 @@
     oh-my-posh = {
       enable = true;
       enableBashIntegration = true;
-      settings = builtins.fromJSON (builtins.readFile ./dotfiles/oh-my-posh/custom-hunks-theme.omp.json);
+      settings = builtins.fromJSON
+        (builtins.readFile ./dotfiles/oh-my-posh/custom-hunks-theme.omp.json);
     };
 
     git = {
@@ -112,9 +112,11 @@
       };
       aliases = {
         adog = "log --all --decorate --oneline --graph";
-        plog = "log  --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
+        plog =
+          "log  --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
         ignore-change = "update-index --assume-unchanged";
-        prune-deep = ''!git fetch --prune; branches=$(git branch -r | awk '"'"'{print $1}'"'"' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '"'"'{print $1}'"'"'); echo -e "branches:\n$branches"; read -p "Do you want to delete all these branches? (y/n): " confirm; if [ "$confirm" = "y" ]; then echo "$branches" | xargs git branch -d; else echo "No branches were deleted"; fi'';
+        prune-deep = ''
+          !git fetch --prune; branches=$(git branch -r | awk '"'"'{print $1}'"'"' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '"'"'{print $1}'"'"'); echo -e "branches:\n$branches"; read -p "Do you want to delete all these branches? (y/n): " confirm; if [ "$confirm" = "y" ]; then echo "$branches" | xargs git branch -d; else echo "No branches were deleted"; fi'';
         unstage = "restore --staged";
       };
 
@@ -135,6 +137,8 @@
       enableBashIntegration = true;
     };
 
+    bat.enable = true;
+
     poetry = {
       enable = true;
       settings = {
@@ -145,7 +149,8 @@
   };
 
   home.shellAliases = {
-    cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
+    cdd = ''
+      f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
 
     # docker
     dcup = "docker compose up --remove-orphans";
@@ -156,7 +161,8 @@
     dx = "dragon --and-exit";
 
     # eda
-    eda = "nix-shell -p python312Packages.requests python312Packages.rich python312Packages.ipython python312Packages.pandas python312Packages.seaborn python312Packages.plotly";
+    eda =
+      "nix-shell -p python312Packages.requests python312Packages.rich python312Packages.ipython python312Packages.pandas python312Packages.seaborn python312Packages.plotly";
 
     ec = "emacsclient -n";
     grep = "grep --color=auto";
@@ -182,6 +188,7 @@
       sudo nixos-rebuild switch --flake ~/.config/home-manager
     '';
     q = "qalc";
-    tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
+    tldr = ''
+      tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
   };
 }
