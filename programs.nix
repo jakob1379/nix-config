@@ -8,7 +8,13 @@
       flags = [ "--disable-up-arrow" ];
     };
 
-    bash = { enable = true; };
+    bash = { 
+      enable = true; 
+      profileExtra = ''
+        if [ -n "$NIX_PROFILES" ]; then return; fi
+      . ~/.nix-profile/etc/profile.d/nix.sh
+      '';
+    };
 
     direnv = {
       enable = true;
@@ -170,7 +176,7 @@
     # nix update and switch
     # Update and switch Home Manager
     updateHome = ''
-      nix flake update ~/.config/home-manager && \
+      nix flake update --flake ~/.config/home-manager && \
       home-manager switch
     '';
 
