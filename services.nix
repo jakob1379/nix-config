@@ -56,7 +56,10 @@ let
 in {
 
   services = {
-
+    unclutter = {
+      enable = true;
+      timeout = 5;
+    };
     ssh-agent.enable = true;
     easyeffects.enable = true;
     mpris-proxy.enable = true;
