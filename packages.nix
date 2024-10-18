@@ -1,10 +1,6 @@
 { pkgs, system, ... }:
 let
-  hyprLandPackages = with pkgs; [
-    dolphin
-    pywal
-    wdisplays
-  ];
+  hyprLandPackages = with pkgs; [ dolphin pywal wdisplays ];
 
   corePackages = with pkgs; [
     atuin
@@ -35,8 +31,8 @@ let
     speedtest-go
     t-rec
     taplo
-    texlive.combined.scheme-full
-    texlivePackages.fontawesome5
+    # texlive.combined.scheme-full
+    # texlivePackages.fontawesome5
     tldr
     unzip
     uv
@@ -48,6 +44,7 @@ let
   ];
 
   guiPackages = with pkgs; [
+    code-cursor
     brave
     dbeaver-bin
     feh
@@ -97,21 +94,14 @@ let
 
   customScripts = [
     (pkgs.writeShellScriptBin "dragon-scp" (builtins.readFile ./bin/dragon-scp))
-    (pkgs.writeScriptBin "find-available-server" (builtins.readFile ./bin/find-available-server))
+    (pkgs.writeScriptBin "find-available-server"
+      (builtins.readFile ./bin/find-available-server))
     (pkgs.writeShellScriptBin "unzipd" (builtins.readFile ./bin/unzipd))
     (pkgs.writeShellScriptBin "bak" (builtins.readFile ./bin/bak))
     (pkgs.writeShellScriptBin "pyenv-here" (builtins.readFile ./bin/pyenv-here))
-    (pkgs.writeShellScriptBin "emacs-clean" (builtins.readFile ./bin/emacs-clean))
+    (pkgs.writeShellScriptBin "emacs-clean"
+      (builtins.readFile ./bin/emacs-clean))
     (pkgs.writeShellScriptBin "time-stats" (builtins.readFile ./bin/time-stats))
     (pkgs.writeShellScriptBin "bhelp" (builtins.readFile ./bin/bathelp))
   ];
-in
-{
-  inherit
-    corePackages
-    guiPackages
-    devPackages
-    customScripts
-    emacsPackages
-    ;
-}
+in { inherit corePackages guiPackages devPackages customScripts emacsPackages; }
