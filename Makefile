@@ -23,8 +23,3 @@ install-home-manager:
 	@nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
 	@nix-channel --update
 	@nix-shell '<home-manager>' -A install
-
-	@echo "setting .profile to source nix-profile"
-	@mv ~/.profile ~/.profile.bak
-	@echo "if [ -e ~/.nix-profile/etc/profile.d/nix.sh ]; then . ~/.nix-profile/etc/profile.d/nix.sh; fi" > ~/.profile
-        @echo "if [ -e ~/.nix-profile/etc/profile.d/hm-session-vars.sh ]; then . ~/.nix-profile/etc/profile.d/hm-session-vars.sh; fi" >> ~/.profile

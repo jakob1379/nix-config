@@ -14,18 +14,28 @@
     # fabric.url = "path:./flakes/fabric";
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, nixgl, ... }:
+  outputs =
+    inputs@{
+      self,
+      nixpkgs,
+      home-manager,
+      nixgl,
+      ...
+    }:
     let
       pkgs = import nixpkgs;
 
       # what systems to build for
-      forAllSystems = function:
-        nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-linux" ]
-        (system: function nixpkgs.legacyPackages.${system});
+      forAllSystems =
+        function:
+        nixpkgs.lib.genAttrs [
+          "x86_64-linux"
+          "aarch64-linux"
+        ] (system: function nixpkgs.legacyPackages.${system});
 
       # Pacakages for nix shell
-      generalPackages = pkgs:
-        with pkgs; [
+      generalPackages =
+        pkgs: with pkgs; [
           nodejs
           pre-commit
           yamllint
@@ -34,17 +44,40 @@
         ];
 
       # Home config generator
-      mkHomeConfig = modules: system:
+      mkHomeConfig =
+        modules: system:
         home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs { inherit system; };
           modules = modules; # Accepts a list of modules
-          extraSpecialArgs = { inherit inputs system; };
+          extraSpecialArgs = {
+            inherit inputs system;
+          };
         };
-    in {
+
+      netbirdOverlay = {
+          nixpkgs.overlays = [
+            (self: super: {
+              netbird = super.netbird.overrideAttrs (oldAttrs: rec {
+                version = "0.30.2";
+                src = super.fetchFromGitHub {
+                  owner = "netbirdio";
+                  repo = "netbird";
+                  rev = "96d22076849027e7b8179feabbdd9892d600eb5a";
+                  hash = "sha256-8PIReuWnD7iMesSWAo6E4J+mWNAa7lHKwBWsCsXUG+E=";
+                };
+              });
+            })
+          ];
+        };
+    in
+    {
       # for nixos
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        modules = [ ./nixos/configuration.nix ];
+        modules = [
+          ./nixos/configuration.nix 
+          netbirdOverlay
+        ];
       };
 
       # general nix configs
@@ -56,13 +89,21 @@
       nix.settings.auto-optimise-store = true;
 
       # Home configs
-      homeConfigurations."pi@raspberrypi" =
-        mkHomeConfig [ ./pi.nix ./programs.nix ] "aarch64-linux";
-      homeConfigurations."fuzie@Fuzie-pc" =
-        mkHomeConfig [ ./wsl.nix ./services.nix ./programs.nix ] "x86_64-linux";
-      homeConfigurations."jga@nixos" =
-        mkHomeConfig [ ./laptop.nix ./services.nix ./programs.nix ]
-        "x86_64-linux";
+      homeConfigurations."pi@raspberrypi" = mkHomeConfig [
+        ./pi.nix
+        ./services.nix
+        ./programs.nix
+      ] "aarch64-linux";
+      homeConfigurations."fuzie@Fuzie-pc" = mkHomeConfig [
+        ./wsl.nix
+        ./services.nix
+        ./programs.nix
+      ] "x86_64-linux";
+      homeConfigurations."jga@nixos" = mkHomeConfig [
+        ./laptop.nix
+        ./services.nix
+        ./programs.nix
+      ] "x86_64-linux";
 
       # Setup nix shell for this repo
       devShells = forAllSystems (pkgs: {

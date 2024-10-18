@@ -14,12 +14,14 @@ in {
 
   programs.home-manager.enable = true;
 
-  home.packages = packages.corePackages ++ packages.devPackages
-    ++ packages.guiPackages ++ packages.customScripts ++ packages.emacsPackages;
-
   # Correct usage of home.file
   home.file = dotfiles.emacsConfig // dotfiles.mediaConfig
     // dotfiles.sshConfig;
+
+  programs.home-manager.enable = true;
+
+  home.packages = packages.corePackages ++ packages.devPackages
+    ++ packages.guiPackages ++ packages.customScripts ++ packages.emacsPackages;
 
   # Include session variables from dotfiles.nix
   home.sessionVariables = dotfiles.sessionVariables;

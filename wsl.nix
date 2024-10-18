@@ -2,21 +2,19 @@
 let
   # Import the exported lists from packages.nix
   packages = import ./packages.nix { inherit pkgs system inputs; };
-  dotfiles = import ./dotfiles.nix { inherit pkgs; };
+  dotfiles = import ./dotfiles.nix { inherit pkgs lib; };
 
   sshConfigOverride = {
     ".ssh/config".text = ''
+
+      Include ~/.ssh/local_config
+
       Host *
-        AddKeysToAgent yes
-    '';
+        AddKeysToAgent yes'';
   };
 in {
   # allow unfree packages
-  nixpkgs = {
-    config = {
-      allowUnfree = true;
-    };
-  };
+  nixpkgs.config.allowUnfree = true;
 
   # Override user-specific configurations
   home.username = "fuzie";
