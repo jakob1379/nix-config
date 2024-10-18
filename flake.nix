@@ -53,12 +53,31 @@
             inherit inputs system;
           };
         };
+
+      netbirdOverlay = {
+          nixpkgs.overlays = [
+            (self: super: {
+              netbird = super.netbird.overrideAttrs (oldAttrs: rec {
+                version = "0.30.2";
+                src = super.fetchFromGitHub {
+                  owner = "netbirdio";
+                  repo = "netbird";
+                  rev = "96d22076849027e7b8179feabbdd9892d600eb5a";
+                  hash = "sha256-8PIReuWnD7iMesSWAo6E4J+mWNAa7lHKwBWsCsXUG+E=";
+                };
+              });
+            })
+          ];
+        };
     in
     {
       # for nixos
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        modules = [ ./nixos/configuration.nix ];
+        modules = [
+          ./nixos/configuration.nix 
+          netbirdOverlay
+        ];
       };
 
       # general nix configs
