@@ -154,7 +154,6 @@ in {
       #  thunder bird
       libsecret
       rclone
-      netbird
     ];
   };
 
@@ -170,7 +169,32 @@ in {
   programs.firefox.enable = true;
 
   # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs = {
+    config.allowUnfree = true;
+    overlays = [
+    (final: prev: {
+      netbird = prev.netbird.overrideAttrs (oldAttrs: rec {
+        version = "0.30.2";
+        src = prev.fetchFromGitHub {
+          owner = "netbirdio";
+          repo = "netbird";
+          rev = "96d22076849027e7b8179feabbdd9892d600eb5a";
+          hash = "sha256-8PIReuWnD7iMesSWAo6E4J+mWNAa7lHKwBWsCsXUG+E=";
+        };
+
+        vendorHash = "sha256-KScynPcMZ90XZy/N5X3aQfKuVl/JOCJmd8luNxChkZk=";
+
+        # Update the ldflags to ensure the correct version is embedded
+        ldflags = [
+          "-s"
+          "-w"
+          "-X github.com/netbirdio/netbird/version.version=${version}"
+          "-X main.builtBy=nix"
+        ];
+      });
+    })
+  ];	
+  };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -214,7 +238,10 @@ in {
   services.openssh.enable = false;
 
   # We also want to enable netbird as our VPN of choice
-  services.netbird.enable = true;
+  services.netbird = {
+    enable = true;
+    package = pkgs.netbird;
+  };
 
   # Open ports in the firewall.
   networking.firewall.enable = true;

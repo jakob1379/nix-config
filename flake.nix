@@ -11,76 +11,57 @@
     flake-utils.url = "github:numtide/flake-utils";
     poetry2nix.url = "github:nix-community/poetry2nix";
     nixgl.url = "github:nix-community/nixGL";
-    # fabric.url = "path:./flakes/fabric";
   };
 
-  outputs =
-    inputs@{
-      self,
-      nixpkgs,
-      home-manager,
-      nixgl,
-      ...
-    }:
-    let
-      pkgs = import nixpkgs;
+  outputs = inputs @ {
+    self,
+    nixpkgs,
+    home-manager,
+    nixgl,
+    ...
+  }:
+  let
+    pkgs = import nixpkgs;
 
-      # what systems to build for
-      forAllSystems =
-        function:
-        nixpkgs.lib.genAttrs [
-          "x86_64-linux"
-          "aarch64-linux"
-        ] (system: function nixpkgs.legacyPackages.${system});
+    # Systems to build for
+    forAllSystems =
+      function:
+      nixpkgs.lib.genAttrs [
+        "x86_64-linux"
+        "aarch64-linux"
+      ] (system: function nixpkgs.legacyPackages.${system});
 
-      # Pacakages for nix shell
-      generalPackages =
-        pkgs: with pkgs; [
-          nodejs
-          pre-commit
-          yamllint
-          gitleaks
-          nixfmt-rfc-style
-        ];
+    # Packages for nix shell
+    generalPackages =
+      pkgs: with pkgs; [
+        nodejs
+        pre-commit
+        yamllint
+        gitleaks
+        nixfmt-rfc-style
+      ];
 
-      # Home config generator
-      mkHomeConfig =
-        modules: system:
-        home-manager.lib.homeManagerConfiguration {
-          pkgs = import nixpkgs { inherit system; };
-          modules = modules; # Accepts a list of modules
-          extraSpecialArgs = {
-            inherit inputs system;
-          };
+    # Home config generator
+    mkHomeConfig =
+      modules: system:
+      home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgs { inherit system; };
+        modules = modules; # Accepts a list of modules
+        extraSpecialArgs = {
+          inherit inputs system;
         };
-
-      netbirdOverlay = {
-          nixpkgs.overlays = [
-            (self: super: {
-              netbird = super.netbird.overrideAttrs (oldAttrs: rec {
-                version = "0.30.2";
-                src = super.fetchFromGitHub {
-                  owner = "netbirdio";
-                  repo = "netbird";
-                  rev = "96d22076849027e7b8179feabbdd9892d600eb5a";
-                  hash = "sha256-8PIReuWnD7iMesSWAo6E4J+mWNAa7lHKwBWsCsXUG+E=";
-                };
-              });
-            })
-          ];
-        };
-    in
+      };
+  in
     {
-      # for nixos
+      # NixOS configuration
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
-          ./nixos/configuration.nix 
-          netbirdOverlay
+          ./nixos/configuration.nix
         ];
       };
 
-      # general nix configs
+      # General nix configurations
       nix.gc = {
         automatic = true;
         dates = "weekly";
@@ -88,7 +69,7 @@
       };
       nix.settings.auto-optimise-store = true;
 
-      # Home configs
+      # Home configurations
       homeConfigurations."pi@raspberrypi" = mkHomeConfig [
         ./pi.nix
         ./services.nix
@@ -105,7 +86,7 @@
         ./programs.nix
       ] "x86_64-linux";
 
-      # Setup nix shell for this repo
+      # DevShell setup for this repo
       devShells = forAllSystems (pkgs: {
         default = pkgs.mkShell {
           # Specify the packages that are required
@@ -127,6 +108,5 @@
           '';
         };
       });
-
     };
 }
