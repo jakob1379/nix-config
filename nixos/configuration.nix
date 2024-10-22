@@ -2,26 +2,40 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
   LC_LOCALE = "da_DK.UTF-8";
   createRcloneMountService =
-    { name, remote, mountPath ? "/home/jga/${name}", remotePath ? "/", }: {
+    {
+      name,
+      remote,
+      mountPath ? "/home/jga/${name}",
+      remotePath ? "/",
+    }:
+    {
       description = "Rclone mount service for ${name}";
       after = [ "network-online.target" ];
       restartIfChanged = true;
       enable = true;
-      wantedBy = [ "default.target" "network-online.target" ];
+      wantedBy = [
+        "default.target"
+        "network-online.target"
+      ];
 
       serviceConfig = {
         ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${mountPath}";
-        ExecStart =
-          "${pkgs.rclone}/bin/rclone mount --config /home/jga/.config/rclone/rclone.conf --vfs-fast-fingerprint --vfs-cache-mode full ${remote}:${remotePath} ${mountPath}";
+        ExecStart = "${pkgs.rclone}/bin/rclone mount --config /home/jga/.config/rclone/rclone.conf --vfs-fast-fingerprint --vfs-cache-mode full ${remote}:${remotePath} ${mountPath}";
         Type = "notify";
         Environment = [ "PATH=/run/wrappers/bin/:$PATH" ];
       };
     };
-in {
+in
+{
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
@@ -40,7 +54,10 @@ in {
     };
     settings = {
       auto-optimise-store = true;
-      experimental-features = [ "nix-command" "flakes" ];
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
     };
   };
 
@@ -81,12 +98,11 @@ in {
     sddm.wayland.enable = true;
   };
   services.desktopManager.plasma6.enable = true;
-  environment.plasma6.excludePackages = with pkgs.kdePackages;
-    [
-      # plasma-browser-integration
-      # konsole
-      # oxygen
-    ];
+  environment.plasma6.excludePackages = with pkgs.kdePackages; [
+    # plasma-browser-integration
+    # konsole
+    # oxygen
+  ];
 
   # I want to use KPXC instead
   # services.gnome.gnome-keyring.enable = lib.mkForce false;
@@ -109,7 +125,9 @@ in {
   # enable fwupd: a simple daemon allowing you to update some devices' firmware, including UEFI for several machines.
   services.fwupd.enable = true;
 
-  hardware.graphics = { enable = true; };
+  hardware.graphics = {
+    enable = true;
+  };
 
   # Enable blutooth
   hardware.bluetooth = {
@@ -122,8 +140,7 @@ in {
 
   # Enable VirtualBox
   virtualisation.libvirtd.enable = true;
-  programs.dconf.enable =
-    true; # virt-manager requires dconf to remember settings
+  programs.dconf.enable = true; # virt-manager requires dconf to remember settings
 
   # Enable sound with pipewire.
   hardware.pulseaudio.enable = false;
@@ -149,7 +166,12 @@ in {
   users.users.jga = {
     isNormalUser = true;
     description = "Jakob Guldberg Aaes";
-    extraGroups = [ "networkmanager" "wheel" "docker" "libvirtd" ];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+      "docker"
+      "libvirtd"
+    ];
     packages = with pkgs; [
       #  thunder bird
       libsecret
@@ -172,52 +194,51 @@ in {
   nixpkgs = {
     config.allowUnfree = true;
     overlays = [
-    (final: prev: {
-      netbird = prev.netbird.overrideAttrs (oldAttrs: rec {
-        version = "0.30.2";
-        src = prev.fetchFromGitHub {
-          owner = "netbirdio";
-          repo = "netbird";
-          rev = "96d22076849027e7b8179feabbdd9892d600eb5a";
-          hash = "sha256-8PIReuWnD7iMesSWAo6E4J+mWNAa7lHKwBWsCsXUG+E=";
-        };
+      (final: prev: {
+        netbird = prev.netbird.overrideAttrs (oldAttrs: rec {
+          version = "0.30.2";
+          src = prev.fetchFromGitHub {
+            owner = "netbirdio";
+            repo = "netbird";
+            rev = "96d22076849027e7b8179feabbdd9892d600eb5a";
+            hash = "sha256-8PIReuWnD7iMesSWAo6E4J+mWNAa7lHKwBWsCsXUG+E=";
+          };
 
-        vendorHash = "sha256-KScynPcMZ90XZy/N5X3aQfKuVl/JOCJmd8luNxChkZk=";
+          vendorHash = "sha256-KScynPcMZ90XZy/N5X3aQfKuVl/JOCJmd8luNxChkZk=";
 
-        # Update the ldflags to ensure the correct version is embedded
-        ldflags = [
-          "-s"
-          "-w"
-          "-X github.com/netbirdio/netbird/version.version=${version}"
-          "-X main.builtBy=nix"
-        ];
-      });
-    })
-  ];	
+          # Update the ldflags to ensure the correct version is embedded
+          ldflags = [
+            "-s"
+            "-w"
+            "-X github.com/netbirdio/netbird/version.version=${version}"
+            "-X main.builtBy=nix"
+          ];
+        });
+      })
+    ];
   };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-  environment.systemPackages = with pkgs;
-    [
-      git
-      #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-      #  wget
-    ];
+  environment.systemPackages = with pkgs; [
+    git
+    #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    #  wget
+  ];
 
   # Define variables to dynamically set stuff depending on the desktop environment
   environment.etc."environment.d/desktop-environment.conf".text = ''
     [Environment]
     DESKTOP_SESSION=$XDG_SESSION_DESKTOP
   '';
-  programs.ssh.askPassword = lib.mkForce
-    (if builtins.getEnv "DESKTOP_SESSION" == "plasma" then
+  programs.ssh.askPassword = lib.mkForce (
+    if builtins.getEnv "DESKTOP_SESSION" == "plasma" then
       "${pkgs.ksshaskpass}/bin/ksshaskpass"
     else if builtins.getEnv "DESKTOP_SESSION" == "gnome" then
       "${pkgs.seahorse}/libexec/seahorse/ssh-askpass"
     else
       "${pkgs.ksshaskpass}/bin/ksshaskpass" # Default to KDE's program
-    );
+  );
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.

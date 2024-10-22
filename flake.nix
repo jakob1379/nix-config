@@ -13,45 +13,46 @@
     nixgl.url = "github:nix-community/nixGL";
   };
 
-  outputs = inputs @ {
-    self,
-    nixpkgs,
-    home-manager,
-    nixgl,
-    ...
-  }:
-  let
-    pkgs = import nixpkgs;
+  outputs =
+    inputs@{
+      self,
+      nixpkgs,
+      home-manager,
+      nixgl,
+      ...
+    }:
+    let
+      pkgs = import nixpkgs;
 
-    # Systems to build for
-    forAllSystems =
-      function:
-      nixpkgs.lib.genAttrs [
-        "x86_64-linux"
-        "aarch64-linux"
-      ] (system: function nixpkgs.legacyPackages.${system});
+      # Systems to build for
+      forAllSystems =
+        function:
+        nixpkgs.lib.genAttrs [
+          "x86_64-linux"
+          "aarch64-linux"
+        ] (system: function nixpkgs.legacyPackages.${system});
 
-    # Packages for nix shell
-    generalPackages =
-      pkgs: with pkgs; [
-        nodejs
-        pre-commit
-        yamllint
-        gitleaks
-        nixfmt-rfc-style
-      ];
+      # Packages for nix shell
+      generalPackages =
+        pkgs: with pkgs; [
+          nodejs
+          pre-commit
+          yamllint
+          gitleaks
+          nixfmt-rfc-style
+        ];
 
-    # Home config generator
-    mkHomeConfig =
-      modules: system:
-      home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs { inherit system; };
-        modules = modules; # Accepts a list of modules
-        extraSpecialArgs = {
-          inherit inputs system;
+      # Home config generator
+      mkHomeConfig =
+        modules: system:
+        home-manager.lib.homeManagerConfiguration {
+          pkgs = import nixpkgs { inherit system; };
+          modules = modules; # Accepts a list of modules
+          extraSpecialArgs = {
+            inherit inputs system;
+          };
         };
-      };
-  in
+    in
     {
       # NixOS configuration
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
