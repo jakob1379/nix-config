@@ -12,10 +12,10 @@
       enable = true;
       profileExtra = ''
         # Source Nix environment variables if they haven't been sourced yet
-        if [ -z "$NIX_PROFILES" ]; then
-          . "/home/pi/.nix-profile/etc/profile.d/hm-session-vars.sh"
-          . ~/.nix-profile/etc/profile.d/nix.sh
-        fi
+        #if [ -z "$NIX_PROFILES" ]; then
+        #  . "/home/pi/.nix-profile/etc/profile.d/hm-session-vars.sh"
+          # . ~/.nix-profile/etc/profile.d/nix.sh
+        #fi
 
         # Auto-start tmux for remote SSH sessions if the shell is interactive
         if [[ -n "$SSH_CONNECTION" ]] && [[ -z "$TMUX" ]] && [[ $- == *i* ]] && [[ -n "$TERM" ]]; then
