@@ -196,15 +196,16 @@ in
     overlays = [
       (final: prev: {
         netbird = prev.netbird.overrideAttrs (oldAttrs: rec {
-          version = "0.30.2";
+          version = "0.30.3";
+          ui = true;
           src = prev.fetchFromGitHub {
             owner = "netbirdio";
             repo = "netbird";
-            rev = "96d22076849027e7b8179feabbdd9892d600eb5a";
-            hash = "sha256-8PIReuWnD7iMesSWAo6E4J+mWNAa7lHKwBWsCsXUG+E=";
+            rev = "a9d06b883fe742c5dd03b822ba2385203e1b1682";
+            hash = "sha256-+bI9BYfzlgKXI4LOihlOGYnlEVijVeNr8WYIC18cFOc=";
           };
 
-          vendorHash = "sha256-KScynPcMZ90XZy/N5X3aQfKuVl/JOCJmd8luNxChkZk=";
+          vendorHash = "sha256-kEwGJ2+xe7ct9ckMAE4l+2cBYcUXpoDVM3DohtzHqeY=";
 
           # Update the ldflags to ensure the correct version is embedded
           ldflags = [

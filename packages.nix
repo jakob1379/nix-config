@@ -50,6 +50,7 @@ let
     brave
     dbeaver-bin
     feh
+    netbird-ui
     firefox-unwrapped
     gnome-pomodoro
     keepassxc
