@@ -190,7 +190,7 @@
     '';
 
     # Update and switch NixOS
-    updateNixOS = ''
+    updateNixos = ''
       sudo nix-channel --update
       sudo nixos-rebuild switch --flake ~/.config/home-manager
     '';
@@ -198,7 +198,7 @@
     # Combined update and switch for both Home Manager and NixOS
     updateAll = ''
       sudo nix-channel --update && \
-      nix flake update ~/.config/home-manager && \
+      nix flake update --flake  ~/.config/home-manager && \
       home-manager switch && \
       sudo nixos-rebuild switch --flake ~/.config/home-manager
     '';
