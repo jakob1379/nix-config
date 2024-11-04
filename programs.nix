@@ -12,10 +12,10 @@
       enable = true;
       profileExtra = ''
         # Source Nix environment variables if they haven't been sourced yet
-        if [ -z "$NIX_PROFILES" ]; then
-          . "/home/pi/.nix-profile/etc/profile.d/hm-session-vars.sh"
-          . ~/.nix-profile/etc/profile.d/nix.sh
-        fi
+        #if [ -z "$NIX_PROFILES" ]; then
+        #  . "/home/pi/.nix-profile/etc/profile.d/hm-session-vars.sh"
+          # . ~/.nix-profile/etc/profile.d/nix.sh
+        #fi
 
         # Auto-start tmux for remote SSH sessions if the shell is interactive
         if [[ -n "$SSH_CONNECTION" ]] && [[ -z "$TMUX" ]] && [[ $- == *i* ]] && [[ -n "$TERM" ]]; then
@@ -197,7 +197,7 @@
     '';
 
     # Update and switch NixOS
-    updateNixOS = ''
+    updateNixos = ''
       sudo nix-channel --update
       sudo nixos-rebuild switch --flake ~/.config/home-manager
     '';
@@ -205,7 +205,7 @@
     # Combined update and switch for both Home Manager and NixOS
     updateAll = ''
       sudo nix-channel --update && \
-      nix flake update ~/.config/home-manager && \
+      nix flake update --flake  ~/.config/home-manager && \
       home-manager switch && \
       sudo nixos-rebuild switch --flake ~/.config/home-manager
     '';

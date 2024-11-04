@@ -10,20 +10,29 @@
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, poetry2nix }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      poetry2nix,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        poetry2nixOverrides = poetry2nix.overrides.withDefaults (self: super: {
-          bitvector = super.bitvector.overrideAttrs (oldAttrs: {
-            src = pkgs.fetchFromGitHub {
-              owner = "JnyJny";
-              repo = "bitvector";
-              rev = "e0bc30c3eeccaa992f5f412ec213c645c753c8eb";
-              sha256 = "sha256-GVTRD83tq/Hea53US4drOD5ruoYCLTVd24aZOSdDsSo=";
-            };
-          });
-        });
+        poetry2nixOverrides = poetry2nix.overrides.withDefaults (
+          self: super: {
+            bitvector = super.bitvector.overrideAttrs (oldAttrs: {
+              src = pkgs.fetchFromGitHub {
+                owner = "JnyJny";
+                repo = "bitvector";
+                rev = "e0bc30c3eeccaa992f5f412ec213c645c753c8eb";
+                sha256 = "sha256-GVTRD83tq/Hea53US4drOD5ruoYCLTVd24aZOSdDsSo=";
+              };
+            });
+          }
+        );
 
         busylightApp = poetry2nix.mkPoetryApplication {
           projectDir = pkgs.fetchFromGitHub {
@@ -34,12 +43,14 @@
           };
           overrides = poetry2nixOverrides;
         };
-      in {
+      in
+      {
         packages = {
           busylight = busylightApp;
           default = busylightApp;
         };
 
         devShells.default = pkgs.mkShell { inputsFrom = [ busylightApp ]; };
-      });
+      }
+    );
 }

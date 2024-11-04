@@ -1,4 +1,11 @@
-{ config, pkgs, lib, inputs, system, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  inputs,
+  system,
+  ...
+}:
 let
   # Import the exported lists from packages.nix
   packages = import ./packages.nix { inherit pkgs system inputs; };
@@ -16,9 +23,11 @@ let
     texlivePackages.fontawesome5
   ];
 
-  piPackages = lib.filter (pkg: !(lib.elem pkg packagesToExclude))
-    (packages.corePackages ++ packages.devPackages ++ packages.customScripts);
-in {
+  piPackages = lib.filter (pkg: !(lib.elem pkg packagesToExclude)) (
+    packages.corePackages ++ packages.devPackages ++ packages.customScripts
+  );
+in
+{
   home.username = "pi";
   home.homeDirectory = "/home/pi";
 
@@ -26,8 +35,7 @@ in {
 
   home.packages = piPackages;
 
-  home.file = sshConfigOverride
-    // (dotfiles.emacsConfig // dotfiles.mediaConfig);
+  home.file = sshConfigOverride // (dotfiles.emacsConfig // dotfiles.mediaConfig);
 
   home.sessionVariables = dotfiles.sessionVariables;
 

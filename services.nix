@@ -1,9 +1,21 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
-  createNativeRcloneMountService = { name, remote
-    , mountPath ? "/home/${config.home.username}/${name}", remotePath ? "/",
-    }: {
-      Unit = { Description = "Rclone mount service for ${name}"; };
+  createNativeRcloneMountService =
+    {
+      name,
+      remote,
+      mountPath ? "/home/${config.home.username}/${name}",
+      remotePath ? "/",
+    }:
+    {
+      Unit = {
+        Description = "Rclone mount service for ${name}";
+      };
 
       Service = {
         ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${mountPath}";
@@ -20,7 +32,9 @@ let
         Restart = "on-failure";
         RestartSec = "10s";
       };
-      Install = { WantedBy = [ "default.target" ]; };
+      Install = {
+        WantedBy = [ "default.target" ];
+      };
     };
 
   # createRcloneMountService = { name, remote, mountPath ? "/home/${config.home.username}/${name}", remotePath ? "/" }: {
@@ -53,7 +67,8 @@ let
   #   };
   # };
 
-in {
+in
+{
 
   services = {
     unclutter = {
