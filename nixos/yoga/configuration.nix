@@ -10,6 +10,30 @@
 }:
 let
   LC_LOCALE = "da_DK.UTF-8";
+  createRcloneMountService =
+    {
+      name,
+      remote,
+      mountPath ? "/home/jga/${name}",
+      remotePath ? "/",
+    }:
+    {
+      description = "Rclone mount service for ${name}";
+      after = [ "network-online.target" ];
+      restartIfChanged = true;
+      enable = true;
+      wantedBy = [
+        "default.target"
+        "network-online.target"
+      ];
+
+      serviceConfig = {
+        ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${mountPath}";
+        ExecStart = "${pkgs.rclone}/bin/rclone mount --config /home/jga/.config/rclone/rclone.conf --vfs-fast-fingerprint --vfs-cache-mode full ${remote}:${remotePath} ${mountPath}";
+        Type = "notify";
+        Environment = [ "PATH=/run/wrappers/bin/:$PATH" ];
+      };
+    };
 in
 {
   imports = [
@@ -37,7 +61,7 @@ in
     };
   };
 
-  networking.hostName = "ku"; # Define your hostname.
+  networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -155,8 +179,13 @@ in
     ];
   };
 
-  # allow fuse to mount for other users
-  programs.fuse.userAllowOther = true;
+  # Enable user defined systemd services
+  systemd.user.services = {
+    rclone-mount-dropbox-private = createRcloneMountService {
+      name = "dropbox-private";
+      remote = "dropbox-private";
+    };
+  };
 
   # Install firefox.
   programs.firefox.enable = true;

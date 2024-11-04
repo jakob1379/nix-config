@@ -126,6 +126,7 @@
       };
       extraConfig = {
         push.autoSetupRemote = true;
+        pull.rebase = false;
         init.defaultBranch = "main";
         color.ui = true;
       };
@@ -164,6 +165,12 @@
       };
     };
   };
+
+  nix = {
+    package = pkgs.nix;
+    settings.experimental-features = [ "nix-command" "flakes" ];
+  };
+
 
   home.shellAliases = {
     cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';

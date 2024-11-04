@@ -74,8 +74,8 @@ in {
   systemd.user.services = {
     # Create the rclone mount services by calling the function with the desired parameters using named arguments
     # rclone-mount-dropbox-private = createNativeRcloneMountService {
-    #   name = "dropbox-private";
-    #   remote = "dropbox-private";
+    #  name = "dropbox-private";
+    #  remote = "dropbox-private";
     # };
     # rclone-mount-gdrive-private = createNativeRcloneMountService {
     #   name = "gdrive-private";
