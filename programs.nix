@@ -119,7 +119,7 @@
     git = {
       enable = true;
       userName = "Jakob Guldberg Aaes";
-      userEmail = "jakob.aaes@res-group.com";
+      userEmail = "jakob1379@gmail.com";
       signing = {
         key = "98BD7E80842C97BA";
         signByDefault = false;
