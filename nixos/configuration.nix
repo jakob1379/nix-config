@@ -85,7 +85,7 @@ in
 
   # Configure keymap in X11
   services.xserver.xkb = {
-    layout = "dk";
+    layout = "us";
     variant = "";
   };
 
@@ -215,6 +215,7 @@ in
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     git
+    bat
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     #  wget
   ];
@@ -263,6 +264,9 @@ in
     };
   };
 
+  # Add the CIFS mount configuration
+  boot.kernelModules = [ "kvm-intel" "cifs" ];
+  
   boot.kernelParams = [
     "acpi_backlight=native"
     "psmouse.synaptics_intertouch=0"
@@ -273,7 +277,6 @@ in
 
   # Open ports in the firewall.
   networking.firewall.enable = true;
-  services.fail2ban.enable = true;
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.

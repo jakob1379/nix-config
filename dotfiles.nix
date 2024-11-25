@@ -32,7 +32,7 @@ let
     MANPAGER = "bat -pl man";
     EDITOR = ''emacsclient --create-frame --alternate-editor="" --no-wait'';
     LC_TIME = "en_GB.utf8";
-    QT_QPA_PLATFORM = "xcb";
+    QT_QPA_PLATFORM = "wayland";
     HISTCONTROL = "ignoreboth";
   };
 

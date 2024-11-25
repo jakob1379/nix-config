@@ -37,10 +37,11 @@ let
     ispell
     jq
     libqalculate
-    nix-index
+    nix-search-cli
     nix-prefetch-github
     nixfmt-classic
     nmap
+    libsecret
     pandoc
     rclone
     rename
@@ -60,15 +61,15 @@ let
   ];
 
   guiPackages = with pkgs; [
-    code-cursor
     brave
+    code-cursor
     dbeaver-bin
     feh
-    netbird-ui
     firefox-unwrapped
     gnome-pomodoro
     keepassxc
     konsole
+    libnotify
     netbird-ui
     nodePackages.prettier
     onlyoffice-bin
@@ -101,7 +102,7 @@ let
     python312Packages.python-lsp-server
     powershell
     hunspell
-    nil
+    nixd
     texlab
     silver-searcher
     aspellDicts.da
@@ -109,6 +110,7 @@ let
     aspellDicts.en-computers
     aspellDicts.en-science
     marksman
+    autotools-language-server
     wl-clipboard-rs
   ];
 
@@ -126,11 +128,9 @@ in
 {
   inherit
     corePackages
-    guiPackages
     devPackages
     customScripts
     emacsPackages
-    ;
   ;
   guiPackages = guiPackages ++ [ keepassxc ];
 }

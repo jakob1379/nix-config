@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   programs = {
@@ -10,6 +10,12 @@
 
     bash = {
       enable = true;
+      # initExtra = ''
+      # # Source your custom script
+      # if [ -f "${config.xdg.configHome}/home-manager/bin/secret-export" ]; then
+      #   . "${config.xdg.configHome}/home-manager/bin/secret-export"
+      # fi
+      # '';
       profileExtra = ''
         # Source Nix environment variables if they haven't been sourced yet
         #if [ -z "$NIX_PROFILES" ]; then
@@ -174,7 +180,9 @@
 
   nix = {
     package = pkgs.nix;
-    settings.experimental-features = [ "nix-command" "flakes" ];
+    settings = {
+      experimental-features = [ "nix-command" "flakes" ];
+    };
   };
 
 
