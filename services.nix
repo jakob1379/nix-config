@@ -5,7 +5,7 @@
   ...
 }:
 let
-  createNativeRcloneMountService =
+  createRcloneMountService =
     {
       name,
       remote,
@@ -20,7 +20,7 @@ let
       Service = {
         ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${mountPath}";
         ExecStart = ''
-          rclone mount \
+          ${pkgs.rclone}/bin/rclone mount \
             --config /home/${config.home.username}/.config/rclone/rclone.conf \
             --vfs-fast-fingerprint \
             --vfs-cache-mode full \
@@ -37,40 +37,11 @@ let
       };
     };
 
-  # createRcloneMountService = { name, remote, mountPath ? "/home/${config.home.username}/${name}", remotePath ? "/" }: {
-  #   Unit = {
-  #     Description = "Rclone mount service for ${name}";
-  #     # After = [ "network-online.target" ];
-  #     # Requires = [ "network-online.target" ];
-  #     Wants = [ "systemd-networkd-wait-online.service" ];   # or "systemd-networkd-wait-online.service"
-  #   };
-
-  #   Service = {
-  #     ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${mountPath}";
-  #     ExecStart = ''
-  #       ${pkgs.rclone}/bin/rclone mount \
-  #         --config /home/${config.home.username}/.config/rclone/rclone.conf \
-  #         --vfs-fast-fingerprint \
-  #         --vfs-cache-mode full \
-  #         --allow-other \
-  #         ${remote}:${remotePath} ${mountPath}
-  # #     #   '';
-  #     ExecStop = "${pkgs.fuse3}/fusermount -u ${mountPath}";
-  #     Type = "notify";
-  #     Restart = "on-failure";
-  #     RestartSec = "10s";
-  #     Environment = [ "PATH=/run/wrappers/bin/:$PATH" ];
-  #   };
-
-  #   Install = {
-  #     WantedBy = [ "default.target" ];
-  #   };
-  # };
-
 in
 {
 
   services = {
+    emacs.defaultEditor = true;
     unclutter = {
       enable = true;
       timeout = 5;
@@ -88,11 +59,15 @@ in
   systemd.user.startServices = true;
   systemd.user.services = {
     # Create the rclone mount services by calling the function with the desired parameters using named arguments
-    # rclone-mount-dropbox-private = createNativeRcloneMountService {
-    #  name = "dropbox-private";
-    #  remote = "dropbox-private";
+    rclone-mount-dropbox-private = createRcloneMountService {
+     name = "dropbox-private";
+     remote = "dropbox-private";
+    };
+    # rclone-mount-cifs-private = createRcloneMountService {
+    #   name = "ku-personal";
+    #   remote = "ku-personal";
     # };
-    # rclone-mount-gdrive-private = createNativeRcloneMountService {
+    # rclone-mount-gdrive-private = createRcloneMountService {
     #   name = "gdrive-private";
     #   remote = "gdrive-private";
     # };
