@@ -101,8 +101,29 @@ in
   # enable fwupd: a simple daemon allowing you to update some devices' firmware, including UEFI for several machines.
   services.fwupd.enable = true;
 
-  hardware.graphics = {
-    enable = true;
+  # setup nvidia
+  # https://nixos.wiki/wiki/Nvidia
+
+  hardware.graphics.enable = true;
+  hardware.nvidia-container-toolkit.enable = true;
+  
+  services.xserver.videoDrivers = [ "nvidia" ];
+  
+  hardware.nvidia = {
+    modesetting.enable = true;
+    nvidiaSettings = true;
+    open = false;
+    prime = {
+      offload.enable = true;
+      offload.enableOffloadCmd=true;
+      intelBusId = "PCI:0:2:0";
+      nvidiaBusId = "PCI:45:0:0";
+    };
+    powerManagement = {
+      enable = true;
+      finegrained = false;
+    };
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 
   # Enable blutooth
@@ -235,6 +256,14 @@ in
     enable = true;
     package = pkgs.netbird;
   };
+
+  boot.kernelParams = [
+    "acpi_backlight=native"
+    "psmouse.synaptics_intertouch=0"
+    
+    "nvidia-drm.modeset=1"
+    "nvidia-drm.fbdev=1"
+  ];
 
   # Open ports in the firewall.
   networking.firewall.enable = true;
