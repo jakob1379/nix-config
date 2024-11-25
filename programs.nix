@@ -155,7 +155,12 @@
       enableBashIntegration = true;
     };
 
-    bat.enable = true;
+    bat = {
+      enable = true;
+      config = {
+        map-syntax = [ "*.conf:TOML" ];
+      };
+    };
 
     poetry = {
       enable = true;
