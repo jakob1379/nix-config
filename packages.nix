@@ -69,6 +69,7 @@ let
     gnome-pomodoro
     keepassxc
     konsole
+    netbird-ui
     nodePackages.prettier
     onlyoffice-bin
     pika-backup

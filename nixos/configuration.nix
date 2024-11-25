@@ -188,16 +188,16 @@ in
     overlays = [
       (final: prev: {
         netbird = prev.netbird.overrideAttrs (oldAttrs: rec {
-          version = "0.30.3";
+          version = "0.32.0";
           ui = true;
           src = prev.fetchFromGitHub {
             owner = "netbirdio";
             repo = "netbird";
-            rev = "a9d06b883fe742c5dd03b822ba2385203e1b1682";
-            hash = "sha256-+bI9BYfzlgKXI4LOihlOGYnlEVijVeNr8WYIC18cFOc=";
+            rev = "ec543f89fb819b4aae28850b370f0c06f05f7f96";
+            hash = "sha256-LfCl8IKuRfyd/iZuV5+8hEUW7DciB9D80oL4Ma72MYo=";
           };
 
-          vendorHash = "sha256-kEwGJ2+xe7ct9ckMAE4l+2cBYcUXpoDVM3DohtzHqeY=";
+          vendorHash = "sha256-XzJ+FzGlJpnRjDt0IDbe1i7zCEDgy0L9hE/Ltqo+SoE=";
 
           # Update the ldflags to ensure the correct version is embedded
           ldflags = [
@@ -252,9 +252,15 @@ in
   services.openssh.enable = false;
 
   # We also want to enable netbird as our VPN of choice
-  services.netbird = {
-    enable = true;
-    package = pkgs.netbird;
+  services = {
+    netbird = {
+      enable = true; # true;
+      package = pkgs.netbird;
+      # tunnels = {
+      #   ucph0.port = 51822;
+      #   homelab0.port = 51821;
+      # };
+    };
   };
 
   boot.kernelParams = [
