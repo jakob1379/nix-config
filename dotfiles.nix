@@ -30,9 +30,9 @@ let
   sessionVariables = {
     PAGER = "bat -p";
     MANPAGER = "bat -pl man";
+    EDITOR = ''emacsclient --create-frame --alternate-editor="" --no-wait'';
     LC_TIME = "en_GB.utf8";
-    EDITOR = "emacsclient -c -n || emacs";
-    QT_QPA_PLATFORM = "xcb";
+    QT_QPA_PLATFORM = "wayland";
     HISTCONTROL = "ignoreboth";
   };
 

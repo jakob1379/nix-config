@@ -1,5 +1,19 @@
-{ pkgs, system, ... }:
+{ pkgs, system, lib, ... }:
 let
+  isWayland = (builtins.getEnv "XDG_SESSION_TYPE" == "wayland");
+
+  # Conditionally wrap KeePassXC for autotype support in KDE if running Wayland
+  keepassxc = if isWayland then
+    (pkgs.keepassxc.overrideAttrs (oldAttrs: rec {
+      postFixup = ''
+        wrapProgram "$out/bin/keepassxc" \
+          --set QT_QPA_PLATFORM xcb
+      '';
+    }))
+  else
+    pkgs.keepassxc;
+
+  
   hyprLandPackages = with pkgs; [
     dolphin
     pywal
@@ -23,10 +37,11 @@ let
     ispell
     jq
     libqalculate
-    nix-index
+    nix-search-cli
     nix-prefetch-github
     nixfmt-classic
     nmap
+    libsecret
     pandoc
     rclone
     rename
@@ -46,14 +61,16 @@ let
   ];
 
   guiPackages = with pkgs; [
-    code-cursor
     brave
+    code-cursor
     dbeaver-bin
     feh
     firefox-unwrapped
     gnome-pomodoro
     keepassxc
     konsole
+    libnotify
+    netbird-ui
     nodePackages.prettier
     onlyoffice-bin
     pika-backup
@@ -85,7 +102,7 @@ let
     python312Packages.python-lsp-server
     powershell
     hunspell
-    nil
+    nixd
     texlab
     silver-searcher
     aspellDicts.da
@@ -93,6 +110,7 @@ let
     aspellDicts.en-computers
     aspellDicts.en-science
     marksman
+    autotools-language-server
     wl-clipboard-rs
   ];
 
@@ -110,9 +128,9 @@ in
 {
   inherit
     corePackages
-    guiPackages
     devPackages
     customScripts
     emacsPackages
-    ;
+  ;
+  guiPackages = guiPackages ++ [ keepassxc ];
 }

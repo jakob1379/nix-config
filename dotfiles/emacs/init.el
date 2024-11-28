@@ -18,6 +18,7 @@
 
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
+(setq vc-follow-symlinks t)
 
 ;; Load Org mode as early as possible
 (straight-use-package 'org)

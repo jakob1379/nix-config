@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   programs = {
@@ -20,10 +20,8 @@
         if [ -z "$INSIDE_EMACS" ]; then
           # If it's a TRAMP connection (TERM is "dumb"), do not proceed with tmux
           if [ "$TERM" = "dumb" ]; then
-            # Set a simple prompt that TRAMP can understand
             PS1="> "
           else
-            # If not inside Emacs or a dumb terminal, start tmux if appropriate
             if [ -z "$TMUX" ] && [ -n "$PS1" ] && [ "$TERM" != "dumb" ]; then
               tmux attach || tmux new || echo "Unable to start or attach to tmux session."
             fi
@@ -32,6 +30,7 @@
       '';
     };
 
+    thefuck.enable = true;
     tmux = {
       enable = true;
       newSession = true;
@@ -127,13 +126,14 @@
     git = {
       enable = true;
       userName = "Jakob Guldberg Aaes";
-      userEmail = "jakob.aaes@res-group.com";
+      userEmail = "jakob1379@gmail.com";
       signing = {
         key = "98BD7E80842C97BA";
         signByDefault = false;
       };
       extraConfig = {
         push.autoSetupRemote = true;
+        pull.rebase = false;
         init.defaultBranch = "main";
         color.ui = true;
       };
@@ -162,7 +162,12 @@
       enableBashIntegration = true;
     };
 
-    bat.enable = true;
+    bat = {
+      enable = true;
+      config = {
+        map-syntax = [ "*.conf:TOML" ];
+      };
+    };
 
     poetry = {
       enable = true;
@@ -170,6 +175,16 @@
         virtualenvs.create = false;
         virtualenvs.in-project = true;
       };
+    };
+  };
+
+  nix = {
+    package = pkgs.nix;
+    settings = {
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
     };
   };
 
@@ -198,7 +213,7 @@
     '';
 
     # Update and switch NixOS
-    updateNixOS = ''
+    updateNixos = ''
       sudo nix-channel --update
       sudo nixos-rebuild switch --flake ~/.config/home-manager
     '';
@@ -206,7 +221,7 @@
     # Combined update and switch for both Home Manager and NixOS
     updateAll = ''
       sudo nix-channel --update && \
-      nix flake update ~/.config/home-manager && \
+      nix flake update --flake  ~/.config/home-manager && \
       home-manager switch && \
       sudo nixos-rebuild switch --flake ~/.config/home-manager
     '';

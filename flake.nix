@@ -54,7 +54,7 @@
     in
     {
       # NixOS configuration
-      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+      nixosConfigurations.ku = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
           ./nixos/configuration.nix
@@ -80,8 +80,13 @@
         ./services.nix
         ./programs.nix
       ] "x86_64-linux";
-      homeConfigurations."jga@nixos" = mkHomeConfig [
-        ./laptop.nix
+      homeConfigurations."jga@yoga" = mkHomeConfig [
+        ./yoga.nix
+        ./services.nix
+        ./programs.nix
+      ] "x86_64-linux";
+      homeConfigurations."jga@ku" = mkHomeConfig [
+        ./ucph.nix
         ./services.nix
         ./programs.nix
       ] "x86_64-linux";

@@ -10,6 +10,30 @@
 }:
 let
   LC_LOCALE = "da_DK.UTF-8";
+  createRcloneMountService =
+    {
+      name,
+      remote,
+      mountPath ? "/home/jga/${name}",
+      remotePath ? "/",
+    }:
+    {
+      description = "Rclone mount service for ${name}";
+      after = [ "network-online.target" ];
+      restartIfChanged = true;
+      enable = true;
+      wantedBy = [
+        "default.target"
+        "network-online.target"
+      ];
+
+      serviceConfig = {
+        ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${mountPath}";
+        ExecStart = "${pkgs.rclone}/bin/rclone mount --config /home/jga/.config/rclone/rclone.conf --vfs-fast-fingerprint --vfs-cache-mode full ${remote}:${remotePath} ${mountPath}";
+        Type = "notify";
+        Environment = [ "PATH=/run/wrappers/bin/:$PATH" ];
+      };
+    };
 in
 {
   imports = [
@@ -37,7 +61,7 @@ in
     };
   };
 
-  networking.hostName = "ku"; # Define your hostname.
+  networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -85,7 +109,7 @@ in
 
   # Configure keymap in X11
   services.xserver.xkb = {
-    layout = "us";
+    layout = "dk";
     variant = "";
   };
 
@@ -101,29 +125,8 @@ in
   # enable fwupd: a simple daemon allowing you to update some devices' firmware, including UEFI for several machines.
   services.fwupd.enable = true;
 
-  # setup nvidia
-  # https://nixos.wiki/wiki/Nvidia
-
-  hardware.graphics.enable = true;
-  hardware.nvidia-container-toolkit.enable = true;
-  
-  services.xserver.videoDrivers = [ "nvidia" ];
-  
-  hardware.nvidia = {
-    modesetting.enable = true;
-    nvidiaSettings = true;
-    open = false;
-    prime = {
-      offload.enable = true;
-      offload.enableOffloadCmd=true;
-      intelBusId = "PCI:0:2:0";
-      nvidiaBusId = "PCI:45:0:0";
-    };
-    powerManagement = {
-      enable = true;
-      finegrained = false;
-    };
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
+  hardware.graphics = {
+    enable = true;
   };
 
   # Enable blutooth
@@ -176,8 +179,13 @@ in
     ];
   };
 
-  # allow fuse to mount for other users
-  programs.fuse.userAllowOther = true;
+  # Enable user defined systemd services
+  systemd.user.services = {
+    rclone-mount-dropbox-private = createRcloneMountService {
+      name = "dropbox-private";
+      remote = "dropbox-private";
+    };
+  };
 
   # Install firefox.
   programs.firefox.enable = true;
@@ -188,16 +196,15 @@ in
     overlays = [
       (final: prev: {
         netbird = prev.netbird.overrideAttrs (oldAttrs: rec {
-          version = "0.32.0";
-          ui = true;
+          version = "0.30.2";
           src = prev.fetchFromGitHub {
             owner = "netbirdio";
             repo = "netbird";
-            rev = "ec543f89fb819b4aae28850b370f0c06f05f7f96";
-            hash = "sha256-LfCl8IKuRfyd/iZuV5+8hEUW7DciB9D80oL4Ma72MYo=";
+            rev = "96d22076849027e7b8179feabbdd9892d600eb5a";
+            hash = "sha256-8PIReuWnD7iMesSWAo6E4J+mWNAa7lHKwBWsCsXUG+E=";
           };
 
-          vendorHash = "sha256-XzJ+FzGlJpnRjDt0IDbe1i7zCEDgy0L9hE/Ltqo+SoE=";
+          vendorHash = "sha256-KScynPcMZ90XZy/N5X3aQfKuVl/JOCJmd8luNxChkZk=";
 
           # Update the ldflags to ensure the correct version is embedded
           ldflags = [
@@ -215,7 +222,6 @@ in
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     git
-    bat
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     #  wget
   ];
@@ -253,30 +259,14 @@ in
   services.openssh.enable = false;
 
   # We also want to enable netbird as our VPN of choice
-  services = {
-    netbird = {
-      enable = true; # true;
-      package = pkgs.netbird;
-      # tunnels = {
-      #   ucph0.port = 51822;
-      #   homelab0.port = 51821;
-      # };
-    };
+  services.netbird = {
+    enable = true;
+    package = pkgs.netbird;
   };
-
-  # Add the CIFS mount configuration
-  boot.kernelModules = [ "kvm-intel" "cifs" ];
-  
-  boot.kernelParams = [
-    "acpi_backlight=native"
-    "psmouse.synaptics_intertouch=0"
-    
-    "nvidia-drm.modeset=1"
-    "nvidia-drm.fbdev=1"
-  ];
 
   # Open ports in the firewall.
   networking.firewall.enable = true;
+  services.fail2ban.enable = true;
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
