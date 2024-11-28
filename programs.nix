@@ -10,16 +10,24 @@
 
     bash = {
       enable = true;
+      bashrcExtra = ''
+        if [[ $TERM = dumb ]]; then
+          return
+        fi
+      '';
       profileExtra = ''
-        # Source Nix environment variables if they haven't been sourced yet
-        #if [ -z "$NIX_PROFILES" ]; then
-        #  . "/home/pi/.nix-profile/etc/profile.d/hm-session-vars.sh"
-          # . ~/.nix-profile/etc/profile.d/nix.sh
-        #fi
-
         # Auto-start tmux for remote SSH sessions if the shell is interactive
-        if [[ -n "$SSH_CONNECTION" ]] && [[ -z "$TMUX" ]] && [[ $- == *i* ]] && [[ -n "$TERM" ]]; then
-          tmux attach || tmux new || echo "Unable to start or attach to tmux session."
+        if [ -z "$INSIDE_EMACS" ]; then
+          # If it's a TRAMP connection (TERM is "dumb"), do not proceed with tmux
+          if [ "$TERM" = "dumb" ]; then
+            # Set a simple prompt that TRAMP can understand
+            PS1="> "
+          else
+            # If not inside Emacs or a dumb terminal, start tmux if appropriate
+            if [ -z "$TMUX" ] && [ -n "$PS1" ] && [ "$TERM" != "dumb" ]; then
+              tmux attach || tmux new || echo "Unable to start or attach to tmux session."
+            fi
+          fi
         fi
       '';
     };
@@ -28,7 +36,7 @@
       enable = true;
       newSession = true;
       clock24 = true;
-      # mouse = true;
+      mouse = true;
     };
 
     direnv = {

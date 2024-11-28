@@ -1,5 +1,8 @@
 # -*- mode: gitignore; -*-
 
+# Nix files
+flake.lock
+
 ###############
 # Emacs files #
 ###############
