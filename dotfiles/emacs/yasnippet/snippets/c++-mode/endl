@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: endl
+# key: endl
+# --
+std::endl;
+$0
