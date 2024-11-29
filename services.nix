@@ -8,7 +8,7 @@ let
   createRcloneMountService =
     {
       name,
-      remote,
+      remote ? "${name}",
       mountPath ? "/home/${config.home.username}/${name}",
       remotePath ? "/",
     }:
@@ -20,12 +20,17 @@ let
       Service = {
         ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${mountPath}";
         ExecStart = ''
-          ${pkgs.rclone}/bin/rclone mount \
-            --config /home/${config.home.username}/.config/rclone/rclone.conf \
-            --vfs-fast-fingerprint \
-            --vfs-cache-mode full \
-            --allow-other \
-            ${remote}:${remotePath} ${mountPath}
+            ${pkgs.rclone}/bin/rclone mount \
+              --config /home/${config.home.username}/.config/rclone/rclone.conf \
+              --allow-other \
+              --attr-timeout 1h \
+              --buffer-size=0 \
+              --dir-cache-time 3h0m0s \
+              --poll-interval 30s \
+              --use-server-modtime \
+              --vfs-cache-mode full \
+              --vfs-fast-fingerprint \
+              ${remote}:${remotePath} ${mountPath}
         '';
         ExecStop = "fusermount -u ${mountPath}";
         Type = "notify";
@@ -60,13 +65,11 @@ in
   systemd.user.services = {
     # Create the rclone mount services by calling the function with the desired parameters using named arguments
     rclone-mount-dropbox-private = createRcloneMountService {
-     name = "dropbox-private";
-     remote = "dropbox-private";
+      name = "dropbox-private";
     };
-    # rclone-mount-cifs-private = createRcloneMountService {
-    #   name = "ku-personal";
-    #   remote = "ku-personal";
-    # };
+    rclone-mount-cifs-private = createRcloneMountService {
+      name = "onedrive-ku-crypt";
+    };
     # rclone-mount-gdrive-private = createRcloneMountService {
     #   name = "gdrive-private";
     #   remote = "gdrive-private";
