@@ -491,7 +491,7 @@ We want modes for docker compose and Dockerfiles
 read and understand ~.editorconfig~ files
 #+BEGIN_SRC emacs-lisp
 (use-package editorconfig
-  :deligt
+  :diminish
   :config
   (editorconfig-mode 1))
 #+END_SRC
@@ -1151,8 +1151,6 @@ The native graph viewer of org-roam gets the job done, but it isn't pretty. This
 ***** Org Roam Helm
 #+BEGIN_SRC emacs-lisp
 (use-package helm-roam
-  :config
-  (helm-roam-mode 1)
   :bind (
          ("C-c n f" . helm-roam)
          ("C-c n i" . helm-roam-action-insert))
