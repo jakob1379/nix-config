@@ -67,7 +67,7 @@ in
     rclone-mount-dropbox-private = createRcloneMountService {
       name = "dropbox-private";
     };
-    rclone-mount-cifs-private = createRcloneMountService {
+    rclone-mount-onedrive-ku = createRcloneMountService {
       name = "onedrive-ku-crypt";
     };
     # rclone-mount-gdrive-private = createRcloneMountService {
