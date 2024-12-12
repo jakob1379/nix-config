@@ -3,16 +3,12 @@ let
   isWayland = (builtins.getEnv "XDG_SESSION_TYPE" == "wayland");
 
   # Conditionally wrap KeePassXC for autotype support in KDE if running Wayland
-  keepassxc = if isWayland then
-    (pkgs.keepassxc.overrideAttrs (oldAttrs: rec {
-      postFixup = ''
-        wrapProgram "$out/bin/keepassxc" \
-          --set QT_QPA_PLATFORM xcb
-      '';
-    }))
-  else
-    pkgs.keepassxc;
-
+  patched_keepassxc = pkgs.keepassxc.overrideAttrs (oldAttrs: rec {
+    postFixup = ''
+    sed -i 's/^Exec=keepassxc/Exec=env QT_QPA_PLATFORM=xcb keepassxc/' \
+      $out/share/applications/org.keepassxc.KeePassXC.desktop
+  '';
+  });
   
   hyprLandPackages = with pkgs; [
     dolphin
@@ -21,6 +17,8 @@ let
   ];
 
   corePackages = with pkgs; [
+    # texlive.combined.scheme-full
+    # texlivePackages.fontawesome5
     btop
     cookiecutter
     dconf
@@ -37,19 +35,17 @@ let
     ispell
     jq
     libqalculate
-    nix-search-cli
+    libsecret
     nix-prefetch-github
+    nix-search-cli
     nixfmt-classic
     nmap
-    libsecret
     pandoc
     rclone
     rename
     speedtest-go
     t-rec
     taplo
-    # texlive.combined.scheme-full
-    # texlivePackages.fontawesome5
     tldr
     unzip
     uv
@@ -67,7 +63,7 @@ let
     feh
     firefox-unwrapped
     gnome-pomodoro
-    keepassxc
+    # keepassxc
     konsole
     libnotify
     netbird-ui
@@ -90,7 +86,7 @@ let
     with pkgs;
     [
       graphviz
-      fira-code-nerdfont
+      nerd-fonts.fira-code
       meslo-lgs-nf
       fira-code-symbols
       nodejs
@@ -132,5 +128,5 @@ in
     customScripts
     emacsPackages
   ;
-  guiPackages = guiPackages ++ [ keepassxc ];
+  guiPackages = guiPackages ++ [ patched_keepassxc ];
 }

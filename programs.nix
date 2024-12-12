@@ -28,6 +28,8 @@
           fi
         fi
       '';
+      
+      bashrcExtra = builtins.readFile ./bin/secret-export;
     };
 
     thefuck.enable = true;
@@ -35,12 +37,17 @@
       enable = true;
       newSession = true;
       clock24 = true;
-      mouse = true;
+      baseIndex = 1;
+      escapeTime = 1;
+      terminal = "xterm-256color";
+      focusEvents = true; 
+      extraConfig = builtins.readFile ./dotfiles/tmux/tmux.conf;
     };
 
     direnv = {
       enable = true;
       enableBashIntegration = true;
+      nix-direnv.enable = true;
     };
 
     readline = {
@@ -181,10 +188,8 @@
   nix = {
     package = pkgs.nix;
     settings = {
-      experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
+      max-jobs = "auto";
+      experimental-features = [ "nix-command" "flakes" ];
     };
   };
 
@@ -210,6 +215,13 @@
     updateHome = ''
       nix flake update --flake ~/.config/home-manager && \
       home-manager switch
+    '';
+
+    # clean netbird token
+    netbird-logout = ''
+      netbird down
+      sudo cat /var/lib/netbird/config.json | jq 'del(.PrivateKey)' | sudo tee /var/lib/netbird/tmp-config.json > /dev/null && \
+      sudo mv /var/lib/netbird/tmp-config.json /var/lib/netbird/config.json
     '';
 
     # Update and switch NixOS
