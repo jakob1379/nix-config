@@ -200,7 +200,7 @@
     dx = "dragon --and-exit";
 
     # eda
-    eda = "nix-shell -p python312Packages.requests python312Packages.rich python312Packages.ipython python312Packages.pandas python312Packages.seaborn python312Packages.plotly";
+    eda = "nix-shell -p python313Packages.beautifulsoup python313Packages.requests python313Packages.rich python313Packages.ipython python313Packages.pandas python313Packages.seaborn python313Packages.plotly";
 
     ec = "emacsclient -n";
     grep = "grep --color=auto";
