@@ -13,12 +13,7 @@ let
   else
     pkgs.keepassxc;
 
-  
-  hyprLandPackages = with pkgs; [
-    dolphin
-    pywal
-    wdisplays
-  ];
+  hyprLandPackages = with pkgs; [ dolphin pywal wdisplays ];
 
   corePackages = with pkgs; [
     btop
@@ -86,15 +81,8 @@ let
     yubikey-personalization-gui
   ];
 
-  devPackages =
-    with pkgs;
-    [
-      graphviz
-      fira-code-nerdfont
-      meslo-lgs-nf
-      fira-code-symbols
-      nodejs
-    ]
+  devPackages = with pkgs;
+    [ graphviz fira-code-nerdfont meslo-lgs-nf fira-code-symbols nodejs ]
     ++ lib.optionals (system != "aarch64-linux") [ jdk ];
 
   # emacs is enabled in programs.nix
@@ -116,21 +104,19 @@ let
 
   customScripts = [
     (pkgs.writeShellScriptBin "dragon-scp" (builtins.readFile ./bin/dragon-scp))
-    (pkgs.writeScriptBin "find-available-server" (builtins.readFile ./bin/find-available-server))
+    (pkgs.writeScriptBin "find-available-server"
+      (builtins.readFile ./bin/find-available-server))
     (pkgs.writeShellScriptBin "unzipd" (builtins.readFile ./bin/unzipd))
     (pkgs.writeShellScriptBin "bak" (builtins.readFile ./bin/bak))
     (pkgs.writeShellScriptBin "pyenv-here" (builtins.readFile ./bin/pyenv-here))
-    (pkgs.writeShellScriptBin "emacs-clean" (builtins.readFile ./bin/emacs-clean))
+    (pkgs.writeShellScriptBin "emacs-clean"
+      (builtins.readFile ./bin/emacs-clean))
     (pkgs.writeShellScriptBin "time-stats" (builtins.readFile ./bin/time-stats))
     (pkgs.writeShellScriptBin "bhelp" (builtins.readFile ./bin/bathelp))
+    (pkgs.writeShellScriptBin "docker-volume-copy"
+      (builtins.readFile ./bin/docker-volume-copy))
   ];
-in
-{
-  inherit
-    corePackages
-    devPackages
-    customScripts
-    emacsPackages
-  ;
+in {
+  inherit corePackages devPackages customScripts emacsPackages;
   guiPackages = guiPackages ++ [ keepassxc ];
 }
