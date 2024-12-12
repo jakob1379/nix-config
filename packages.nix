@@ -17,6 +17,8 @@ let
   ];
 
   corePackages = with pkgs; [
+    # texlive.combined.scheme-full
+    # texlivePackages.fontawesome5
     btop
     cookiecutter
     dconf
