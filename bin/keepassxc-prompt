@@ -3,8 +3,15 @@
 until ssh-add -l &> /dev/null
 do
   echo "Waiting for agent. Please unlock the database."
-  keepassxc &> /dev/null
+
+  # Call secret-tool and check its exit code
+  if ! secret-tool search -a . . &> /dev/null; then
+    echo "secret-tool failed. Launching KeePassXC..."
+    keepassxc &> /dev/null
+  fi
+
   sleep 1
 done
 
 /usr/bin/env nc "$1" "$2"
+
