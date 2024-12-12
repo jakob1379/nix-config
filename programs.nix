@@ -48,6 +48,7 @@
     direnv = {
       enable = true;
       enableBashIntegration = true;
+      nix-direnv.enable = true;
     };
 
     readline = {
@@ -188,6 +189,7 @@
   nix = {
     package = pkgs.nix;
     settings = {
+      max-jobs = "auto";
       experimental-features = [ "nix-command" "flakes" ];
     };
   };
