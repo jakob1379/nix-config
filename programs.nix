@@ -10,22 +10,22 @@
 
     bash = {
       enable = true;
-      # initExtra = ''
-      # # Source your custom script
-      # if [ -f "${config.xdg.configHome}/home-manager/bin/secret-export" ]; then
-      #   . "${config.xdg.configHome}/home-manager/bin/secret-export"
-      # fi
-      # '';
+      bashrcExtra = ''
+        if [[ $TERM = dumb ]]; then
+          return
+        fi
+      '';
       profileExtra = ''
-        # Source Nix environment variables if they haven't been sourced yet
-        #if [ -z "$NIX_PROFILES" ]; then
-        #  . "/home/pi/.nix-profile/etc/profile.d/hm-session-vars.sh"
-          # . ~/.nix-profile/etc/profile.d/nix.sh
-        #fi
-
         # Auto-start tmux for remote SSH sessions if the shell is interactive
-        if [[ -n "$SSH_CONNECTION" ]] && [[ -z "$TMUX" ]] && [[ $- == *i* ]] && [[ -n "$TERM" ]]; then
-          tmux attach || tmux new || echo "Unable to start or attach to tmux session."
+        if [ -z "$INSIDE_EMACS" ]; then
+          # If it's a TRAMP connection (TERM is "dumb"), do not proceed with tmux
+          if [ "$TERM" = "dumb" ]; then
+            PS1="> "
+          else
+            if [ -z "$TMUX" ] && [ -n "$PS1" ] && [ "$TERM" != "dumb" ]; then
+              tmux attach || tmux new || echo "Unable to start or attach to tmux session."
+            fi
+          fi
         fi
       '';
       
@@ -42,7 +42,6 @@
       terminal = "xterm-256color";
       focusEvents = true; 
       extraConfig = builtins.readFile ./dotfiles/tmux/tmux.conf;
-      # mouse = true;
     };
 
     direnv = {
@@ -193,7 +192,6 @@
       experimental-features = [ "nix-command" "flakes" ];
     };
   };
-
 
   home.shellAliases = {
     cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';

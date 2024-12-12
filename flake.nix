@@ -9,7 +9,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     flake-utils.url = "github:numtide/flake-utils";
-    poetry2nix.url = "github:nix-community/poetry2nix";
     nixgl.url = "github:nix-community/nixGL";
   };
 
@@ -99,7 +98,7 @@
           packages = (generalPackages pkgs);
 
           # Use the `buildInputs` to include npm and other tools directly
-          buildInputs = [ pkgs.pre-commit ];
+          buildInputs = with pkgs; [ pre-commit ];
 
           # Define a `shellHook` that only sets the environment, not installs things
           shellHook = ''
