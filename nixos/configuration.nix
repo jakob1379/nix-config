@@ -264,8 +264,7 @@ in
     };
   };
 
-  # Add the CIFS mount configuration
-  boot.kernelModules = [ "kvm-intel" "cifs" ];
+  boot.kernelModules = [ "kvm-intel" ];
   
   boot.kernelParams = [
     "acpi_backlight=native"
