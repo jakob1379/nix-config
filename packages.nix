@@ -33,19 +33,17 @@ let
     ispell
     jq
     libqalculate
-    nix-search-cli
+    libsecret
     nix-prefetch-github
+    nix-search-cli
     nixfmt-classic
     nmap
-    libsecret
     pandoc
     rclone
     rename
     speedtest-go
     t-rec
     taplo
-    # texlive.combined.scheme-full
-    # texlivePackages.fontawesome5
     tldr
     unzip
     uv
@@ -86,7 +84,7 @@ let
     with pkgs;
     [
       graphviz
-      fira-code-nerdfont
+      nerd-fonts.fira-code
       meslo-lgs-nf
       fira-code-symbols
       nodejs
