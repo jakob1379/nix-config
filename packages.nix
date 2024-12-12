@@ -3,16 +3,12 @@ let
   isWayland = (builtins.getEnv "XDG_SESSION_TYPE" == "wayland");
 
   # Conditionally wrap KeePassXC for autotype support in KDE if running Wayland
-  keepassxc = if isWayland then
-    (pkgs.keepassxc.overrideAttrs (oldAttrs: rec {
-      postFixup = ''
-        wrapProgram "$out/bin/keepassxc" \
-          --set QT_QPA_PLATFORM xcb
-      '';
-    }))
-  else
-    pkgs.keepassxc;
-
+  patched_keepassxc = pkgs.keepassxc.overrideAttrs (oldAttrs: rec {
+    postFixup = ''
+    sed -i 's/^Exec=keepassxc/Exec=env QT_QPA_PLATFORM=xcb keepassxc/' \
+      $out/share/applications/org.keepassxc.KeePassXC.desktop
+  '';
+  });
   
   hyprLandPackages = with pkgs; [
     dolphin
@@ -67,7 +63,7 @@ let
     feh
     firefox-unwrapped
     gnome-pomodoro
-    keepassxc
+    # keepassxc
     konsole
     libnotify
     netbird-ui
@@ -132,5 +128,5 @@ in
     customScripts
     emacsPackages
   ;
-  guiPackages = guiPackages ++ [ keepassxc ];
+  guiPackages = guiPackages ++ [ patched_keepassxc ];
 }
