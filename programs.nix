@@ -28,6 +28,8 @@
           tmux attach || tmux new || echo "Unable to start or attach to tmux session."
         fi
       '';
+      
+      bashrcExtra = builtins.readFile ./bin/secret-export;
     };
 
     thefuck.enable = true;
