@@ -217,6 +217,13 @@
       home-manager switch
     '';
 
+    # clean netbird token
+    netbird-logout = ''
+      netbird down
+      sudo cat /var/lib/netbird/config.json | jq 'del(.PrivateKey)' | sudo tee /var/lib/netbird/tmp-config.json > /dev/null && \
+      sudo mv /var/lib/netbird/tmp-config.json /var/lib/netbird/config.json
+    '';
+
     # Update and switch NixOS
     updateNixos = ''
       sudo nix-channel --update
