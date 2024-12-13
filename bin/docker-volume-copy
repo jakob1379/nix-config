@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+print_help() {
+  echo "Usage: $0 [-h] <source_volume> <destination_volume>"
+  echo
+  echo "This script copies data from one Docker volume to another."
+  echo
+  echo "Options:"
+  echo "  -h        Show this help message and exit."
+  echo
+  echo "Arguments:"
+  echo "  source_volume       Name of the source Docker volume."
+  echo "  destination_volume  Name of the destination Docker volume."
+}
+
+# Parse options
+while getopts "h" opt; do
+  case ${opt} in
+    h )
+      print_help
+      exit 0
+      ;;
+    \? )
+      echo "Invalid option: -$OPTARG" >&2
+      print_help
+      exit 1
+      ;;
+  esac
+done
+
+# Shift off the options and optional arguments
+shift $((OPTIND -1))
+
+# Check if the correct number of arguments is passed
+if [ "$#" -ne 2 ]; then
+  echo "Error: Incorrect number of arguments."
+  print_help
+  exit 1
+fi
+
+VOLUME_A="$1"
+VOLUME_B="$2"
+
+# Run the Docker command to copy the contents of volume A to volume B
+docker run --rm \
+  -v "${VOLUME_A}:/from_volume" \
+  -v "${VOLUME_B}:/to_volume" \
+  alpine \
+  sh -c "cp -a /from_volume/. /to_volume/"
+
+# Inform the user of completion
+if [ $? -eq 0 ]; then
+  echo "Successfully copied data from volume '${VOLUME_A}' to volume '${VOLUME_B}'"
+else
+  echo "An error occurred during the volume copy"
+fi
