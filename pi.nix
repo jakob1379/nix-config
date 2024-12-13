@@ -8,7 +8,7 @@
 }:
 let
   # Import the exported lists from packages.nix
-  packages = import ./packages.nix { inherit pkgs system inputs; };
+  packages = import ./packages.nix { inherit pkgs system lib; };
   dotfiles = import ./dotfiles.nix { inherit pkgs; };
 
   sshConfigOverride = {

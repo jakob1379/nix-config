@@ -23,13 +23,15 @@
           fi
         fi
       '';
-      
-      bashrcExtra = ''
-      if [[ $TERM = dumb ]]; then
-          return
-      fi
 
-      ${builtins.readFile ./bin/secret-export}
+      bashrcExtra = ''
+        # ------------------ extra start ------------------
+        if [[ $TERM = dumb ]]; then
+            return
+        fi
+
+        ${builtins.readFile ./bin/secret-export}
+        # ------------------ extra end ------------------
       '';
     };
 
@@ -41,7 +43,7 @@
       baseIndex = 1;
       escapeTime = 1;
       terminal = "xterm-256color";
-      focusEvents = true; 
+      focusEvents = true;
       extraConfig = builtins.readFile ./dotfiles/tmux/tmux.conf;
     };
 
@@ -190,7 +192,10 @@
     package = pkgs.nix;
     settings = {
       max-jobs = "auto";
-      experimental-features = [ "nix-command" "flakes" ];
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
     };
   };
 
