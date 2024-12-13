@@ -17,7 +17,7 @@
           if [ "$TERM" = "dumb" ]; then
             PS1="> "
           else
-            if [ -z "$TMUX" ] && [ -n "$PS1" ] && [ "$TERM" != "dumb" ]; then
+            if [ -n "$SSH_CONNECTION" ] ; then
               tmux attach || tmux new || echo "Unable to start or attach to tmux session."
             fi
           fi
