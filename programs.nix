@@ -10,11 +10,6 @@
 
     bash = {
       enable = true;
-      bashrcExtra = ''
-        if [[ $TERM = dumb ]]; then
-          return
-        fi
-      '';
       profileExtra = ''
         # Auto-start tmux for remote SSH sessions if the shell is interactive
         if [ -z "$INSIDE_EMACS" ]; then
@@ -29,7 +24,13 @@
         fi
       '';
       
-      bashrcExtra = builtins.readFile ./bin/secret-export;
+      bashrcExtra = ''
+      if [[ $TERM = dumb ]]; then
+          return
+      fi
+
+      ${builtins.readFile ./bin/secret-export}
+      '';
     };
 
     thefuck.enable = true;
