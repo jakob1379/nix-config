@@ -93,7 +93,20 @@ in
   console.keyMap = "dk-latin1";
 
   # Enable CUPS to print documents.
-  services.printing.enable = true;
+  services.printing = {
+    enable = true;
+    drivers = with pkgs; [
+      gutenprint
+      hplip
+    ];
+  };
+
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+    openFirewall = true;
+  };
+
 
   # Enable sensors for lenovo to register screen orientation
   hardware.sensor.iio.enable = true;
