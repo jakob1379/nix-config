@@ -4,13 +4,7 @@ let
   # Define each config section as a separate variable
   sshConfig = {
     ".ssh/keepassxc-prompt".source = ./bin/keepassxc-prompt;
-    ".ssh/config".text = ''
-      ProxyCommand $HOME/.ssh/keepassxc-prompt %h %p
-
-      Include ~/.ssh/local_config
-
-      Host *
-        AddKeysToAgent yes'';
+    ".ssh/config".source = ./dotfiles/ssh/common;
   };
 
   emacsConfig = {

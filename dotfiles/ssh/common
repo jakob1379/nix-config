@@ -1,0 +1,11 @@
+ProxyCommand $HOME/.ssh/keepassxc-prompt %h %p
+
+Include ~/.ssh/local_config
+
+Host *
+    AddKeysToAgent yes
+
+    # SSH multiplexing to speed up connections
+    ControlMaster auto
+    ControlPath ~/.ssh/sockets/%r@%h-%p
+    ControlPersist yes
