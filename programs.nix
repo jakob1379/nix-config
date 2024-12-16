@@ -10,20 +10,7 @@
 
     bash = {
       enable = true;
-      profileExtra = ''
-        # Auto-start tmux for remote SSH sessions if the shell is interactive
-        if [ -z "$INSIDE_EMACS" ]; then
-          # If it's a TRAMP connection (TERM is "dumb"), do not proceed with tmux
-          if [ "$TERM" = "dumb" ]; then
-            PS1="> "
-          else
-            if [ -n "$SSH_CONNECTION" ] ; then
-              tmux attach || tmux new || echo "Unable to start or attach to tmux session."
-            fi
-          fi
-        fi
-      '';
-
+      profileExtra = builtins.readFile ./dotfiles/bash/.profile;
       bashrcExtra = ''
         # ------------------ extra start ------------------
         if [[ $TERM = dumb ]]; then

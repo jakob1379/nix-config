@@ -1,6 +1,6 @@
 ProxyCommand $HOME/.ssh/keepassxc-prompt %h %p
 
-Include ~/.ssh/local_config
+Include ~/.ssh/conf.d/local_config
 
 Host *
     AddKeysToAgent yes
