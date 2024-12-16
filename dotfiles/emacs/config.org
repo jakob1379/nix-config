@@ -145,7 +145,7 @@ state.
 #+BEGIN_SRC emacs-lisp
 (use-package gcmh
   :demand t
-  :delight
+  :delight gcmh-mode
   :config
   (gcmh-mode 1))
 #+END_SRC
@@ -360,6 +360,17 @@ If emacs is not running as a server, start one. It should've been started by sys
 #+BEGIN_SRC emacs-lisp
 (define-key minibuffer-local-map (kbd "SPC") 'self-insert-command)
 #+END_SRC
+** TRAMP
+Tramp is what we use for ssh, but need some config as it has its own default which is not
+necessarily superseded by the ssh config.
+#+begin_src emacs-lisp :tangle yes
+(use-package tramp
+  :straight (:type built-in)
+  :custom
+  (tramp-use-connection-share nil)
+  )
+#+end_src
+
 * Mode Configs
 ** Before the rest
 *** Delight and Deminish
@@ -369,7 +380,343 @@ These two packages enable the customization of the mode line to either hide or c
 (use-package delight)
 (use-package diminish)
 #+END_SRC
-** The Rest
+** The Rest 
+:PROPERTIES:
+:header-args: :tangle yes
+:END:
+*** Company mode
+This configures the nice dropdown autocompletion system called company modes. It is highly
+extensible but package specific extensions like lsp, yasnippet, etc., should be configures in their
+section and not here.
+**** Company package
+#+BEGIN_SRC emacs-lisp
+  (use-package company
+    :init
+    (global-company-mode t)
+
+    :config
+    ;; Separate general backends and mode-specific backends
+    (setq company-backends
+          '((company-capf company-dabbrev company-files company-keywords company-yasnippet)
+            (company-ispell)
+            (company-etags company-semantic)))
+
+    :custom
+    (company-dabbrev-downcase nil)
+    (company-echo-delay 0.1)
+    (company-idle-delay 0.01)
+    (company-minimum-prefix-length 1)
+    (company-selection-wrap-around t)
+    (company-show-numbers t)
+    (company-tooltip-align-annotations t)
+    (company-tooltip-limit 20)
+
+    :custom-face
+    ;; (company-tooltip ((t (:inherit default :background "#f8f8f2"))))
+    ;; (company-scrollbar-bg ((t (:background "#3E3D31"))))
+    ;; (company-scrollbar-fg ((t (:background "#9A9A9A"))))
+    (company-tooltip-selection ((t (:background "#CC6666" :foreground "#F8F8F2"))))
+    (company-tooltip-common ((t (:foreground "#F92672"))))
+    (company-tooltip-common-selection ((t (:foreground "#FD971F"))))
+    (company-preview-common ((t (:foreground "#B6E63E" :underline t))))
+    (company-preview ((t (:background "#2B2B2B" :foreground "#A6E22E"))))
+    (company-preview-search ((t (:inherit match))))
+    (company-template-field ((t (:background "#272822" :foreground "#F8F8F2"))))
+    )
+#+END_SRC
+**** Company-statistics
+
+This backend helps improve the user experience by keeping track of completions used and
+order things accordingly
+
+#+BEGIN_SRC emacs-lisp
+  (use-package company-statistics
+    :after company
+    :config
+    (company-statistics-mode))
+#+END_SRC
+**** Fuzzy search
+Yes - we can have fuzzy search here too.
+#+BEGIN_SRC emacs-lisp
+  (use-package company-fuzzy
+    :disabled
+    :diminish
+    :after company
+    :config
+    (global-company-fuzzy-mode))
+#+END_SRC
+**** Company box - pretty icons
+#+BEGIN_SRC emacs-lisp
+  (use-package company-box
+    :diminish
+    :after company
+    :custom
+    (company-box)
+    :config
+    (company-box-mode))
+
+#+END_SRC
+**** Prescient
+Teaches company to sort better
+#+BEGIN_SRC emacs-lisp
+  (use-package prescient
+    :after company
+    :config
+    (prescient-persist-mode 1))
+#+END_SRC
+*** Flycheck
+#+BEGIN_SRC emacs-lisp
+(use-package flycheck )
+#+END_SRC
+*** Helm
+
+#+BEGIN_SRC emacs-lisp
+(use-package helm
+  :ensure t
+  :after all-the-icons
+  :bind (("M-x"     . helm-M-x) ;; Evaluate functions
+                 ("C-x C-f" . helm-find-files) ;; Open or create files
+                 ("C-x b"   . helm-mini) ;; Select buffers
+                 ("C-x C-r" . helm-recentf) ;; Select recently saved files
+                 ("C-c i"   . helm-imenu) ;; Select document heading
+                 ("M-y"     . helm-show-kill-ring)
+                 :map helm-map
+                 ;; ("<tab>" . helm-execute-persistent-action)
+                 )
+  :config
+  ;; (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
+  (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+  (setq helm-always-two-windows nil
+                helm-autoresize-max-height 0
+                helm-autoresize-min-height 20
+                helm-echo-input-in-header-line t
+                helm-ff-file-name-history-use-recentf t
+                helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
+                helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
+                helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
+                helm-M-x-show-short-doc t
+                helm-M-x-fuzzy-match t
+                )
+  (autoload 'dired-jump "dired-x"
+        "Jump to Dired buffer corresponding to current buffer." t)
+
+  (autoload 'dired-jump-other-window "dired-x"
+        "Like \\[dired-jump] (dired-jump) but in other window." t)
+
+  (define-key global-map "\C-x\C-j" 'dired-jump)
+  (define-key global-map "\C-x4\C-j" 'dired-jump-other-window)
+  (helm-ff-icon-mode)
+  (helm-adaptive-mode)
+  (helm-autoresize-mode)
+  )
+#+END_SRC
+**** Helm ag - the silver-search
+
+#+BEGIN_SRC emacs-lisp
+(use-package helm-ag
+  :bind
+  ("C-c a a" . helm-do-ag)
+  ("C-c a p" . helm-do-ag-project-root)
+  ("C-c a g" . helm-do-grep-ag)
+  )
+#+END_SRC
+*** LSP
+**** LSP mode
+#+BEGIN_SRC emacs-lisp
+  (use-package lsp-mode
+    :commands lsp
+    :hook
+    (lsp-mode . lsp-enable-which-key-integration)
+    (prog-mode . lsp-deferred)
+    (yaml-mode . lsp-deferred)
+    (nix-mode . lsp-deferred)
+    (rst-mode . lsp-deferred)
+    (latex-mode . lsp-deferred)
+    (css-mode . lsp-deferred)
+    
+    :config
+    ;; Register lsp clients
+    (lsp-register-client
+     (make-lsp-client :new-connection (lsp-stdio-connection "esbonio")
+                      :major-modes '(rst-mode)
+                      :server-id 'esbonio))
+
+    ;; Language ID configuration
+    (lsp-register-client
+     (make-lsp-client :new-connection (lsp-stdio-connection '("nixd"))
+                      :major-modes '(nix-mode)
+                      :server-id 'nix))
+
+    ;; File watch ignore list
+    (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\.venv\\'")
+    (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\virt\\'")
+    
+    :custom
+    (lsp-idle-delay 0.1)
+    (lsp-enable-snippet t)
+    (lsp-auto-execute-action nil)
+    (lsp-auto-guess-root t)
+    (lsp-auto-select-workspace t)
+    (lsp-before-save-edits nil)
+    (lsp-completion-provider :none)
+    (lsp-eldoc-enable-hover t)
+    (lsp-enable-links t)
+    (lsp-enable-on-type-formatting t)
+    (lsp-face-highlight-read ((t (:underline t))))
+    (lsp-face-highlight-textual ((t (:underline t))))
+    (lsp-face-highlight-write ((t (:underline t))))
+    (lsp-file-watch-threshold 5000)
+    (lsp-headerline-breadcrumb-enable t)
+    (lsp-intelephense-multi-root nil)
+    (lsp-keep-workspace-alive nil)
+    (lsp-keymap-prefix "C-c l") ;; Set prefix for lsp-command-map
+    (lsp-modeline-diagnostics-enable t)
+    ;; (lsp-prefer-flymake nil)
+    )
+#+END_SRC
+**** LSP Treemacs
+#+begin_src emacs-lisp :tangle yes
+(use-package lsp-treemacs)
+#+end_src
+
+**** DAP
+Following [[https://emacs-lsp.github.io/dap-mode/page/python-poetry-pyenv/][this guide]] we need a little tweaking to play nicely with poetry environments
+#+BEGIN_SRC emacs-lisp
+  (use-package dap-mode
+    :after lsp-mode
+    :commands dap-debug
+    :hook ((python-mode . dap-ui-mode) (python-mode . dap-mode))
+    :custom
+    (dap-python-debugger 'debugpy)
+    :config
+    (require 'dap-python)
+    (defun dap-python--pyenv-executable-find (command)
+      (with-venv (executable-find "python")))
+
+    (add-hook 'dap-stopped-hook
+              (lambda (arg) (call-interactively #'dap-hydra)))
+    )
+#+END_SRC
+
+**** Helm LSP
+helm is awesome
+#+begin_src emacs-lisp :tangle yes
+(use-package helm-lsp)
+#+end_src
+
+**** LSP ui
+
+#+BEGIN_SRC emacs-lisp
+(use-package lsp-ui
+  :bind ("C-c l u i" . lsp-ui-imenu)
+  :config
+  (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+  (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
+  :custom
+  (lsp-eldoc-enable-hover t)
+  (lsp-signature-auto-activate t)
+  (lsp-signature-render-documentation t)
+  (lsp-ui-doc-border (face-foreground 'default))
+  (lsp-ui-doc-enable t)
+  (lsp-ui-doc-header t)
+  (lsp-ui-doc-include-signature t)
+  (lsp-ui-doc-position 'bottom)
+  (lsp-ui-imenu-auto-refresh t)
+  (lsp-ui-sideline-delay 0.05)
+  (lsp-ui-sideline-enable t)
+  (lsp-ui-sideline-show-code-actions t)
+  (lsp-ui-sideline-show-diagnostics t)
+  (lsp-ui-sideline-show-hover t)
+  :hook (lsp-mode . lsp-ui-mode)
+  )
+#+END_SRC
+**** Copilot
+Copilot is not really a LSP per sé, BUT the functionality is close hence the location here
+#+BEGIN_SRC emacs-lisp
+(use-package jsonrpc)
+
+(use-package copilot
+  :disabled
+  :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
+  :requires ( editorconfig jsonrpc )
+  :hook
+  (company-mode . (lambda ()
+                    (add-to-list 'company-backends 'company-yasnippet)))
+  (lsp-mode . copilot-mode)
+  (prog-mode . copilot-mode)
+  (yaml-mode . copilot-mode)
+  (nix-mode . copilot-mode)
+  (rst-mode . copilot-mode)
+  (latex-mode . copilot-mode)
+  (org-mode . copilot-mode)
+  )
+#+END_SRC
+*** Projectile
+#+BEGIN_SRC emacs-lisp
+(use-package projectile)
+#+END_SRC
+*** Which-key
+#+BEGIN_SRC emacs-lisp
+  (use-package which-key
+    :delight WK
+    :config
+    (which-key-mode)
+    (which-key-setup-minibuffer)
+    (set-face-attribute
+          'which-key-local-map-description-face nil :weight 'bold)
+    :custom
+    (which-key-idle-delay 2)
+    (which-key-show-remaining-keys t)
+    )
+#+END_SRC
+*** Yasnippet
+Yasnippet is one of the main reasons I have a hard time moving away. The ease of creating new
+snippets for common operations instead of macros, allows it to be portable and powerful.
+
+#+begin_src emacs-lisp
+  (use-package yasnippet
+    :delight yas
+    :ensure t
+    :init
+    (yas-global-mode 1)
+    :custom
+    (yas-prompt-functions '(yas-ido-prompt)))
+
+  (use-package yasnippet-snippets
+    :after yasnippet
+    :ensure t
+    :config
+    (yasnippet-snippets-initialize)
+    ;; (yas-recompile-all)
+    (yas-reload-all)
+    )
+#+end_src
+*** Treemacs
+
+[[https://github.com/Alexander-Miller/treemacs][treemacs]] is a sidebar tree file explorer of the current directory/project.
+=evil=, =projectile=, and =magit= integration is enabled.
+
+#+BEGIN_SRC emacs-lisp
+(use-package treemacs
+  ;; :hook (after-init . (treemacs))
+  :config
+  (treemacs-git-mode 'deferred)
+  (treemacs-project-follow-mode t)
+  (treemacs-filewatch-mode t)
+  (treemacs-git-commit-diff-mode t)
+  (treemacs-indent-guide-mode t)
+  )
+
+(use-package treemacs-magit
+  :after treemacs-magit)
+
+(use-package treemacs-all-the-icons
+  :after all-the-icons treemacs
+  :config
+  (treemacs-load-theme "all-the-icons")
+  (treemacs))
+#+END_SRC
 *** All the icons
 nice developer icons
 #+BEGIN_SRC emacs-lisp
@@ -465,7 +812,7 @@ icons, file preview, etc.
 *** Direnv
 #+BEGIN_SRC emacs-lisp
 (use-package direnv
-  :hook (emacs-startup . direnv-mode)
+  :hook (after-init . direnv-mode)
   :custom
   (direnv-always-show-summary t)
   :config
@@ -526,6 +873,19 @@ Always redraw immediately when scrolling, more responsive and doesn't hang! Sour
   (fast-scroll-config)
   (fast-scroll-mode 1))
 #+END_SRC
+*** Flyspell
+
+#+BEGIN_SRC emacs-lisp
+(use-package flyspell
+  :delight
+  :hook (prog-mode . (lambda () (setq flyspell-prog-text-faces
+                                      (delq 'font-lock-string-face
+                                            flyspell-prog-text-faces))))
+  (text-mode . flyspell-mode)
+  (prog-mode . flyspell-prog-mode))
+#+END_SRC
+
+#+RESULTS:
 *** Fonts
 The [[https://github.com/rolandwalker/unicode-fonts][unicode-fonts]] package helps Emacs use the full range of unicode characters provided by most fonts.
 
@@ -595,58 +955,14 @@ highlights uncommitted changes on the left side of the window
    (graphviz-dot-indent-width 2)
   )
 #+END_SRC
-*** Helm
+*** Guess Language
+
 
 #+BEGIN_SRC emacs-lisp
-(use-package helm
-  :ensure t
-  :after all-the-icons
-  :bind (("M-x"     . helm-M-x) ;; Evaluate functions
-                 ("C-x C-f" . helm-find-files) ;; Open or create files
-                 ("C-x b"   . helm-mini) ;; Select buffers
-                 ("C-x C-r" . helm-recentf) ;; Select recently saved files
-                 ("C-c i"   . helm-imenu) ;; Select document heading
-                 ("M-y"     . helm-show-kill-ring)
-                 :map helm-map
-                 ;; ("<tab>" . helm-execute-persistent-action)
-                 )
-  :config
-  ;; (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
-  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
-  (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
-  (setq helm-always-two-windows nil
-                helm-autoresize-max-height 0
-                helm-autoresize-min-height 20
-                helm-echo-input-in-header-line t
-                helm-ff-file-name-history-use-recentf t
-                helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
-                helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
-                helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
-                helm-M-x-show-short-doc t
-                helm-M-x-fuzzy-match t
-                )
-  (autoload 'dired-jump "dired-x"
-        "Jump to Dired buffer corresponding to current buffer." t)
+(use-package guess-language
+  :config (setq guess-language-languages '(en da)
+                                guess-language-min-paragraph-length 35))
 
-  (autoload 'dired-jump-other-window "dired-x"
-        "Like \\[dired-jump] (dired-jump) but in other window." t)
-
-  (define-key global-map "\C-x\C-j" 'dired-jump)
-  (define-key global-map "\C-x4\C-j" 'dired-jump-other-window)
-  (helm-ff-icon-mode)
-  (helm-adaptive-mode)
-  (helm-autoresize-mode)
-  )
-#+END_SRC
-**** Helm ag - the silver-search
-
-#+BEGIN_SRC emacs-lisp
-(use-package helm-ag
-  :bind
-  ("C-c a a" . helm-do-ag)
-  ("C-c a p" . helm-do-ag-project-root)
-  ("C-c a g" . helm-do-grep-ag)
-  )
 #+END_SRC
 *** Helpful
 [[https://github.com/Wilfred/helpful][helpful]] makes a better Emacs =*help*= buffer, with colors and contextual information.
@@ -737,107 +1053,66 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
     :custom
     (js-indent-level 2))
 #+END_SRC
-*** LSP
-**** LSP mode
+*** LaTeX
 #+BEGIN_SRC emacs-lisp
-(use-package lsp-mode
-  :commands lsp
-  :hook
-  (lsp-mode . lsp-enable-which-key-integration)
-  (prog-mode . lsp-deferred)
-  (yaml-mode . lsp-deferred)
-  (nix-mode . lsp-deferred)
-  (rst-mode . lsp-deferred)
-  (latex-mode . lsp-deferred)
-  (css-mode . lsp-deferred)
-  :config
-  ;; Register lsp clients
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection "esbonio")
-                    :major-modes '(rst-mode)
-                    :server-id 'esbonio))
-  ;; (lsp-register-client
-  ;;  (make-lsp-client :new-connection (lsp-stdio-connection '("nil"))
-  ;;                   :major-modes '(nix-mode)
-  ;;                   :server-id 'nix))
+  (use-package latex
+    :straight (:type built-in)
+    :ensure auctex
+    :mode ("\\.tex\\$" . latex-mode)
+    :custom
+    (LaTeX-electric-left-right-brace t)
+    (TeX-PDF-mode t)
+    (TeX-auto-save t)
+    (TeX-electric-math (cons "$" "$"))
+    (TeX-parse-self t)
+    (TeX-source-correlate-method 'synctax)
+    (TeX-source-correlate-mode t)
+    (TeX-source-correlate-start-server nil)
+    (TeX-syntactic-comment t)
+    (reftex-plug-into-AUCTeX t)
+    (TeX-view-program-list
+     '(("DVI Viewer" "open %o")
+       ("PDF Viewer" "open %o")
+       ("HTML Viewer" "open %o")))
+    :hook
+    (latex-mode . (lambda ()
+                    (tool-bar-mode 1)))
+    )
 
-  ;; Language ID configuration
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection '("nixd"))
-                    :major-modes '(nix-mode)
-                    :server-id 'nix))
+  (use-package company-auctex
+    :pin melpa
+    :after tex
+    :init
+    (company-auctex-init)
+    (add-hook 'LaTeX-mode-hook 'company-auctex-init))
 
-  ;; File watch ignore list
-  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\.venv\\'")
-  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\virt\\'")
-  :custom
-  (lsp-auto-execute-action nil)
-  (lsp-auto-guess-root t)
-  (lsp-auto-select-workspace t)
-  (lsp-before-save-edits nil)
-  (lsp-completion-provider :none)
-  (lsp-eldoc-enable-hover t)
-  (lsp-enable-links t)
-  (lsp-enable-on-type-formatting t)
-  (lsp-enable-snippet t)
-  (lsp-face-highlight-read ((t (:underline t))))
-  (lsp-face-highlight-textual ((t (:underline t))))
-  (lsp-face-highlight-write ((t (:underline t))))
-  (lsp-file-watch-threshold 5000)
-  (lsp-headerline-breadcrumb-enable t)
-  (lsp-intelephense-multi-root nil)
-  (lsp-keep-workspace-alive nil)
-  (lsp-keymap-prefix "C-c l") ;; Set prefix for lsp-command-map
-  (lsp-modeline-diagnostics-enable t)
-  ;; (lsp-prefer-flymake nil)
-  )
-#+END_SRC
-**** LSP ui
+  (use-package reftex
+    :pin gnu
+    :custom
+    (reftex-cite-prompt-optional-args t)) ; Prompt for empty optional arguments in cite
 
-#+BEGIN_SRC emacs-lisp
-(use-package lsp-ui
-  :bind ("C-c l u i" . lsp-ui-imenu)
-  :config
-  (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-  (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
-  :custom
-  (lsp-eldoc-enable-hover t)
-  (lsp-signature-auto-activate t)
-  (lsp-signature-render-documentation t)
-  (lsp-ui-doc-border (face-foreground 'default))
-  (lsp-ui-doc-enable t)
-  (lsp-ui-doc-header t)
-  (lsp-ui-doc-include-signature t)
-  (lsp-ui-doc-position 'bottom)
-  (lsp-ui-imenu-auto-refresh t)
-  (lsp-ui-sideline-delay 0.05)
-  (lsp-ui-sideline-enable t)
-  (lsp-ui-sideline-show-code-actions t)
-  (lsp-ui-sideline-show-diagnostics t)
-  (lsp-ui-sideline-show-hover t)
-  :hook (lsp-mode . lsp-ui-mode)
-  )
-#+END_SRC
-**** Copilot
-Copilot is not really a LSP per sé, BUT the functionality is close hence the location here
-#+BEGIN_SRC emacs-lisp
-(use-package jsonrpc)
-
-(use-package copilot
-  :disabled
-  :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
-  :requires ( editorconfig jsonrpc )
-  :hook
-  (company-mode . (lambda ()
-                    (add-to-list 'company-backends 'company-yasnippet)))
-  (lsp-mode . copilot-mode)
-  (prog-mode . copilot-mode)
-  (yaml-mode . copilot-mode)
-  (nix-mode . copilot-mode)
-  (rst-mode . copilot-mode)
-  (latex-mode . copilot-mode)
-  (org-mode . copilot-mode)
-  )
+  ;; AUCTeX configuration
+  (use-package auctex
+    :mode ("\\.tex\\'" . latex-mode)
+    :custom
+    ;; Enable parsing
+    (TeX-auto-save t)
+    (TeX-parse-self t)
+    ;; Default PDF viewer
+    (TeX-view-program-selection '((output-pdf "PDF Viewer")))
+    ;; Use pdf-tools to open PDF files
+    (TeX-view-program-list '(("PDF Viewer" "pdf-tools %o")))
+    ;; Enable TeX-fold-mode automatically in TeX/LaTeX mode
+    (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+    ;; Configure RefTeX with AUCTeX
+    (reftex-plug-into-AUCTeX t)
+    :hook
+    (TeX-mode-hook . (lambda () (TeX-fold-mode 1)))
+    ;; Enable RefTeX in AUCTeX
+    (LaTeX-mode-hook . turn-on-reftex)
+    ;; Configure RefTeX with AUCTeX
+    (LaTeX-mode-hook . reftex-plug-into-AUCTeX)
+    )
 #+END_SRC
 *** Magit
 Magit is an amazing git client that can do 90% of what git can, this covers almost all regular
@@ -1030,6 +1305,7 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
 **** The org package
 #+BEGIN_SRC emacs-lisp
 (use-package org
+  :delight 
   :straight (:type built-in)
   :commands org-babel-do-load-languages
   :custom
@@ -1058,9 +1334,9 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
-   '((shell   . t)
-     (python  . t)
-     )
+   '((shell . t)
+     (python . t)
+     (C . t))
   )
 )
 #+END_SRC
@@ -1187,6 +1463,84 @@ We want to be able to view pdfs in emacs
   :mode
   ("\\.ps1" . powershell-mode))
 #+END_SRC
+*** Python
+Since I am doing a lot of python, many modes and other things related to python has been bundled in this section
+**** Python mode
+#+BEGIN_SRC emacs-lisp
+(use-package python
+  :ensure nil  ;; since python mode is built-in
+  :mode ("\\.py\\'" . python-mode)
+  :init
+  (add-to-list 'process-coding-system-alist '("python" . (utf-8 . utf-8)))
+  :config (setq python-indent-offset 4)
+  (defun pretty-python-code ()
+        (interactive)
+        (call-interactively 'pyimport-remove-unused)
+        (call-interactively 'python-isort-buffer)
+        (call-interactively 'python-black-buffer))
+  (when (executable-find "ipython")
+  :custom
+  (python-shell-interpreter "ipython"))
+  )
+
+#+END_SRC
+**** Elpy
+LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and browsing
+#+BEGIN_SRC emacs-lisp
+;; (use-package elpy
+;;   :ensure t
+;;   :after lsp-mode
+;;   :init
+;;   (elpy-enable)
+;;   :config
+;;   :hook
+;;   (python-mode . elpy-mode)
+;;   )
+#+END_SRC
+**** Poetry
+
+#+BEGIN_SRC emacs-lisp
+(use-package poetry)
+#+END_SRC
+**** Snakemake
+
+#+BEGIN_SRC emacs-lisp
+(use-package snakemake-mode
+  :mode (("/Snakefile\\'" . snakemake-mode)
+         ("/snakefile\\'" . snakemake-mode)
+         ("\\.smk\\'" . snakemake-mode)))
+#+END_SRC
+**** Pyenv
+
+#+BEGIN_SRC emacs-lisp
+;; Use pyvenv package for managing Python virtual environments
+(defun pyvenv-parent-env ()
+        ;; Locating the virtual environment file (.python-version) in the directory tree
+        ;; and extracting its contents to use for setting up the virtual environment
+        (let* ((root (locate-dominating-file
+                                  (or (buffer-file-name) default-directory)
+                                  ".python-version"))
+                   (venv (and root
+                                          (with-temp-buffer
+                                                (insert-file-contents
+                                                 (expand-file-name ".python-version" root))
+                                                (string-trim (buffer-string))))))
+          ;; If a virtual environment is found, enable pyvenv mode,
+          ;; activate the virtual environment and restart lsp workspace
+          (when venv
+                (pyvenv-mode 1)
+                (pyvenv-tracking-mode 1)
+                (pyvenv-workon venv))))
+
+(use-package pyvenv
+  :ensure t
+  :init
+  ;; (add-hook 'find-file-hook 'pyvenv-parent-env)
+  ;; :hook (python-mode . pyvenv-parent-env)
+  :config
+  )
+
+#+END_SRC
 *** Rainbow delimiters
 #+BEGIN_SRC emacs-lisp
 (use-package rainbow-delimiters
@@ -1252,31 +1606,6 @@ simple package that enable titlecasing
   )
 
 #+END_SRC
-*** Treemacs
-
-[[https://github.com/Alexander-Miller/treemacs][treemacs]] is a sidebar tree file explorer of the current directory/project.
-=evil=, =projectile=, and =magit= integration is enabled.
-
-#+BEGIN_SRC emacs-lisp
-(use-package treemacs
-  ;; :hook (after-init . (treemacs))
-  :config
-  (treemacs-git-mode 'deferred)
-  (treemacs-project-follow-mode t)
-  (treemacs-filewatch-mode t)
-  (treemacs-git-commit-diff-mode t)
-  (treemacs-indent-guide-mode t)
-  )
-
-(use-package treemacs-magit
-  :after treemacs-magit)
-
-(use-package treemacs-all-the-icons
-  :after all-the-icons treemacs
-  :config
-  (treemacs-load-theme "all-the-icons")
-  (treemacs))
-#+END_SRC
 *** VLF - very large files
 #+BEGIN_SRC emacs-lisp
 (use-package vlf
@@ -1318,20 +1647,6 @@ simple package that enable titlecasing
 
   :config (setq webpaste-provider-priority '("dpaste.org")))
 #+END_SRC
-*** Which-key
-#+BEGIN_SRC emacs-lisp
-  (use-package which-key
-    :delight WK
-    :config
-    (which-key-mode 1)
-    (which-key-setup-minibuffer)
-    (set-face-attribute
-          'which-key-local-map-description-face nil :weight 'bold)
-    :custom
-    (which-key-idle-delay 2)
-    (which-key-show-remaining-keys t)
-    )
-#+END_SRC
 *** Why this (in-line git blame)
 #+begin_src emacs-lisp
 (use-package why-this
@@ -1344,107 +1659,4 @@ simple package that enable titlecasing
   :mode
   ("\\.yml'" . yaml-mode)
   ("\\.yaml'" . yaml-mode))
-#+END_SRC
-*** Yasnippet
-Yasnippet is one of the main reasons I have a hard time moving away. The ease of creating new
-snippets for common operations instead of macros, allows it to be portable and powerful.
-
-#+begin_src emacs-lisp
-  (use-package yasnippet
-    :delight
-    :ensure t
-    :init
-    (yas-global-mode 1)
-    :custom
-    (yas-prompt-functions '(yas-ido-prompt)))
-
-  (use-package yasnippet-snippets
-    :after yasnippet
-    :ensure t
-    :config
-    (yasnippet-snippets-initialize)
-    ;; (yas-recompile-all)
-    (yas-reload-all)
-    )
-#+end_src 
-
-*** Company mode
-This configures the nice dropdown autocompletion system called company modes. It is highly
-extensible but package specific extensions like lsp, yasnippet, etc., should be configures in their
-section and not here.
-**** Company package
-#+BEGIN_SRC emacs-lisp
-  (use-package company
-    :init
-    (global-company-mode t)
-
-    :config
-    ;; Separate general backends and mode-specific backends
-    (setq company-backends
-          '((company-capf company-dabbrev company-files company-keywords company-yasnippet)
-            (company-ispell)
-            (company-etags company-semantic)))
-
-    :custom
-    (company-dabbrev-downcase nil)
-    (company-echo-delay 0.1)
-    (company-idle-delay 0.01)
-    (company-minimum-prefix-length 1)
-    (company-selection-wrap-around t)
-    (company-show-numbers t)
-    (company-tooltip-align-annotations t)
-    (company-tooltip-limit 20)
-
-    :custom-face
-    ;; (company-tooltip ((t (:inherit default :background "#f8f8f2"))))
-    ;; (company-scrollbar-bg ((t (:background "#3E3D31"))))
-    ;; (company-scrollbar-fg ((t (:background "#9A9A9A"))))
-    (company-tooltip-selection ((t (:background "#CC6666" :foreground "#F8F8F2"))))
-    (company-tooltip-common ((t (:foreground "#F92672"))))
-    (company-tooltip-common-selection ((t (:foreground "#FD971F"))))
-    (company-preview-common ((t (:foreground "#B6E63E" :underline t))))
-    (company-preview ((t (:background "#2B2B2B" :foreground "#A6E22E"))))
-    (company-preview-search ((t (:inherit match))))
-    (company-template-field ((t (:background "#272822" :foreground "#F8F8F2"))))
-    )
-#+END_SRC
-**** Company-statistics
-
-This backend helps improve the user experience by keeping track of completions used and
-order things accordingly
-
-#+BEGIN_SRC emacs-lisp
-  (use-package company-statistics
-    :after company
-    :config
-    (company-statistics-mode))
-#+END_SRC
-**** Fuzzy search
-Yes - we can have fuzzy search here too.
-#+BEGIN_SRC emacs-lisp
-  (use-package company-fuzzy
-    :disabled
-    :diminish
-    :after company
-    :config
-    (global-company-fuzzy-mode))
-#+END_SRC
-**** Company box - pretty icons
-#+BEGIN_SRC emacs-lisp
-  (use-package company-box
-    :diminish
-    :after company
-    :custom
-    (company-box)
-    :config
-    (company-box-mode))
-
-#+END_SRC
-**** Prescient
-Teaches company to sort better
-#+BEGIN_SRC emacs-lisp
-  (use-package prescient
-    :after company
-    :config
-    (prescient-persist-mode 1))
 #+END_SRC
