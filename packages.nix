@@ -25,6 +25,7 @@ let
     # texlive.combined.scheme-full
     # texlivePackages.fontawesome5
     btop
+    busybox
     cookiecutter
     dconf
     dig
@@ -52,13 +53,10 @@ let
     t-rec
     taplo
     tldr
-    unzip
     uv
     wakatime
-    wget
     xclip
     yq-go
-    zip
   ];
 
   guiPackages = with pkgs; [
@@ -90,7 +88,7 @@ let
     with pkgs;
     [
       graphviz
-      fira-code-nerdfont
+      nerd-fonts.fira-code
       meslo-lgs-nf
       fira-code-symbols
       nodejs
