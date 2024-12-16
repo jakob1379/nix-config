@@ -365,10 +365,20 @@ Tramp is what we use for ssh, but need some config as it has its own default whi
 necessarily superseded by the ssh config.
 #+begin_src emacs-lisp :tangle yes
 (use-package tramp
-  :straight (:type built-in)
   :custom
   (tramp-use-connection-share nil)
-  )
+  :config
+  (let ((ssh-configs (append (list "~/.ssh/config") 
+                              (directory-files "~/.ssh/conf.d/" t directory-files-no-dot-files-regexp))))
+    ;; Log the detected SSH config files to the *tramp-info* buffer
+    (with-current-buffer (get-buffer-create "*tramp-info*")
+      (insert (format "Found SSH config files: %s\n" ssh-configs)))
+    
+    ;; Append the SSH config completion functions
+    (tramp-set-completion-function
+     "ssh" (append (tramp-get-completion-function "ssh")
+                    (mapcar (lambda (file) `(tramp-parse-sconfig ,file)) ssh-configs)))))
+
 #+end_src
 
 * Mode Configs
