@@ -30,16 +30,16 @@
           }
         },
         {
-          "type": "shell",
+          "type": "nix-shell",
           "style": "powerline",
           "powerline_symbol": "\ue0b0",
           "foreground": "#ffffff",
           "background": "#C2DDEF",
-          "template": "{{ if .Env.IN_NIX_SHELL }} \uf313 nix-shell {{ end }}",
+          "template": " \uf313 nix-{{ .Type }}",
           "properties": {
             "style": "full"
           }
-        },
+          },
         {
           "type": "node",
           "style": "powerline",
