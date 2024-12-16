@@ -667,25 +667,25 @@ highlights uncommitted changes on the left side of the window
 *** Hideshow
 #+BEGIN_SRC emacs-lisp
   (use-package hideshow
-    :defer
-    :bind (("C-c C-TAB" . hs-toggle-hiding)
-           ("C-c C--" . 'hs-hide-all)
-           ("C-c C-+" . 'hs-show-all))
-    ;;   :delight hs-minor-mode
-    :hook (prog-mode . (lambda () (hs-minor-mode t)))
+    :delight
+    :defer t
+    :bind (("C-c C-q" . hs-toggle-hiding)
+           ("C-c C--" . hs-hide-all)
+           ("C-c C-+" . hs-show-all))
+    :hook ((after-init . (lambda ()
+                         (add-hook 'prog-mode-hook #'hs-minor-mode))))
     :custom
     ;; Automatically open a block if you search for something where it matches
     (hs-isearch-open t)
-
+    
     :config
-    ;; Add `json-mode' and `javascript-mode' to the list
+    ;; Add specific language support to hs-special-modes-alist
     (setq hs-special-modes-alist (mapcar 'purecopy '((c-mode "{" "}" "/[*/]" nil nil)
                                                      (c++-mode "{" "}" "/[*/]" nil nil)
                                                      (java-mode "{" "}" "/[*/]" nil nil)
                                                      (js-mode "{" "}" "/[*/]" nil)
                                                      (json-mode "{" "}" "/[*/]" nil)
                                                      (javascript-mode  "{" "}" "/[*/]" nil)))))
-
 #+END_SRC
 *** Hungry Delete
 Deleting a whitespace character will delete all whitespace until the next non-whitespace character.
