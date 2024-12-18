@@ -20,6 +20,6 @@ install-nix:
 
 install-home-manager:
 	@echo "Installing home-manager"
-	@nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
+	@nix-channel --add https://github.com/nix-community/home-manager/archive/release-unstable.tar.gz home-manager
 	@nix-channel --update
 	@nix-shell '<home-manager>' -A install
