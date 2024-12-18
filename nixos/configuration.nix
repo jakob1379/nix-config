@@ -200,7 +200,7 @@ in
   # Install firefox.
   programs.firefox.enable = true;
 
-  # Allow unfree packages
+  # Allow unfree packages and overwrite the netbird package for latest
   nixpkgs = {
     config.allowUnfree = true;
     overlays = [
@@ -259,6 +259,23 @@ in
   #   enable = true;
   #   enableSSHSupport = true;
   # };
+  security.pam = {
+    u2f = {
+      enable = true;
+      settings.cue = true;
+    };
+    yubico = {
+      enable = true;
+      debug = true;
+      control = "sufficient";
+      mode = "challenge-response";
+      id = [ "22313001" "22313027" ];
+    };
+    services = {
+      login.u2fAuth = true;
+      sudo.u2fAuth = true;
+    };
+  };
 
   # some needs special allowance for FHS
   programs.nix-ld.enable = true;
