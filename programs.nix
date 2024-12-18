@@ -108,6 +108,9 @@
 
             # backup ui layout
             "services.sync.prefs.sync.browser.uiCustomization.state" = true;
+
+            # ensure pinned tabs are not loaded during start
+            "browser.sessionstore.restore_pinned_tabs_on_demand" = true;
           };
           userChrome = builtins.readFile ./dotfiles/firefox/firefox_userchrome.css;
         };
