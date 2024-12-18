@@ -292,6 +292,9 @@ in
     "nvidia-drm.fbdev=1"
   ];
 
+  # no swap please.
+  swapDevices = lib.mkForce [ ]; 
+  
   # Open ports in the firewall.
   networking.firewall.enable = true;
   # networking.firewall.allowedTCPPorts = [ ... ];
