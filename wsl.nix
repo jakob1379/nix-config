@@ -13,11 +13,16 @@ let
 
   sshConfigOverride = {
     ".ssh/config".text = ''
-
-      Include ~/.ssh/local_config
+      Include ~/.ssh/conf.d/local_config
 
       Host *
-        AddKeysToAgent yes'';
+          AddKeysToAgent yes
+
+          # SSH multiplexing to speed up connections
+          ControlMaster auto
+          ControlPath ~/.ssh/sockets/%r@%h-%p
+          ControlPersist yes
+    '';
   };
 in
 {
