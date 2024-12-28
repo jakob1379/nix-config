@@ -1,5 +1,8 @@
-{ config, pkgs, ... }:
-
+{
+  config,
+  pkgs,
+  ...
+}:
 {
   programs = {
     atuin = {
@@ -22,7 +25,8 @@
       '';
     };
 
-    thefuck.enable = true;
+    pay-respects.enable = true;
+
     tmux = {
       enable = true;
       newSession = true;
@@ -144,7 +148,6 @@
         prune-deep = ''!git fetch --prune; branches=$(git branch -r | awk '"'"'{print $1}'"'"' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '"'"'{print $1}'"'"'); echo -e "branches:\n$branches"; read -p "Do you want to delete all these branches? (y/n): " confirm; if [ "$confirm" = "y" ]; then echo "$branches" | xargs git branch -d; else echo "No branches were deleted"; fi'';
         unstage = "restore --staged";
       };
-
     };
 
     gh.enable = true;
@@ -155,6 +158,7 @@
       enable = true;
       package = pkgs.emacs-gtk;
     };
+    
     ssh.forwardAgent = true;
 
     fzf = {
