@@ -128,7 +128,7 @@ in
     open = false;
     prime = {
       offload.enable = true;
-      offload.enableOffloadCmd=true;
+      offload.enableOffloadCmd = true;
       intelBusId = "PCI:0:2:0";
       nvidiaBusId = "PCI:45:0:0";
     };
@@ -203,30 +203,6 @@ in
   # Allow unfree packages and overwrite the netbird package for latest
   nixpkgs = {
     config.allowUnfree = true;
-    overlays = [
-      (final: prev: {
-        netbird = prev.netbird.overrideAttrs (oldAttrs: rec {
-          version = "0.34.1";
-          ui = true;
-          src = prev.fetchFromGitHub {
-	    owner = "netbirdio";
-	    repo = "netbird";
-	    rev = "e40a29ba17749e0276510149b8da7b3b71550ff4";
-	    hash = "sha256-PYr1bJp6fF9BOyVcV8ktgCgxTh59y1PQ9Xzz4YGD/7M=";
-          };
-
-          vendorHash = "sha256-8ML6s+XPhciYHhWfUOQqgN2XSSqgZ9ULZ6+arWgQjMY=";
-
-          # Update the ldflags to ensure the correct version is embedded
-          ldflags = [
-            "-s"
-            "-w"
-            "-X github.com/netbirdio/netbird/version.version=${version}"
-            "-X main.builtBy=nix"
-          ];
-        });
-      })
-    ];
   };
 
   # List packages installed in system profile. To search, run:
@@ -269,7 +245,10 @@ in
       debug = true;
       control = "sufficient";
       mode = "challenge-response";
-      id = [ "22313001" "22313027" ];
+      id = [
+        "22313001"
+        "22313027"
+      ];
     };
     services = {
       login.u2fAuth = true;
@@ -300,18 +279,18 @@ in
   };
 
   boot.kernelModules = [ "kvm-intel" ];
-  
+
   boot.kernelParams = [
     "acpi_backlight=native"
     "psmouse.synaptics_intertouch=0"
-    
+
     "nvidia-drm.modeset=1"
     "nvidia-drm.fbdev=1"
   ];
 
   # no swap please.
-  swapDevices = lib.mkForce [ ]; 
-  
+  swapDevices = lib.mkForce [ ];
+
   # Open ports in the firewall.
   networking.firewall.enable = true;
   # networking.firewall.allowedTCPPorts = [ ... ];
