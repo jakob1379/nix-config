@@ -39,6 +39,7 @@ let
     gnumake
     ispell
     jq
+    android-tools
     libqalculate
     libsecret
     nix-prefetch-github
@@ -56,11 +57,13 @@ let
     wakatime
     xclip
     yq-go
+    poppler_utils
   ];
 
   guiPackages = with pkgs; [
     brave
     pywal16
+    gnome-boxes
     code-cursor
     dbeaver-bin
     feh
