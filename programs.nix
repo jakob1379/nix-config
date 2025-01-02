@@ -19,7 +19,7 @@
         if [[ $TERM = dumb ]]; then
             return
         fi
-
+        ${pkgs.pywal16}/bin/wal -R
         ${builtins.readFile ./bin/secret-export}
         # ------------------ extra end ------------------
       '';

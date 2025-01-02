@@ -17,7 +17,6 @@ let
 
   hyprLandPackages = with pkgs; [
     dolphin
-    pywal
     wdisplays
   ];
 
@@ -61,6 +60,7 @@ let
 
   guiPackages = with pkgs; [
     brave
+    pywal16
     code-cursor
     dbeaver-bin
     feh
@@ -122,6 +122,9 @@ let
     (pkgs.writeShellScriptBin "time-stats" (builtins.readFile ./bin/time-stats))
     (pkgs.writeShellScriptBin "bhelp" (builtins.readFile ./bin/bathelp))
     (pkgs.writeShellScriptBin "docker-volume-copy" (builtins.readFile ./bin/docker-volume-copy))
+    (pkgs.writeShellScriptBin "pywal-apply" (''
+        ${pkgs.pywal16}/bin/wal -n -i "$(${pkgs.coreutils}/bin/cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"
+      ''))
   ];
 in
 {
