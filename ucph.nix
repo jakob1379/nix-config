@@ -9,7 +9,14 @@ let
   username = "jga";
 
   # Import the exported lists from packages.nix
-  packages = import ./packages.nix { inherit pkgs system lib inputs; };
+  packages = import ./packages.nix {
+    inherit
+      pkgs
+      system
+      lib
+      inputs
+      ;
+  };
   dotfiles = import ./dotfiles.nix { inherit pkgs; };
 in
 {
@@ -18,7 +25,7 @@ in
   home.stateVersion = "24.05";
 
   nixpkgs.config.allowUnfree = true;
-  
+
   programs.home-manager.enable = true;
 
   # Correct usage of home.file

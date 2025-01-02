@@ -158,7 +158,7 @@
       enable = true;
       package = pkgs.emacs-gtk;
     };
-    
+
     ssh.forwardAgent = true;
 
     fzf = {

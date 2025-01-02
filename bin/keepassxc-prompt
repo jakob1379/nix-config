@@ -14,4 +14,3 @@ do
 done
 
 /usr/bin/env nc "$1" "$2"
-

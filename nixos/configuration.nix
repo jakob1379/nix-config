@@ -107,7 +107,6 @@ in
     openFirewall = true;
   };
 
-
   # Enable sensors for lenovo to register screen orientation
   hardware.sensor.iio.enable = true;
 
@@ -119,9 +118,9 @@ in
 
   hardware.graphics.enable = true;
   hardware.nvidia-container-toolkit.enable = true;
-  
+
   services.xserver.videoDrivers = [ "nvidia" ];
-  
+
   hardware.nvidia = {
     modesetting.enable = true;
     nvidiaSettings = true;

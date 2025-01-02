@@ -5,6 +5,7 @@
   ...
 }:
 let
+  # Create a derivation for the script
   createRcloneMountService =
     {
       name,
@@ -20,17 +21,17 @@ let
       Service = {
         ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${mountPath}";
         ExecStart = ''
-            ${pkgs.rclone}/bin/rclone mount \
-              --config /home/${config.home.username}/.config/rclone/rclone.conf \
-              --allow-other \
-              --attr-timeout 1h \
-              --buffer-size=0 \
-              --dir-cache-time 3h0m0s \
-              --poll-interval 30s \
-              --use-server-modtime \
-              --vfs-cache-mode full \
-              --vfs-fast-fingerprint \
-              ${remote}:${remotePath} ${mountPath}
+          ${pkgs.rclone}/bin/rclone mount \
+            --config /home/${config.home.username}/.config/rclone/rclone.conf \
+            --allow-other \
+            --attr-timeout 1h \
+            --buffer-size=0 \
+            --dir-cache-time 3h0m0s \
+            --poll-interval 30s \
+            --use-server-modtime \
+            --vfs-cache-mode full \
+            --vfs-fast-fingerprint \
+            ${remote}:${remotePath} ${mountPath}
         '';
         ExecStop = "fusermount -u ${mountPath}";
         Type = "notify";
