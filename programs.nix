@@ -1,9 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}:
-{
+{ config, pkgs, ... }: {
   programs = {
     atuin = {
       enable = true;
@@ -19,7 +14,7 @@
         if [[ $TERM = dumb ]]; then
             return
         fi
-        ${pkgs.pywal16}/bin/wal -R
+        ${pkgs.pywal16}/bin/wal -Rq
         ${builtins.readFile ./bin/secret-export}
         # ------------------ extra end ------------------
       '';
@@ -116,7 +111,8 @@
             # ensure pinned tabs are not loaded during start
             "browser.sessionstore.restore_pinned_tabs_on_demand" = true;
           };
-          userChrome = builtins.readFile ./dotfiles/firefox/firefox_userchrome.css;
+          userChrome =
+            builtins.readFile ./dotfiles/firefox/firefox_userchrome.css;
         };
       };
     };
@@ -124,7 +120,8 @@
     oh-my-posh = {
       enable = true;
       enableBashIntegration = true;
-      settings = builtins.fromJSON (builtins.readFile ./dotfiles/oh-my-posh/custom-hunks-theme.omp.json);
+      settings = builtins.fromJSON
+        (builtins.readFile ./dotfiles/oh-my-posh/custom-hunks-theme.omp.json);
     };
 
     git = {
@@ -143,9 +140,11 @@
       };
       aliases = {
         adog = "log --all --decorate --oneline --graph";
-        plog = "log  --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
+        plog =
+          "log  --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
         ignore-change = "update-index --assume-unchanged";
-        prune-deep = ''!git fetch --prune; branches=$(git branch -r | awk '"'"'{print $1}'"'"' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '"'"'{print $1}'"'"'); echo -e "branches:\n$branches"; read -p "Do you want to delete all these branches? (y/n): " confirm; if [ "$confirm" = "y" ]; then echo "$branches" | xargs git branch -d; else echo "No branches were deleted"; fi'';
+        prune-deep = ''
+          !git fetch --prune; branches=$(git branch -r | awk '"'"'{print $1}'"'"' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '"'"'{print $1}'"'"'); echo -e "branches:\n$branches"; read -p "Do you want to delete all these branches? (y/n): " confirm; if [ "$confirm" = "y" ]; then echo "$branches" | xargs git branch -d; else echo "No branches were deleted"; fi'';
         unstage = "restore --staged";
       };
     };
@@ -168,9 +167,7 @@
 
     bat = {
       enable = true;
-      config = {
-        map-syntax = [ "*.conf:TOML" ];
-      };
+      config = { map-syntax = [ "*.conf:TOML" ]; };
     };
 
     poetry = {
@@ -186,15 +183,13 @@
     package = pkgs.nix;
     settings = {
       max-jobs = "auto";
-      experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
+      experimental-features = [ "nix-command" "flakes" ];
     };
   };
 
   home.shellAliases = {
-    cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
+    cdd = ''
+      f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
 
     # docker
     dcup = "docker compose up --remove-orphans";
@@ -205,7 +200,8 @@
     dx = "dragon --and-exit";
 
     # eda
-    eda = "nix-shell -p python313Packages.beautifulsoup python313Packages.requests python313Packages.rich python313Packages.ipython python313Packages.pandas python313Packages.seaborn python313Packages.plotly";
+    eda =
+      "nix-shell -p python313Packages.beautifulsoup python313Packages.requests python313Packages.rich python313Packages.ipython python313Packages.pandas python313Packages.seaborn python313Packages.plotly";
 
     ec = "emacsclient -n";
     grep = "grep --color=auto";
@@ -238,6 +234,7 @@
       sudo nixos-rebuild switch --flake ~/.config/home-manager
     '';
     q = "qalc";
-    tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
+    tldr = ''
+      tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
   };
 }
