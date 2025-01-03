@@ -368,12 +368,12 @@ necessarily superseded by the ssh config.
   :custom
   (tramp-use-connection-share nil)
   :config
-  (let ((ssh-configs (append (list "~/.ssh/config") 
+  (let ((ssh-configs (append (list "~/.ssh/config")
                               (directory-files "~/.ssh/conf.d/" t directory-files-no-dot-files-regexp))))
     ;; Log the detected SSH config files to the *tramp-info* buffer
     (with-current-buffer (get-buffer-create "*tramp-info*")
       (insert (format "Found SSH config files: %s\n" ssh-configs)))
-    
+
     ;; Append the SSH config completion functions
     (tramp-set-completion-function
      "ssh" (append (tramp-get-completion-function "ssh")
@@ -390,7 +390,7 @@ These two packages enable the customization of the mode line to either hide or c
 (use-package delight)
 (use-package diminish)
 #+END_SRC
-** The Rest 
+** The Rest
 :PROPERTIES:
 :header-args: :tangle yes
 :END:
@@ -544,7 +544,7 @@ Teaches company to sort better
     (rst-mode . lsp-deferred)
     (latex-mode . lsp-deferred)
     (css-mode . lsp-deferred)
-    
+
     :config
     ;; Register lsp clients
     (lsp-register-client
@@ -561,7 +561,7 @@ Teaches company to sort better
     ;; File watch ignore list
     (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\.venv\\'")
     (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\virt\\'")
-    
+
     :custom
     (lsp-idle-delay 0.1)
     (lsp-enable-snippet t)
@@ -777,7 +777,7 @@ Don't lose your cursor
 #+BEGIN_SRC emacs-lisp
   (use-package beacon
     :ensure t
-    :delight 
+    :delight
     :bind ("C-x =" . (lambda ()
                        (interactive)
                        (beacon-blink)
@@ -1003,7 +1003,7 @@ highlights uncommitted changes on the left side of the window
     :custom
     ;; Automatically open a block if you search for something where it matches
     (hs-isearch-open t)
-    
+
     :config
     ;; Add specific language support to hs-special-modes-alist
     (setq hs-special-modes-alist (mapcar 'purecopy '((c-mode "{" "}" "/[*/]" nil nil)
@@ -1171,7 +1171,7 @@ Makefile modes comes with Emacs, but we still want to use it and be able to conf
     :mode (("CMakeLists\\.txt\\'" . cmake-mode)
            ("\\.cmake\\'" . cmake-mode))
     )
-    
+
     (provide 'init-makefile)
 #+end_src
 *** Man/Woman
@@ -1315,7 +1315,7 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
 **** The org package
 #+BEGIN_SRC emacs-lisp
 (use-package org
-  :delight 
+  :delight
   :straight (:type built-in)
   :commands org-babel-do-load-languages
   :custom
