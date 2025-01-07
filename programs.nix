@@ -14,14 +14,35 @@
         if [[ $TERM = dumb ]]; then
             return
         fi
-        ${pkgs.pywal16}/bin/wal -Rq
+
+        ${pkgs.coreutils}/bin/cat ${config.xdg.cacheHome}/wal/sequences
         ${builtins.readFile ./bin/secret-export}
         # ------------------ extra end ------------------
       '';
     };
 
     pay-respects.enable = true;
+    
+    ghostty = {
+      enable = true;
+      settings = {
+        bold-is-bright = true;
+        background-opacity = 0.9;
+      };
+    };
 
+    ranger = {
+      enable = true;
+      settings = {
+        preview_images = true;
+        preview_images_method = "kitty";
+      };
+      extraPackages = with pkgs; [
+        kitty
+        imagemagick
+      ];
+    };
+    
     tmux = {
       enable = true;
       newSession = true;
@@ -184,6 +205,7 @@
     settings = {
       max-jobs = "auto";
       experimental-features = [ "nix-command" "flakes" ];
+      auto-optimise-store = true;
     };
   };
 

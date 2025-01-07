@@ -84,16 +84,22 @@ in
   systemd.user.services.pywal-apply-variety = {
     Unit = {
       Description = "Apply pywal theme based on Variety wallpaper";
+      After = [ "graphical-session.target" ];
     };
     Install = {
-      WantedBy = [ "default.target" ];
+      WantedBy = [ "graphical-session.target" ];
     };
     Service = {
       ExecStart = "${pkgs.writeShellScript "pywal-apply" ''
-        ${pkgs.pywal16}/bin/wal -n -i "$(${pkgs.coreutils}/bin/cat ${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt)"
-      ''}";
-      Restart = "never";
+      set -e
+      ${pkgs.pywal16}/bin/wal -ni "$(${pkgs.coreutils}/bin/cat ${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt)" && ${pkgs.pywal16}/bin/wal -R
+    ''}";
+      Restart = "on-failure";
+      RestartSec = 5;
+      StandardOutput = "journal";
+      StandardError = "journal";
       Environment = [
+        "SYSTEMD_LOG_LEVEL=debug"
         "PATH=${pkgs.imagemagick}/bin:$PATH"
       ];
     };
@@ -102,13 +108,13 @@ in
   systemd.user.paths.pywal-apply-variety = {
     Unit = {
       Description = "Monitor wallpaper file for changes";
+      Wants = [ "pywal-apply-variety.service" ];
     };
     Install = {
-      WantedBy = [ "default.target" ];
+      WantedBy = [ "graphical-session.target" ];
     };
     Path = {
-      PathChanged = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
-      Restart = "on-failure";
+      PathModified = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
     };
   };
 }
