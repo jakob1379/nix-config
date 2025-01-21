@@ -67,7 +67,6 @@
         dates = "weekly";
         options = "--delete-older-than 2w";
       };
-      nix.settings.auto-optimise-store = true;
 
       # Home configurations
       homeConfigurations."pi@raspberrypi" = mkHomeConfig [
