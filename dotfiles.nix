@@ -22,12 +22,14 @@ let
 
   # Session variables configuration
   sessionVariables = {
-    PAGER = "bat -p";
+    PAGER = "${pkgs.bat}/bin/bat -p";
     MANPAGER = "bat -pl man";
     EDITOR = ''emacsclient --create-frame --alternate-editor="" --no-wait'';
     LC_TIME = "en_GB.utf8";
     QT_QPA_PLATFORM = "wayland";
     HISTCONTROL = "ignoreboth";
+    NB_CONFIG = /var/lib/netbird/config.json;
+
   };
 
   # Fonts configuration

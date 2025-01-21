@@ -1,7 +1,10 @@
+# Use KeepassXC for password prompts
 ProxyCommand $HOME/.ssh/keepassxc-prompt %h %p
 
+# Include additional configuration files
 Include ~/.ssh/conf.d/local_config
 
+# Global settings for all hosts
 Host *
     AddKeysToAgent yes
 
