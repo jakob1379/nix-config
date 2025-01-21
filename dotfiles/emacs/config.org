@@ -447,7 +447,7 @@ Yes - we can have fuzzy search here too.
 #+BEGIN_SRC emacs-lisp
   (use-package company-box
     :diminish
-    :after company
+    :after company-all-the-icons
     :custom
     (company-box)
     :config
@@ -470,7 +470,6 @@ Teaches company to sort better
 
 #+BEGIN_SRC emacs-lisp
 (use-package helm
-  :ensure t
   :after all-the-icons
   :bind (("M-x"     . helm-M-x) ;; Evaluate functions
                  ("C-x C-f" . helm-find-files) ;; Open or create files
@@ -513,6 +512,8 @@ Teaches company to sort better
 
 #+BEGIN_SRC emacs-lisp
 (use-package helm-ag
+  :custom
+  (helm-ag-base-command "ag -t --nocolor --nogroup --ignore-case")
   :bind
   ("C-c a a" . helm-do-ag)
   ("C-c a p" . helm-do-ag-project-root)
@@ -551,8 +552,6 @@ Teaches company to sort better
     (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\virt\\'")
 
     :custom
-    (lsp-idle-delay 0.1)
-    (lsp-enable-snippet t)
     (lsp-auto-execute-action nil)
     (lsp-auto-guess-root t)
     (lsp-auto-select-workspace t)
@@ -561,15 +560,18 @@ Teaches company to sort better
     (lsp-eldoc-enable-hover t)
     (lsp-enable-links t)
     (lsp-enable-on-type-formatting t)
+    (lsp-enable-snippet t)
     (lsp-face-highlight-read ((t (:underline t))))
     (lsp-face-highlight-textual ((t (:underline t))))
     (lsp-face-highlight-write ((t (:underline t))))
     (lsp-file-watch-threshold 5000)
     (lsp-headerline-breadcrumb-enable t)
+    (lsp-idle-delay 0.1)
     (lsp-intelephense-multi-root nil)
     (lsp-keep-workspace-alive nil)
     (lsp-keymap-prefix "C-c l") ;; Set prefix for lsp-command-map
     (lsp-modeline-diagnostics-enable t)
+    (lsp-remote-tramp-connection t)
     ;; (lsp-prefer-flymake nil)
     )
 #+END_SRC
