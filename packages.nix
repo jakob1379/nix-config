@@ -61,6 +61,7 @@ let
   ];
 
   guiPackages = with pkgs; [
+    appflowy
     brave
     pywal16
     gnome-boxes
@@ -80,7 +81,6 @@ let
     spotify
     stretchly
     variety
-    virt-manager
     xdg-desktop-portal-wlr
     xdragon
     xorg.xkill
@@ -125,9 +125,9 @@ let
     (pkgs.writeShellScriptBin "time-stats" (builtins.readFile ./bin/time-stats))
     (pkgs.writeShellScriptBin "bhelp" (builtins.readFile ./bin/bathelp))
     (pkgs.writeShellScriptBin "docker-volume-copy" (builtins.readFile ./bin/docker-volume-copy))
-    (pkgs.writeShellScriptBin "pywal-apply" (''
+    (pkgs.writeShellScriptBin "pywal-apply" ''
       ${pkgs.pywal16}/bin/wal -i "$(${pkgs.coreutils}/bin/cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"
-    ''))
+    '')
   ];
 in
 {
