@@ -119,21 +119,27 @@ in
   hardware.graphics.enable = true;
   hardware.nvidia-container-toolkit.enable = true;
 
-  services.xserver.videoDrivers = [ "nvidia" ];
+  # hardware.firmware = [ displaylink ];
+  services.xserver.videoDrivers = [
+    "displaylink"
+    "nvidia"
+  ];
 
   hardware.nvidia = {
     modesetting.enable = true;
     nvidiaSettings = true;
     open = false;
     prime = {
-      offload.enable = true;
-      offload.enableOffloadCmd = true;
+      offload = {
+        enable = true;
+        enableOffloadCmd = true;
+      };
       intelBusId = "PCI:0:2:0";
       nvidiaBusId = "PCI:45:0:0";
     };
     powerManagement = {
       enable = true;
-      finegrained = false;
+      finegrained = true;
     };
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
@@ -157,7 +163,7 @@ in
   programs.dconf.enable = true; # virt-manager requires dconf to remember settings
 
   # Enable sound with pipewire.
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -199,7 +205,7 @@ in
   # Install firefox.
   programs.firefox.enable = true;
 
-  # Allow unfree packages and overwrite the netbird package for latest
+  # Allow unfree packages
   nixpkgs = {
     config.allowUnfree = true;
   };
@@ -234,6 +240,9 @@ in
   #   enable = true;
   #   enableSSHSupport = true;
   # };
+
+  security.sudo.package = pkgs.sudo.override { withInsults = true; };
+
   security.pam = {
     u2f = {
       enable = true;
@@ -269,7 +278,6 @@ in
   services = {
     netbird = {
       enable = true; # true;
-      package = pkgs.netbird;
       # tunnels = {
       #   ucph0.port = 51822;
       #   homelab0.port = 51821;
