@@ -33,8 +33,7 @@ Straight is an package manager for emacs making it easier to fetch packages from
 
 We want it to integrate nicely with usepackage
 #+BEGIN_SRC emacs-lisp
-  (setq package-enable-at-startup nil
-        straight-cache-autoloads t
+  (setq straight-cache-autoloads t
         straight-check-for-modifications '(check-on-save find-when-checking)
         straight-vc-git-auto-fast-forward nil
         straight-vc-git-default-clone-depth 1
@@ -57,7 +56,6 @@ Resizing the Emacs frame can be a terribly expensive part of changing the font. 
 we easily halve startup times with fonts that are larger than the system default.
 
 #+BEGIN_SRC emacs-lisp
-(setq package-enable-at-startup nil)
 (setq frame-inhibit-implied-resize t)
 #+END_SRC
 
@@ -67,12 +65,14 @@ Following [[https://github.com/hlissner/doom-emacs/blob/develop/docs/faq.org#how
 #+BEGIN_SRC emacs-lisp
 ;; max memory available for gc on startup
 (defvar me/gc-cons-threshold 16777216)
+
 (setq gc-cons-threshold most-positive-fixnum
-          gc-cons-percentage 0.6)
+      gc-cons-percentage 0.6)
+
 (add-hook 'emacs-startup-hook
-                  (lambda ()
-                        (setq gc-cons-threshold me/gc-cons-threshold
-                                  gc-cons-percentage 0.1)))
+          (lambda ()
+            (setq gc-cons-threshold me/gc-cons-threshold
+                  gc-cons-percentage 0.1)))
 
 ;; max memory available for gc when opening minibuffer
 (defun me/defer-garbage-collection-h ()
@@ -132,14 +132,10 @@ state.
         (package-install package)))
 (eval-when-compile (require 'use-package))
 
-;; makes :ensure default to t
-(require 'use-package-ensure)
-(setq-default use-package-always-ensure t)
-
 ;; reduces the number of themes loaded at boot
-(defadvice load-theme (before clear-previous-themes activate)
-  ;; "Clear existing theme settings instead of layering them"
-  (mapc #'disable-theme custom-enabled-themes))
+(advice-add 'load-theme :before
+            (lambda (&rest _) (mapc #'disable-theme custom-enabled-themes)))
+
 #+END_SRC
 ** Use the garbage collector magic hack
 #+BEGIN_SRC emacs-lisp
@@ -292,14 +288,6 @@ Emacs is very conservative about assuming encoding. Everything is utf-8 these da
                           (defun me/garbage-collect-maybe ()
                                 (unless (frame-focus-state)
                                   (garbage-collect))))
-#+END_SRC
-** Auto update emacs packages
-#+BEGIN_SRC emacs-lisp
-(use-package auto-package-update
-  :config
-  (setq auto-package-update-prompt-before-update t
-                auto-package-update-interval 7)
-  )
 #+END_SRC
 ** non-ASCII characters
 #+BEGIN_SRC emacs-lisp
@@ -589,7 +577,6 @@ Teaches company to sort better
 #+begin_src emacs-lisp :tangle yes
 (use-package lsp-treemacs)
 #+end_src
-
 **** DAP
 Following [[https://emacs-lsp.github.io/dap-mode/page/python-poetry-pyenv/][this guide]] we need a little tweaking to play nicely with poetry environments
 #+BEGIN_SRC emacs-lisp
@@ -608,13 +595,11 @@ Following [[https://emacs-lsp.github.io/dap-mode/page/python-poetry-pyenv/][this
               (lambda (arg) (call-interactively #'dap-hydra)))
     )
 #+END_SRC
-
 **** Helm LSP
 helm is awesome
 #+begin_src emacs-lisp :tangle yes
 (use-package helm-lsp)
 #+end_src
-
 **** LSP ui
 
 #+BEGIN_SRC emacs-lisp
@@ -687,7 +672,6 @@ snippets for common operations instead of macros, allows it to be portable and p
 #+begin_src emacs-lisp
   (use-package yasnippet
     :delight yas
-    :ensure t
     :init
     (yas-global-mode 1)
     :custom
@@ -695,7 +679,6 @@ snippets for common operations instead of macros, allows it to be portable and p
 
   (use-package yasnippet-snippets
     :after yasnippet
-    :ensure t
     :config
     (yasnippet-snippets-initialize)
     ;; (yas-recompile-all)
@@ -748,14 +731,6 @@ projects with something like in
 #+BEGIN_SRC emacs-lisp
       (use-package ansible)
 #+END_SRC
-*** Ansi colors decoding/rendering
-#+BEGIN_SRC emacs-lisp
-(require 'ansi-color)
-(defun display-ansi-colors ()
-  (interactive)
-  (ansi-color-apply-on-region (point-min) (point-max)))
-
-#+END_SRC
 *** Auto Sudoedit
 #+BEGIN_SRC emacs-lisp
 (use-package auto-sudoedit
@@ -776,7 +751,6 @@ vc-follow-symlinks
 Don't lose your cursor
 #+BEGIN_SRC emacs-lisp
   (use-package beacon
-    :ensure t
     :delight
     :bind ("C-x =" . (lambda ()
                        (interactive)
@@ -1130,13 +1104,10 @@ tasks.
 
 #+BEGIN_SRC emacs-lisp
 (use-package magit
-  :ensure t
   :after magit-gitflow
   :hook (magit-mode . turn-on-magit-gitflow)
   :bind ("C-x g" . magit-status)
-  :config
-  (setq magit-process-finish-apply-ansi-colors t
-        magit-git-executable "git")
+  :custom (magit-process-finish-apply-ansi-colors t)
   )
 #+END_SRC
 **** Magit Todos
@@ -1150,7 +1121,6 @@ tasks.
 **** Magit workflow
 #+BEGIN_SRC emacs-lisp
 (use-package magit-gitflow
-  :ensure t
   :hook (magit-mode . turn-on-magit-gitflow)
   )
 #+END_SRC
@@ -1307,10 +1277,6 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
   (when (file-exists-p custom-file)
         (load custom-file)))
 #+END_SRC
-*** non-ASCII characters
-#+BEGIN_SRC emacs-lisp
-(require 'iso-transl)
-#+END_SRC
 *** Org Mode
 **** The org package
 #+BEGIN_SRC emacs-lisp
@@ -1453,7 +1419,6 @@ The native graph viewer of org-roam gets the job done, but it isn't pretty. This
 We want to be able to view pdfs in emacs
 #+BEGIN_SRC emacs-lisp
 (use-package pdf-tools
-  :ensure t
   :config
   (pdf-tools-install)
   :custom
@@ -1489,8 +1454,8 @@ Since I am doing a lot of python, many modes and other things related to python 
         (call-interactively 'python-isort-buffer)
         (call-interactively 'python-black-buffer))
   (when (executable-find "ipython")
-  :custom
-  (python-shell-interpreter "ipython"))
+    :custom
+    (python-shell-interpreter "ipython"))
   )
 
 #+END_SRC
@@ -1543,18 +1508,13 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
                 (pyvenv-workon venv))))
 
 (use-package pyvenv
-  :ensure t
-  :init
-  ;; (add-hook 'find-file-hook 'pyvenv-parent-env)
-  ;; :hook (python-mode . pyvenv-parent-env)
-  :config
+  :hook (python-mode . pyvenv-parent-env)
   )
 
 #+END_SRC
 *** Rainbow delimiters
 #+BEGIN_SRC emacs-lisp
 (use-package rainbow-delimiters
-  :ensure t
   :hook ((org-mode . rainbow-delimiters-mode)
                  (prog-mode . rainbow-delimiters-mode)))
 #+END_SRC
@@ -1584,13 +1544,6 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
   (solaire-mode-auto-swap-bg t)
   :config
   (solaire-global-mode +1))
-#+END_SRC
-*** start emacs server
-If emacs is not running as a server, start one. It should've been started by systemd, but this is just to be sure
-#+BEGIN_SRC emacs-lisp
-  (require 'server)
-  (unless (server-running-p)
-        (server-start))
 #+END_SRC
 *** Systemd
 #+BEGIN_SRC emacs-lisp
@@ -1649,7 +1602,6 @@ simple package that enable titlecasing
 *** Webpaste
 #+BEGIN_SRC emacs-lisp
 (use-package webpaste
-  :ensure t
   :bind (
                  ("C-c p b" . webpaste-paste-buffer)
                  ("C-c p r" . webpaste-paste-region)
