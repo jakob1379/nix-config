@@ -22,7 +22,7 @@ in
         if [[ -z "$SSH_CONNECTION" ]]; then
             ${pkgs.coreutils}/bin/cat ${config.xdg.cacheHome}/wal/sequences
         fi
-        ${builtins.readFile ./bin/secret-export}
+        ${builtins.readFile ./bin/secret-export.sh}
         # ------------------ extra end ------------------
       '';
     };
