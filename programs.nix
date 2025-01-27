@@ -6,8 +6,12 @@ in
   programs = {
     atuin = {
       enable = true;
-      enableBashIntegration = true;
+      enableBashIntegration = false; # true;
       flags = [ "--disable-up-arrow" ];
+      settings = {
+        show_preview = true;
+        history_format = "{time}\t{command}\t{duration}\t{directory}";
+      };
     };
 
     bash = {
@@ -23,6 +27,9 @@ in
             ${pkgs.coreutils}/bin/cat ${config.xdg.cacheHome}/wal/sequences
         fi
         ${builtins.readFile ./bin/secret-export.sh}
+
+        eval "$(${pkgs.atuin}/bin/atuin init --disable-up-arrow bash)"
+
         # ------------------ extra end ------------------
       '';
     };
