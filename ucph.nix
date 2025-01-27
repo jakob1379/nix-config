@@ -17,6 +17,10 @@ let
       inputs
       ;
   };
+
+  ucph_packages = with pkgs; [
+    remmina
+  ];
   dotfiles = import ./dotfiles.nix { inherit pkgs; };
 in
 {
@@ -36,7 +40,8 @@ in
     ++ packages.devPackages
     ++ packages.guiPackages
     ++ packages.customScripts
-    ++ packages.emacsPackages;
+    ++ packages.emacsPackages
+    ++ [ pkgs.remmina ];
 
   # Include session variables from dotfiles.nix
   home.sessionVariables = dotfiles.sessionVariables;
