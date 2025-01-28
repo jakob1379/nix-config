@@ -3,6 +3,7 @@
   system,
   inputs,
   lib,
+  config,
   ...
 }:
 let
@@ -18,9 +19,6 @@ let
       ;
   };
 
-  ucph_packages = with pkgs; [
-    remmina
-  ];
   dotfiles = import ./dotfiles.nix { inherit pkgs; };
 in
 {
@@ -45,6 +43,9 @@ in
 
   # Include session variables from dotfiles.nix
   home.sessionVariables = dotfiles.sessionVariables;
+  home.sessionPath = [
+    "${config.home.homeDirectory}/.local/bin"
+  ];
 
   # Fonts configuration if required
   fonts = dotfiles.fontsConfig;
