@@ -224,8 +224,9 @@ in
   };
 
   home.shellAliases = {
+    cat = "bat";
     cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
-
+    fm = "frogmouth";
     df = "duf --hide special";
 
     # docker
@@ -237,10 +238,9 @@ in
     dx = "dragon --and-exit";
 
     # EDA
-    dtale = "uvx -p 3.8 dtale";
     eda = "nix-shell -p python313Packages.rich python313Packages.ipython python313Packages.pandas python313Packages.seaborn python313Packages.plotly";
 
-    ec = "emacsclient -n";
+    ec = "emacsclient -n --alternate-editor emacs";
     grep = "grep --color=auto";
 
     # nix update and switch

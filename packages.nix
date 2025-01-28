@@ -2,6 +2,7 @@
   pkgs,
   system,
   lib,
+  inputs,
   ...
 }:
 let
@@ -19,6 +20,7 @@ let
     busybox
     cookiecutter
     dconf
+    frogmouth
     dig
     duf
     entr
@@ -50,6 +52,7 @@ let
     xclip
     yq-go
     poppler_utils
+    inputs.isd.packages.${system}.default # Add the isd package here
   ];
 
   guiPackages = with pkgs; [

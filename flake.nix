@@ -10,6 +10,7 @@
     };
     flake-utils.url = "github:numtide/flake-utils";
     nixgl.url = "github:nix-community/nixGL";
+    isd.url = "github:isd-project/isd";
   };
 
   outputs =
@@ -17,7 +18,6 @@
       self,
       nixpkgs,
       home-manager,
-      nixgl,
       ...
     }:
     let
