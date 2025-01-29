@@ -21,10 +21,11 @@ let
   };
 
   # Session variables configuration
+
   sessionVariables = {
     PAGER = "${pkgs.bat}/bin/bat -p";
     MANPAGER = "bat -pl man";
-    EDITOR = ''emacsclient --create-frame --alternate-editor="" --no-wait'';
+    EDITOR = ''emacsclient --create-frame --alternate-editor emacs'';
     LC_TIME = "en_GB.utf8";
     QT_QPA_PLATFORM = "wayland";
     HISTCONTROL = "ignoreboth";
