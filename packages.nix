@@ -6,34 +6,32 @@
   ...
 }:
 let
-  # Conditionally wrap KeePassXC for autotype support in KDE if running Wayland
   patched_keepassxc = pkgs.keepassxc.overrideAttrs (oldAttrs: {
     postFixup = ''
-      echo "Running postFixup for KeePassXC" >> $out/log.txt
       sed -i 's/^Exec=keepassxc/Exec=keepassxc -platform xcb/' \
         $out/share/applications/org.keepassxc.KeePassXC.desktop
     '';
   });
 
   corePackages = with pkgs; [
-    btop
+    android-tools
     busybox
     cookiecutter
     dconf
-    frogmouth
     dig
     duf
     entr
     fd
+    frogmouth
     gdu
     git
     gitflow
     gitleaks
     glib
     gnumake
+    inputs.isd.packages.${system}.default # Add the isd package here
     ispell
     jq
-    android-tools
     libqalculate
     libsecret
     nix-prefetch-github
@@ -41,8 +39,10 @@ let
     nixfmt-classic
     nmap
     pandoc
+    poppler_utils
     rclone
     rename
+    silver-searcher
     speedtest-go
     t-rec
     taplo
@@ -51,8 +51,7 @@ let
     wakatime
     xclip
     yq-go
-    poppler_utils
-    inputs.isd.packages.${system}.default # Add the isd package here
+    btop
   ];
 
   guiPackages = with pkgs; [
