@@ -213,7 +213,7 @@ in
   nix = {
     package = pkgs.nix;
     settings = {
-      max-jobs = "auto";
+      max-jobs = 1;
       experimental-features = [
         "nix-command"
         "flakes"

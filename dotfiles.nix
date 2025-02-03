@@ -31,6 +31,7 @@ let
     HISTCONTROL = "ignoreboth";
     NB_CONFIG = /var/lib/netbird/config.json;
 
+    NIX_BUILD_CORES = "$(( $(nproc) / 2 < 1 ? 1 : $(nproc) / 2 ))";
   };
 
   # Fonts configuration
