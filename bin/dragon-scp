@@ -1,4 +1,9 @@
-#!/bin/sh
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+
+
 if [ "$#" -ne 1 ]; then
     echo "Usage: dragon-scp remote_server:path_to_file"
     exit 1
@@ -6,7 +11,7 @@ fi
 
 remote_path="$1"
 file_name=$(basename "$remote_path")
-temp_file=$(mktemp --suffix="-$file_name")
+temp_file=$(mktemp -p /tmp/ "$file_name-XXXXXX")
 
 if scp "$remote_path" "$temp_file"; then
     dragon "$temp_file"
