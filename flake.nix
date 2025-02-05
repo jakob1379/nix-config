@@ -11,6 +11,7 @@
     flake-utils.url = "github:numtide/flake-utils";
     nixgl.url = "github:nix-community/nixGL";
     isd.url = "github:isd-project/isd";
+    zen-browser.url = "github:youwen5/zen-browser-flake";
   };
 
   outputs =

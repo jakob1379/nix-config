@@ -62,7 +62,6 @@ let
     code-cursor
     dbeaver-bin
     feh
-    firefox-unwrapped
     gnome-pomodoro
     konsole
     libnotify

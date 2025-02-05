@@ -1,4 +1,10 @@
-{ config, pkgs, ... }:
+{
+  inputs,
+  config,
+  system,
+  pkgs,
+  ...
+}:
 let
   flakePath = "${config.xdg.configHome}/home-manager";
 in
@@ -117,6 +123,7 @@ in
 
     firefox = {
       enable = true;
+      package = inputs."zen-browser".packages.${system}.default;
       profiles = {
         myuser = {
           isDefault = true;
