@@ -112,7 +112,7 @@ state.
 (require 'package)
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("gnu" . "https://elpa.gnu.org/packages/")
-                         ("nongnu" . "https://elpa.nongnu.org/nongnu/"))
+                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 (package-initialize)
 ;; https://github.com/jwiegley/use-package/issues/319#issuecomment-845214233
 ;; makes sure the :pin is respected
@@ -298,9 +298,6 @@ If emacs is not running as a server, start one. It should've been started by sys
         (server-start))
 #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
-(add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
-#+END_SRC
 ** Aesthetics
 
 #+BEGIN_SRC emacs-lisp
@@ -1063,65 +1060,65 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
 #+END_SRC
 *** LaTeX
 #+BEGIN_SRC emacs-lisp
-(use-package auctex)
-  (use-package latex
-    :straight (:type built-in)
-    :mode ("\\.tex\\$" . latex-mode)
-    :custom
-    (LaTeX-electric-left-right-brace t)
-    (TeX-PDF-mode t)
-    (TeX-auto-save t)
-    (TeX-electric-math (cons "$" "$"))
-    (TeX-parse-self t)
-    (TeX-source-correlate-method 'synctax)
-    (TeX-source-correlate-mode t)
-    (TeX-source-correlate-start-server nil)
-    (TeX-syntactic-comment t)
-    (reftex-plug-into-AUCTeX t)
-    (TeX-view-program-list
-     '(("DVI Viewer" "open %o")
-       ("PDF Viewer" "open %o")
-       ("HTML Viewer" "open %o")))
-    :hook
-    (latex-mode . (lambda ()
-                    (tool-bar-mode 1)))
-    )
+(use-package latex
+  :straight (:type built-in)
+  :mode ("\\.tex\\'$" . latex-mode)
+  :custom
+  (LaTeX-electric-left-right-brace t)
+  (TeX-PDF-mode t)
+  (TeX-auto-save t)
+  (TeX-electric-math (cons "$" "$"))
+  (TeX-parse-self t)
+  (TeX-source-correlate-method 'synctax)
+  (TeX-source-correlate-mode t)
+  (TeX-source-correlate-start-server nil)
+  (TeX-syntactic-comment t)
+  (reftex-plug-into-AUCTeX t)
+  (TeX-view-program-list
+   '(("DVI Viewer" "open %o")
+     ("PDF Viewer" "open %o")
+     ("HTML Viewer" "open %o")))
+  :hook
+  (latex-mode . (lambda ()
+                  (tool-bar-mode 1)))
+  )
 
-  (use-package company-auctex
-    :pin melpa
-    :after tex
-    :init
-    (company-auctex-init)
-    (add-hook 'LaTeX-mode-hook 'company-auctex-init))
+;; AUCTeX configuration
+(use-package auctex
+  :mode ("\\.tex\\'" . latex-mode)
+  :custom
+  ;; Enable parsing
+  (TeX-auto-save t)
+  (TeX-parse-self t)
+  ;; Default PDF viewer
+  (TeX-view-program-selection '((output-pdf "PDF Viewer")))
+  ;; Use pdf-tools to open PDF files
+  (TeX-view-program-list '(("PDF Viewer" "pdf-tools %o")))
+  ;; Enable TeX-fold-mode automatically in TeX/LaTeX mode
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  ;; Configure RefTeX with AUCTeX
+  (reftex-plug-into-AUCTeX t)
+  :hook
+  (TeX-mode-hook . (lambda () (TeX-fold-mode 1)))
+  ;; Enable RefTeX in AUCTeX
+  (LaTeX-mode-hook . turn-on-reftex)
+  ;; Configure RefTeX with AUCTeX
+  (LaTeX-mode-hook . reftex-plug-into-AUCTeX)
+  )
 
-  (use-package reftex
-    :pin gnu
-    :custom
-    (reftex-cite-prompt-optional-args t)) ; Prompt for empty optional arguments in cite
+(use-package company-auctex
+  :pin melpa
+  :after tex
+  :init
+  (company-auctex-init)
+  (add-hook 'LaTeX-mode-hook 'company-auctex-init))
 
-  ;; AUCTeX configuration
-  (use-package auctex
-    :mode ("\\.tex\\'" . latex-mode)
-    :custom
-    ;; Enable parsing
-    (TeX-auto-save t)
-    (TeX-parse-self t)
-    ;; Default PDF viewer
-    (TeX-view-program-selection '((output-pdf "PDF Viewer")))
-    ;; Use pdf-tools to open PDF files
-    (TeX-view-program-list '(("PDF Viewer" "pdf-tools %o")))
-    ;; Enable TeX-fold-mode automatically in TeX/LaTeX mode
-    (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-    ;; Configure RefTeX with AUCTeX
-    (reftex-plug-into-AUCTeX t)
-    :hook
-    (TeX-mode-hook . (lambda () (TeX-fold-mode 1)))
-    ;; Enable RefTeX in AUCTeX
-    (LaTeX-mode-hook . turn-on-reftex)
-    ;; Configure RefTeX with AUCTeX
-    (LaTeX-mode-hook . reftex-plug-into-AUCTeX)
-    )
-#+END_SRC
+(use-package reftex
+  :pin gnu
+  :custom
+  (reftex-cite-prompt-optional-args t)) ; Prompt for empty optional arguments in cite
+
+  #+END_SRC
 *** Magit
 Magit is an amazing git client that can do 90% of what git can, this covers almost all regular
 tasks.
@@ -1131,7 +1128,9 @@ tasks.
   :after magit-gitflow
   :hook (magit-mode . turn-on-magit-gitflow)
   :bind ("C-x g" . magit-status)
-  :custom (magit-process-finish-apply-ansi-colors t)
+  :custom
+  (magit-process-finish-apply-ansi-colors t)
+  (magit-log-arguments '("--graph" "--color" "--decorate"))
   )
 #+END_SRC
 **** Magit Todos
@@ -1151,22 +1150,20 @@ tasks.
 *** Makefile
 Makefile modes comes with Emacs, but we still want to use it and be able to configure it
 #+begin_src emacs-lisp
-    (use-package make-mode
-      :ensure nil
-      :mode (("Makefile\\'" . makefile-mode)
-             ("\\.mk\\'" . makefile-mode))
-      :hook (makefile-mode . (lambda ()
-                               (setq indent-tabs-mode t)))  ;; Use tabs for indentation
-      :custom
-      (makefile-indent-level 4 "Indentation level in makefile-mode")
-      (tab-width 4 "Set the width of a tab to 4 spaces"))
+(use-package make-mode
+  :ensure nil
+  :mode (("Makefile\\'" . makefile-mode)
+         ("\\.mk\\'" . makefile-mode))
+  :hook (makefile-mode . (lambda ()
+                           (setq indent-tabs-mode t)))  ;; Use tabs for indentation
+  :custom
+  (makefile-indent-level 4 "Indentation level in makefile-mode")
+  (tab-width 4 "Set the width of a tab to 4 spaces"))
 
-  (use-package cmake-mode
-    :mode (("CMakeLists\\.txt\\'" . cmake-mode)
-           ("\\.cmake\\'" . cmake-mode))
-    )
-
-    (provide 'init-makefile)
+(use-package cmake-mode
+  :mode (("CMakeLists\\.txt\\'" . cmake-mode)
+         ("\\.cmake\\'" . cmake-mode))
+  )
 #+end_src
 *** Man/Woman
 #+BEGIN_SRC emacs-lisp
@@ -1486,15 +1483,10 @@ Since I am doing a lot of python, many modes and other things related to python 
 **** Elpy
 LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and browsing
 #+BEGIN_SRC emacs-lisp
-;; (use-package elpy
-;;   :ensure t
-;;   :after lsp-mode
-;;   :init
-;;   (elpy-enable)
-;;   :config
-;;   :hook
-;;   (python-mode . elpy-mode)
-;;   )
+(use-package elpy
+  :hook (python-mode . elpy-mode)
+  :after lsp-mode
+  )
 #+END_SRC
 **** Poetry
 
