@@ -75,9 +75,8 @@ in
   };
   services.desktopManager.plasma6.enable = true;
   environment.plasma6.excludePackages = with pkgs.kdePackages; [
-    # plasma-browser-integration
-    # konsole
-    # oxygen
+    konsole
+    kate
   ];
 
   # I want to use KPXC instead
@@ -215,8 +214,6 @@ in
   environment.systemPackages = with pkgs; [
     git
     bat
-    #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-    #  wget
   ];
 
   # Define variables to dynamically set stuff depending on the desktop environment

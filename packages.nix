@@ -29,7 +29,7 @@ let
     gitleaks
     glib
     gnumake
-    inputs.isd.packages.${system}.default # Add the isd package here
+    inputs.isd.packages.${system}.default
     ispell
     jq
     libqalculate
@@ -63,7 +63,6 @@ let
     dbeaver-bin
     feh
     gnome-pomodoro
-    konsole
     libnotify
     netbird-ui
     nodePackages.prettier

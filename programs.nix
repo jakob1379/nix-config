@@ -10,16 +10,6 @@ let
 in
 {
   programs = {
-    atuin = {
-      enable = true;
-      enableBashIntegration = false;
-      flags = [ "--disable-up-arrow" ];
-      settings = {
-        show_preview = true;
-        history_format = "{time}\t{command}\t{duration}\t{directory}";
-      };
-    };
-
     bash = {
       enable = true;
       profileExtra = builtins.readFile ./dotfiles/bash/.profile;
@@ -38,26 +28,12 @@ in
       '';
     };
 
-    pay-respects.enable = true;
-
     ghostty = {
       enable = true;
       settings = {
         bold-is-bright = true;
         background-opacity = 0.9;
       };
-    };
-
-    ranger = {
-      enable = true;
-      settings = {
-        preview_images = true;
-        preview_images_method = "kitty";
-      };
-      extraPackages = with pkgs; [
-        kitty
-        imagemagick
-      ];
     };
 
     tmux = {
