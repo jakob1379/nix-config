@@ -655,7 +655,6 @@ helm is awesome
   :hook (lsp-mode . lsp-ui-mode)
   )
 #+END_SRC
-
 *** Projectile
 #+BEGIN_SRC emacs-lisp
 (use-package projectile)
@@ -808,12 +807,23 @@ icons, file preview, etc.
 ;; Dired and related packages configuration
 (use-package dired
   :defer t
-
   :straight (:type built-in)
   :hook
   ((dired-after-reading . dired-git-info-auto-enable))
   )
 #+end_src
+**** Dire preview
+It is nice to be able to view the contents of files, sometimes.
+
+#+begin_src emacs-lisp :tangle yes
+(use-package dired-preview
+  :defer
+  :hook (dired-mode . dired-preview-mode)
+  :custom
+  (dired-preview-delay 0.7)
+  )
+#+end_src
+
 *** Direnv
 #+BEGIN_SRC emacs-lisp
 (use-package direnv
