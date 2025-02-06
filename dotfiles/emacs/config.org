@@ -15,6 +15,31 @@ external packages. As much as the config is done using =use-package=. See the li
 title for more information.
 
 * Startup
+** Profiling
+#+BEGIN_SRC emacs-lisp
+(use-package esup
+  :defer t
+  :commands esup)
+
+(use-package benchmark-init
+  :config
+  (add-hook 'after-init-hook 'benchmark-init/deactivate)
+  )
+
+(use-package bug-hunter
+  :straight t
+  :defer t)
+
+(add-hook
+ 'emacs-startup-hook
+ (lambda ()
+   (message "Emacs ready in %s with %d garbage collections."
+            (format
+             "%.2f seconds"
+             (float-time
+              (time-subtract after-init-time before-init-time)))
+            gcs-done)))
+#+END_SRC
 ** Early init
 :properties:
 :header-args+: :tangle "~/.emacs.d/early-init.el"
@@ -140,29 +165,6 @@ state.
   :delight gcmh-mode
   :config
   (gcmh-mode 1))
-#+END_SRC
-** Profiling
-#+BEGIN_SRC emacs-lisp
-(use-package esup
-  :commands esup)
-
-(use-package benchmark-init
-  :config
-  (benchmark-init/activate)
-  :hook (after-init . benchmark-init/deactivate))
-#+END_SRC
-
-print startup time
-#+BEGIN_SRC emacs-lisp
-(add-hook
- 'emacs-startup-hook
- (lambda ()
-   (message "Emacs ready in %s with %d garbage collections."
-            (format
-             "%.2f seconds"
-             (float-time
-              (time-subtract after-init-time before-init-time)))
-            gcs-done)))
 #+END_SRC
 * General emacs settings
 ** Sane defaults
