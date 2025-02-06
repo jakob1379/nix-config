@@ -103,6 +103,7 @@ let
     aspellDicts.en
     aspellDicts.en-computers
     aspellDicts.en-science
+    python3
     marksman
     autotools-language-server
     wl-clipboard-rs
