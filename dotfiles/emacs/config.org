@@ -1512,12 +1512,11 @@ Since I am doing a lot of python, many modes and other things related to python 
 LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and browsing
 #+BEGIN_SRC emacs-lisp
 (use-package elpy
-  :hook (python-mode . elpy-mode)
+  :hook (python-mode . elpy-enable)
   :after lsp-mode
   )
 #+END_SRC
 **** Poetry
-
 #+BEGIN_SRC emacs-lisp
 (use-package poetry
   :defer t)
