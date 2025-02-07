@@ -167,7 +167,6 @@ state.
 (setq-default
  ad-redefinition-action 'accept                     ;; Silence warnings for redefinition
  backup-by-copying t                                ;; Backup by copying
- browse-url-browser-function 'browse-url-firefox    ;; Set default browser to Firefox
  confirm-kill-processes nil                         ;; Confirm kill processes
  create-lockfiles nil                               ;; Create lockfiles
  custom-safe-themes t                               ;; Custom safe themes
