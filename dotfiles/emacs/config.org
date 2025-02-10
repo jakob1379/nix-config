@@ -356,7 +356,7 @@ necessarily superseded by the ssh config.
     ;; Append the SSH config completion functions
     (tramp-set-completion-function
      "ssh" (append (tramp-get-completion-function "ssh")
-                   (mapcar (lambda (file) `(tramp-parse-sconfig ,file)) ssh-configs)))))
+                   (mapcar (lambda (file) `(tramp-parse-sconfig file)) ssh-configs)))))
 #+end_src
 * Mode Configs
 ** Before the rest
@@ -686,7 +686,6 @@ snippets for common operations instead of macros, allows it to be portable and p
 
 (use-package yasnippet-snippets
   :after yasnippet
-  :defer t
   :config
   (yasnippet-snippets-initialize)
   ;; (yas-recompile-all)
@@ -700,15 +699,12 @@ snippets for common operations instead of macros, allows it to be portable and p
 
 #+BEGIN_SRC emacs-lisp
 (use-package treemacs
-  :defer t
-  :hook (after-init . treemacs)
   :config
   (treemacs-git-mode 'deferred)
   (treemacs-project-follow-mode t)
   (treemacs-filewatch-mode t)
   (treemacs-git-commit-diff-mode t)
-  (treemacs-indent-guide-mode t)
-  )
+  (treemacs-indent-guide-mode t))
 
 (use-package treemacs-magit
   :defer t
@@ -1172,7 +1168,6 @@ tasks.
 (use-package magit-todos
   :after magit
   :config (magit-todos-mode 1)
-  :commands magit-todos-list magit-todos-mode
   :defer t
   )
 #+END_SRC

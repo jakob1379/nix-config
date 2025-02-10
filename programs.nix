@@ -222,7 +222,7 @@ in
     # EDA
     eda = "nix-shell -p python313Packages.rich python313Packages.ipython python313Packages.pandas python313Packages.seaborn python313Packages.plotly";
 
-    ec = "emacsclient -n --alternate-editor nano";
+    ec = "emacsclient --reuse-frame --alternate-editor nano";
     grep = "grep --color=auto";
 
     # nix update and switch
