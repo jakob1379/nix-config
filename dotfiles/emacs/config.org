@@ -240,11 +240,17 @@ Emacs is very conservative about assuming encoding. Everything is utf-8 these da
 #+END_SRC
 ** Desktop mode save and load
 #+BEGIN_SRC emacs-lisp
-(setq desktop-path '("~/.emacs.d/var/desktop/"))
-(desktop-change-dir "~/.emacs.d/var/desktop/")
-(desktop-read)
-(desktop-save-mode)
+(setq desktop-dirname (concat user-emacs-directory "var/desktop/"))
+
+(unless (file-directory-p desktop-dirname)
+  (make-directory desktop-dirname t))
+
+(setq desktop-base-file-name ".emacs.desktop") ; Optional: Customize base file name
+(desktop-save-mode 1)
 (desktop-auto-save-enable t)
+
+(if (file-exists-p (concat desktop-dirname desktop-base-file-name))
+    (desktop-read))
 #+END_SRC
 ** default hooks
 #+BEGIN_SRC emacs-lisp
@@ -371,6 +377,59 @@ These two packages enable the customization of the mode line to either hide or c
 :PROPERTIES:
 :header-args: :tangle yes
 :END:
+*** All the icons
+nice developer icons
+#+BEGIN_SRC emacs-lisp
+(use-package all-the-icons
+  :if (display-graphic-p))
+
+(use-package all-the-icons-completion
+  :after all-the-icons
+  :defer t
+  :config
+  (add-hook 'marginalia-mode-hook
+            #'all-the-icons-completion-marginalia-setup)
+  (all-the-icons-completion-mode 1))
+#+END_SRC
+*** Ansible
+Ansible is a bit funky in that it should be only be loaded if there is a local variable
+defining that the file indeed is part of an ansible project. This is done by with a in the
+projects with something like in
+
+#+BEGIN_SRC emacs-lisp
+(use-package ansible
+  :defer t
+  )
+#+END_SRC
+*** Auto Sudoedit
+#+BEGIN_SRC emacs-lisp
+(use-package auto-sudoedit
+  :defer t
+  :config (auto-sudoedit-mode 1)
+  :delight
+  )
+#+END_SRC
+*** Auto update emacs packages
+#+BEGIN_SRC emacs-lisp
+(use-package auto-package-update
+  :defer t
+  :config
+  (setq auto-package-update-prompt-before-update t
+        auto-package-update-interval 7)
+  )
+#+END_SRC
+vc-follow-symlinks
+*** Beacon
+Don't lose your cursor
+#+BEGIN_SRC emacs-lisp
+(use-package beacon
+  :delight
+  :bind ("C-x =" . (lambda ()
+                     (interactive)
+                     (beacon-blink)
+                     (what-cursor-position)))
+  :config (beacon-mode 1))
+#+END_SRC
 *** Company mode
 This configures the nice dropdown autocompletion system called company modes. It is highly
 extensible but package specific extensions like lsp, yasnippet, etc., should be configures in their
@@ -445,330 +504,6 @@ Teaches company to sort better
   :after company
   :config
   (prescient-persist-mode 1))
-#+END_SRC
-*** Flycheck
-#+BEGIN_SRC emacs-lisp
-(use-package flycheck
-  :defer t
-  )
-#+END_SRC
-*** Helm
-
-#+BEGIN_SRC emacs-lisp
-(use-package helm
-  :after all-the-icons
-  :defer t
-  :bind (("M-x"     . helm-M-x) ;; Evaluate functions
-         ("C-x C-f" . helm-find-files) ;; Open or create files
-         ("C-x b"   . helm-mini) ;; Select buffers
-         ("C-x C-r" . helm-recentf) ;; Select recently saved files
-         ("C-c i"   . helm-imenu) ;; Select document heading
-         ("M-y"     . helm-show-kill-ring)
-         :map helm-map
-         ;; ("<tab>" . helm-execute-persistent-action)
-         )
-  :custom
-  (helm-always-two-windows nil)
-  (helm-autoresize-max-height 0)
-  (helm-autoresize-min-height 20)
-  (helm-echo-input-in-header-line t)
-  (helm-ff-file-name-history-use-recentf t)
-  (helm-ff-search-library-in-sexp t) ;; search for library in `require' and `declare-function' sexp.
-  (helm-move-to-line-cycle-in-source t) ;; move to end or beginning of source when reaching top or bottom of source.
-  (helm-split-window-in-side-p t) ;; open helm buffer inside current window, not occupy whole other window
-  (helm-M-x-show-short-doc t)
-  (helm-M-x-fuzzy-match t)
-  (helm-candidate-number-limit 20)
-  :config
-  ;; (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
-  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
-  (define-key helm-map (kbd "C-z") 'helm-select-action) ; list actions using C-z
-
-  (autoload 'dired-jump "dired-x"
-    "Jump to Dired buffer corresponding to current buffer." t)
-
-  (autoload 'dired-jump-other-window "dired-x"
-    "Like \\[dired-jump] (dired-jump) but in other window." t)
-
-  (define-key global-map "\C-x\C-j" 'dired-jump)
-  (define-key global-map "\C-x4\C-j" 'dired-jump-other-window)
-  (helm-ff-icon-mode)
-  (helm-adaptive-mode)
-  (helm-autoresize-mode))
-
-#+END_SRC
-**** Helm ag - the silver-search
-
-#+BEGIN_SRC emacs-lisp
-(use-package helm-ag
-  :defer t
-  :custom
-  (helm-ag-base-command "ag -t --nocolor --nogroup --ignore-case")
-  :bind
-  ("C-c a a" . helm-do-ag)
-  ("C-c a p" . helm-do-ag-project-root)
-  ("C-c a g" . helm-do-grep-ag)
-  )
-#+END_SRC
-*** LSP
-**** Copilot
-Copilot is not really a LSP per sé, BUT the functionality is close hence the location here
-#+BEGIN_SRC emacs-lisp
-(use-package jsonrpc
-  :defer t)
-
-(use-package copilot
-  :defer t
-  :disabled
-  :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
-  :requires ( editorconfig jsonrpc )
-  :hook
-  (company-mode . (lambda ()
-                    (add-to-list 'company-backends 'company-yasnippet)))
-  (lsp-mode . copilot-mode)
-  (prog-mode . copilot-mode)
-  (yaml-mode . copilot-mode)
-  (nix-mode . copilot-mode)
-  (rst-mode . copilot-mode)
-  (latex-mode . copilot-mode)
-  (org-mode . copilot-mode)
-  )
-#+END_SRC
-**** DAP
-Following [[https://emacs-lsp.github.io/dap-mode/page/python-poetry-pyenv/][this guide]] we need a little tweaking to play nicely with poetry environments
-#+BEGIN_SRC emacs-lisp
-(use-package dap-mode
-  :after lsp-mode
-  :defer t
-  :commands dap-debug
-  :hook ((python-mode . dap-ui-mode) (python-mode . dap-mode))
-  )
-#+END_SRC
-**** Helm LSP
-helm is awesome
-#+begin_src emacs-lisp
-(use-package helm-lsp)
-#+end_src
-**** LSP mode
-#+BEGIN_SRC emacs-lisp
-(use-package lsp-mode
-  :commands lsp
-  :defer t
-  :hook
-  ((lsp-mode . lsp-enable-which-key-integration)
-   (prog-mode . lsp-deferred)
-   (yaml-mode . lsp-deferred)
-   (nix-mode . lsp-deferred)
-   (rst-mode . lsp-deferred)
-   (latex-mode . lsp-deferred)
-   (css-mode . lsp-deferred))
-  :config
-  ;; enable extra modules in pyls-[black|isort|mypy]
-  ;; might need 'pip install future'
-  (lsp-register-custom-settings
-   '(("pyls.plugins.pyls_mypy.enabled" t t)
-     ("pyls.plugins.pyls_mypy.live_mode" nil t)
-     ("pyls.plugins.pyls_black.enabled" t t)
-     ("pyls.plugins.pyls_isort.enabled" t t)
-     ;; Disable these as they're duplicated by flake8
-     ("pyls.plugins.pycodestyle.enabled" nil t)
-     ("pyls.plugins.mccabe.enabled" nil t)
-     ("pyls.plugins.pyflakes.enabled" nil t)))
-
-  ;; Register lsp clients
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection "esbonio")
-                    :major-modes '(rst-mode)
-                    :server-id 'esbonio))
-
-  ;; Language ID configuration
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection '("nixd"))
-                    :major-modes '(nix-mode)
-                    :server-id 'nix))
-
-  ;; File watch ignore list
-  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\.venv\\'")
-  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\virt\\'")
-
-  :custom
-  (lsp-pyls-plugins-flake8-enabled t)
-  (lsp-auto-execute-action nil)
-  (lsp-auto-guess-root t)
-  (lsp-auto-select-workspace t)
-  (lsp-before-save-edits nil)
-  (lsp-completion-provider :company-capf)
-  (lsp-eldoc-enable-hover t)
-  (lsp-enable-links t)
-  (lsp-enable-on-type-formatting t)
-  (lsp-enable-snippet t)
-  (lsp-face-highlight-read ((t (:underline t))))
-  (lsp-face-highlight-textual ((t (:underline t))))
-  (lsp-face-highlight-write ((t (:underline t))))
-  (lsp-file-watch-threshold 5000)
-  (lsp-headerline-breadcrumb-enable t)
-  (lsp-idle-delay 0.1)
-  (lsp-intelephense-multi-root nil)
-  (lsp-keep-workspace-alive nil)
-  (lsp-keymap-prefix "C-c l") ;; Set prefix for lsp-command-map
-  (lsp-modeline-diagnostics-enable t)
-  (lsp-remote-tramp-connection t)
-  ;; (lsp-prefer-flymake nil)
-  )
-#+END_SRC
-**** LSP Treemacs
-#+begin_src emacs-lisp :tangle yes
-(use-package lsp-treemacs
-  :defer t
-  :config
-  (lsp-treemacs-sync-mode 1))
-#+end_src
-**** LSP ui
-
-#+BEGIN_SRC emacs-lisp
-(use-package lsp-ui
-  :defer t
-  :bind ("C-c l u i" . lsp-ui-imenu)
-  :config
-  (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-  (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
-  :custom
-  (lsp-eldoc-enable-hover t)
-  (lsp-signature-auto-activate t)
-  (lsp-signature-render-documentation t)
-  (lsp-ui-doc-alignment 'frame)
-  (lsp-ui-doc-border (face-foreground 'default))
-  (lsp-ui-doc-delay 3)
-  (lsp-ui-doc-enable t)
-  (lsp-ui-doc-header t)
-  (lsp-ui-doc-include-signature t)
-  (lsp-ui-doc-position 'bottom)
-  (lsp-ui-doc-use-childframe t)
-  (lsp-ui-imenu-auto-refresh t)
-  (lsp-ui-sideline-delay 0.05)
-  (lsp-ui-sideline-enable t)
-  (lsp-ui-sideline-ignore-duplicates t)
-  (lsp-ui-sideline-show-code-actions t)
-  (lsp-ui-sideline-show-diagnostics t)
-  (lsp-ui-sideline-show-hover t)
-  :hook (lsp-mode . lsp-ui-mode)
-  )
-#+END_SRC
-*** Projectile
-#+BEGIN_SRC emacs-lisp
-(use-package projectile)
-#+END_SRC
-*** Which-key
-#+BEGIN_SRC emacs-lisp
-(use-package which-key
-  :delight WK
-  :config
-  (which-key-mode)
-  (which-key-setup-minibuffer)
-  (set-face-attribute
-   'which-key-local-map-description-face nil :weight 'bold)
-  :custom
-  (which-key-idle-delay 2)
-  (which-key-show-remaining-keys t)
-  )
-#+END_SRC
-*** Yasnippet
-Yasnippet is one of the main reasons I have a hard time moving away. The ease of creating new
-snippets for common operations instead of macros, allows it to be portable and powerful.
-
-#+begin_src emacs-lisp
-(use-package yasnippet
-  :delight yas
-  :init
-  (yas-global-mode 1)
-  :custom
-  (yas-prompt-functions '(yas-ido-prompt)))
-
-(use-package yasnippet-snippets
-  :after yasnippet
-  :config
-  (yasnippet-snippets-initialize)
-  ;; (yas-recompile-all)
-  (yas-reload-all)
-  )
-#+end_src
-*** Treemacs
-
-[[https://github.com/Alexander-Miller/treemacs][treemacs]] is a sidebar tree file explorer of the current directory/project.
-=evil=, =projectile=, and =magit= integration is enabled.
-
-#+BEGIN_SRC emacs-lisp
-(use-package treemacs
-  :config
-  (treemacs-git-mode 'deferred)
-  (treemacs-project-follow-mode t)
-  (treemacs-filewatch-mode t)
-  (treemacs-git-commit-diff-mode t)
-  (treemacs-indent-guide-mode t))
-
-(use-package treemacs-magit
-  :defer t
-  :after treemacs-magit)
-
-(use-package treemacs-all-the-icons
-  :defer t
-  :after all-the-icons treemacs
-  :config
-  (treemacs-load-theme "all-the-icons")
-  (treemacs))
-#+END_SRC
-*** All the icons
-nice developer icons
-#+BEGIN_SRC emacs-lisp
-(use-package all-the-icons
-  :if (display-graphic-p))
-
-(use-package all-the-icons-completion
-  :after all-the-icons
-  :defer t
-  :config
-  (add-hook 'marginalia-mode-hook
-            #'all-the-icons-completion-marginalia-setup)
-  (all-the-icons-completion-mode 1))
-#+END_SRC
-*** Ansible
-Ansible is a bit funky in that it should be only be loaded if there is a local variable
-defining that the file indeed is part of an ansible project. This is done by with a in the
-projects with something like in
-
-#+BEGIN_SRC emacs-lisp
-(use-package ansible
-  :defer t
-  )
-#+END_SRC
-*** Auto Sudoedit
-#+BEGIN_SRC emacs-lisp
-(use-package auto-sudoedit
-  :defer t
-  :config (auto-sudoedit-mode 1)
-  :delight
-  )
-#+END_SRC
-*** Auto update emacs packages
-#+BEGIN_SRC emacs-lisp
-(use-package auto-package-update
-  :defer t
-  :config
-  (setq auto-package-update-prompt-before-update t
-        auto-package-update-interval 7)
-  )
-#+END_SRC
-vc-follow-symlinks
-*** Beacon
-Don't lose your cursor
-#+BEGIN_SRC emacs-lisp
-(use-package beacon
-  :delight
-  :bind ("C-x =" . (lambda ()
-                     (interactive)
-                     (beacon-blink)
-                     (what-cursor-position)))
-  :config (beacon-mode 1))
 #+END_SRC
 *** Conf-mode
 Associate various files with conf-mode
@@ -884,6 +619,12 @@ Always redraw immediately when scrolling, more responsive and doesn't hang! Sour
   (ultra-scroll-mode 1))
 #+END_SRC
 
+*** Flycheck
+#+BEGIN_SRC emacs-lisp
+(use-package flycheck
+  :defer t
+  )
+#+END_SRC
 *** Flyspell
 
 #+BEGIN_SRC emacs-lisp
@@ -983,6 +724,64 @@ highlights uncommitted changes on the left side of the window
   :config (setq guess-language-languages '(en da)
                 guess-language-min-paragraph-length 35))
 
+#+END_SRC
+*** Helm
+
+#+BEGIN_SRC emacs-lisp
+(use-package helm
+  :after all-the-icons
+  :defer t
+  :bind (("M-x"     . helm-M-x) ;; Evaluate functions
+         ("C-x C-f" . helm-find-files) ;; Open or create files
+         ("C-x b"   . helm-mini) ;; Select buffers
+         ("C-x C-r" . helm-recentf) ;; Select recently saved files
+         ("C-c i"   . helm-imenu) ;; Select document heading
+         ("M-y"     . helm-show-kill-ring)
+         :map helm-map
+         ;; ("<tab>" . helm-execute-persistent-action)
+         )
+  :custom
+  (helm-always-two-windows nil)
+  (helm-autoresize-max-height 0)
+  (helm-autoresize-min-height 20)
+  (helm-echo-input-in-header-line t)
+  (helm-ff-file-name-history-use-recentf t)
+  (helm-ff-search-library-in-sexp t) ;; search for library in `require' and `declare-function' sexp.
+  (helm-move-to-line-cycle-in-source t) ;; move to end or beginning of source when reaching top or bottom of source.
+  (helm-split-window-in-side-p t) ;; open helm buffer inside current window, not occupy whole other window
+  (helm-M-x-show-short-doc t)
+  (helm-M-x-fuzzy-match t)
+  (helm-candidate-number-limit 20)
+  :config
+  ;; (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
+  (define-key helm-map (kbd "C-z") 'helm-select-action) ; list actions using C-z
+
+  (autoload 'dired-jump "dired-x"
+    "Jump to Dired buffer corresponding to current buffer." t)
+
+  (autoload 'dired-jump-other-window "dired-x"
+    "Like \\[dired-jump] (dired-jump) but in other window." t)
+
+  (define-key global-map "\C-x\C-j" 'dired-jump)
+  (define-key global-map "\C-x4\C-j" 'dired-jump-other-window)
+  (helm-ff-icon-mode)
+  (helm-adaptive-mode)
+  (helm-autoresize-mode))
+
+#+END_SRC
+**** Helm ag - the silver-search
+
+#+BEGIN_SRC emacs-lisp
+(use-package helm-ag
+  :defer t
+  :custom
+  (helm-ag-base-command "ag -t --nocolor --nogroup --ignore-case")
+  :bind
+  ("C-c a a" . helm-do-ag)
+  ("C-c a p" . helm-do-ag-project-root)
+  ("C-c a g" . helm-do-grep-ag)
+  )
 #+END_SRC
 *** Helpful
 [[https://github.com/Wilfred/helpful][helpful]] makes a better Emacs =*help*= buffer, with colors and contextual information.
@@ -1148,6 +947,150 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
   (reftex-cite-prompt-optional-args t)) ; Prompt for empty optional arguments in cite
 
 #+END_SRC
+*** LSP
+**** Copilot
+Copilot is not really a LSP per sé, BUT the functionality is close hence the location here
+#+BEGIN_SRC emacs-lisp
+(use-package jsonrpc
+  :defer t)
+
+(use-package copilot
+  :defer t
+  :disabled
+  :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
+  :requires ( editorconfig jsonrpc )
+  :hook
+  (company-mode . (lambda ()
+                    (add-to-list 'company-backends 'company-yasnippet)))
+  (lsp-mode . copilot-mode)
+  (prog-mode . copilot-mode)
+  (yaml-mode . copilot-mode)
+  (nix-mode . copilot-mode)
+  (rst-mode . copilot-mode)
+  (latex-mode . copilot-mode)
+  (org-mode . copilot-mode)
+  )
+#+END_SRC
+**** DAP
+Following [[https://emacs-lsp.github.io/dap-mode/page/python-poetry-pyenv/][this guide]] we need a little tweaking to play nicely with poetry environments
+#+BEGIN_SRC emacs-lisp
+(use-package dap-mode
+  :after lsp-mode
+  :defer t
+  :commands dap-debug
+  :hook ((python-mode . dap-ui-mode) (python-mode . dap-mode))
+  )
+#+END_SRC
+**** Helm LSP
+helm is awesome
+#+begin_src emacs-lisp
+(use-package helm-lsp)
+#+end_src
+**** LSP mode
+#+BEGIN_SRC emacs-lisp
+(use-package lsp-mode
+  :commands lsp
+  :defer t
+  :hook
+  ((lsp-mode . lsp-enable-which-key-integration)
+   (prog-mode . lsp-deferred)
+   (yaml-mode . lsp-deferred)
+   (nix-mode . lsp-deferred)
+   (rst-mode . lsp-deferred)
+   (latex-mode . lsp-deferred)
+   (css-mode . lsp-deferred))
+  :config
+  ;; enable extra modules in pyls-[black|isort|mypy]
+  ;; might need 'pip install future'
+  (lsp-register-custom-settings
+   '(("pyls.plugins.pyls_mypy.enabled" t t)
+     ("pyls.plugins.pyls_mypy.live_mode" nil t)
+     ("pyls.plugins.pyls_black.enabled" t t)
+     ("pyls.plugins.pyls_isort.enabled" t t)
+     ;; Disable these as they're duplicated by flake8
+     ("pyls.plugins.pycodestyle.enabled" nil t)
+     ("pyls.plugins.mccabe.enabled" nil t)
+     ("pyls.plugins.pyflakes.enabled" nil t)))
+
+  ;; Register lsp clients
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection "esbonio")
+                    :major-modes '(rst-mode)
+                    :server-id 'esbonio))
+
+  ;; Language ID configuration
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection '("nixd"))
+                    :major-modes '(nix-mode)
+                    :server-id 'nix))
+
+  ;; File watch ignore list
+  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\.venv\\'")
+  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\virt\\'")
+
+  :custom
+  (lsp-pyls-plugins-flake8-enabled t)
+  (lsp-auto-execute-action nil)
+  (lsp-auto-guess-root t)
+  (lsp-auto-select-workspace t)
+  (lsp-before-save-edits nil)
+  (lsp-completion-provider :company-capf)
+  (lsp-eldoc-enable-hover t)
+  (lsp-enable-links t)
+  (lsp-enable-on-type-formatting t)
+  (lsp-enable-snippet t)
+  (lsp-face-highlight-read ((t (:underline t))))
+  (lsp-face-highlight-textual ((t (:underline t))))
+  (lsp-face-highlight-write ((t (:underline t))))
+  (lsp-file-watch-threshold 5000)
+  (lsp-headerline-breadcrumb-enable t)
+  (lsp-idle-delay 0.1)
+  (lsp-intelephense-multi-root nil)
+  (lsp-keep-workspace-alive nil)
+  (lsp-keymap-prefix "C-c l") ;; Set prefix for lsp-command-map
+  (lsp-modeline-diagnostics-enable t)
+  (lsp-remote-tramp-connection t)
+  ;; (lsp-prefer-flymake nil)
+  )
+#+END_SRC
+**** LSP Treemacs
+#+begin_src emacs-lisp :tangle yes
+(use-package lsp-treemacs
+  :defer t
+  :config
+  (lsp-treemacs-sync-mode 1))
+#+end_src
+**** LSP ui
+
+#+BEGIN_SRC emacs-lisp
+(use-package lsp-ui
+  :defer t
+  :bind ("C-c l u i" . lsp-ui-imenu)
+  :config
+  (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+  (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
+  :custom
+  (lsp-eldoc-enable-hover t)
+  (lsp-signature-auto-activate t)
+  (lsp-signature-render-documentation t)
+  (lsp-ui-doc-alignment 'frame)
+  (lsp-ui-doc-border (face-foreground 'default))
+  (lsp-ui-doc-delay 3)
+  (lsp-ui-doc-enable t)
+  (lsp-ui-doc-header t)
+  (lsp-ui-doc-include-signature t)
+  (lsp-ui-doc-position 'bottom)
+  (lsp-ui-doc-use-childframe t)
+  (lsp-ui-imenu-auto-refresh t)
+  (lsp-ui-sideline-delay 0.05)
+  (lsp-ui-sideline-enable t)
+  (lsp-ui-sideline-ignore-duplicates t)
+  (lsp-ui-sideline-show-code-actions t)
+  (lsp-ui-sideline-show-diagnostics t)
+  (lsp-ui-sideline-show-hover t)
+  :hook (lsp-mode . lsp-ui-mode)
+  )
+#+END_SRC
 *** Magit
 Magit is an amazing git client that can do 90% of what git can, this covers almost all regular
 tasks.
@@ -1267,6 +1210,13 @@ Makefile modes comes with Emacs, but we still want to use it and be able to conf
          ("C-c m u" . 'buf-move-up)
          ("C-c m d" . 'buf-move-down)))
 #+END_SRC
+*** Move text: moce line/region up/down
+#+begin_src emacs-lisp :tangle yes
+(use-package move-text
+  :ensure t
+  :straight (:host github :repo "emacsfodder/move-text" :files ("move-text.el"))
+  )
+#+end_src
 *** Multiple Cursors
 #+BEGIN_SRC emacs-lisp
 (use-package multiple-cursors
@@ -1317,7 +1267,6 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
   :defer t
   :delight
   :straight (:type built-in)
-  :commands org-babel-do-load-languages
   :custom
   (org-agenda-files "~/dropbox-private/Documents/RoamNotes")
   (org-cycle-separator-lines -1)
@@ -1481,6 +1430,10 @@ We want to be able to view pdfs in emacs
   :mode
   ("\\.ps1" . powershell-mode))
 #+END_SRC
+*** Projectile
+#+BEGIN_SRC emacs-lisp
+(use-package projectile)
+#+END_SRC
 *** Python
 Since I am doing a lot of python, many modes and other things related to python has been bundled in this section
 **** Python mode
@@ -1628,6 +1581,31 @@ simple package that enable titlecasing
           (end (line-end-position)))
       (titlecase-region beg end))))
 #+END_SRC
+*** Treemacs
+
+[[https://github.com/Alexander-Miller/treemacs][treemacs]] is a sidebar tree file explorer of the current directory/project.
+=evil=, =projectile=, and =magit= integration is enabled.
+
+#+BEGIN_SRC emacs-lisp
+(use-package treemacs
+  :config
+  (treemacs-git-mode 'deferred)
+  (treemacs-project-follow-mode t)
+  (treemacs-filewatch-mode t)
+  (treemacs-git-commit-diff-mode t)
+  (treemacs-indent-guide-mode t))
+
+(use-package treemacs-magit
+  :defer t
+  :after treemacs-magit)
+
+(use-package treemacs-all-the-icons
+  :defer t
+  :after all-the-icons treemacs
+  :config
+  (treemacs-load-theme "all-the-icons")
+  (treemacs))
+#+END_SRC
 *** VLF - very large files
 #+BEGIN_SRC emacs-lisp
 (use-package vlf
@@ -1669,6 +1647,20 @@ simple package that enable titlecasing
 
   :config (setq webpaste-provider-priority '("dpaste.org")))
 #+END_SRC
+*** Which-key
+#+BEGIN_SRC emacs-lisp
+(use-package which-key
+  :delight WK
+  :config
+  (which-key-mode)
+  (which-key-setup-minibuffer)
+  (set-face-attribute
+   'which-key-local-map-description-face nil :weight 'bold)
+  :custom
+  (which-key-idle-delay 2)
+  (which-key-show-remaining-keys t)
+  )
+#+END_SRC
 *** Why this (in-line git blame)
 #+begin_src emacs-lisp
 (use-package why-this
@@ -1684,3 +1676,23 @@ simple package that enable titlecasing
   ("\\.yml\\'" . yaml-mode)
   ("\\.yaml\\'" . yaml-mode))
 #+END_SRC
+*** Yasnippet
+Yasnippet is one of the main reasons I have a hard time moving away. The ease of creating new
+snippets for common operations instead of macros, allows it to be portable and powerful.
+
+#+begin_src emacs-lisp
+(use-package yasnippet
+  :delight yas
+  :init
+  (yas-global-mode 1)
+  :custom
+  (yas-prompt-functions '(yas-ido-prompt)))
+
+(use-package yasnippet-snippets
+  :after yasnippet
+  :config
+  (yasnippet-snippets-initialize)
+  ;; (yas-recompile-all)
+  (yas-reload-all)
+  )
+#+end_src
