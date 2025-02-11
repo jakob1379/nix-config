@@ -15,6 +15,7 @@ let
 
   corePackages = with pkgs; [
     android-tools
+    btop
     busybox
     cookiecutter
     dconf
@@ -38,6 +39,7 @@ let
     nix-search-cli
     nixfmt-classic
     nmap
+    nvtopPackages.full
     pandoc
     poppler_utils
     rclone
@@ -51,7 +53,6 @@ let
     wakatime
     xclip
     yq-go
-    btop
   ];
 
   guiPackages = with pkgs; [
