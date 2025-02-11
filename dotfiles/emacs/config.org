@@ -1212,10 +1212,12 @@ Makefile modes comes with Emacs, but we still want to use it and be able to conf
 #+END_SRC
 *** Move text: moce line/region up/down
 #+begin_src emacs-lisp :tangle yes
-(use-package move-text
-  :ensure t
-  :straight (:host github :repo "emacsfodder/move-text" :files ("move-text.el"))
-  )
+  (use-package move-text
+    :ensure t
+    :straight (:host github :repo "emacsfodder/move-text" :files ("move-text.el"))
+    :config
+    (move-text-default-bindings)
+    )
 #+end_src
 *** Multiple Cursors
 #+BEGIN_SRC emacs-lisp
@@ -1351,7 +1353,7 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
   :init
   (setq org-roam-v2-ack t)
   :custom
-  (org-roam-directory '("~/dropbox-private/Documents/RoamNotes"))
+  (org-roam-directory (file-truename "~/dropbox-private/Documents/RoamNotes"))
   (org-roam-capture-templates
    '(("d" "default" plain
       "%?"
@@ -1589,6 +1591,7 @@ simple package that enable titlecasing
 #+BEGIN_SRC emacs-lisp
 (use-package treemacs
   :config
+  (treemacs)
   (treemacs-git-mode 'deferred)
   (treemacs-project-follow-mode t)
   (treemacs-filewatch-mode t)
