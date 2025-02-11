@@ -222,14 +222,14 @@ in
     # EDA
     eda = "nix-shell -p python313Packages.rich python313Packages.ipython python313Packages.pandas python313Packages.seaborn python313Packages.plotly";
 
-    ec = "emacsclient --reuse-frame --alternate-editor nano";
+    ec = "emacsclient --no-wait --reuse-frame --alternate-editor nano";
     grep = "grep --color=auto";
 
     # nix update and switch
     # Update and switch Home Manager
     updateHome = ''
       nix flake update --flake ~/.config/home-manager && \
-      home-manager switch
+      home-manager switch -b backup
     '';
 
     # clean netbird token
