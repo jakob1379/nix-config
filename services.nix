@@ -22,13 +22,15 @@ let
         ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${mountPath}";
         ExecStart = ''
           ${pkgs.rclone}/bin/rclone mount \
-            --config /home/${config.home.username}/.config/rclone/rclone.conf \
             --allow-other \
             --attr-timeout 1h \
-            --buffer-size=0 \
+            --buffer-size=32M \
+            --config /home/${config.home.username}/.config/rclone/rclone.conf \
             --dir-cache-time 3h0m0s \
             --poll-interval 30s \
             --use-server-modtime \
+            --vfs-cache-max-age 6h \
+            --vfs-cache-max-size 10G \
             --vfs-cache-mode full \
             --vfs-fast-fingerprint \
             ${remote}:${remotePath} ${mountPath}
@@ -91,9 +93,9 @@ in
     };
     Service = {
       ExecStart = "${pkgs.writeShellScript "pywal-apply" ''
-      set -e
-      ${pkgs.pywal16}/bin/wal -ni "$(${pkgs.coreutils}/bin/cat ${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt)" && ${pkgs.pywal16}/bin/wal -R
-    ''}";
+        set -e
+        ${pkgs.pywal16}/bin/wal -ni "$(${pkgs.coreutils}/bin/cat ${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt)" && ${pkgs.pywal16}/bin/wal -R
+      ''}";
       Restart = "on-failure";
       RestartSec = 5;
       StandardOutput = "journal";
