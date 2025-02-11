@@ -1,0 +1,8 @@
+# key: ld
+# name: LD_LIBRARY_PATH
+# --
+
+LD_LIBRARY_PATH = "\$\{pkgs.lib.makeLibraryPath [
+  $1
+]\}:\$LD_LIBRARY_PATH";
+$0
