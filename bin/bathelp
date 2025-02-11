@@ -45,8 +45,11 @@ fi
 # Assign the command passed as arguments to a variable
 command="$@"
 
+
+
+
 # Try to get the help message of the command
-help_msg="$($command --help || $command -h)"
+help_msg="$(eval "$command --help" || eval "$command -h")"
 
 # Display the help message using bat with syntax highlighting for 'help'
 echo "$help_msg" | bat -pl help
