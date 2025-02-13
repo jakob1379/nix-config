@@ -35,6 +35,7 @@ let
     jq
     libqalculate
     libsecret
+    nix-output-monitor
     nix-prefetch-github
     nix-search-cli
     nixfmt-classic

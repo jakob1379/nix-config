@@ -225,11 +225,20 @@ in
     ec = "emacsclient --no-wait --reuse-frame --alternate-editor nano";
     grep = "grep --color=auto";
 
-    # nix update and switch
-    # Update and switch Home Manager
-    updateHome = ''
-      nix flake update --flake ~/.config/home-manager && \
-      home-manager switch -b backup
+    # home-manager and nix update and switch
+    hs = ''f(){ home-manager switch "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
+    hsu = ''f(){ home-manager switch "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; nix flake update --flake ${flakePath} && f'';
+    ns = ''f(){ sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
+    nsu = ''f(){ sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; sudo nix-channel --update && f'';
+
+    updateAll = ''
+      f() {
+        nix flake update --flake ${flakePath}
+        nix-channel --update
+        home-manager switch "$@" |& "${pkgs.nix-output-monitor}/bin/nom"
+        sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"
+      };
+      f
     '';
 
     # clean netbird token
@@ -239,19 +248,6 @@ in
       sudo mv /var/lib/netbird/tmp-config.json /var/lib/netbird/config.json
     '';
 
-    # Update and switch NixOS
-    updateNixos = ''
-      sudo nix-channel --update
-      sudo nixos-rebuild switch --flake ~/.config/home-manager
-    '';
-
-    # Combined update and switch for both Home Manager and NixOS
-    updateAll = ''
-      sudo nix-channel --update && \
-      nix flake update --flake ${flakePath} && \
-      home-manager switch && \
-      sudo nixos-rebuild switch --flake ${flakePath}
-    '';
     q = "qalc";
     tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
   };
