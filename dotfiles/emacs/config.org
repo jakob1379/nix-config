@@ -1592,7 +1592,6 @@ simple package that enable titlecasing
 #+BEGIN_SRC emacs-lisp
 (use-package treemacs
   :config
-  (treemacs)
   (treemacs-git-mode 'deferred)
   (treemacs-project-follow-mode t)
   (treemacs-filewatch-mode t)
@@ -1608,7 +1607,7 @@ simple package that enable titlecasing
   :after all-the-icons treemacs
   :config
   (treemacs-load-theme "all-the-icons")
-  (treemacs))
+  )
 #+END_SRC
 *** VLF - very large files
 #+BEGIN_SRC emacs-lisp
