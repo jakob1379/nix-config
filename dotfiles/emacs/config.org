@@ -789,9 +789,10 @@ highlights uncommitted changes on the left side of the window
 #+BEGIN_SRC emacs-lisp
 (use-package helpful
   :defer t
-  :bind (("C-h f" . helpful-callable)
+  :bind (("C-h c" . helpful-key)
+         ("C-h f" . helpful-callable)
+         ("C-h p" . helpful-at-point)
          ("C-h v" . helpful-variable)
-         ("C-h k" . helpful-key)
          ("C-h x" . helpful-command))
   :config
   (add-to-list 'display-buffer-alist
