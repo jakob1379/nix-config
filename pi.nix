@@ -8,7 +8,14 @@
 }:
 let
   # Import the exported lists from packages.nix
-  packages = import ./packages.nix { inherit pkgs system lib; };
+  packages = import ./packages.nix {
+    inherit
+      pkgs
+      system
+      lib
+      inputs
+      ;
+  };
   dotfiles = import ./dotfiles.nix { inherit pkgs; };
 
   sshConfigOverride = {
@@ -35,7 +42,7 @@ in
 
   home.packages = piPackages;
 
-  home.file = sshConfigOverride // (dotfiles.emacsConfig // dotfiles.mediaConfig);
+  home.file = sshConfigOverride // dotfiles.emacsConfig // dotfiles.mediaConfig;
 
   home.sessionVariables = dotfiles.sessionVariables;
 
