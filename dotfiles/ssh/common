@@ -12,3 +12,7 @@ Host *
     ControlMaster auto
     ControlPath ~/.ssh/sockets/%r@%h-%p
     ControlPersist yes
+
+    # Disconnect if dead connection
+    ServerAliveInterval 30
+    ServerAliveCountMax 3
