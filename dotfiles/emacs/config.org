@@ -993,13 +993,15 @@ helm is awesome
   :commands lsp
   :defer t
   :hook
-  ((lsp-mode . lsp-enable-which-key-integration)
-   (prog-mode . lsp-deferred)
-   (yaml-mode . lsp-deferred)
-   (nix-mode . lsp-deferred)
-   (rst-mode . lsp-deferred)
+  ((css-mode . lsp-deferred)
    (latex-mode . lsp-deferred)
-   (css-mode . lsp-deferred))
+   (markdown-mode . lsp-deferred)
+   (nix-mode . lsp-deferred)
+   (prog-mode . lsp-deferred)
+   (rst-mode . lsp-deferred)
+   (yaml-mode . lsp-deferred)
+   (lsp-mode . lsp-enable-which-key-integration)
+   )
   :config
   ;; enable extra modules in pyls-[black|isort|mypy]
   ;; might need 'pip install future'
