@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: enable-python-venv
+# key: python
+# --
+
+export VIRTUAL_ENV=".venv"
+layout python

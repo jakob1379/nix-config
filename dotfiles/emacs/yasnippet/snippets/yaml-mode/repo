@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: repo
+# key: repo
+# --
+  - repo: ${1:url|local}
+    hooks:
+      - id: ${2:shor-tname}
+$0

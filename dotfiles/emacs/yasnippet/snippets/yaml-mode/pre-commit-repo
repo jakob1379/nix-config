@@ -1,0 +1,8 @@
+# key: repo
+# name: pre-commit repo
+# --
+  - repo: ${1:url|local}
+    rev: main
+    hooks:
+      - id: ${2:shor-tname}
+$0
