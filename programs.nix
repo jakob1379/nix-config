@@ -210,6 +210,7 @@ in
     cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
     fm = "frogmouth";
     df = "duf --hide special";
+    open = "xdg-open";
 
     # docker
     dcup = "docker compose up --remove-orphans";
