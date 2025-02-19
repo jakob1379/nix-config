@@ -1056,9 +1056,9 @@ helm is awesome
 
   ;; File watch ignore list
   (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\.venv\\'")
-  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\virt\\'")
 
   :custom
+  (lsp-auto-register-remote-clients t)
   (lsp-pyls-plugins-flake8-enabled t)
   (lsp-auto-execute-action nil)
   (lsp-auto-guess-root t)
