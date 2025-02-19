@@ -979,7 +979,34 @@ Following [[https://emacs-lsp.github.io/dap-mode/page/python-poetry-pyenv/][this
   :after lsp-mode
   :defer t
   :commands dap-debug
-  :hook ((python-mode . dap-ui-mode) (python-mode . dap-mode))
+  :hook ((python-mode . dap-ui-mode)
+         (python-mode . dap-mode))
+  :config
+  (require 'dap-python)
+  (setq dap-python-debugger 'debugpy)
+
+  ;; Temporal fix (REVISED)
+  (defun dap-python--pyenv-executable-find (command)
+    (let ((venv-path (expand-file-name ".venv" default-directory)))
+      (if (file-directory-p venv-path)
+          (expand-file-name "bin/python" venv-path)
+        (executable-find "python"))))
+
+  (dap-register-debug-template
+   "Python :: Buffer (File)"
+   (list :type "python"
+         :request "launch"
+         :name "Python :: Run File (Buffer)"
+         :program "${file}"
+         :cwd "${workspaceFolder}"))
+
+  :bind (:map dap-mode-map
+            ("C-c <C-right>" . dap-next)
+            ("C-c <C-down>" . dap-step-in)
+            ("C-c <C-up>" . dap-step-out)
+            ("C-c <M-right>" . dap-continue)
+            ("C-c b" . dap-breakpoint-toggle))
+
   )
 #+END_SRC
 **** Helm LSP
@@ -1465,8 +1492,9 @@ Since I am doing a lot of python, many modes and other things related to python 
 LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and browsing
 #+BEGIN_SRC emacs-lisp
 (use-package elpy
-  :hook (python-mode . elpy-enable)
-  :after lsp-mode
+  :defer t
+  ;; :hook (python-mode . elpy-enable)
+  ;; :after lsp-mode
   )
 #+END_SRC
 **** Poetry
@@ -1489,33 +1517,13 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
 (use-package uv-mode
   :hook (python-mode . uv-mode-auto-activate-hook))
 #+end_src
-**** Pyenv
+**** Pyvenv
 
 #+BEGIN_SRC emacs-lisp
-;; Use pyvenv package for managing Python virtual environments
-(defun pyvenv-parent-env ()
-  ;; Locating the virtual environment file (.python-version) in the directory tree
-  ;; and extracting its contents to use for setting up the virtual environment
-  (let* ((root (locate-dominating-file
-                (or (buffer-file-name) default-directory)
-                ".python-version"))
-         (venv (and root
-                    (with-temp-buffer
-                      (insert-file-contents
-                       (expand-file-name ".python-version" root))
-                      (string-trim (buffer-string))))))
-    ;; If a virtual environment is found, enable pyvenv mode,
-    ;; activate the virtual environment and restart lsp workspace
-    (when venv
-      (pyvenv-mode 1)
-      (pyvenv-tracking-mode 1)
-      )))
-
 (use-package pyvenv
-  :defer t
-  :hook (python-mode . pyvenv-parent-env)
-  )
-
+  :ensure t
+  :init
+  (pyvenv-mode 1))
 #+END_SRC
 *** Rainbow delimiters
 #+BEGIN_SRC emacs-lisp
