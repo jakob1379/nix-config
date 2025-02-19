@@ -1668,7 +1668,7 @@ simple package that enable titlecasing
 *** Which-key
 #+BEGIN_SRC emacs-lisp
 (use-package which-key
-  :delight WK
+  :diminish
   :config
   (which-key-mode)
   (which-key-setup-minibuffer)
