@@ -1186,6 +1186,11 @@ Makefile modes comes with Emacs, but we still want to use it and be able to conf
 (use-package markdown-mode
   :defer t
   :commands (gfm-mode markdown-mode)
+  :bind
+  (("M-<right>" . markdown-demote)
+   ("M-<left>" . markdown-promote)
+   ("M-<return>" . markdown-insert-header-dwim))
+
   :mode
   (("README\\.md\\'" . gfm-mode)
    ("\\.md\\'" . markdown-mode)
