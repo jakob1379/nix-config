@@ -47,7 +47,6 @@ let
     rename
     silver-searcher
     speedtest-go
-    taplo
     tldr
     uv
     wakatime
@@ -95,7 +94,10 @@ let
   # emacs is enabled in programs.nix
   emacsPackages = with pkgs; [
     python312Packages.python-lsp-server
+    bash-language-server
+    yaml-language-server
     powershell
+    taplo
     hunspell
     nixd
     texlab
