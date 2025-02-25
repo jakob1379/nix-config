@@ -15,7 +15,6 @@ let
 
   corePackages = with pkgs; [
     android-tools
-    unar
     btop
     busybox
     dconf
@@ -49,6 +48,7 @@ let
     silver-searcher
     speedtest-go
     tldr
+    unar
     uv
     wakatime
     xclip
