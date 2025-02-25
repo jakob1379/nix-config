@@ -227,11 +227,11 @@ in
   '';
   programs.ssh.askPassword = lib.mkForce (
     if builtins.getEnv "DESKTOP_SESSION" == "plasma" then
-      "${pkgs.ksshaskpass}/bin/ksshaskpass"
+      "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass"
     else if builtins.getEnv "DESKTOP_SESSION" == "gnome" then
       "${pkgs.seahorse}/libexec/seahorse/ssh-askpass"
     else
-      "${pkgs.ksshaskpass}/bin/ksshaskpass" # Default to KDE's program
+      "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass" # Default to KDE's program
   );
 
   # Some programs need SUID wrappers, can be configured further or are
