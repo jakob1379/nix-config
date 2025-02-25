@@ -30,6 +30,7 @@ let
     gitleaks
     glib
     gnumake
+    hyperfine
     inputs.isd.packages.${system}.default
     ispell
     jq
@@ -118,7 +119,6 @@ let
     (pkgs.writeShellScriptBin "bak" (builtins.readFile ./bin/bak))
     (pkgs.writeShellScriptBin "pyenv-here" (builtins.readFile ./bin/pyenv-here))
     (pkgs.writeShellScriptBin "emacs-clean" (builtins.readFile ./bin/emacs-clean))
-    (pkgs.writeShellScriptBin "time-stats" (builtins.readFile ./bin/time-stats))
     (pkgs.writeShellScriptBin "bhelp" (builtins.readFile ./bin/bathelp))
     (pkgs.writeShellScriptBin "docker-volume-copy" (builtins.readFile ./bin/docker-volume-copy))
     (pkgs.writeShellScriptBin "pywal-apply" ''
