@@ -251,7 +251,6 @@ in
     };
     yubico = {
       enable = true;
-      debug = true;
       control = "sufficient";
       mode = "challenge-response";
       id = [
