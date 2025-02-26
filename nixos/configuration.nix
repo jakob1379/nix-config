@@ -1,7 +1,6 @@
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
-
 {
   config,
   pkgs,
@@ -9,7 +8,7 @@
   ...
 }:
 let
-  LC_LOCALE = "da_DK.UTF-8";
+  LC_LOCALE = "en_US.UTF-8";
 in
 {
   imports = [
@@ -51,20 +50,24 @@ in
   time.timeZone = "Europe/Copenhagen";
 
   # Select internationalisation properties.
-  i18n.defaultLocale = "en_DK.UTF-8";
-
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "${LC_LOCALE}";
-    LC_IDENTIFICATION = "${LC_LOCALE}";
-    LC_MEASUREMENT = "${LC_LOCALE}";
-    LC_MONETARY = "${LC_LOCALE}";
-    LC_NAME = "${LC_LOCALE}";
-    LC_NUMERIC = "${LC_LOCALE}";
-    LC_PAPER = "${LC_LOCALE}";
-    LC_TELEPHONE = "${LC_LOCALE}";
-    LC_TIME = "${LC_LOCALE}";
+  i18n = {
+    defaultLocale = "${LC_LOCALE}";
+    supportedLocales = [
+      "en_US.UTF-8/UTF-8"
+      "da_DK.UTF-8/UTF-8"
+    ];
+    extraLocaleSettings = {
+      LC_ADDRESS = "${LC_LOCALE}";
+      LC_IDENTIFICATION = "${LC_LOCALE}";
+      LC_MEASUREMENT = "${LC_LOCALE}";
+      LC_MONETARY = "${LC_LOCALE}";
+      LC_NAME = "${LC_LOCALE}";
+      LC_NUMERIC = "${LC_LOCALE}";
+      LC_PAPER = "${LC_LOCALE}";
+      LC_TELEPHONE = "${LC_LOCALE}";
+      LC_TIME = "${LC_LOCALE}";
+    };
   };
-
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
@@ -312,5 +315,4 @@ in
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "24.05"; # Did you read the comment?
-
 }
