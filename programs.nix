@@ -211,7 +211,7 @@ in
     fm = "frogmouth";
     df = "duf --hide special";
     open = "xdg-open";
-
+    venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
     # docker
     dcup = "docker compose up --remove-orphans";
     dcview = "docker compose config | bat -l yml";
