@@ -38,7 +38,6 @@
           nodejs
           pre-commit
           yamllint
-          gitleaks
           nixfmt-rfc-style
         ];
 
