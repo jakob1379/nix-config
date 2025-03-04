@@ -13,6 +13,7 @@ OCO_ONE_LINE_COMMIT=false
 OCO_TEST_MOCK_TYPE=commit-message
 OCO_WHY=false
 
+
 # Local Variables:
 # mode: conf-toml
 # End:

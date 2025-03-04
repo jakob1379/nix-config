@@ -9,7 +9,7 @@
   };
   outputs = { self, nixpkgs, utils }: utils.lib.eachDefaultSystem (system:
     let
-      pkgs = nixpkgs.legacyPackages.\$\{system\};
+      pkgs = nixpkgs.legacyPackages.\${system};
     in
       {
         devShell = pkgs.mkShell {
@@ -19,10 +19,11 @@
             (python312Packages.matplotlib.override {
               enableQt = true;
             })
-            LD_LIBRARY_PATH = "${pkgs.lib.makeLibraryPath [
-            ]}:$LD_LIBRARY_PATH";
+            ];
+
+            LD_LIBRARY_PATH = "\${pkgs.lib.makeLibraryPath [
+            ]}:\$LD_LIBRARY_PATH";
             $0
-          ];
 
           shellHook = ''
           '' ;

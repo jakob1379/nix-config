@@ -252,10 +252,6 @@ Emacs is very conservative about assuming encoding. Everything is utf-8 these da
 (if (file-exists-p (concat desktop-dirname desktop-base-file-name))
     (desktop-read))
 #+END_SRC
-** default hooks
-#+BEGIN_SRC emacs-lisp
-(add-hook 'before-save-hook 'whitespace-cleanup)
-#+END_SRC
 ** y-or-n-p instead of yes/no
 #+BEGIN_SRC emacs-lisp
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -343,27 +339,6 @@ If emacs is not running as a server, start one. It should've been started by sys
 #+BEGIN_SRC emacs-lisp
 (define-key minibuffer-local-map (kbd "SPC") 'self-insert-command)
 #+END_SRC
-** TRAMP
-Tramp is what we use for ssh, but need some config as it has its own default which is not
-necessarily superseded by the ssh config.
-#+begin_src emacs-lisp
-(use-package tramp
-  :defer t
-  :custom
-  (tramp-use-connection-share nil)
-  :config
-  (let ((ssh-configs (append (list "~/.ssh/config")
-                             (directory-files-recursively "~/.ssh/conf.d/" "\\.config$")
-                             )))
-    ;; Log the detected SSH config files to the *tramp-info* buffer
-    (with-current-buffer (get-buffer-create "*tramp-info*")
-      (insert (format "Found SSH config files: %s\n" ssh-configs)))
-
-    ;; Append the SSH config completion functions
-    (tramp-set-completion-function
-     "ssh" (append (tramp-get-completion-function "ssh")
-                   (mapcar (lambda (file) `(tramp-parse-sconfig file)) ssh-configs)))))
-#+end_src
 * Mode Configs
 ** Before the rest
 *** Delight and Deminish
@@ -553,7 +528,6 @@ It is nice to be able to view the contents of files, sometimes.
   (dired-preview-delay 0.7)
   )
 #+end_src
-
 *** Direnv
 #+BEGIN_SRC emacs-lisp
 (use-package direnv
@@ -618,7 +592,6 @@ Always redraw immediately when scrolling, more responsive and doesn't hang! Sour
   :config
   (ultra-scroll-mode 1))
 #+END_SRC
-
 *** Flycheck
 #+BEGIN_SRC emacs-lisp
 (use-package flycheck
@@ -1134,6 +1107,7 @@ tasks.
   :custom
   (magit-process-finish-apply-ansi-colors t)
   (magit-log-arguments '("--graph" "--color" "--decorate"))
+  (magit-process-log-max 100)
   )
 #+END_SRC
 **** Magit Todos
@@ -1565,6 +1539,38 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
   (solaire-mode-auto-swap-bg t)
   :config
   (solaire-global-mode +1))
+#+END_SRC
+*** SSH
+**** TRAMP
+Tramp is what we use for ssh, but need some config as it has its own default which is not
+necessarily superseded by the ssh config.
+#+begin_src emacs-lisp
+(use-package tramp
+  :defer t
+  :custom
+  (tramp-default-method "ssh")
+  (tramp-use-ssh-controlmaster-options nil)
+  (tramp-chunksize 500)
+  (tramp-use-connection-share nil)
+  :config
+  (let ((ssh-configs (append (list "~/.ssh/config")
+                             (directory-files-recursively "~/.ssh/conf.d/" "\\.config$")
+                             )))
+    ;; Log the detected SSH config files to the *tramp-info* buffer
+    (with-current-buffer (get-buffer-create "*tramp-info*")
+      (insert (format "Found SSH config files: %s\n" ssh-configs)))
+
+    ;; Append the SSH config completion functions
+    (tramp-set-completion-function
+     "ssh" (append (tramp-get-completion-function "ssh")
+                   (mapcar (lambda (file) `(tramp-parse-sconfig file)) ssh-configs)))))
+#+end_src
+**** SSH Config mode
+#+BEGIN_SRC emacs-lisp
+(use-package ssh-config-mode
+  :defer t
+  )
+
 #+END_SRC
 *** Systemd
 #+BEGIN_SRC emacs-lisp

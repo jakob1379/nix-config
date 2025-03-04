@@ -16,3 +16,8 @@ Host *
     # Disconnect if dead connection
     ServerAliveInterval 30
     ServerAliveCountMax 3
+
+
+# Local Variables:
+# mode: ssh-config
+# End:
