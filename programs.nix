@@ -175,6 +175,14 @@ in
     fzf = {
       enable = true;
       enableBashIntegration = true;
+      changeDirWidgetOptions = [
+        "--preview '${pkgs.eza}/bin/eza --tree --color=always {} | head -200'"
+      ];
+      changeDirWidgetCommand = "fd --type d";
+      fileWidgetCommand = "fd --type f";
+      fileWidgetOptions = [
+        "--preview '${pkgs.bat}/bin/bat -Pf {}'"
+      ];
     };
 
     bat = {
