@@ -27,8 +27,6 @@ let
             --buffer-size=32M \
             --config /home/${config.home.username}/.config/rclone/rclone.conf \
             --dir-cache-time 3h0m0s \
-            --poll-interval 30s \
-            --use-server-modtime \
             --vfs-cache-max-age 6h \
             --vfs-cache-max-size 10G \
             --vfs-cache-mode full \
