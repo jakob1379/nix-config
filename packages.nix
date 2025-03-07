@@ -120,6 +120,7 @@ let
     (pkgs.writeShellScriptBin "pyenv-here" (builtins.readFile ./bin/pyenv-here))
     (pkgs.writeShellScriptBin "emacs-clean" (builtins.readFile ./bin/emacs-clean))
     (pkgs.writeShellScriptBin "bhelp" (builtins.readFile ./bin/bathelp))
+    (pkgs.writeShellScriptBin "pyvenv-setup" (builtins.readFile ./bin/pyvenv-setup))
     (pkgs.writeShellScriptBin "docker-volume-copy" (builtins.readFile ./bin/docker-volume-copy))
     (pkgs.writeShellScriptBin "pywal-apply" ''
       ${pkgs.pywal16}/bin/wal -i "$(${pkgs.coreutils}/bin/cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"

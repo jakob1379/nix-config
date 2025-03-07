@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+uv add --group jga-dev \
+   black \
+   dap-python \
+   debugpy \
+   flake8 \
+   isort \
+   mypy \
+   ptvsd \
+   pyright \
+   python-lsp-server[all] \
+   rich \
+   ruff
+
+nix flake init --template templates#utils-generic || echo "a flake.nix already exists!"
+
+if [ ! -f .envrc ]; then
+  echo "use flake path:." > .envrc
+  echo "Created .envrc with \"use flake path:.\""
+else
+  if ! grep -q "use flake path:." .envrc; then
+    echo "use flake path:." >> .envrc
+    echo "Added \"use flake path:.\" to existing .envrc"
+  else
+    echo "\"use flake path:.\" already exists in .envrc"
+  fi
+fi
