@@ -56,7 +56,6 @@ let
   ];
 
   guiPackages = with pkgs; [
-    appflowy
     brave
     pywal16
     gnome-boxes
