@@ -57,22 +57,23 @@ let
 
   guiPackages = with pkgs; [
     brave
-    pywal16
-    gnome-boxes
     code-cursor
     dbeaver-bin
     feh
+    gnome-boxes
     gnome-pomodoro
     libnotify
     netbird-ui
     nodePackages.prettier
     onlyoffice-bin
     pika-backup
+    pywal16
     signal-desktop
     slack
     spotify
     stretchly
     variety
+    virt-manager
     xdg-desktop-portal-wlr
     xdragon
     xorg.xkill
