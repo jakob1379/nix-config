@@ -23,7 +23,7 @@ let
   # Session variables configuration
 
   sessionVariables = {
-    EDITOR = "emacsclient --reuse-frame --alternate-editor nano";
+    EDITOR = "emacsclient --reuse-frame --alternate-editor ''";
     HISTCONTROL = "ignoreboth";
     LC_TIME = "en_GB.utf8";
     MANPAGER = "bat -pl man";
