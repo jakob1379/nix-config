@@ -30,7 +30,7 @@ let
     glib
     gnumake
     hyperfine
-    inputs.isd.packages.${system}.default
+    isd
     ispell
     jq
     libqalculate
