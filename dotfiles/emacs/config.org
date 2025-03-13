@@ -596,8 +596,8 @@ Always redraw immediately when scrolling, more responsive and doesn't hang! Sour
 *** Flycheck
 #+BEGIN_SRC emacs-lisp
 (use-package flycheck
-  :defer t
-  )
+  :config
+  (global-flycheck-mode))
 #+END_SRC
 *** Flyspell
 
@@ -1116,7 +1116,6 @@ tasks.
 (use-package magit-todos
   :after magit
   :config (magit-todos-mode 1)
-  :defer t
   )
 #+END_SRC
 **** Magit workflow
@@ -1352,8 +1351,9 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
 **** Org download - drag and drop images
 #+begin_src emacs-lisp
 (use-package org-download
-  :defer t
-  :hook (dired-mode . org-download-enable))
+  :hook
+  (org-mode . org-download-enable)
+  (dired-mode . org-download-enable))
 #+end_src
 **** Org Roam - for amazing notes?
 ***** Org Roam
@@ -1453,10 +1453,9 @@ Since I am doing a lot of python, many modes and other things related to python 
 (use-package python
   :defer t
   :ensure nil  ;; since python mode is built-in
-  ;; :mode ("\\.py\\'" . python-mode)
   :init
   (add-to-list 'process-coding-system-alist '("python" . (utf-8 . utf-8)))
-  :config (setq python-indent-offset 4)
+  :config
   (defun pretty-python-code ()
     (interactive)
     (call-interactively 'pyimport-remove-unused)
@@ -1464,7 +1463,8 @@ Since I am doing a lot of python, many modes and other things related to python 
     (call-interactively 'python-black-buffer))
   :if (executable-find "ipython")
   :custom
-  (python-shell-interpreter "ipython")
+  ;; (python-shell-interpreter "ipython")
+  (python-indent-offset 4)
   )
 
 #+END_SRC
@@ -1495,15 +1495,18 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
 
 #+begin_src emacs-lisp
 (use-package uv-mode
-  :hook (python-mode . uv-mode-auto-activate-hook))
+  :disabled
+  :hook (after-init-hook . uv-mode-auto-activate-hook))
 #+end_src
 **** Pyvenv
 
 #+BEGIN_SRC emacs-lisp
 (use-package pyvenv
-  :ensure t
-  :init
-  (pyvenv-mode 1))
+  :hook
+  (python-mode . pyvenv-mode)
+  :config
+  (pyvenv-tracking-mode 1)
+  )
 #+END_SRC
 *** Rainbow delimiters
 #+BEGIN_SRC emacs-lisp
