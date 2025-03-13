@@ -13,6 +13,10 @@ in
     bash = {
       enable = true;
       profileExtra = builtins.readFile ./dotfiles/bash/.profile;
+
+
+
+
       bashrcExtra = ''
         # ------------------ extra start ------------------
         if [[ $TERM = dumb ]]; then
@@ -214,6 +218,7 @@ in
   };
 
   home.shellAliases = {
+    onefetch = "onefetch -E --nerd-fonts --no-color-palette";
     cat = "bat";
     cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
     fm = "frogmouth";

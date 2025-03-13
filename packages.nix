@@ -29,6 +29,7 @@ let
     gitleaks
     glib
     gnumake
+    onefetch
     hyperfine
     isd
     ispell
