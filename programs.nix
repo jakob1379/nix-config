@@ -14,9 +14,6 @@ in
       enable = true;
       profileExtra = builtins.readFile ./dotfiles/bash/.profile;
 
-
-
-
       bashrcExtra = ''
         # ------------------ extra start ------------------
         if [[ $TERM = dumb ]]; then
@@ -218,6 +215,7 @@ in
   };
 
   home.shellAliases = {
+    netbird-peers = ''netbird status --json | jq ".peers.details.[] | {fqdn, netbirdIp, status}" -r'';
     onefetch = "onefetch -E --nerd-fonts --no-color-palette";
     cat = "bat";
     cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
@@ -236,7 +234,7 @@ in
     # EDA
     eda = "nix-shell -p python313Packages.rich python313Packages.ipython python313Packages.pandas python313Packages.seaborn python313Packages.plotly";
 
-    ec = "emacsclient --no-wait --reuse-frame --alternate-editor nano";
+    ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
     grep = "grep --color=auto";
 
     # home-manager and nix update and switch
@@ -253,13 +251,6 @@ in
         sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"
       };
       f
-    '';
-
-    # clean netbird token
-    netbird-logout = ''
-      netbird down
-      sudo cat /var/lib/netbird/config.json | jq 'del(.PrivateKey)' | sudo tee /var/lib/netbird/tmp-config.json > /dev/null && \
-      sudo mv /var/lib/netbird/tmp-config.json /var/lib/netbird/config.json
     '';
 
     q = "qalc";
