@@ -58,7 +58,6 @@ let
     gnome-boxes
     gnome-pomodoro
     libnotify
-    netbird-ui
     nodePackages.prettier
     onlyoffice-bin
     pika-backup

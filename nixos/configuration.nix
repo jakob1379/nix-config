@@ -284,10 +284,13 @@ in
   # We also want to enable netbird as our VPN of choice
   services = {
     netbird = {
-      enable = true; # true;
-      # tunnels = {
-      #   ucph0.port = 51822;
-      #   homelab0.port = 51821;
+      enable = true;
+      # clients = {
+      #   darerl0 = {
+      #     openFirewall = true;
+      #     ui.enable = true;
+      #     port = 51821;
+      #   };
       # };
     };
   };
@@ -297,7 +300,6 @@ in
   boot.kernelParams = [
     "acpi_backlight=native"
     "psmouse.synaptics_intertouch=0"
-
     "nvidia-drm.modeset=1"
     "nvidia-drm.fbdev=1"
   ];
