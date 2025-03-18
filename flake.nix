@@ -34,7 +34,6 @@
       # Packages for nix shell
       generalPackages =
         pkgs: with pkgs; [
-          nodejs
           pre-commit
           yamllint
           nixfmt-rfc-style
@@ -100,12 +99,10 @@
 
           # Define a `shellHook` that only sets the environment, not installs things
           shellHook = ''
-            export PATH=./node_modules/.bin/:$PATH
             export PS1="(dotfiles-shell 🫥) $PS1"
           '';
 
-          # Use `postBuild` hook to run actions that need to happen after build
-          postBuild = ''
+          setupHook = ''
             pre-commit install
             pre-commit autoupdate -j $(nproc)
           '';
