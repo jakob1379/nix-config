@@ -6,13 +6,6 @@
   ...
 }:
 let
-  patched_keepassxc = pkgs.keepassxc.overrideAttrs (oldAttrs: {
-    postFixup = ''
-      sed -i 's/^Exec=keepassxc/Exec=keepassxc -platform xcb/' \
-        $out/share/applications/org.keepassxc.KeePassXC.desktop
-    '';
-  });
-
   corePackages = with pkgs; [
     android-tools
     btop
@@ -58,6 +51,7 @@ let
 
   guiPackages = with pkgs; [
     brave
+    keepassxc
     code-cursor
     dbeaver-bin
     feh
@@ -134,6 +128,6 @@ in
     devPackages
     customScripts
     emacsPackages
+    guiPackages
     ;
-  guiPackages = guiPackages ++ [ patched_keepassxc ];
 }
