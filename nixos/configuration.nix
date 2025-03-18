@@ -136,11 +136,11 @@ in
     nvidiaSettings = true;
     open = false;
     prime = {
-      # offload = {
-      #   enable = true;
-      #   enableOffloadCmd = true;
-      # };
-      sync.enable = true;
+      offload = {
+        enable = true;
+        enableOffloadCmd = true;
+      };
+      # sync.enable = true;
       intelBusId = "PCI:0:2:0";
       nvidiaBusId = "PCI:45:0:0";
     };

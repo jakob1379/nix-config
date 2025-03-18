@@ -60,10 +60,11 @@
       };
 
       # General nix configurations
+      nix.settings.auto-optimise-store = true;
       nix.gc = {
         automatic = true;
         dates = "weekly";
-        options = "--delete-older-than 2w";
+        options = "--delete-older-than 1w";
       };
 
       # Home configurations
