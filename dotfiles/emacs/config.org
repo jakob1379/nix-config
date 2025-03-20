@@ -250,8 +250,8 @@ Emacs is very conservative about assuming encoding. Everything is utf-8 these da
 (desktop-save-mode 1)
 (desktop-auto-save-enable t)
 
-(if (file-exists-p (concat desktop-dirname desktop-base-file-name))
-    (desktop-read))
+;; (if (file-exists-p (concat desktop-dirname desktop-base-file-name))
+;;     (desktop-read))
 #+END_SRC
 ** y-or-n-p instead of yes/no
 #+BEGIN_SRC emacs-lisp
