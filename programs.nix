@@ -216,7 +216,7 @@ in
   };
 
   home.shellAliases = {
-    netbird-peers = ''netbird status --json | jq ".peers.details.[] | {fqdn, netbirdIp, status}" -r'';
+    netbird-peers = ''netbird status --json | jq ".peers.details.[] | {fqdn, netbirdIp, status, connectionType}" -r'';
     onefetch = "onefetch -E --nerd-fonts --no-color-palette";
     cat = "bat";
     cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
