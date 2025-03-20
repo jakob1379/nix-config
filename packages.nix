@@ -71,7 +71,6 @@ let
     xdg-desktop-portal-wlr
     xdragon
     xorg.xkill
-    yubikey-personalization-gui
   ];
 
   devPackages =

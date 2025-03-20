@@ -24,13 +24,13 @@ let
 
   sessionVariables = {
     # EDITOR = "emacsclient --reuse-frame --alternate-editor ''";
+    # NB_CONFIG = /var/lib/netbird/config.json;
+    # QT_QPA_PLATFORM = "wayland";
     HISTCONTROL = "ignoreboth";
     LC_TIME = "en_GB.utf8";
     MANPAGER = "bat -pl man";
-    # NB_CONFIG = /var/lib/netbird/config.json;
     NIX_BUILD_CORES = "$(( $(nproc) / 2 < 1 ? 1 : $(nproc) / 2 ))";
     PAGER = "${pkgs.bat}/bin/bat -p";
-    QT_QPA_PLATFORM = "wayland";
 
   };
 
