@@ -169,6 +169,7 @@ in
     emacs = {
       enable = true;
       package = pkgs.emacs30-gtk3;
+      extraPackages = epkgs: [ ];
     };
 
     ssh.forwardAgent = true;

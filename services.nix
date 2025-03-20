@@ -47,7 +47,15 @@ in
 {
 
   services = {
-    emacs.defaultEditor = true;
+    emacs = {
+      startWithUserSession = "graphical";
+      enable = true;
+      defaultEditor = true;
+      client.arguments = [
+        "--reuse-frame"
+        "--no-wait"
+      ];
+    };
     unclutter = {
       enable = true;
       timeout = 5;
