@@ -8,7 +8,7 @@
 let
   corePackages = with pkgs; [
     android-tools
-    btop
+    (btop.override { cudaSupport = true; })
     busybox
     dconf
     dig
@@ -107,14 +107,14 @@ let
   ];
 
   customScripts = [
-    (pkgs.writeShellScriptBin "dragon-scp" (builtins.readFile ./bin/dragon-scp))
-    (pkgs.writeScriptBin "find-available-server" (builtins.readFile ./bin/find-available-server))
     (pkgs.writeShellScriptBin "bak" (builtins.readFile ./bin/bak))
-    (pkgs.writeShellScriptBin "pyenv-here" (builtins.readFile ./bin/pyenv-here))
-    (pkgs.writeShellScriptBin "emacs-clean" (builtins.readFile ./bin/emacs-clean))
     (pkgs.writeShellScriptBin "bhelp" (builtins.readFile ./bin/bathelp))
-    (pkgs.writeShellScriptBin "pyvenv-setup" (builtins.readFile ./bin/pyvenv-setup))
     (pkgs.writeShellScriptBin "docker-volume-copy" (builtins.readFile ./bin/docker-volume-copy))
+    (pkgs.writeShellScriptBin "dragon-scp" (builtins.readFile ./bin/dragon-scp))
+    (pkgs.writeShellScriptBin "emacs-clean" (builtins.readFile ./bin/emacs-clean))
+    (pkgs.writeShellScriptBin "nix-find" (builtins.readFile ./bin/nix-find))
+    (pkgs.writeShellScriptBin "pyenv-here" (builtins.readFile ./bin/pyenv-here))
+    (pkgs.writeShellScriptBin "pyvenv-setup" (builtins.readFile ./bin/pyvenv-setup))
     (pkgs.writeShellScriptBin "pywal-apply" ''
       ${pkgs.pywal16}/bin/wal -i "$(${pkgs.coreutils}/bin/cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"
     '')
