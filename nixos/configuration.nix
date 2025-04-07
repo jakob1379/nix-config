@@ -46,6 +46,10 @@ in
   # Enable networking
   networking.networkmanager.enable = true;
 
+  # Use systemd-resolved for dns
+  services.resolved.enable = true;
+  networking.networkmanager.dns = "systemd-resolved";
+
   # Set your time zone.
   time.timeZone = "Europe/Copenhagen";
 
@@ -76,15 +80,21 @@ in
     sddm.enable = true;
     sddm.wayland.enable = true;
   };
+
   services.desktopManager.plasma6 = {
     enable = true;
     enableQt5Integration = true;
   };
+  environment.plasma6.excludePackages = (
+    with pkgs.kdePackages;
+    [
+      konsole
+      kate
+    ]
+  );
 
-  environment.plasma6.excludePackages = with pkgs.kdePackages; [
-    konsole
-    kate
-  ];
+  # # Define specializations
+  # specialisation = {};
 
   # I want to use KPXC instead
   # services.gnome.gnome-keyring.enable = lib.mkForce false;
@@ -201,6 +211,7 @@ in
       "wheel"
       "docker"
       "libvirtd"
+      "netbird-darerl"
     ];
     packages = with pkgs; [
       #  thunder bird
@@ -285,13 +296,9 @@ in
   services = {
     netbird = {
       enable = true;
-      # clients = {
-      #   darerl0 = {
-      #     openFirewall = true;
-      #     ui.enable = true;
-      #     port = 51821;
-      #   };
-      # };
+      clients = {
+        darerl.port = 51822;
+      };
     };
   };
 
