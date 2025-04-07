@@ -9,8 +9,6 @@ uv add --group jga-dev \
    flake8 \
    isort \
    mypy \
-   ptvsd \
-   pyright \
    python-lsp-server[all] \
    rich \
    ruff
