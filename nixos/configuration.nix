@@ -161,7 +161,7 @@ in
     package = config.boot.kernelPackages.nvidiaPackages.beta;
   };
 
-  # Enable blutooth
+  # Enable bluetooth
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;

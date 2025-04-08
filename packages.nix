@@ -80,7 +80,6 @@ let
       graphviz
       nerd-fonts.fira-code
       meslo-lgs-nf
-      fira-code-symbols
       nodejs
     ]
     ++ lib.optionals (system != "aarch64-linux") [ jdk ];
