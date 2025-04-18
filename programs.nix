@@ -100,7 +100,7 @@ in
 
     firefox = {
       enable = true;
-      package = inputs."zen-browser".packages.${system}.default;
+      package = inputs."zen-browser".packages.${system}.zen-browser;
       profiles = {
         myuser = {
           isDefault = true;
@@ -223,11 +223,12 @@ in
     netbird-peers = ''netbird status --json | jq ".peers.details.[] | {fqdn, netbirdIp, status, connectionType}" -r'';
     onefetch = "onefetch -E --nerd-fonts --no-color-palette";
     cat = "bat";
-    cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
     fm = "frogmouth";
     df = "duf --hide special";
     open = "xdg-open";
     venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
+    rsync = "rsync --info=progress2";
+
     # docker
     dcup = "docker compose up --remove-orphans";
     dcview = "docker compose config | bat -l yml";
