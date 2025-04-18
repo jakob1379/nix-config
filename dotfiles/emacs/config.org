@@ -550,13 +550,27 @@ We want modes for docker compose and Dockerfiles
   :mode ("Dockerfile$" . dockerfile-mode)
   )
 #+END_SRC
-*** Doom emacs theme
+
+*** Themes
+**** Doom emacs theme
 #+begin_src emacs-lisp
 (use-package doom-themes
   :config
   (doom-themes-org-config))
 (load-theme 'doom-xcode t)
 #+end_src
+**** Snazzy
+#+BEGIN_SRC emacs-lisp
+(use-package emacs-snazzy
+  :straight (:host github :repo "weijiangan/emacs-snazzy" :files ("*.el"))
+  :requires base16-theme
+  ;; :config
+  ;; (load-theme 'snazzy t)
+  )
+
+(use-package base16-theme
+  :straight t)
+#+END_SRC
 *** Editorconfig
 read and understand ~.editorconfig~ files
 #+BEGIN_SRC emacs-lisp
@@ -585,11 +599,10 @@ Always redraw immediately when scrolling, more responsive and doesn't hang! Sour
 ;; (setq fast-but-imprecise-scrolling t
 ;;       jit-lock-defer-time 0)
 (use-package ultra-scroll
-                                        ;:load-path "~/code/emacs/ultra-scroll" ; if you git clone'd instead of package-vc-install
+  :custom
+  (scroll-conservatively 101) ;; important!
+  (scroll-margin 0)
   :straight (:host github :repo "jdtsmith/ultra-scroll")
-  :init
-  (setq scroll-conservatively 101 ; important!
-        scroll-margin 0)
   :config
   (ultra-scroll-mode 1))
 #+END_SRC
@@ -1001,6 +1014,7 @@ helm is awesome
    (prog-mode . lsp-deferred)
    (rst-mode . lsp-deferred)
    (yaml-mode . lsp-deferred)
+   (toml-mode . lsp-deferred)
    (lsp-mode . lsp-enable-which-key-integration)
    )
   :config
@@ -1107,7 +1121,6 @@ tasks.
   :bind ("C-x g" . magit-status)
   :custom
   (magit-process-finish-apply-ansi-colors t)
-  (magit-log-arguments '("--graph" "--color" "--decorate"))
   (magit-process-log-max 100)
   )
 #+END_SRC
@@ -1259,7 +1272,7 @@ Makefile modes comes with Emacs, but we still want to use it and be able to conf
 *** No Littering
 [[https://github.com/emacscollective/no-littering][no-littering]] teaches Emacs to not leave it's files everywhere, and just keep them neatly in =.emacs.d= where they don't bother anyone.
 
-We also set ~custom-file~ to be within one of these new nice directories, so Emacs doesn't keep chaging =init.el= and messing with our git workflow.
+We also set ~custom-file~ to be within one of these new nice directories, so Emacs doesn't keep charging =init.el= and messing with our git workflow.
 #+BEGIN_SRC emacs-lisp
 (use-package no-littering
   :demand t
