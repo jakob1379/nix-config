@@ -1650,8 +1650,10 @@ simple package that enable titlecasing
 *** VLF - very large files
 #+BEGIN_SRC emacs-lisp
 (use-package vlf
+  :ensure t
+  :init (require 'vlf-setup)
   :custom
-  (vlf-batch-size 1048576)
+  (vlf-batch-size (* 100 1024 1024))
   (vlf-application 'dont-ask)
   )
 #+END_SRC
