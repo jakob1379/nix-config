@@ -18,7 +18,7 @@ title for more information.
 #+BEGIN_SRC emacs-lisp
 (use-package esup
   :defer t
-  :commands esup)
+  )
 
 (use-package benchmark-init
   :config
