@@ -247,8 +247,8 @@ Emacs is very conservative about assuming encoding. Everything is utf-8 these da
   (make-directory desktop-dirname t))
 
 (setq desktop-base-file-name ".emacs.desktop") ; Optional: Customize base file name
-(desktop-save-mode 1)
-(desktop-auto-save-enable t)
+;; (desktop-save-mode 1)
+;; (desktop-auto-save-enable t)
 
 ;; (if (file-exists-p (concat desktop-dirname desktop-base-file-name))
 ;;     (desktop-read))
@@ -1510,13 +1510,6 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
          ("snakefile\\'" . snakemake-mode)
          ("\\.smk\\'" . snakemake-mode)))
 #+END_SRC
-**** uv - easy python project
-
-#+begin_src emacs-lisp
-(use-package uv-mode
-  :disabled
-  :hook (after-init-hook . uv-mode-auto-activate-hook))
-#+end_src
 **** Pyvenv
 
 #+BEGIN_SRC emacs-lisp
