@@ -165,6 +165,10 @@ in
     gh.enable = true;
 
     fastfetch.enable = true;
+    nix-index = {
+      enable = true;
+      enableBashIntegration = false;
+    };
 
     emacs = {
       enable = true;
