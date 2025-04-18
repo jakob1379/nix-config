@@ -612,6 +612,12 @@ Always redraw immediately when scrolling, more responsive and doesn't hang! Sour
   :config
   (global-flycheck-mode))
 #+END_SRC
+*** Doom Modeline
+#+BEGIN_SRC emacs-lisp
+(use-package doom-modeline
+  :hook (after-init . doom-modeline-mode))
+#+END_SRC
+
 *** Flyspell
 
 #+BEGIN_SRC emacs-lisp
