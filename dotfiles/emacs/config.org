@@ -497,13 +497,13 @@ Associate various files with conf-mode
 *** CSV mode
 #+BEGIN_SRC emacs-lisp
 (use-package csv-mode
-  :defer t
-  :hook ((csv-mode . csv-guess-set-separator)
-         (csv-mode . csv-align-mode)
-         (csv-mode . csv-header-line-mode)
-         (csv-mode . (lambda () (toggle-truncate-lines -1))))
   :mode (("\\.csv\\'" . csv-mode)
-         ("\\.tsv\\'" . csv-mode)))
+         ("\\.tsv\\'" . csv-mode))
+  :hook (csv-mode . (lambda ()
+                      (csv-guess-set-separator)
+                      (csv-align-mode)
+                      (csv-header-line)
+                      (toggle-truncate-lines -1))))
 #+END_SRC
 *** Dired mode
 even though dired mode is coming with emacs there are some improvements we can add like git, pretty
