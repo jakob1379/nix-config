@@ -116,6 +116,7 @@ let
     (pkgs.writeShellScriptBin "pywal-apply" ''
       ${pkgs.pywal16}/bin/wal -i "$(${pkgs.coreutils}/bin/cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"
     '')
+    (pkgs.writeShellScriptBin "yqp" (builtins.readFile ./bin/yqp))
   ];
 in
 {
