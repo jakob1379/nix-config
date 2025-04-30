@@ -194,7 +194,10 @@ in
     bat = {
       enable = true;
       config = {
-        map-syntax = [ "*.conf:TOML" ];
+        map-syntax = [
+          "*.conf:TOML"
+          "*.gdextension:TOML"
+        ];
       };
     };
 
@@ -228,6 +231,7 @@ in
     open = "xdg-open";
     venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
     rsync = "rsync --info=progress2";
+    plasma-restart = "plasmashell --replace & disown";
 
     # docker
     dcup = "docker compose up --remove-orphans";
