@@ -1041,10 +1041,9 @@ helm is awesome
   (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\.venv\\'")
 
   :custom
-  (lsp-auto-register-remote-clients t)
-  (lsp-pyls-plugins-flake8-enabled t)
   (lsp-auto-execute-action nil)
   (lsp-auto-guess-root t)
+  (lsp-auto-register-remote-clients t)
   (lsp-auto-select-workspace t)
   (lsp-before-save-edits nil)
   (lsp-completion-provider :company-capf)
@@ -1062,6 +1061,7 @@ helm is awesome
   (lsp-keep-workspace-alive nil)
   (lsp-keymap-prefix "C-c l") ;; Set prefix for lsp-command-map
   (lsp-modeline-diagnostics-enable t)
+  (lsp-pyls-plugins-flake8-enabled t)
   (lsp-remote-tramp-connection t)
   ;; (lsp-prefer-flymake nil)
   )
@@ -1727,7 +1727,6 @@ snippets for common operations instead of macros, allows it to be portable and p
   (yas-global-mode 1)
   :custom
   (yas-prompt-functions '(yas-ido-prompt)))
-
 (use-package yasnippet-snippets
   :after yasnippet
   :config
