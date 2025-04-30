@@ -12,6 +12,7 @@ let
     busybox
     dconf
     dig
+    dive
     duf
     entr
     fd
@@ -27,6 +28,7 @@ let
     isd
     ispell
     jq
+    jqp
     libqalculate
     libsecret
     nix-output-monitor
@@ -69,6 +71,7 @@ let
     variety
     virt-manager
     xdg-desktop-portal-wlr
+    thunderbird
     xdragon
     xorg.xkill
   ];
