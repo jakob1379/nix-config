@@ -1605,6 +1605,15 @@ necessarily superseded by the ssh config.
   ("\\.network\\'" . systemd-mode)
   ("\\.link\\'" . systemd-mode))
 #+END_SRC
+*** Godot
+#+BEGIN_SRC emacs-lisp
+(use-package gdscript-mode
+  :custom
+  (gdscript-mode-indent-offset 4)
+  (indent-tabs-mode nil)
+  )
+#+END_SRC
+
 *** Title Case
 simple package that enable titlecasing
 #+BEGIN_SRC emacs-lisp
