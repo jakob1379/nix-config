@@ -148,16 +148,16 @@ in
     prime = {
       offload = {
         enable = true;
-        enableOffloadCmd = true;
+        #   enableOffloadCmd = true;
       };
       # sync.enable = true;
       intelBusId = "PCI:0:2:0";
       nvidiaBusId = "PCI:45:0:0";
     };
-    # powerManagement = {
-    #   enable = true;
-    #   finegrained = true;
-    # };
+    powerManagement = {
+      enable = true;
+      finegrained = true;
+    };
     package = config.boot.kernelPackages.nvidiaPackages.beta;
   };
 
