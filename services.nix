@@ -10,8 +10,9 @@ let
     {
       name,
       remote ? "${name}",
-      mountPath ? "/home/${config.home.username}/${name}",
+      mountPath ? "${config.home.homeDirectory}/${name}",
       remotePath ? "/",
+      configPath ? "${config.xdg.configHome}/rclone/rclone.conf",
     }:
     {
       Unit = {
@@ -25,7 +26,7 @@ let
             --allow-other \
             --attr-timeout 1h \
             --buffer-size=32M \
-            --config /home/${config.home.username}/.config/rclone/rclone.conf \
+            --config "${configPath}" \
             --dir-cache-time 3h0m0s \
             --vfs-cache-max-age 6h \
             --vfs-cache-max-size 10G \
