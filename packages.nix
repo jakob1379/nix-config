@@ -28,6 +28,7 @@ let
     ispell
     jq
     jqp
+    karakeep
     libqalculate
     libsecret
     miktex
