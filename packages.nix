@@ -7,8 +7,8 @@
 }:
 let
   corePackages = with pkgs; [
-    android-tools
     (btop.override { cudaSupport = true; })
+    android-tools
     busybox
     dconf
     dig
@@ -23,7 +23,6 @@ let
     gitleaks
     glib
     gnumake
-    onefetch
     hyperfine
     isd
     ispell
@@ -31,12 +30,14 @@ let
     jqp
     libqalculate
     libsecret
+    miktex
     nix-output-monitor
     nix-prefetch-github
     nix-search-cli
     nixfmt-classic
     nmap
     nvtopPackages.full
+    onefetch
     pandoc
     poppler_utils
     rclone
