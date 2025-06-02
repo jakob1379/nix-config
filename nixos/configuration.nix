@@ -205,7 +205,7 @@ in
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.jga = {
     isNormalUser = true;
-    description = "Jakob Guldberg Aaes";
+    description = "Jakob Stender Guldberg";
     extraGroups = [
       "networkmanager"
       "wheel"
