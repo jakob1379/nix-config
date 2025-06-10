@@ -15,18 +15,19 @@
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
             uv
-            libsForQt5.wrapQtAppsHook
-            (python312Packages.matplotlib.override {
-              enableQt = true;
-            })
+            python${1:313}
+            # libsForQt5.wrapQtAppsHook
+            # (python$1Packages.matplotlib.override {
+            #   enableQt = true;
+            # })
             ];
 
             LD_LIBRARY_PATH = "\${pkgs.lib.makeLibraryPath [
             ]}:\$LD_LIBRARY_PATH";
             $0
-
-          shellHook = ''
-          '' ;
+            UV_PYTHON="\${pkgs.python$1/bin/python}";
+            # shellHook = ''
+            # '' ;
         };
       }
   );
