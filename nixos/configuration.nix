@@ -212,6 +212,7 @@ in
       "docker"
       "libvirtd"
       "netbird-darerl"
+      "netbird-daisy"
     ];
     packages = with pkgs; [
       #  thunder bird
@@ -298,6 +299,7 @@ in
       enable = true;
       clients = {
         darerl.port = 51822;
+        daisy.port = 51823;
       };
     };
   };
