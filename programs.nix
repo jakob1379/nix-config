@@ -224,6 +224,7 @@ in
   nix = {
     package = pkgs.nix;
     settings = {
+      substituters = [ "https://cache.nixos.org" ];
       max-jobs = 1;
       experimental-features = [
         "nix-command"
