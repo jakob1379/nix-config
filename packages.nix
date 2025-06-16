@@ -76,6 +76,7 @@ let
     thunderbird
     xdragon
     xorg.xkill
+    vlc
   ];
 
   devPackages =
