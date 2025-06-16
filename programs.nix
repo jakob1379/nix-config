@@ -10,6 +10,10 @@ let
 in
 {
   programs = {
+    navi = {
+      enable = true;
+      enableBashIntegration = true;
+    };
     bash = {
       enable = true;
       profileExtra = builtins.readFile ./dotfiles/bash/.profile;
