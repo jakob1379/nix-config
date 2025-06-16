@@ -88,7 +88,6 @@ in
   environment.plasma6.excludePackages = (
     with pkgs.kdePackages;
     [
-      konsole
       kate
     ]
   );
@@ -174,9 +173,6 @@ in
 
   # Enable docker
   virtualisation.docker.enable = true;
-
-  # Why not have android as well?
-  virtualisation.waydroid.enable = false;
 
   # Enable VirtualBox
   virtualisation.libvirtd.enable = true;

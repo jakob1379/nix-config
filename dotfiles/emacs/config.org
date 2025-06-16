@@ -179,7 +179,6 @@ state.
  initial-scratch-message nil                        ;; Initial scratch message
  load-prefer-newer t                                ;; Load prefer newer files
  use-short-answers t                                ;; Use short answers in prompts
- dired-listing-switches "-alh"                      ;; human readable dired
  fill-column 100                                    ;; Set width for linebreaking
  )
 
@@ -190,7 +189,6 @@ state.
  compilation-save-buffers-predicate '(lambda () nil);; Do not save unrelated buffers
  delete-by-moving-to-trash t                        ;; Delete files to trash
  highlight-indentation-current-column-mode t        ;; Show a column line for the current lines
- highlight-indentation-mode t                       ;; Make horizontal lines for all lines
  indent-tabs-mode nil                               ;; Go away, tabs - use spaces!
  lazy-highlight-syntax 'lazy
  read-process-output-max (* 1024 1024)              ;; Increase read size per process
@@ -455,11 +453,8 @@ order things accordingly
   :diminish
   :after company-all-the-icons
   :defer t
-  :custom
-  (company-box)
   :config
-  (company-box-mode))
-
+  (company-box-mode 1))
 #+END_SRC
 **** Prescient
 Teaches company to sort better
@@ -481,7 +476,6 @@ Associate various files with conf-mode
   ("\\.gitignore\\'"  . conf-mode)
   ("\\.txt\\'"        . conf-mode)
   )
-
 #+END_SRC
 *** CSV mode
 #+BEGIN_SRC emacs-lisp
@@ -518,6 +512,7 @@ It is nice to be able to view the contents of files, sometimes.
   (dired-preview-delay 0.7)
   )
 #+end_src
+
 *** Direnv
 #+BEGIN_SRC emacs-lisp
 (use-package direnv
@@ -1157,7 +1152,7 @@ Makefile modes comes with Emacs, but we still want to use it and be able to conf
 #+BEGIN_SRC emacs-lisp
 (use-package man
   :defer t
-  :ensure f
+  :ensure nil
   :config
   (set-face-attribute 'Man-overstrike nil :inherit font-lock-type-face :bold t)
   (set-face-attribute 'Man-underline nil :inherit font-lock-keyword-face :underline t))
