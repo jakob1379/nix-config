@@ -166,7 +166,13 @@ in
       };
     };
 
-    gh.enable = true;
+    gh = {
+      settings.aliases = {
+        web = "repo view --web";
+      };
+      enable = true;
+      extensions = [ pkgs.gh-dash ];
+    };
 
     fastfetch.enable = true;
     nix-index = {
