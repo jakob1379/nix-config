@@ -8,6 +8,7 @@
 let
   corePackages = with pkgs; [
     (btop.override { cudaSupport = true; })
+    (aider-chat.withOptional { withBrowser = true; })
     android-tools
     busybox
     dconf
