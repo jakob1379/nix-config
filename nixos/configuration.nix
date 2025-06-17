@@ -85,12 +85,7 @@ in
     enable = true;
     enableQt5Integration = true;
   };
-  environment.plasma6.excludePackages = (
-    with pkgs.kdePackages;
-    [
-      kate
-    ]
-  );
+  environment.plasma6.excludePackages = (with pkgs.kdePackages; [ kate ]);
 
   # # Define specializations
   # specialisation = {};

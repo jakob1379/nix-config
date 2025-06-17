@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   # Packages to exclude on the Raspberry Pi to save space/resources
@@ -13,19 +18,20 @@ let
     thunderbird
     vlc
   ];
-in {
+in
+{
   # System-specific overrides for Raspberry Pi
   customPackages = {
-    gui = []; # Disable GUI packages
+    gui = [ ]; # Disable GUI packages
     exclude = packagesToExclude;
   };
 
   programs.firefox.enable = false;
 
   customServices = {
-    rclone = {};
-    pywal = {};
-    pywalPath = {};
+    rclone = { };
+    pywal = { };
+    pywalPath = { };
   };
 
   services.unclutter.enable = false;

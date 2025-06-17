@@ -1,4 +1,10 @@
-{ pkgs, lib, config, system, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  system,
+  ...
+}:
 
 let
   corePackages = with pkgs; [
@@ -72,7 +78,8 @@ let
     xorg.xkill
   ];
 
-  devPackages = with pkgs;
+  devPackages =
+    with pkgs;
     [
       wakatime
       pandoc
@@ -84,7 +91,8 @@ let
       uv
       nerd-fonts.fira-code
       meslo-lgs-nf
-    ] ++ lib.optionals (system != "aarch64-linux") [ jdk ];
+    ]
+    ++ lib.optionals (system != "aarch64-linux") [ jdk ];
 
   emacsPackages = with pkgs; [
     ispell
@@ -108,18 +116,13 @@ let
   ];
 
   customScripts = [
-    (pkgs.writeShellScriptBin "dragon-scp"
-      (builtins.readFile ../../bin/dragon-scp))
+    (pkgs.writeShellScriptBin "dragon-scp" (builtins.readFile ../../bin/dragon-scp))
     (pkgs.writeShellScriptBin "bak" (builtins.readFile ../../bin/bak))
-    (pkgs.writeShellScriptBin "emacs-clean"
-      (builtins.readFile ../../bin/emacs-clean))
+    (pkgs.writeShellScriptBin "emacs-clean" (builtins.readFile ../../bin/emacs-clean))
     (pkgs.writeShellScriptBin "bhelp" (builtins.readFile ../../bin/bathelp))
-    (pkgs.writeShellScriptBin "pyvenv-setup"
-      (builtins.readFile ../../bin/pyvenv-setup))
-    (pkgs.writeShellScriptBin "docker-volume-copy"
-      (builtins.readFile ../../bin/docker-volume-copy))
-    (pkgs.writeShellScriptBin "nix-find"
-      (builtins.readFile ../../bin/nix-find))
+    (pkgs.writeShellScriptBin "pyvenv-setup" (builtins.readFile ../../bin/pyvenv-setup))
+    (pkgs.writeShellScriptBin "docker-volume-copy" (builtins.readFile ../../bin/docker-volume-copy))
+    (pkgs.writeShellScriptBin "nix-find" (builtins.readFile ../../bin/nix-find))
     (pkgs.writeShellScriptBin "yqp" (builtins.readFile ../../bin/yqp))
     (pkgs.writeShellScriptBin "pywal-apply" ''
       ${pkgs.pywal16}/bin/wal -i "$(${pkgs.coreutils}/bin/cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"
@@ -165,17 +168,12 @@ in
     };
   };
 
-  config = let
-    cfg = config.customPackages;
-    allPackages =
-      cfg.core
-      ++ cfg.gui
-      ++ cfg.dev
-      ++ cfg.emacs
-      ++ cfg.scripts
-      ++ cfg.extra;
-  in {
-    home.packages =
-      lib.filter (p: !(lib.elem p cfg.exclude)) allPackages;
-  };
+  config =
+    let
+      cfg = config.customPackages;
+      allPackages = cfg.core ++ cfg.gui ++ cfg.dev ++ cfg.emacs ++ cfg.scripts ++ cfg.extra;
+    in
+    {
+      home.packages = lib.filter (p: !(lib.elem p cfg.exclude)) allPackages;
+    };
 }

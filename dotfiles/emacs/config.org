@@ -497,8 +497,13 @@ icons, file preview, etc.
 (use-package dired
   :defer t
   :straight (:type built-in)
+  :config
+  (require 'ls-lisp)
   :hook
   ((dired-after-reading . dired-git-info-auto-enable))
+  :custom
+  (ls-lisp-use-insert-directory-program nil)
+  (dired-listing-switches "-l --almost-all  --group-directories-first")
   )
 #+end_src
 **** Dire preview
@@ -508,6 +513,8 @@ It is nice to be able to view the contents of files, sometimes.
 (use-package dired-preview
   :defer
   :hook (dired-mode . dired-preview-mode)
+  :bind (:map dired-mode-map
+              ("C-c p" . dired-preview-mode))
   :custom
   (dired-preview-delay 0.7)
   )
@@ -1365,29 +1372,45 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
   :defer t
   :init
   (setq org-roam-v2-ack t)
-  :custom
-  (org-roam-directory (file-truename "~/dropbox-private/Documents/RoamNotes"))
-  (org-roam-capture-templates
-   '(("d" "default" plain
-      "%?"
-      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-                         "#+title: ${title}\n#+date: %U\n#+filetags:\n")
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n a" . org-roam-alias-add)
+         ("C-c n c" . org-roam-capture))
+  :config
+  ;; Set variables in :config for deferred packages
+  (setq
+   org-roam-directory
+   (file-truename "~/dropbox-private/Documents/RoamNotes")
+   org-roam-capture-templates
+   '(("d" "default" plain "%?"
+      :if-new
+      (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                 "#+title: ${title}\n#+date: %U\n#+filetags:\n")
       :unnarrowed t)
      ("c" "Coursera Video" plain
       "#+title: ${title}\n#+date: %U\n#+OPTIONS: tex:t\n#+STARTUP: latexpreview\n#+filetags: :learning:coursera:\n\n* Video Link\n[[%?][Video]]\n\n* Notes\n%?"
       :if-new (file+head "coursera/%<%Y%m%d%H%M%S>-${slug}.org" "")
       :unnarrowed t)
+     ("a" "Article" plain
+      "#+title: ${title}\n#+date: %U\n#+filetags: :article:${filetags}:\n#+url: ${url}\n\n* Reference\n[[${url}]]\n\n* Notes\n%?"
+      :if-new (file+head "articles/%<%Y%m%d%H%M%S>-${slug}.org" "")
+      :immediate-finish nil
+      :jump-to-captured t
+      :prepend t
+      :empty-lines 1
+      :head-level 1)
+     ("j" "Daily Log" plain
+      "* What I Did\n  /A brief summary of tasks completed today./\n  - %?\n\n* What's Next\n  /Top priorities for the next working day./\n  - \n\n* What Broke or Got Weird\n  /Blockers, unexpected issues, or anything that needs investigation./\n  - \n\n* Optional Details\n  - Productivity (1-5): \n  - Links: \n  - Insights: "
+      :if-new
+      (file+head "daily/${slug}.org"
+                 "#+title: ${title}\n#+filetags: :journal:daily:\n")
+      :slug "%<%Y-%m-%d>"
+      :unnarrowed t)     
+     )
+   )
 
-
-     ))
-  :bind (
-         ("C-c n l" . org-roam-buffer-toggle)
-         ("C-c n a" . org-roam-alias-add)
-         )
-  :config
+  ;; org-roam-setup must be called after setting the variables
   (org-roam-setup)
-  (org-roam-db-autosync-mode t)
-  )
+  (org-roam-db-autosync-mode t))
 #+end_src
 ***** Org Roam UI
 The native graph viewer of org-roam gets the job done, but it isn't pretty. This package starts a webserver with an beautiful interactive graph-viewer that can preview the notes and much more.
@@ -1516,6 +1539,16 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
 (use-package restart-emacs
   :defer t)
 #+END_SRC
+*** Shell (ba)sh-mode
+#+BEGIN_SRC emacs-lisp
+(use-package sh-mode
+  :defer t
+  :straight (:type built-in)
+  :hook (sh-mode . (lambda ()  (setq sh-basic-offset 2
+                                     indent-tabs-mode nil)))
+  )
+#+END_SRC
+
 *** RST - restructured text
 #+BEGIN_SRC emacs-lisp
 (use-package rst
@@ -1592,6 +1625,9 @@ necessarily superseded by the ssh config.
 *** Godot
 #+BEGIN_SRC emacs-lisp
 (use-package gdscript-mode
+  :defer t
+  :mode
+  ("\\.godot\\'" . conf-mode)
   :custom
   (gdscript-mode-indent-offset 4)
   (indent-tabs-mode nil)

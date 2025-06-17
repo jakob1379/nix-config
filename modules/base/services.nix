@@ -1,11 +1,24 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 let
   # Create a function for rclone mount services
-  createRcloneMountService = { name, remote ? "${name}"
-    , mountPath ? "${config.home.homeDirectory}/${name}", remotePath ? "/"
-    , configPath ? "${config.xdg.configHome}/rclone/rclone.conf", }: {
-      Unit = { Description = "Rclone mount service for ${name}"; };
+  createRcloneMountService =
+    {
+      name,
+      remote ? "${name}",
+      mountPath ? "${config.home.homeDirectory}/${name}",
+      remotePath ? "/",
+      configPath ? "${config.xdg.configHome}/rclone/rclone.conf",
+    }:
+    {
+      Unit = {
+        Description = "Rclone mount service for ${name}";
+      };
 
       Service = {
         ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${mountPath}";
@@ -27,21 +40,20 @@ let
         Restart = "on-failure";
         RestartSec = "10s";
       };
-      Install = { WantedBy = [ "default.target" ]; };
+      Install = {
+        WantedBy = [ "default.target" ];
+      };
     };
-in {
+in
+{
   options = {
     customServices.rclone = lib.mkOption {
       type = lib.types.attrs;
       default = {
-        rclone-mount-dropbox-private =
-          createRcloneMountService { name = "dropbox-private"; };
-        rclone-mount-onedrive-ku-crypt =
-          createRcloneMountService { name = "onedrive-ku-crypt"; };
-        rclone-mount-onedrive-ku =
-          createRcloneMountService { name = "onedrive-ku"; };
-        rclone-mount-onedrive-darerl =
-          createRcloneMountService { name = "onedrive-darerl"; };
+        rclone-mount-dropbox-private = createRcloneMountService { name = "dropbox-private"; };
+        rclone-mount-onedrive-ku-crypt = createRcloneMountService { name = "onedrive-ku-crypt"; };
+        rclone-mount-onedrive-ku = createRcloneMountService { name = "onedrive-ku"; };
+        rclone-mount-onedrive-darerl = createRcloneMountService { name = "onedrive-darerl"; };
       };
       description = "Systemd services for rclone mounts.";
     };
@@ -53,7 +65,9 @@ in {
             Description = "Apply pywal theme based on Variety wallpaper";
             After = [ "graphical-session.target" ];
           };
-          Install = { WantedBy = [ "graphical-session.target" ]; };
+          Install = {
+            WantedBy = [ "graphical-session.target" ];
+          };
           Service = {
             ExecStart = "${pkgs.writeShellScript "pywal-apply" ''
               set -e
@@ -63,8 +77,10 @@ in {
             RestartSec = 5;
             StandardOutput = "journal";
             StandardError = "journal";
-            Environment =
-              [ "SYSTEMD_LOG_LEVEL=debug" "PATH=${pkgs.imagemagick}/bin:$PATH" ];
+            Environment = [
+              "SYSTEMD_LOG_LEVEL=debug"
+              "PATH=${pkgs.imagemagick}/bin:$PATH"
+            ];
           };
         };
       };
@@ -78,10 +94,11 @@ in {
             Description = "Monitor wallpaper file for changes";
             Wants = [ "pywal-apply-variety.service" ];
           };
-          Install = { WantedBy = [ "graphical-session.target" ]; };
+          Install = {
+            WantedBy = [ "graphical-session.target" ];
+          };
           Path = {
-            PathModified =
-              "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
+            PathModified = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
           };
         };
       };
@@ -96,8 +113,11 @@ in {
       startWithUserSession = "graphical";
       enable = true;
       defaultEditor = true;
-      client.arguments =
-        [ "--alternative-editor ''" "--reuse-frame" "--no-wait" ];
+      client.arguments = [
+        "--alternative-editor ''"
+        "--reuse-frame"
+        "--no-wait"
+      ];
     };
 
     systemd.user.services = lib.mkMerge [

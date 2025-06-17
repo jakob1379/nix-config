@@ -12,24 +12,33 @@
     zen-browser.url = "github:youwen5/zen-browser-flake";
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, ... }:
+  outputs =
+    inputs@{
+      self,
+      nixpkgs,
+      home-manager,
+      ...
+    }:
     let
       # Import the home configuration generator
       mkHomeConfig = import ./lib/mkHomeConfig.nix { inherit inputs; };
 
       # Systems to build for
-      forAllSystems = function:
-        nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-linux" ]
-        (system: function nixpkgs.legacyPackages.${system});
+      forAllSystems =
+        function:
+        nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-linux" ] (
+          system: function nixpkgs.legacyPackages.${system}
+        );
 
       # Packages for nix shell
-      generalPackages = pkgs:
-        with pkgs; [
+      generalPackages =
+        pkgs: with pkgs; [
           pre-commit
           yamllint
           nixfmt-rfc-style
         ];
-    in {
+    in
+    {
       # NixOS configuration
       nixosConfigurations.ku = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";

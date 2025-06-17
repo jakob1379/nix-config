@@ -1,4 +1,11 @@
-{ config, pkgs, inputs, system, lib, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  system,
+  lib,
+  ...
+}:
 
 {
   options = {
@@ -19,8 +26,7 @@
   config = {
     programs.bash = {
       enable = true;
-      profileExtra =
-        builtins.readFile ../../dotfiles/bash/.profile;
+      profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
       bashrcExtra = ''
         if [[ $TERM = dumb ]]; then
             return
@@ -50,19 +56,16 @@
       };
       aliases = {
         adog = "log --all --decorate --oneline --graph";
-        plog =
-          "log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
+        plog = "log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
         ignore-change = "update-index --assume-unchanged";
-        prune-deep = ''
-          !git fetch --prune; branches=$(git branch -r | awk '"'"'{print $1}'"'"' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '"'"'{print $1}'"'"'); echo -e "branches:\n$branches"; read -p "Do you want to delete all these branches? (y/n): " confirm; if [ "$confirm" = "y" ]; then echo "$branches" | xargs git branch -d; else echo "No branches were deleted"; fi'';
+        prune-deep = ''!git fetch --prune; branches=$(git branch -r | awk '"'"'{print $1}'"'"' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '"'"'{print $1}'"'"'); echo -e "branches:\n$branches"; read -p "Do you want to delete all these branches? (y/n): " confirm; if [ "$confirm" = "y" ]; then echo "$branches" | xargs git branch -d; else echo "No branches were deleted"; fi'';
         unstage = "restore --staged";
       };
     };
 
     programs.firefox = {
       enable = true;
-      package =
-        inputs."zen-browser".packages.${system}.zen-browser;
+      package = inputs."zen-browser".packages.${system}.zen-browser;
       profiles.myuser = {
         isDefault = true;
         id = 0;
@@ -76,8 +79,7 @@
           "browser.sessionstore.restore_pinned_tabs_on_demand" = true;
           "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
         };
-        userChrome =
-          builtins.readFile ../../dotfiles/firefox/firefox_userchrome.css;
+        userChrome = builtins.readFile ../../dotfiles/firefox/firefox_userchrome.css;
       };
     };
 
@@ -102,8 +104,7 @@
       escapeTime = 1;
       terminal = "xterm-256color";
       focusEvents = true;
-      extraConfig =
-        builtins.readFile ../../dotfiles/tmux/tmux.conf;
+      extraConfig = builtins.readFile ../../dotfiles/tmux/tmux.conf;
     };
 
     programs.direnv = {
@@ -128,14 +129,17 @@
     programs.oh-my-posh = {
       enable = true;
       enableBashIntegration = true;
-      settings = builtins.fromJSON (builtins.readFile
-        ../../dotfiles/oh-my-posh/custom-hunks-theme.omp.json);
+      settings = builtins.fromJSON (
+        builtins.readFile ../../dotfiles/oh-my-posh/custom-hunks-theme.omp.json
+      );
     };
 
     programs.gh = {
       enable = true;
       extensions = [ pkgs.gh-dash ];
-      settings.aliases = { web = "repo view --web"; };
+      settings.aliases = {
+        web = "repo view --web";
+      };
     };
 
     programs.fastfetch.enable = true;
@@ -148,14 +152,16 @@
       ];
       changeDirWidgetCommand = "fd --type d";
       fileWidgetCommand = "fd --type f";
-      fileWidgetOptions =
-        [ "--preview '${pkgs.bat}/bin/bat -Pf {}'" ];
+      fileWidgetOptions = [ "--preview '${pkgs.bat}/bin/bat -Pf {}'" ];
     };
 
     programs.bat = {
       enable = true;
       config = {
-        map-syntax = [ "*.conf:TOML" "*.gdextension:TOML" ];
+        map-syntax = [
+          "*.conf:TOML"
+          "*.gdextension:TOML"
+        ];
       };
     };
 
@@ -193,56 +199,55 @@
     };
 
     # Home shell aliases
-    home.shellAliases = (let flakePath = "${config.xdg.configHome}/home-manager";
-    in {
-      netbird-peers = ''
-        netbird status --json | jq ".peers.details.[] | {fqdn, netbirdIp, status, connectionType}" -r'';
-      onefetch = "onefetch -E --nerd-fonts --no-color-palette";
-      cat = "bat";
-      cdd = ''
-        f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
-      fm = "frogmouth";
-      df = "duf --hide special";
-      open = "xdg-open";
-      venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
-      rsync = "rsync --info=progress2";
-      plasma-restart = "plasmashell --replace & disown";
-      dcup = "docker compose up --remove-orphans";
-      dcview = "docker compose config | bat -l yml";
-      dk = "dragon --keep";
-      dx = "dragon --and-exit";
-      eda =
-        "nix-shell -p python313Packages.rich python313Packages.ipython python313Packages.pandas python313Packages.seaborn python313Packages.plotly";
-      ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
-      grep = "grep --color=auto";
-      hs = ''
-        f(){ home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-      hsu = ''
-        f(){ nix flake update --flake ${flakePath} && home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-      ns = ''
-        f(){ sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-      nsu = ''
-        f(){ sudo nix-channel --update && sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-      updateAll = ''
-        f() {
-          nix flake update --flake ${flakePath}
-          nix-channel --update
-          home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"
-          sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"
-        };
-        f
-      '';
-      q = "qalc";
-      tldr = ''
-        tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
-    });
+    home.shellAliases = (
+      let
+        flakePath = "${config.xdg.configHome}/home-manager";
+      in
+      {
+        netbird-peers = ''netbird status --json | jq ".peers.details.[] | {fqdn, netbirdIp, status, connectionType}" -r'';
+        onefetch = "onefetch -E --nerd-fonts --no-color-palette";
+        cat = "bat";
+        cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
+        fm = "frogmouth";
+        df = "duf --hide special";
+        open = "xdg-open";
+        venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
+        rsync = "rsync --info=progress2";
+        plasma-restart = "plasmashell --replace & disown";
+        dcup = "docker compose up --remove-orphans";
+        dcview = "docker compose config | bat -l yml";
+        dk = "dragon --keep";
+        dx = "dragon --and-exit";
+        eda = "nix-shell -p python313Packages.rich python313Packages.ipython python313Packages.pandas python313Packages.seaborn python313Packages.plotly";
+        ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
+        grep = "grep --color=auto";
+        hs = ''f(){ home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
+        hsu = ''f(){ nix flake update --flake ${flakePath} && home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
+        ns = ''f(){ sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
+        nsu = ''f(){ sudo nix-channel --update && sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
+        updateAll = ''
+          f() {
+            nix flake update --flake ${flakePath}
+            nix-channel --update
+            home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"
+            sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"
+          };
+          f
+        '';
+        q = "qalc";
+        tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
+      }
+    );
 
     # Nix configuration
     nix = {
       package = pkgs.nix;
       settings = {
         max-jobs = 1;
-        experimental-features = [ "nix-command" "flakes" ];
+        experimental-features = [
+          "nix-command"
+          "flakes"
+        ];
       };
     };
   };
