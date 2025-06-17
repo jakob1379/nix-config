@@ -7,12 +7,29 @@
 }:
 
 let
+  aiderChatWithBrowserHelp = pkgs.aider-chat.withOptional {
+    withBrowser = true;
+    withHelp = true;
+  };
+  # Define the custom aider wrapper script here
+  aiderWrapper = pkgs.writeScriptBin "aider" ''
+    #!${pkgs.bash}/bin/bash
+    
+    API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get gemini api_key || exit 1)"
+
+    export GEMINI_API_KEY="$API_KEY"
+    export AIDER_MODEL="gemini/gemini-2.5-pro-preview-06-05"
+    export AIDER_WEAK_MODEL="gemini/gemini-2.5-flash-preview-05-20"
+    export AIDER_THINKING_TOKENS="32k"
+    export AIDER_CHECK_UPDATE="false";
+    export AIDER_ANALYTICS="false";
+
+    exec ${aiderChatWithBrowserHelp}/bin/aider "$@"
+  '';
+  
   corePackages = with pkgs; [
     (btop.override { cudaSupport = true; })
-    (aider-chat.withOptional {
-      withBrowser = true;
-      withHelp = true;
-    })
+    aiderWrapper
     busybox
     dconf
     dig

@@ -50,8 +50,6 @@
       NIX_BUILD_CORES = "$(( $(nproc) / 2 < 1 ? 1 : $(nproc) / 2 ))";
       PAGER = "${pkgs.bat}/bin/bat -p";
       HOARDER_SERVER_ADDR = "https://hoarder.jgalabs.dk";
-      AIDER_CHECK_UPDATE = "false";
-      AIDER_ANALYTICS = "false";
     };
 
     fonts.fontconfig.enable = true;
