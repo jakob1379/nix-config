@@ -26,6 +26,17 @@ let
 
     exec ${aiderChatWithBrowserHelp}/bin/aider "$@"
   '';
+
+  karakeepWrapper = pkgs.writeScriptBin "karakeep" ''
+    #!${pkgs.bash}/bin/bash
+    
+    API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get hoarder.jgalabs.dk api_key || exit 1)"
+
+    export HOARDER_API_KEY="$API_KEY"
+    export HOARDER_SERVER_ADDR="https://hoarder.jgalabs.dk"
+
+    exec ${pkgs.karakeep}/bin/karakeep "$@"
+  '';
   
   corePackages = with pkgs; [
     (btop.override { cudaSupport = true; })
@@ -48,7 +59,7 @@ let
     isd
     jq
     jqp
-    karakeep
+    karakeepWrapper
     libqalculate
     libsecret
     miktex
