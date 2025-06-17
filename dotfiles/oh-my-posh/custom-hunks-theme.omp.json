@@ -39,7 +39,7 @@
           "properties": {
             "style": "full"
           }
-          },
+        },
         {
           "type": "node",
           "style": "powerline",
@@ -90,9 +90,7 @@
           "invert_powerline": true,
           "foreground": "#ffffff",
           "background": "#00897b",
-          "background_templates": [
-            "{{ if .Error }}#e91e63{{ end }}"
-          ],
+          "background_templates": ["{{ if .Error }}#e91e63{{ end }}"],
           "template": "{{ if eq .Code 0 }}\uf00c{{ else }}\uf071 {{ reason .Code }}{{ end }} ",
           "properties": {
             "always_enabled": true

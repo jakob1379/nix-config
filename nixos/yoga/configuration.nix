@@ -129,7 +129,7 @@ in
     enable = true;
   };
 
-  # Enable blutooth
+  # Enable bluetooth
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;

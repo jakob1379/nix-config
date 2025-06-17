@@ -3,5 +3,5 @@
 # key: python
 # --
 
-export VIRTUAL_ENV=".venv"
+VIRTUAL_ENV=".venv"
 layout python

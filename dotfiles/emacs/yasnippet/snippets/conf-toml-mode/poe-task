@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: Poe Task (Generic)
+# key: poe
+# --
+
+${1:taskname} = { ${2:`(yas-choose-value '("cmd =" "shell = " "seq = ']"))`}${3:task}, help = '${4:Description}' $5` (if (not (string= yas-text ""))}

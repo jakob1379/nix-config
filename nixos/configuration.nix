@@ -46,6 +46,10 @@ in
   # Enable networking
   networking.networkmanager.enable = true;
 
+  # Use systemd-resolved for dns
+  services.resolved.enable = true;
+  networking.networkmanager.dns = "systemd-resolved";
+
   # Set your time zone.
   time.timeZone = "Europe/Copenhagen";
 
@@ -76,15 +80,15 @@ in
     sddm.enable = true;
     sddm.wayland.enable = true;
   };
+
   services.desktopManager.plasma6 = {
     enable = true;
     enableQt5Integration = true;
   };
+  environment.plasma6.excludePackages = (with pkgs.kdePackages; [ kate ]);
 
-  environment.plasma6.excludePackages = with pkgs.kdePackages; [
-    konsole
-    kate
-  ];
+  # # Define specializations
+  # specialisation = {};
 
   # I want to use KPXC instead
   # services.gnome.gnome-keyring.enable = lib.mkForce false;
@@ -138,20 +142,20 @@ in
     prime = {
       offload = {
         enable = true;
-        enableOffloadCmd = true;
+        #   enableOffloadCmd = true;
       };
       # sync.enable = true;
       intelBusId = "PCI:0:2:0";
       nvidiaBusId = "PCI:45:0:0";
     };
-    # powerManagement = {
-    #   enable = true;
-    #   finegrained = true;
-    # };
+    powerManagement = {
+      enable = true;
+      finegrained = true;
+    };
     package = config.boot.kernelPackages.nvidiaPackages.beta;
   };
 
-  # Enable blutooth
+  # Enable bluetooth
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
@@ -164,9 +168,6 @@ in
 
   # Enable docker
   virtualisation.docker.enable = true;
-
-  # Why not have android as well?
-  virtualisation.waydroid.enable = false;
 
   # Enable VirtualBox
   virtualisation.libvirtd.enable = true;
@@ -195,12 +196,14 @@ in
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.jga = {
     isNormalUser = true;
-    description = "Jakob Guldberg Aaes";
+    description = "Jakob Stender Guldberg";
     extraGroups = [
       "networkmanager"
       "wheel"
       "docker"
       "libvirtd"
+      "netbird-darerl"
+      "netbird-daisy"
     ];
     packages = with pkgs; [
       #  thunder bird
@@ -285,13 +288,10 @@ in
   services = {
     netbird = {
       enable = true;
-      # clients = {
-      #   darerl0 = {
-      #     openFirewall = true;
-      #     ui.enable = true;
-      #     port = 51821;
-      #   };
-      # };
+      clients = {
+        darerl.port = 51822;
+        daisy.port = 51823;
+      };
     };
   };
 
