@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: built-in
+# key: built-in
+# --
+
+:ensure nil
+:straight (:type built-in)
