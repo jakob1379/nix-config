@@ -32,8 +32,8 @@ let
     
     API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get hoarder.jgalabs.dk api_key || exit 1)"
 
-    export HOARDER_API_KEY="$API_KEY"
-    export HOARDER_SERVER_ADDR="https://hoarder.jgalabs.dk"
+    export KARAKEEP_API_KEY="$API_KEY"
+    export KARAKEEP_SERVER_ADDR="https://hoarder.jgalabs.dk"
 
     exec ${pkgs.karakeep}/bin/karakeep "$@"
   '';
