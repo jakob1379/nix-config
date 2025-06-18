@@ -7,6 +7,10 @@
 
 {
   options.customDotfiles = {
+    enableSsh = lib.mkEnableOption "SSH dotfiles";
+    enableEmacs = lib.mkEnableOption "Emacs dotfiles";
+    enableMediaControl = lib.mkEnableOption "media control dotfiles";
+
     ssh = lib.mkOption {
       type = lib.types.attrs;
       default = {
@@ -36,21 +40,25 @@
     };
   };
 
-  config = {
-    home.file = lib.mkMerge [
-      config.customDotfiles.ssh
-      config.customDotfiles.emacs
-      config.customDotfiles.mediaControl
-    ];
+  config =
+    let
+      cfg = config.customDotfiles;
+    in
+    {
+      home.file = lib.mkMerge [
+        (lib.mkIf cfg.enableSsh cfg.ssh)
+        (lib.mkIf cfg.enableEmacs cfg.emacs)
+        (lib.mkIf cfg.enableMediaControl cfg.mediaControl)
+      ];
 
-    home.sessionVariables = {
-      HISTCONTROL = "ignoreboth";
-      LC_TIME = "en_GB.utf8";
-      MANPAGER = "bat -pl man";
-      NIX_BUILD_CORES = "$(( $(nproc) / 2 < 1 ? 1 : $(nproc) / 2 ))";
-      PAGER = "${pkgs.bat}/bin/bat -p";
+      home.sessionVariables = {
+        HISTCONTROL = "ignoreboth";
+        LC_TIME = "en_GB.utf8";
+        MANPAGER = "bat -pl man";
+        NIX_BUILD_CORES = "$(( $(nproc) / 2 < 1 ? 1 : $(nproc) / 2 ))";
+        PAGER = "${pkgs.bat}/bin/bat -p";
+      };
+
+      fonts.fontconfig.enable = true;
     };
-
-    fonts.fontconfig.enable = true;
-  };
 }

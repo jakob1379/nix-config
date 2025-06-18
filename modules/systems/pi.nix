@@ -20,7 +20,7 @@ in
 {
   # System-specific overrides for Raspberry Pi
   customPackages = {
-    gui = [ ]; # Disable GUI packages
+    enableGui = false; # Disable GUI packages
     exclude = packagesToExclude;
   };
 

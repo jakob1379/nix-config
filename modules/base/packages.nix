@@ -37,7 +37,7 @@ let
 
     exec ${pkgs.karakeep}/bin/karakeep "$@"
   '';
-  
+
   corePackages = with pkgs; [
     (btop.override { cudaSupport = true; })
     aiderWrapper
@@ -158,39 +158,20 @@ let
   ];
 in
 {
-  options.customPackages = with lib.types; {
-    core = lib.mkOption {
-      type = listOf package;
-      default = corePackages;
-      description = "Core packages.";
-    };
-    gui = lib.mkOption {
-      type = listOf package;
-      default = guiPackages;
-      description = "GUI packages.";
-    };
-    dev = lib.mkOption {
-      type = listOf package;
-      default = devPackages;
-      description = "Development packages.";
-    };
-    emacs = lib.mkOption {
-      type = listOf package;
-      default = emacsPackages;
-      description = "Emacs packages.";
-    };
-    scripts = lib.mkOption {
-      type = listOf package;
-      default = customScripts;
-      description = "Custom scripts packaged from the bin directory.";
-    };
+  options.customPackages = {
+    enableCore = lib.mkEnableOption "core packages";
+    enableGui = lib.mkEnableOption "GUI packages";
+    enableDev = lib.mkEnableOption "development packages";
+    enableEmacs = lib.mkEnableOption "Emacs packages";
+    enableScripts = lib.mkEnableOption "custom scripts";
+
     extra = lib.mkOption {
-      type = listOf package;
+      type = lib.types.listOf lib.types.package;
       default = [ ];
       description = "Extra packages for a specific system.";
     };
     exclude = lib.mkOption {
-      type = listOf package;
+      type = lib.types.listOf lib.types.package;
       default = [ ];
       description = "Packages to exclude from the final list.";
     };
@@ -199,7 +180,13 @@ in
   config =
     let
       cfg = config.customPackages;
-      allPackages = cfg.core ++ cfg.gui ++ cfg.dev ++ cfg.emacs ++ cfg.scripts ++ cfg.extra;
+      allPackages =
+        (lib.optionals cfg.enableCore corePackages)
+        ++ (lib.optionals cfg.enableGui guiPackages)
+        ++ (lib.optionals cfg.enableDev devPackages)
+        ++ (lib.optionals cfg.enableEmacs emacsPackages)
+        ++ (lib.optionals cfg.enableScripts customScripts)
+        ++ cfg.extra;
     in
     {
       home.packages = lib.filter (p: !(lib.elem p cfg.exclude)) allPackages;

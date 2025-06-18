@@ -22,12 +22,12 @@
 
   # System-specific overrides for UCPH machine
   customPackages = {
+    enableGui = true; # Enable GUI packages for this desktop system
+
     # Add remmina package specifically for this system
     extra = [ pkgs.remmina ];
   };
 
-  # NOTE: The 'customDotfiles' option is likely defined in a 'modules/base/dotfiles.nix'
-  # file that I haven't seen. I've commented this out to prevent errors.
-  # Please provide that file if you want to re-enable this.
-  # customDotfiles.mediaControl.enable = true;
+  # Enable media control dotfiles for this system.
+  customDotfiles.enableMediaControl = true;
 }
