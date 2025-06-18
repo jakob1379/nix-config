@@ -8,8 +8,6 @@
 let
   # Packages to exclude on the Raspberry Pi to save space/resources
   packagesToExclude = with pkgs; [
-    texlive.combined.scheme-full
-    texlivePackages.fontawesome5
     # The following are large GUI apps not needed on a server
     brave
     onlyoffice-bin
