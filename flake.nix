@@ -45,13 +45,6 @@
         modules = [ ./nixos/configuration.nix ];
       };
 
-      # General nix configurations
-      nix.gc = {
-        automatic = true;
-        dates = "weekly";
-        options = "--delete-older-than 2w";
-      };
-
       # Home configurations using the new modular structure
       homeConfigurations = {
         "pi@raspberrypi" = mkHomeConfig {
