@@ -7,7 +7,16 @@
 }:
 
 let
-  aiderChatWithBrowserHelp = pkgs.aider-chat.withOptional {
+  # The playwright-webkit package used by aider-chat is missing a dependency.
+  # This overlay adds libxml2 to fix the build.
+  playwright-overlay = self: super: {
+    playwright-webkit = super.playwright-webkit.overrideAttrs (oldAttrs: {
+      buildInputs = (oldAttrs.buildInputs or [ ]) ++ [ self.libxml2 ];
+    });
+  };
+  pkgs-overlayed = pkgs.extend playwright-overlay;
+
+  aiderChatWithBrowserHelp = pkgs-overlayed.aider-chat.withOptional {
     withAll = true;
   };
   # Define the custom aider wrapper script here
