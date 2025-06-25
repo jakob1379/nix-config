@@ -9,9 +9,12 @@
 let
   # The playwright-webkit package used by aider-chat is missing a dependency.
   # This overlay adds libxml2 to fix the build.
+  # The previous attempt using buildInputs did not work, as the derivation
+  # hash remained the same. This attempt uses autoPatchelfExtraLibs to be more
+  # direct.
   playwright-overlay = self: super: {
     playwright-webkit = super.playwright-webkit.overrideAttrs (oldAttrs: {
-      buildInputs = (oldAttrs.buildInputs or [ ]) ++ [ self.libxml2 ];
+      autoPatchelfExtraLibs = (oldAttrs.autoPatchelfExtraLibs or [ ]) ++ [ self.libxml2 ];
     });
   };
   pkgs-overlayed = pkgs.extend playwright-overlay;
