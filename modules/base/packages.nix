@@ -8,8 +8,7 @@
 
 let
   aiderChatWithBrowserHelp = pkgs.aider-chat.withOptional {
-    withBrowser = true;
-    withHelp = true;
+    withAll = true;
   };
   # Define the custom aider wrapper script here
   aiderWrapper = pkgs.writeScriptBin "aider" ''
@@ -27,6 +26,15 @@ let
     exec ${aiderChatWithBrowserHelp}/bin/aider "$@"
   '';
 
+
+  opencommitWrapper = pkgs.writeScriptBin "oco" ''
+    #!${pkgs.bash}/bin/bash
+    
+    OCO_API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get opencommit api_key || exit 1)"
+
+    exec ${pkgs.opencommit}/bin/opencommit "$@"
+  '';
+  
   karakeepWrapper = pkgs.writeScriptBin "karakeep" ''
     #!${pkgs.bash}/bin/bash
     
@@ -48,6 +56,7 @@ let
     duf
     entr
     fd
+    python3Packages.keyring
     frogmouth
     gdu
     git
@@ -111,7 +120,7 @@ let
     [
       wakatime
       pandoc
-      opencommit
+      opencommitWrapper
       android-tools
       graphviz
       nodejs
@@ -188,7 +197,7 @@ in
         ++ (lib.optionals cfg.enableScripts customScripts)
         ++ cfg.extra;
     in
-    {
-      home.packages = lib.filter (p: !(lib.elem p cfg.exclude)) allPackages;
-    };
+      {
+        home.packages = lib.filter (p: !(lib.elem p cfg.exclude)) allPackages;
+      };
 }
