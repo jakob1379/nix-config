@@ -1,4 +1,4 @@
-# Nix Config
+ñ# Nix Config
 
 This repository contains Nix configuration files for setting up and managing
 development environments.
@@ -36,8 +36,7 @@ individual configuration files for details.
 
 The `Makefile` includes targets to install Nix and Home Manager:
 
-- **`make install`**: Installs Nix and Home Manager, setting up necessary
-  configurations.
+- **`make install`**: Installs Nix and Home Manager, and sets up necessary configurations.
 
 ## Development Shell (devShell)
 
@@ -53,12 +52,15 @@ Enter the development shell with:
 
 ```bash
 nix develop
+
+# or automatically with direnv
+direnv allow
 ```
 
 ## Features
 
 - Comprehensive Nix configurations.
-- Simplified setup scripts.
+- Setup scripts.
 - Support for multiple system installations.
 
 ## Contributing
