@@ -1,3 +1,0 @@
-error: The option `customDotfiles.enableMediaControl' has conflicting definition values:
-       - In `/nix/store/3l8wv9swgy0fn8ppmks2qrcq6kcnnq7i-source/modules/systems/ucph.nix': true
-       - In `/nix/store/3l8wv9swgy0fn8ppmks2qrcq6kcnnq7i-source/modules/systems/common.nix': false
