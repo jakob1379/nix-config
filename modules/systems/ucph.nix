@@ -25,7 +25,7 @@
     enableGui = true; # Enable GUI packages for this desktop system
 
     # Add remmina package specifically for this system
-    extra = [ pkgs.remmina ];
+    extra = with pkgs; [ godot remmina ];
   };
 
   # Enable media control dotfiles for this system.
