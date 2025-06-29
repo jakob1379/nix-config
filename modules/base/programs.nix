@@ -125,6 +125,10 @@
         enableBashIntegration = true;
         icons = "auto";
         git = true;
+        extraOptions = [
+          "--group-directories-first"
+          "--smart-group"
+        ];
       };
 
       oh-my-posh = {
