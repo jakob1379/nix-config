@@ -42,7 +42,7 @@ let
   opencommitWrapper = pkgs.writeScriptBin "oco" ''
     #!${pkgs.bash}/bin/bash
     
-    OCO_API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get opencommit api_key || exit 1)"
+    export OPENAI_API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get opencommit api_key || exit 1)"
 
     exec ${pkgs.opencommit}/bin/opencommit "$@"
   '';
