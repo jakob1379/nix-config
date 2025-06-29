@@ -90,6 +90,11 @@
           packages = (generalPackages pkgs);
           buildInputs = with pkgs; [ pre-commit ];
           shellHook = ''
+            # Check if the pre-commit hook is not installed and install it.
+            if [ ! -f .git/hooks/pre-commit ]; then
+              echo "Running pre-commit install for the first time..."
+              pre-commit install
+            fi
             export PS1="(dotfiles-shell 🫥) $PS1"
           '';
         };
