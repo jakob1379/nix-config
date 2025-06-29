@@ -25,7 +25,7 @@ let
   # Define the custom aider wrapper script here
   aiderWrapper = pkgs.writeScriptBin "aider" ''
     #!${pkgs.bash}/bin/bash
-    
+
     API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get gemini api_key || exit 1)"
 
     export GEMINI_API_KEY="$API_KEY"
@@ -39,18 +39,17 @@ let
     exec ${aiderChatWithBrowserHelp}/bin/aider "$@"
   '';
 
-
   opencommitWrapper = pkgs.writeScriptBin "oco" ''
     #!${pkgs.bash}/bin/bash
-    
+
     export OPENAI_API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get opencommit api_key || exit 1)"
 
     exec ${pkgs.opencommit}/bin/opencommit "$@"
   '';
-  
+
   karakeepWrapper = pkgs.writeScriptBin "karakeep" ''
     #!${pkgs.bash}/bin/bash
-    
+
     API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get hoarder.jgalabs.dk api_key || exit 1)"
 
     export KARAKEEP_API_KEY="$API_KEY"
@@ -210,7 +209,7 @@ in
         ++ (lib.optionals cfg.enableScripts customScripts)
         ++ cfg.extra;
     in
-      {
-        home.packages = lib.filter (p: !(lib.elem p cfg.exclude)) allPackages;
-      };
+    {
+      home.packages = lib.filter (p: !(lib.elem p cfg.exclude)) allPackages;
+    };
 }

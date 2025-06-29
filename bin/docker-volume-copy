@@ -49,7 +49,7 @@ docker run --rm \
   sh -c "cp -a /from_volume/. /to_volume/"
 
 # Inform the user of completion
-if [ $? -eq 0 ]; then
+if $?; then
   echo "Successfully copied data from volume '${VOLUME_A}' to volume '${VOLUME_B}'"
 else
   echo "An error occurred during the volume copy"

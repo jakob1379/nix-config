@@ -1438,7 +1438,7 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
       (file+head "daily/${slug}.org"
                  "#+title: ${title}\n#+filetags: :journal:daily:\n")
       :slug "%<%Y-%m-%d>"
-      :unnarrowed t)     
+      :unnarrowed t)
      )
    )
 

@@ -36,7 +36,8 @@ individual configuration files for details.
 
 The `Makefile` includes targets to install Nix and Home Manager:
 
-- **`make install`**: Installs Nix and Home Manager, and sets up necessary configurations.
+- **`make install`**: Installs Nix and Home Manager, and sets up necessary
+  configurations.
 
 ## Development Shell (devShell)
 
