@@ -42,7 +42,7 @@
       # NixOS configuration
       nixosConfigurations.ku = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        modules = [ ./nixos/configuration.nix ];
+        modules = [ ./nixos/ku/configuration.nix ];
       };
 
       # Home configurations using the new modular structure
@@ -89,7 +89,7 @@
           packages = (generalPackages pkgs);
           buildInputs = with pkgs; [ pre-commit ];
           shellHook = ''
-            export PS1="(dotfiles-shell 🫥) $PS1"
+            export PS1="(dotfiles-shell 🫥) 
           '';
         };
       });

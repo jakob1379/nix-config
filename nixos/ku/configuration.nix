@@ -236,9 +236,9 @@ in
     DESKTOP_SESSION=$XDG_SESSION_DESKTOP
   '';
   programs.ssh.askPassword = lib.mkForce (
-    if config.services.desktopManager.plasma6.enable then
+    if builtins.getEnv "DESKTOP_SESSION" == "plasma" then
       "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass"
-    else if config.services.gnome.enable then
+    else if builtins.getEnv "DESKTOP_SESSION" == "gnome" then
       "${pkgs.seahorse}/libexec/seahorse/ssh-askpass"
     else
       "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass" # Default to KDE's program
