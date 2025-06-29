@@ -32,8 +32,9 @@ let
     export AIDER_MODEL="gemini/gemini-2.5-pro-preview-06-05"
     export AIDER_WEAK_MODEL="gemini/gemini-2.5-flash-preview-05-20"
     export AIDER_THINKING_TOKENS="32k"
-    export AIDER_CHECK_UPDATE="false";
-    export AIDER_ANALYTICS="false";
+    export AIDER_CHECK_UPDATE="false"
+    export AIDER_ANALYTICS="false"
+    export AIDER_NOTIFICATIONS="true"
 
     exec ${aiderChatWithBrowserHelp}/bin/aider "$@"
   '';
