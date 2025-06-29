@@ -1,6 +1,6 @@
-.PHONY: install install-nix install-home-manager
+.PHONY: install install-nix
 
-install: install-nix install-home-manager
+install: install-nix
 
 install-nix:
 	@if ! command -v nix &> /dev/null; then \
@@ -10,13 +10,13 @@ install-nix:
 		echo "Nix is already installed."; \
 	fi
 
-	@mkdir -p ~/.config/nix && \
-	echo "experimental-features = nix-command flakes" > ~/.config/nix/nix.conf && \
-	echo "Enabled experimental features for Nix: nix-command and flakes."
-
-install-home-manager:
-	@echo "Installing home-manager"
-	@. /etc/profile.d/nix.sh; \
-	nix-channel --add https://github.com/nix-community/home-manager/archive/release-unstable.tar.gz home-manager && \
-	nix-channel --update && \
-	nix-shell '<home-manager>' -A install
+	@echo "Ensuring Nix is configured for flakes..."
+	@mkdir -p ~/.config/nix
+	@CONFIG_FILE=~/.config/nix/nix.conf; \
+	touch $$CONFIG_FILE; \
+	if ! grep -q "experimental-features" "$$CONFIG_FILE"; then \
+		echo "Appending experimental-features to $$CONFIG_FILE..."; \
+		echo "experimental-features = nix-command flakes" >> "$$CONFIG_FILE"; \
+	else \
+		echo "Nix experimental features already configured in $$CONFIG_FILE."; \
+	fi
