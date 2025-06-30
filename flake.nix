@@ -87,7 +87,7 @@
       # DevShell setup for this repo
       devShells = forAllSystems (pkgs: {
         default = pkgs.mkShell {
-          packages = (generalPackages pkgs);
+          packages = generalPackages pkgs;
           buildInputs = with pkgs; [ pre-commit ];
           shellHook = ''
             # Check if the pre-commit hook is not installed and install it.
