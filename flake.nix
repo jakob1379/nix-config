@@ -34,6 +34,8 @@
           pre-commit
           yamllint
           nixfmt-rfc-style
+          statix
+          deadnix
         ];
     in
     {
