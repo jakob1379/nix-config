@@ -503,7 +503,7 @@ icons, file preview, etc.
   ((dired-after-reading . dired-git-info-auto-enable))
   :custom
   (ls-lisp-use-insert-directory-program nil)
-  (dired-listing-switches "-la --almost-all --group-directories-first")
+  (dired-listing-switches "-laa --group-directories-first") ;; all is needed twice to show . and ..
   )
 #+end_src
 **** Dired preview
