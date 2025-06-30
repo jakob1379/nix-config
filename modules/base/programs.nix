@@ -42,8 +42,8 @@
 
       git = {
         enable = true;
-        userName = config.customGit.userName;
-        userEmail = config.customGit.userEmail;
+        inherit (config.customGit) userName;
+        inherit (config.customGit) userEmail;
         signing = {
           key = "98BD7E80842C97BA";
           signByDefault = false;
