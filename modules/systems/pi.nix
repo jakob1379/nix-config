@@ -30,10 +30,11 @@ in
     pywalPath = { };
   };
 
-  services.unclutter.enable = false;
-  services.easyeffects.enable = false;
-  services.mpris-proxy.enable = false;
-
+  services = {
+    unclutter.enable = false;
+    easyeffects.enable = false;
+    mpris-proxy.enable = false;
+  };
   # Override SSH config for Pi
   home.file.".ssh/config".text = ''
     Host *
