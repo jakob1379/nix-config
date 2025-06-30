@@ -223,7 +223,7 @@
         open = "xdg-open";
         venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
         rsync = "rsync --info=progress2";
-        plasma-restart = "plasmashell --replace & disown";
+        plasma-restart = "systemctl restart --user plasma-plasmashell";
         dcup = "docker compose up --remove-orphans";
         dcview = "docker compose config | bat -l yml";
         dk = "dragon --keep";
