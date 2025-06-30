@@ -16,10 +16,6 @@ in
     ./hardware-configuration.nix
   ];
 
-  # Bootloader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-
   # Enable flakes and nix commands
   nix = {
     gc = {
@@ -85,7 +81,7 @@ in
     enable = true;
     enableQt5Integration = true;
   };
-  environment.plasma6.excludePackages = (with pkgs.kdePackages; [ kate ]);
+  environment.plasma6.excludePackages = with pkgs.kdePackages; [ kate ];
 
   # # Define specializations
   # specialisation = {};
@@ -295,15 +291,20 @@ in
     };
   };
 
-  boot.kernelModules = [ "kvm-intel" ];
+  # Bootloader.
+  boot = {
+    loader.systemd-boot.enable = true;
+    loader.efi.canTouchEfiVariables = true;
 
-  boot.kernelParams = [
-    "acpi_backlight=native"
-    "psmouse.synaptics_intertouch=0"
-    "nvidia-drm.modeset=1"
-    "nvidia-drm.fbdev=1"
-  ];
+    kernelModules = [ "kvm-intel" ];
 
+    kernelParams = [
+      "acpi_backlight=native"
+      "psmouse.synaptics_intertouch=0"
+      "nvidia-drm.modeset=1"
+      "nvidia-drm.fbdev=1"
+    ];
+  };
   # no swap please.
   swapDevices = lib.mkForce [ ];
 
