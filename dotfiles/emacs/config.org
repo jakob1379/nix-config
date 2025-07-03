@@ -364,6 +364,15 @@ projects with something like in
   :defer t
   )
 #+END_SRC
+*** IBuffer
+#+BEGIN_SRC emacs-lisp
+(use-package ibuffer
+  :ensure nil
+  :straight (:type built-in)
+  :defer nil
+  :bind ("C-x C-b" . ibuffer))
+#+END_SRC
+
 *** Auto Sudoedit
 #+BEGIN_SRC emacs-lisp
 (use-package auto-sudoedit
