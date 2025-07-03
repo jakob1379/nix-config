@@ -109,17 +109,6 @@ in
   config = {
     systemd.user.startServices = true;
 
-    services.emacs = {
-      startWithUserSession = "graphical";
-      enable = true;
-      defaultEditor = true;
-      client.arguments = [
-        "--alternative-editor ''"
-        "--reuse-frame"
-        "--no-wait"
-      ];
-    };
-
     systemd.user.services = lib.mkMerge [
       config.customServices.rclone
       config.customServices.pywal
@@ -127,13 +116,27 @@ in
 
     systemd.user.paths = config.customServices.pywalPath;
 
-    services.unclutter = {
-      enable = true;
-      timeout = 5;
-    };
+    services = {
+      emacs = {
+        startWithUserSession = "graphical";
+        enable = true;
+        defaultEditor = true;
+        client.arguments = [
+          "--alternative-editor ''"
+          "--reuse-frame"
+          "--no-wait"
+        ];
+      };
 
-    services.ssh-agent.enable = true;
-    services.easyeffects.enable = true;
-    services.mpris-proxy.enable = true;
+      unclutter = {
+        enable = true;
+        timeout = 5;
+      };
+
+      ssh-agent.enable = true;
+      easyeffects.enable = true;
+      mpris-proxy.enable = true;
+      home-manager.autoExpire.enable = true;
+    };
   };
 }
