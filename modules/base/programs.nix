@@ -79,12 +79,12 @@
             builtins.readFile ../../dotfiles/firefox/firefox_userchrome.css;
         };
       };
+      hwatch.enable = true;
 
       emacs = {
         enable = true;
         package = pkgs.emacs30-gtk3;
       };
-
       ghostty = {
         enable = true;
         settings = {
@@ -188,7 +188,7 @@
         enableBashIntegration = false;
       };
     };
-
+    
     # Home shell aliases
     home.shellAliases = let flakePath = "${config.xdg.configHome}/home-manager";
     in {
@@ -196,6 +196,7 @@
         netbird status --json | jq ".peers.details.[] | {fqdn, netbirdIp, status, connectionType}" -r'';
       onefetch = "onefetch -E --nerd-fonts --no-color-palette";
       cat = "bat";
+      watch = "hwatch";
       cdd = ''
         f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
       fm = "frogmouth";
