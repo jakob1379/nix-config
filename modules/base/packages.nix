@@ -52,7 +52,6 @@ let
     duf
     entr
     fd
-    python3Packages.keyring
     frogmouth
     gdu
     git
@@ -68,6 +67,9 @@ let
     libqalculate
     libsecret
     miktex
+    nix-init
+    mergiraf
+    visidata
     nix-output-monitor
     nix-prefetch-github
     nix-search-cli
@@ -75,6 +77,7 @@ let
     nmap
     nvtopPackages.full
     onefetch
+    python3Packages.keyring
     rclone
     rename
     silver-searcher
