@@ -44,15 +44,12 @@ let
 
   corePackages = with pkgs; [
     (btop.override { cudaSupport = true; })
-    aiderWrapper
     busybox
     dconf
     dig
-    dive
     duf
     entr
     fd
-    frogmouth
     gdu
     git
     gitflow
@@ -60,16 +57,15 @@ let
     glib
     gnumake
     hyperfine # benchmark CLI commands
+    imagemagick
     isd
     jq
     jqp
-    karakeepWrapper
     libqalculate
     libsecret
+    mergiraf
     miktex
     nix-init
-    mergiraf
-    visidata
     nix-output-monitor
     nix-prefetch-github
     nix-search-cli
@@ -90,12 +86,12 @@ let
 
   guiPackages = with pkgs; [
     brave
-    keepassxc
     code-cursor
     dbeaver-bin
     feh
     gnome-boxes
     gnome-pomodoro
+    keepassxc
     libnotify
     nodePackages.prettier
     onlyoffice-bin
@@ -117,16 +113,22 @@ let
   devPackages =
     with pkgs;
     [
-      wakatime
-      pandoc
-      opencommitWrapper
       android-tools
+      distrobox
       graphviz
+      meslo-lgs-nf
+      nerd-fonts.fira-code
       nodejs
+      opencommitWrapper
+      pandoc
       poppler_utils
       uv
-      nerd-fonts.fira-code
-      meslo-lgs-nf
+      aiderWrapper
+      dive
+      frogmouth
+      karakeepWrapper
+      visidata
+      wakatime
     ]
     ++ lib.optionals (system != "aarch64-linux") [ jdk ];
 
