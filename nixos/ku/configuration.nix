@@ -211,9 +211,6 @@ in
   # allow fuse to mount for other users
   programs.fuse.userAllowOther = true;
 
-  # Install firefox.
-  programs.firefox.enable = true;
-
   # Allow unfree packages
   nixpkgs = {
     config.allowUnfree = true;

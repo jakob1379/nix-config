@@ -33,6 +33,7 @@
     enableSsh = lib.mkDefault true;
     enableEmacs = lib.mkDefault true;
     enableMediaControl = lib.mkDefault false; # Opt-in per system
+    enableAider = lib.mkDefault true;
   };
 
   home.stateVersion = "24.05";

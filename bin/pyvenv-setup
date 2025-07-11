@@ -39,7 +39,7 @@ else
 	echo "'use flake' directive already in .envrc"
 fi
 # Ensure other required lines are present.
-ensure_line_in_file 'export VIRTUAL_ENV=".venv"' .envrc
+ensure_line_in_file 'VIRTUAL_ENV=".venv"' .envrc
 ensure_line_in_file "layout python" .envrc
 
 echo ".envrc configuration is up to date."
