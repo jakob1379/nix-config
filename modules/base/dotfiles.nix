@@ -16,16 +16,16 @@
       type = lib.types.attrs;
       default = {
         ".aider.conf.yml".text = ''
-        attribute-author: false
-        attribute-committer: false
-        attribute-co-authored-by: false
-        analytics: false
-        code-theme: monokai
+          attribute-author: false
+          attribute-committer: false
+          attribute-co-authored-by: false
+          analytics: false
+          code-theme: monokai
         '';
       };
       description = "Aider dotfiles";
     };
-    
+
     ssh = lib.mkOption {
       type = lib.types.attrs;
       default = {
@@ -63,7 +63,7 @@
       home.file = lib.mkMerge [
         (lib.mkIf cfg.enableSsh cfg.ssh)
         (lib.mkIf cfg.enableEmacs cfg.emacs)
-        (lib.mkIf cfg.enableAider cfg.aider)        
+        (lib.mkIf cfg.enableAider cfg.aider)
         (lib.mkIf cfg.enableMediaControl cfg.mediaControl)
       ];
 
