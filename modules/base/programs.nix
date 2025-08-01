@@ -47,7 +47,7 @@
           if [[ -z "$SSH_CONNECTION" ]]; then
               ${pkgs.coreutils}/bin/cat ${config.xdg.cacheHome}/wal/sequences
           fi
-          ${builtins.readFile ../../bin/secret-export.sh}
+          ${builtins.readFile ../../bin/secret-export}
 
           eval "$(${pkgs.aider-chat-full}/bin/aider --shell-completions bash)"
         '';

@@ -30,5 +30,8 @@
   };
 
   # Enable media control dotfiles for this system.
-  customDotfiles.enableMediaControl = true;
+  customDotfiles = {
+    enableMediaControl = true;
+    enableAider = true;
+  };
 }

@@ -43,10 +43,7 @@ if [ $# -eq 0 ]; then
 fi
 
 # Assign the command passed as arguments to a variable
-command="$@"
-
-
-
+command="$*"
 
 # Try to get the help message of the command
 help_msg="$(eval "$command --help" || eval "$command -h")"
