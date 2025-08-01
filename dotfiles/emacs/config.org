@@ -294,6 +294,10 @@ If emacs is not running as a server, start one. It should've been started by sys
 (unless (server-running-p)
   (server-start))
 #+END_SRC
+** Delete trailing spaces
+#+BEGIN_SRC emacs-lisp
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+#+END_SRC
 
 ** Aesthetics
 
@@ -364,15 +368,6 @@ projects with something like in
   :defer t
   )
 #+END_SRC
-*** IBuffer
-#+BEGIN_SRC emacs-lisp
-(use-package ibuffer
-  :ensure nil
-  :straight (:type built-in)
-  :defer nil
-  :bind ("C-x C-b" . ibuffer))
-#+END_SRC
-
 *** Auto Sudoedit
 #+BEGIN_SRC emacs-lisp
 (use-package auto-sudoedit
@@ -562,7 +557,6 @@ let dired know how to use native system applications to open files.
     (dired-rainbow-define-chmod executable-unix "#38c172" "-.*x.*")
     ))
 #+END_SRC
-
 *** Direnv
 #+BEGIN_SRC emacs-lisp
 (use-package direnv
@@ -584,26 +578,10 @@ We want modes for docker compose and Dockerfiles
   :mode ("Dockerfile$" . dockerfile-mode)
   )
 #+END_SRC
-
-*** Themes
-**** Doom emacs theme
-#+begin_src emacs-lisp
-(use-package doom-themes
-  :config
-  (doom-themes-org-config))
-(load-theme 'doom-xcode t)
-#+end_src
-**** Snazzy
+*** Doom Modeline
 #+BEGIN_SRC emacs-lisp
-(use-package emacs-snazzy
-  :straight (:host github :repo "weijiangan/emacs-snazzy" :files ("*.el"))
-  :requires base16-theme
-  ;; :config
-  ;; (load-theme 'snazzy t)
-  )
-
-(use-package base16-theme
-  :straight t)
+(use-package doom-modeline
+  :hook (after-init . doom-modeline-mode))
 #+END_SRC
 *** Editorconfig
 read and understand ~.editorconfig~ files
@@ -646,12 +624,6 @@ Always redraw immediately when scrolling, more responsive and doesn't hang! Sour
   :config
   (global-flycheck-mode))
 #+END_SRC
-*** Doom Modeline
-#+BEGIN_SRC emacs-lisp
-(use-package doom-modeline
-  :hook (after-init . doom-modeline-mode))
-#+END_SRC
-
 *** Flyspell
 
 #+BEGIN_SRC emacs-lisp
@@ -732,6 +704,17 @@ highlights uncommitted changes on the left side of the window
   (diff-hl-margin-mode)
   ;; :custom
   ;; (diff-hl-disable-on-remote t)
+  )
+#+END_SRC
+*** Godot
+#+BEGIN_SRC emacs-lisp
+(use-package gdscript-mode
+  :defer t
+  :mode
+  ("\\.godot\\'" . conf-mode)
+  :custom
+  (gdscript-mode-indent-offset 4)
+  (indent-tabs-mode nil)
   )
 #+END_SRC
 *** Graphviz-Dot-Mode
@@ -864,6 +847,14 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
   (hungry-delete-join-reluctantly 1)
   :config
   (global-hungry-delete-mode))
+#+END_SRC
+*** IBuffer
+#+BEGIN_SRC emacs-lisp
+(use-package ibuffer
+  :ensure nil
+  :straight (:type built-in)
+  :defer nil
+  :bind ("C-x C-b" . ibuffer))
 #+END_SRC
 *** Iedit
 #+BEGIN_SRC emacs-lisp
@@ -1045,7 +1036,6 @@ helm is awesome
 #+BEGIN_SRC emacs-lisp
 (use-package lsp-mode
   :commands lsp
-  :defer t
   :hook
   ((css-mode . lsp-deferred)
    (latex-mode . lsp-deferred)
@@ -1057,58 +1047,58 @@ helm is awesome
    (toml-mode . lsp-deferred)
    (lsp-mode . lsp-enable-which-key-integration)
    )
+
+  :init
+  (setq lsp-keymap-prefix "C-c l")
+
   :config
   ;; enable extra modules in pyls-[black|isort|mypy]
   ;; might need 'pip install future'
   (lsp-register-custom-settings
-   '(("pyls.plugins.pyls_mypy.enabled" t t)
-     ("pyls.plugins.pyls_mypy.live_mode" nil t)
-     ("pyls.plugins.pyls_black.enabled" t t)
-     ("pyls.plugins.pyls_isort.enabled" t t)
+   '(("pylsp.plugins.mypy.enabled" t t)
+     ("pylsp.plugins.mypy.live_mode" nil t)
+     ("pylsp.plugins.black.enabled" t t)
+     ("pylsp.plugins.isort.enabled" t t)
      ;; Disable these as they're duplicated by flake8
-     ("pyls.plugins.pycodestyle.enabled" nil t)
-     ("pyls.plugins.mccabe.enabled" nil t)
-     ("pyls.plugins.pyflakes.enabled" nil t)))
+     ("pylsp.plugins.pycodestyle.enabled" nil t)
+     ("pylsp.plugins.mccabe.enabled" nil t)
+     ("pylsp.plugins.pyflakes.enabled" nil t)
+     ("pylsp.plugins.flake8.enabled" t t)))
 
   ;; Register lsp clients
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection "esbonio")
-                    :major-modes '(rst-mode)
-                    :server-id 'esbonio))
-
-  ;; Language ID configuration
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection '("nixd"))
-                    :major-modes '(nix-mode)
-                    :server-id 'nix))
+  ;; (lsp-register-client
+  ;;  (make-lsp-client :new-connection (lsp-stdio-connection '("nixd"))
+  ;;                   :major-modes '(nix-mode)
+  ;;                   :server-id 'nix))
 
   ;; File watch ignore list
-  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\.venv\\'")
+  (lsp-file-watch-ignored-directories
+      '("[/\\\\]\\.git\\'"
+        "[/\\\\]\\.venv\\'"
+        "[/\\\\]node_modules\\'"
+        "[/\\\\]\\.mypy_cache\\'"
+        "[/\\\\]__pycache__\\'"))
 
   :custom
-  (lsp-auto-execute-action nil)
   (lsp-auto-guess-root t)
-  (lsp-auto-register-remote-clients t)
-  (lsp-auto-select-workspace t)
-  (lsp-before-save-edits nil)
   (lsp-completion-provider :company-capf)
   (lsp-eldoc-enable-hover t)
-  (lsp-enable-links t)
-  (lsp-enable-on-type-formatting t)
   (lsp-enable-snippet t)
-  (lsp-face-highlight-read ((t (:underline t))))
-  (lsp-face-highlight-textual ((t (:underline t))))
-  (lsp-face-highlight-write ((t (:underline t))))
   (lsp-file-watch-threshold 5000)
   (lsp-headerline-breadcrumb-enable t)
   (lsp-idle-delay 0.1)
-  (lsp-intelephense-multi-root nil)
   (lsp-keep-workspace-alive nil)
-  (lsp-keymap-prefix "C-c l") ;; Set prefix for lsp-command-map
   (lsp-modeline-diagnostics-enable t)
-  (lsp-pyls-plugins-flake8-enabled t)
+
+  (lsp-auto-execute-action nil)
+  (lsp-before-save-edits nil)
+  (lsp-enable-links t)
+  (lsp-enable-on-type-formatting t)
   (lsp-remote-tramp-connection t)
-  ;; (lsp-prefer-flymake nil)
+
+  (lsp-face-highlight-read ((t (:underline t))))
+  (lsp-face-highlight-textual ((t (:underline t))))
+  (lsp-face-highlight-write ((t (:underline t))))
   )
 #+END_SRC
 **** LSP Treemacs
@@ -1364,9 +1354,6 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
    )
   )
 #+END_SRC
-**** Org Babels
-#+BEGIN_SRC emacs-lisp
-#+END_SRC
 **** Org modern ui theme
 #+BEGIN_SRC emacs-lisp
 (use-package org-modern
@@ -1582,6 +1569,11 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
 (use-package restart-emacs
   :defer t)
 #+END_SRC
+*** RST - restructured text
+#+BEGIN_SRC emacs-lisp
+(use-package rst
+  :defer t)
+#+END_SRC
 *** Shell (ba)sh-mode
 #+BEGIN_SRC emacs-lisp
 (use-package sh-mode
@@ -1592,11 +1584,6 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
   )
 #+END_SRC
 
-*** RST - restructured text
-#+BEGIN_SRC emacs-lisp
-(use-package rst
-  :defer t)
-#+END_SRC
 *** Solaire mode
 [[https://github.com/hlissner/emacs-solaire-mode][solaire-mode]] darkens non-important buffers, to help you focus on what matters.
 
@@ -1665,18 +1652,26 @@ necessarily superseded by the ssh config.
   ("\\.network\\'" . systemd-mode)
   ("\\.link\\'" . systemd-mode))
 #+END_SRC
-*** Godot
+*** Themes
+**** Doom emacs theme
+#+begin_src emacs-lisp
+(use-package doom-themes
+  :config
+  (doom-themes-org-config))
+(load-theme 'doom-xcode t)
+#+end_src
+**** Snazzy
 #+BEGIN_SRC emacs-lisp
-(use-package gdscript-mode
-  :defer t
-  :mode
-  ("\\.godot\\'" . conf-mode)
-  :custom
-  (gdscript-mode-indent-offset 4)
-  (indent-tabs-mode nil)
+(use-package emacs-snazzy
+  :straight (:host github :repo "weijiangan/emacs-snazzy" :files ("*.el"))
+  :requires base16-theme
+  ;; :config
+  ;; (load-theme 'snazzy t)
   )
-#+END_SRC
 
+(use-package base16-theme
+  :straight t)
+#+END_SRC
 *** Title Case
 simple package that enable titlecasing
 #+BEGIN_SRC emacs-lisp
