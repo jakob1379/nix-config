@@ -63,14 +63,12 @@ let
     jqp
     libqalculate
     libsecret
-    mergiraf
     miktex
     nix-init
     nix-output-monitor
     nix-prefetch-github
     nix-search-cli
     nixfmt-classic
-    nmap
     nvtopPackages.full
     onefetch
     python3Packages.keyring
@@ -114,7 +112,6 @@ let
     with pkgs;
     [
       android-tools
-      distrobox
       graphviz
       meslo-lgs-nf
       nerd-fonts.fira-code
@@ -133,24 +130,24 @@ let
     ++ lib.optionals (system != "aarch64-linux") [ jdk ];
 
   emacsPackages = with pkgs; [
-    ispell
-    python312Packages.python-lsp-server
-    bash-language-server
-    yaml-language-server
-    powershell
-    taplo
-    hunspell
-    nixd
-    texlab
-    silver-searcher
+    # autotools-language-server
     aspellDicts.da
     aspellDicts.en
     aspellDicts.en-computers
     aspellDicts.en-science
-    python3
+    bash-language-server
+    hunspell
+    ispell
     marksman
-    autotools-language-server
+    nixd
+    powershell
+    python3
+    python313Packages.python-lsp-server
+    silver-searcher
+    taplo
+    texlab
     wl-clipboard-rs
+    yaml-language-server
   ];
 
   customScripts = [

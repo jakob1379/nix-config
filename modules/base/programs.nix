@@ -25,6 +25,17 @@
 
   config = {
     programs = {
+      distrobox = {
+        enable = true;
+        containers = {
+          my-container = {
+            image = "ubuntu:latest"; # Specify your desired image here
+            init_hooks = "curl -LsSf https://astral.sh/uv/install.sh | sh"; # auto-install uv
+            additional_packages = "curl"; # Additional packages needed for init_hooks
+            entry = true; # Make this container enterable by default (optional)
+          };
+        };
+      };
       bash = {
         enable = true;
         profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
@@ -51,11 +62,12 @@
           signByDefault = false;
         };
         extraConfig = {
-          push.autoSetupRemote = true;
-          pull.rebase = false;
-          init.defaultBranch = "main";
-          color.ui = true;
+          checkout.defaultRemote = "origin";
           color.diff = "auto";
+          color.ui = true;
+          init.defaultBranch = "main";
+          pull.rebase = false;
+          push.autoSetupRemote = true;
         };
         aliases = {
           adog = "log --all --decorate --oneline --graph";
@@ -222,8 +234,10 @@
         watch = "hwatch";
         cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
         fm = "frogmouth";
+        db = "distrobox";
         df = "duf --hide special";
         open = "xdg-open";
+        nproc-1 = "$(( $(nproc) - 1))";
         venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
         rsync = "rsync --info=progress2";
         plasma-restart = "systemctl restart --user plasma-plasmashell";
@@ -236,14 +250,14 @@
         grep = "grep --color=auto";
         hs = ''f(){ home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
         hsu = ''f(){ nix flake update --flake ${flakePath} && home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-        ns = ''f(){ sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-        nsu = ''f(){ sudo nix-channel --update && sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
+        ns = ''f(){ sudo -E nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
+        nsu = ''f(){ sudo -E nix-channel --update && sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
         updateAll = ''
           f() {
             nix flake update --flake ${flakePath}
             nix-channel --update
             home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"
-            sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"
+            sudo -E nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"
           };
           f
         '';

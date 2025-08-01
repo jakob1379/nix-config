@@ -24,11 +24,13 @@ in
       options = "--delete-older-than 7d";
     };
     settings = {
+      trusted-users = [ "jga" ];
       auto-optimise-store = true;
       experimental-features = [
         "nix-command"
         "flakes"
       ];
+      max-jobs = 1;
     };
   };
 
@@ -128,6 +130,7 @@ in
   # hardware.firmware = [ displaylink ];
   services.xserver.videoDrivers = [
     "displaylink"
+    "modesetting"
     "nvidia"
   ];
 
@@ -138,7 +141,7 @@ in
     prime = {
       offload = {
         enable = true;
-        #   enableOffloadCmd = true;
+        enableOffloadCmd = true;
       };
       # sync.enable = true;
       intelBusId = "PCI:0:2:0";
@@ -306,11 +309,18 @@ in
   swapDevices = lib.mkForce [ ];
 
   # Open ports in the firewall.
-  networking.firewall.enable = true;
-  # networking.firewall.allowedTCPPorts = [ ... ];
+
+  networking.firewall = {
+    enable = true;
+    # allowedTCPPortRanges = [
+    #   {from = 1: to = 2;}
+    # ];
+    # allowedUDPPortRanges = [
+    #   {from = 1: to = 2;}
+    # ];
+  };
+  # networking.firewall.allowedTCPPorts = [ 9300 ];
   # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

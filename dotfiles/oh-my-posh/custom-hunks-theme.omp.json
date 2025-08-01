@@ -15,6 +15,9 @@
           "leading_diamond": "\ue0b6",
           "template": "{{ if .WSL }}WSL at {{ end }}{{.Icon}}",
           "properties": {
+            "cache": {
+              "duration": 0
+            },
             "windows": "\ue62a"
           }
         },
