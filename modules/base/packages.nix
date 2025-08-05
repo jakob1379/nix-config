@@ -10,7 +10,11 @@ let
   aiderWrapper = pkgs.writeScriptBin "aider" ''
     #!${pkgs.bash}/bin/bash
 
-    API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get gemini api_key || exit 1)"
+    API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get gemini api_key 2>/dev/null)"
+    if [ -z "$API_KEY" ]; then
+      echo "Error: Failed to retrieve GEMINI_API_KEY from keyring." >&2
+        exit 1
+    fi
 
     export GEMINI_API_KEY="$API_KEY"
     export AIDER_MODEL="gemini/gemini-2.5-pro-preview-06-05"
