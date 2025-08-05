@@ -13,10 +13,9 @@
           "foreground": "#ffffff",
           "background": "#c44569",
           "leading_diamond": "\ue0b6",
-          "properties": {
-            "windows": "\ue62a"
-          },
-          "template": "{{ if .Env.CONTAINER_ID }}\uebca {{ if eq .Env.CONTAINER_ID \"almalinux\" }}\uf31d{{ else if eq .Env.CONTAINER_ID \"alpine\" }}\uf300{{ else if eq .Env.CONTAINER_ID \"android\" }}\uf17b{{ else if eq .Env.CONTAINER_ID \"aosc\" }}\uf301{{ else if eq .Env.CONTAINER_ID \"arch\" }}\uf303{{ else if eq .Env.CONTAINER_ID \"centos\" }}\uf304{{ else if eq .Env.CONTAINER_ID \"coreos\" }}\uf305{{ else if eq .Env.CONTAINER_ID \"debian\" }}\uf306{{ else if eq .Env.CONTAINER_ID \"deepin\" }}\uf321{{ else if eq .Env.CONTAINER_ID \"devuan\" }}\uf307{{ else if eq .Env.CONTAINER_ID \"elementary\" }}\uf309{{ else if eq .Env.CONTAINER_ID \"endeavouros\" }}\uf322{{ else if eq .Env.CONTAINER_ID \"fedora\" }}\uf30a{{ else if eq .Env.CONTAINER_ID \"gentoo\" }}\uf30d{{ else if eq .Env.CONTAINER_ID \"mageia\" }}\uf310{{ else if eq .Env.CONTAINER_ID \"manjaro\" }}\uf312{{ else if eq .Env.CONTAINER_ID \"mint\" }}\uf30e{{ else if eq .Env.CONTAINER_ID \"nixos\" }}\uf313{{ else if eq .Env.CONTAINER_ID \"opensuse-tumbleweed\" }}\uf314{{ else if eq .Env.CONTAINER_ID \"opensuse\" }}\uf314{{ else if eq .Env.CONTAINER_ID \"raspbian\" }}\uf315{{ else if eq .Env.CONTAINER_ID \"redhat\" }}\uf316{{ else if eq .Env.CONTAINER_ID \"rocky\" }}\uf32b{{ else if eq .Env.CONTAINER_ID \"sabayon\" }}\uf317{{ else if eq .Env.CONTAINER_ID \"slackware\" }}\uf319{{ else if eq .Env.CONTAINER_ID \"ubuntu\" }}\uf31b{{ else }}󰅩{{ end }}{{ else }}{{ if .WSL }}WSL at {{ end }}{{ .Icon }}{{ end }}"
+          "cache": { "duration": "none" },
+          "properties": { "windows": "\ue62a" },
+          "template": "{{ if .Env.CONTAINER_ID }}{{ $distroIcons := dict \"almalinux\" \"\uf31d\" \"alpine\" \"\uf300\" \"android\" \"\uf17b\" \"aosc\" \"\uf301\" \"arch\" \"\uf303\" \"centos\" \"\uf304\" \"coreos\" \"\uf305\" \"debian\" \"\uf306\" \"deepin\" \"\uf321\" \"devuan\" \"\uf307\" \"elementary\" \"\uf309\" \"endeavouros\" \"\uf322\" \"fedora\" \"\uf30a\" \"gentoo\" \"\uf30d\" \"mageia\" \"\uf310\" \"manjaro\" \"\uf312\" \"mint\" \"\uf30e\" \"nixos\" \"\uf313\" \"opensuse-tumbleweed\" \"\uf314\" \"opensuse\" \"\uf314\" \"raspbian\" \"\uf315\" \"redhat\" \"\uf316\" \"rocky\" \"\uf32b\" \"sabayon\" \"\uf317\" \"slackware\" \"\uf319\" \"ubuntu\" \"\uf31b\" }}\uebca\udb85\udd46{{ readFile \"/etc/os-release\" | regexFind \"(?m)^ID=(.*)\" | trimPrefix \"ID=\" | lower | get $distroIcons }}{{ else }}{{ if .WSL }}WSL at {{ end }}{{ .Icon }}{{ end }}"
         },
         {
           "type": "path",
@@ -25,9 +24,7 @@
           "foreground": "#ffffff",
           "background": "#c44569",
           "template": "{{ .Path }} ",
-          "properties": {
-            "style": "full"
-          }
+          "properties": { "style": "full" }
         },
         {
           "type": "nix-shell",
