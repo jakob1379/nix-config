@@ -78,12 +78,10 @@ repos:
           - tomli # Needed for pyproject.toml configuration
 
   # YAML linting (more strict than basic check)
-  - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.37.0 # Use a recent version of yamllint
+  - repo: https://github.com/lyz-code/yamlfix
+    rev: master
     hooks:
-      - id: yamllint
-        args: ["--strict"]
-        files: \\.(yaml|yml)\$
+      - id: yamlfix
 
   # TOML sorting
   - repo: https://github.com/pappasam/toml-sort

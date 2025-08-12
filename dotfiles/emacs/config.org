@@ -1045,61 +1045,44 @@ helm is awesome
    (rst-mode . lsp-deferred)
    (yaml-mode . lsp-deferred)
    (toml-mode . lsp-deferred)
-   (lsp-mode . lsp-enable-which-key-integration)
-   )
+   (lsp-mode . lsp-enable-which-key-integration))
 
   :init
   (setq lsp-keymap-prefix "C-c l")
 
   :config
-  ;; enable extra modules in pyls-[black|isort|mypy]
-  ;; might need 'pip install future'
   (lsp-register-custom-settings
    '(("pylsp.plugins.mypy.enabled" t t)
      ("pylsp.plugins.mypy.live_mode" nil t)
      ("pylsp.plugins.black.enabled" t t)
      ("pylsp.plugins.isort.enabled" t t)
-     ;; Disable these as they're duplicated by flake8
      ("pylsp.plugins.pycodestyle.enabled" nil t)
      ("pylsp.plugins.mccabe.enabled" nil t)
      ("pylsp.plugins.pyflakes.enabled" nil t)
      ("pylsp.plugins.flake8.enabled" t t)))
 
-  ;; Register lsp clients
-  ;; (lsp-register-client
-  ;;  (make-lsp-client :new-connection (lsp-stdio-connection '("nixd"))
-  ;;                   :major-modes '(nix-mode)
-  ;;                   :server-id 'nix))
-
-  ;; File watch ignore list
-  (lsp-file-watch-ignored-directories
-      '("[/\\\\]\\.git\\'"
-        "[/\\\\]\\.venv\\'"
-        "[/\\\\]node_modules\\'"
-        "[/\\\\]\\.mypy_cache\\'"
-        "[/\\\\]__pycache__\\'"))
-
   :custom
   (lsp-auto-guess-root t)
-  (lsp-completion-provider :company-capf)
+  (lsp-completion-provider :capf)  ; Fixed deprecated option
   (lsp-eldoc-enable-hover t)
   (lsp-enable-snippet t)
   (lsp-file-watch-threshold 5000)
   (lsp-headerline-breadcrumb-enable t)
-  (lsp-idle-delay 0.1)
+  (lsp-idle-delay 0.5)  ; Increased for better performance
   (lsp-keep-workspace-alive nil)
   (lsp-modeline-diagnostics-enable t)
-
   (lsp-auto-execute-action nil)
   (lsp-before-save-edits nil)
   (lsp-enable-links t)
   (lsp-enable-on-type-formatting t)
   (lsp-remote-tramp-connection t)
 
+  :custom-face
   (lsp-face-highlight-read ((t (:underline t))))
   (lsp-face-highlight-textual ((t (:underline t))))
   (lsp-face-highlight-write ((t (:underline t))))
   )
+
 #+END_SRC
 **** LSP Treemacs
 #+begin_src emacs-lisp :tangle yes
