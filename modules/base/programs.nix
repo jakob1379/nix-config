@@ -68,6 +68,7 @@
           init.defaultBranch = "main";
           pull.rebase = false;
           push.autoSetupRemote = true;
+          credential.helper = "libsecret";
         };
         aliases = {
           adog = "log --all --decorate --oneline --graph";
@@ -75,6 +76,14 @@
           ignore-change = "update-index --assume-unchanged";
           prune-deep = ''!git fetch --prune; branches=$(git branch -r | awk '"'"'{print $1}'"'"' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '"'"'{print $1}'"'"'); echo -e "branches:\n$branches"; read -p "Do you want to delete all these branches? (y/n): " confirm; if [ "$confirm" = "y" ]; then echo "$branches" | xargs git branch -d; else echo "No branches were deleted"; fi'';
           unstage = "restore --staged";
+        };
+      };
+      gh = {
+        enable = true;
+        extensions = [ pkgs.gh-dash ];
+        gitCredentialHelper.enable = false;
+        settings.aliases = {
+          web = "repo view --web";
         };
       };
 
@@ -153,13 +162,7 @@
         );
       };
 
-      gh = {
-        enable = true;
-        extensions = [ pkgs.gh-dash ];
-        settings.aliases = {
-          web = "repo view --web";
-        };
-      };
+
 
       fastfetch = {
         enable = true;
@@ -228,7 +231,7 @@
         flakePath = "${config.xdg.configHome}/home-manager";
       in
       {
-        netbird-peers = ''netbird status --json | jq ".peers.details.[] | {fqdn, netbirdIp, status, connectionType}" -r'';
+        nb-peers = ''command "$1" status --json | ${pkgs.jq}/bin/jq ".peers.details.[] | {fqdn, netbirdIp, status, connectionType}" -r'';
         onefetch = "onefetch -E --nerd-fonts --no-color-palette";
         cat = "bat";
         watch = "hwatch";
@@ -269,6 +272,7 @@
     nix = {
       package = pkgs.nix;
       settings = {
+        # access-tokens = "github.com=$(gh auth token)";
         max-jobs = 1;
         experimental-features = [
           "nix-command"

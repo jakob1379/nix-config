@@ -26,6 +26,8 @@ in
     settings = {
       trusted-users = [ "jga" ];
       auto-optimise-store = true;
+      # access-tokens = "github.com=$(${pkgs.gh}/bin/gh auth token)";
+
       experimental-features = [
         "nix-command"
         "flakes"
@@ -224,6 +226,7 @@ in
   environment.systemPackages = with pkgs; [
     git
     bat
+    displaylink
   ];
 
   # Define variables to dynamically set stuff depending on the desktop environment
@@ -284,10 +287,11 @@ in
   services = {
     netbird = {
       enable = true;
-      clients = {
-        darerl.port = 51822;
-        daisy.port = 51823;
-      };
+      ui.enable = true;
+      # clients = {
+      #   darerl.port = 51822;
+      #   daisy.port = 51823;
+      # };
     };
   };
 
