@@ -138,11 +138,6 @@ in
         indicator = true;
       };
 
-      netbird = {
-        enable = true;
-        tray.enable = false;
-      };
-
       ssh-agent.enable = true;
       easyeffects.enable = true;
       mpris-proxy.enable = true;
