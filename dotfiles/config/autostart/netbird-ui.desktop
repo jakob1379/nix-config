@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Netbird UI
+Comment=Start the Netbird UI at login
+Exec=netbird-ui
+Icon=netbird
+Terminal=false
+Type=Application
+StartupNotify=false
