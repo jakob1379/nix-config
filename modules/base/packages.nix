@@ -88,6 +88,7 @@ let
 
   guiPackages = with pkgs; [
     brave
+    tana
     code-cursor
     dbeaver-bin
     feh
