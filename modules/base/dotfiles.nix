@@ -30,7 +30,16 @@
     autostart = lib.mkOption {
       type = lib.types.attrs;
       default = {
-        ".config/autostart/netbird-ui.desktop".source = ../../dotfiles/config/autostart/netbird-ui.desktop;
+        ".config/autostart/netbird-ui.desktop".text = ''
+          [Desktop Entry]
+          Name=Netbird UI
+          Comment=Start the Netbird UI at login
+          Exec=${pkgs.netbird-ui}/bin/netbird-ui
+          Icon=netbird
+          Terminal=false
+          Type=Application
+          StartupNotify=false
+        '';
       };
       description = "Autostart dotfiles.";
     };
