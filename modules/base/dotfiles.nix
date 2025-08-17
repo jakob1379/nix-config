@@ -67,6 +67,7 @@
         (lib.mkIf cfg.enableMediaControl cfg.mediaControl)
       ];
 
+      home.sessionPath = [ "$HOME/.local/bin" ];
       home.sessionVariables = {
         HISTCONTROL = "ignoreboth";
         LC_TIME = "en_GB.utf8";
