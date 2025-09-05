@@ -967,29 +967,6 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
 
 #+END_SRC
 *** LSP
-**** Copilot
-Copilot is not really a LSP per sé, BUT the functionality is close hence the location here
-#+BEGIN_SRC emacs-lisp
-(use-package jsonrpc
-  :defer t)
-
-(use-package copilot
-  :defer t
-  :disabled
-  :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
-  :requires ( editorconfig jsonrpc )
-  :hook
-  (company-mode . (lambda ()
-                    (add-to-list 'company-backends 'company-yasnippet)))
-  (lsp-mode . copilot-mode)
-  (prog-mode . copilot-mode)
-  (yaml-mode . copilot-mode)
-  (nix-mode . copilot-mode)
-  (rst-mode . copilot-mode)
-  (latex-mode . copilot-mode)
-  (org-mode . copilot-mode)
-  )
-#+END_SRC
 **** DAP
 Following [[https://emacs-lsp.github.io/dap-mode/page/python-poetry-pyenv/][this guide]] we need a little tweaking to play nicely with poetry environments
 #+BEGIN_SRC emacs-lisp
@@ -1034,54 +1011,56 @@ helm is awesome
 #+end_src
 **** LSP mode
 #+BEGIN_SRC emacs-lisp
-(use-package lsp-mode
-  :commands lsp
-  :hook
-  ((css-mode . lsp-deferred)
-   (latex-mode . lsp-deferred)
-   (markdown-mode . lsp-deferred)
-   (nix-mode . lsp-deferred)
-   (prog-mode . lsp-deferred)
-   (rst-mode . lsp-deferred)
-   (yaml-mode . lsp-deferred)
-   (toml-mode . lsp-deferred)
-   (lsp-mode . lsp-enable-which-key-integration))
+  (use-package lsp-mode
+    :commands lsp
+    :hook
+    ((css-mode . lsp-deferred)
+     (latex-mode . lsp-deferred)
+     (markdown-mode . lsp-deferred)
+     (nix-mode . lsp-deferred)
+     (prog-mode . lsp-deferred)
+     (rst-mode . lsp-deferred)
+     (yaml-mode . lsp-deferred)
+     (toml-mode . lsp-deferred)
+     (lsp-mode . lsp-enable-which-key-integration))
 
-  :init
-  (setq lsp-keymap-prefix "C-c l")
+    :init
+    (setq lsp-keymap-prefix "C-c l")
 
-  :config
-  (lsp-register-custom-settings
-   '(("pylsp.plugins.mypy.enabled" t t)
-     ("pylsp.plugins.mypy.live_mode" nil t)
-     ("pylsp.plugins.black.enabled" t t)
-     ("pylsp.plugins.isort.enabled" t t)
-     ("pylsp.plugins.pycodestyle.enabled" nil t)
-     ("pylsp.plugins.mccabe.enabled" nil t)
-     ("pylsp.plugins.pyflakes.enabled" nil t)
-     ("pylsp.plugins.flake8.enabled" t t)))
 
-  :custom
-  (lsp-auto-guess-root t)
-  (lsp-completion-provider :capf)  ; Fixed deprecated option
-  (lsp-eldoc-enable-hover t)
-  (lsp-enable-snippet t)
-  (lsp-file-watch-threshold 5000)
-  (lsp-headerline-breadcrumb-enable t)
-  (lsp-idle-delay 0.5)  ; Increased for better performance
-  (lsp-keep-workspace-alive nil)
-  (lsp-modeline-diagnostics-enable t)
-  (lsp-auto-execute-action nil)
-  (lsp-before-save-edits nil)
-  (lsp-enable-links t)
-  (lsp-enable-on-type-formatting t)
-  (lsp-remote-tramp-connection t)
+    :config
+    (add-to-list 'lsp-language-id-configuration '(makefile-mode . "makefile"))
+    (lsp-register-custom-settings
+     '(("pylsp.plugins.mypy.enabled" t t)
+       ("pylsp.plugins.mypy.live_mode" nil t)
+       ("pylsp.plugins.black.enabled" t t)
+       ("pylsp.plugins.isort.enabled" t t)
+       ("pylsp.plugins.pycodestyle.enabled" nil t)
+       ("pylsp.plugins.mccabe.enabled" nil t)
+       ("pylsp.plugins.pyflakes.enabled" nil t)
+       ("pylsp.plugins.flake8.enabled" t t)))
 
-  :custom-face
-  (lsp-face-highlight-read ((t (:underline t))))
-  (lsp-face-highlight-textual ((t (:underline t))))
-  (lsp-face-highlight-write ((t (:underline t))))
-  )
+    :custom
+    (lsp-auto-guess-root t)
+    (lsp-completion-provider :capf)  ; Fixed deprecated option
+    (lsp-eldoc-enable-hover t)
+    (lsp-enable-snippet t)
+    (lsp-file-watch-threshold 5000)
+    (lsp-headerline-breadcrumb-enable t)
+    (lsp-idle-delay 0.5)  ; Increased for better performance
+    (lsp-keep-workspace-alive nil)
+    (lsp-modeline-diagnostics-enable t)
+    (lsp-auto-execute-action nil)
+    (lsp-before-save-edits nil)
+    (lsp-enable-links t)
+    (lsp-enable-on-type-formatting t)
+    (lsp-remote-tramp-connection t)
+
+    :custom-face
+    (lsp-face-highlight-read ((t (:underline t))))
+    (lsp-face-highlight-textual ((t (:underline t))))
+    (lsp-face-highlight-write ((t (:underline t))))
+    )
 
 #+END_SRC
 **** LSP Treemacs
