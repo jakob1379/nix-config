@@ -30,7 +30,7 @@ repos:
 
   # Basic file checks from pre-commit-hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0 # Use the latest stable version
+    rev: main
     hooks:
       - id: check-added-large-files # Prevent giant files from being committed
       - id: check-case-conflict # Check for files that would conflict on case-insensitive filesystems
@@ -49,7 +49,7 @@ repos:
 
   # Python linting and formatting with Ruff
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.2 # Use a recent version of Ruff
+    rev: main
     hooks:
       - id: ruff # Run Ruff linter
         args: ["--fix", "--exit-non-zero-on-fix"]
@@ -59,7 +59,7 @@ repos:
 
   # Formatting for various file types with Prettier
   - repo: https://github.com/rbubley/mirrors-prettier # Using rbubley mirror
-    rev: v3.5.3 # Use a recent version of Prettier
+    rev: main
     hooks:
       - id: prettier
         types_or: [yaml, markdown, html, css, scss, javascript, json]
@@ -70,7 +70,7 @@ repos:
 
   # Spell checking
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1 # Use a recent version of codespell
+    rev: main
     hooks:
       - id: codespell
         args: ["--write-changes"]
@@ -79,26 +79,26 @@ repos:
 
   # YAML linting (more strict than basic check)
   - repo: https://github.com/lyz-code/yamlfix
-    rev: master
+    rev: main
     hooks:
       - id: yamlfix
 
   # TOML sorting
   - repo: https://github.com/pappasam/toml-sort
-    rev: v0.24.2 # Use a recent version of toml-sort
+    rev: main
     hooks:
       - id: toml-sort-fix
         files: \\.toml\$
 
   # Secret scanning
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.24.2 # Use a recent version of gitleaks
+    rev: main
     hooks:
       - id: gitleaks
 
   # Conventional commit message enforcement
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.4.1 # Use a recent version of commitizen
+    rev: main
     hooks:
       - id: commitizen
         stages: [commit-msg] # Check commit message format
@@ -108,7 +108,7 @@ repos:
 
   # JSON Schema validation for common config files
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.32.1 # Use a recent version
+    rev: main
     hooks:
       - id: check-github-workflows # Validate GitHub workflow files
       - id: check-dependabot # Validate Dependabot config
@@ -116,13 +116,13 @@ repos:
 
   # Shell script linting
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.10.0.1 # Use a recent version
+    rev: main
     hooks:
       - id: shellcheck
 
   # Validate pyproject.toml structure
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.24.1 # Use a recent version
+    rev: main
     hooks:
       - id: validate-pyproject
         additional_dependencies: ["validate-pyproject-schema-store[all]"]
@@ -153,16 +153,17 @@ repos:
 
   # Optional: Security scanning with Bandit (Python specific)
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.8.3 # Use a recent version of Bandit
+    rev: main
     hooks:
       - id: bandit
         args: ["-c", "pyproject.toml"] # Example: Configure via pyproject.toml
         types: [python]
 
-  # Optional: Check for outdated dependencies (Python specific)
-  # - repo: https://github.com/twu/skjold
-  #   rev: v0.6.2 # Use a recent version of Skjold
-  #   hooks:
-  #     - id: skjold
-  #       args: ["--sources", "gemnasium", "--report", "json"]
-$0
+  - repo: https://github.com/owenlamont/uv-secure
+    rev: main
+    - id: uv-secure
+      name: uv-secure
+      description: "Run 'uv-secure' to check uv.lock dependencies for known vulnerabilities"
+      entry: uv-secure
+      language: python
+      files: (^|.*/)(uv\.lock|requirements\.txt)$
