@@ -13,10 +13,7 @@
   };
 
   outputs =
-    inputs@{
-      nixpkgs,
-      ...
-    }:
+    inputs@{ nixpkgs, ... }:
     let
       # Import the home configuration generator
       mkHomeConfig = import ./lib/mkHomeConfig.nix { inherit inputs; };

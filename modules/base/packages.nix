@@ -160,7 +160,7 @@ let
     ++ lib.optionals (system != "aarch64-linux") [ jdk ];
 
   emacsPackages = with pkgs; [
-    # autotools-language-server
+    autotools-language-server
     aspellDicts.da
     aspellDicts.en
     aspellDicts.en-computers

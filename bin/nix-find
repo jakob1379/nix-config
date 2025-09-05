@@ -15,8 +15,9 @@ search_term="$*"
 # Add a preview showing package details using both name and version.
 # Use awk to extract only the package name (before ' @ ').
 
-mapfile -t selected_packages < <(nix-search "$search_term" | \  
-                     fzf --multi --preview 'read -r name rest <<< "$(echo {} | sed "s/ @ / /")"; 
+# shellcheck disable=SC2016
+mapfile -t selected_packages < <(nix-search "$search_term" | \
+                     fzf --multi --preview 'read -r name rest <<< "$(echo {} | sed "s/ @ / /")";
                 version=$(echo "$rest" | cut -d " " -f1);
                 nix-search --details --name "$name" --version "$version"' | \
                      awk -F ' @ ' '{print $1}')

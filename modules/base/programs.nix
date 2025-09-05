@@ -162,8 +162,6 @@
         );
       };
 
-
-
       fastfetch = {
         enable = true;
       };
@@ -189,14 +187,6 @@
         };
       };
 
-      poetry = {
-        enable = true;
-        settings = {
-          virtualenvs.create = false;
-          virtualenvs.in-project = true;
-        };
-      };
-
       readline = {
         enable = true;
         extraConfig = ''
@@ -211,7 +201,7 @@
       };
 
       ssh = {
-        forwardAgent = true;
+        matchBlocks."*".forwardAgent = true;
       };
 
       navi = {
@@ -221,7 +211,7 @@
 
       nix-index = {
         enable = true;
-        enableBashIntegration = false;
+        enableBashIntegration = true;
       };
     };
 
@@ -257,11 +247,17 @@
         nsu = ''f(){ sudo -E nix-channel --update && sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
         updateAll = ''
           f() {
-            nix flake update --flake ${flakePath}
-            nix-channel --update
-            home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"
-            sudo -E nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"
-          };
+            # Parallel updates
+            nix flake update --flake "${flakePath}" &
+            uv tool upgrade --all &
+            wait
+
+            # Home Manager switch with output monitor
+            home-manager switch --flake "${flakePath}" "$@"
+
+            # NixOS switch with output monitor
+            sudo -E nixos-rebuild switch --flake "${flakePath}"
+          }
           f
         '';
         q = "qalc";
@@ -269,10 +265,11 @@
       };
 
     # Nix configuration
+    qt.enable = true;
     nix = {
       package = pkgs.nix;
       settings = {
-        # access-tokens = "github.com=$(gh auth token)";
+        substituters = [ "https://cache.nixos.org/" ];
         max-jobs = 1;
         experimental-features = [
           "nix-command"
@@ -281,7 +278,7 @@
       };
       gc = {
         automatic = true;
-        frequency = "weekly";
+        dates = "weekly";
         options = "--delete-older-than 2w";
       };
     };
