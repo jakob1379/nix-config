@@ -160,19 +160,30 @@ in
     nvidiaSettings = true;
     open = false;
     prime = {
-      offload = {
-        enable = true;
-        enableOffloadCmd = true;
-      };
-      # sync.enable = true;
+      sync.enable = true;
       intelBusId = "PCI:0:2:0";
       nvidiaBusId = "PCI:45:0:0";
     };
-    powerManagement = {
-      enable = true;
-      finegrained = true;
-    };
     package = config.boot.kernelPackages.nvidiaPackages.beta;
+  };
+
+  specialisation = {
+    on-the-go.configuration = {
+      system.nixos.tags = [ "on-the-go" ];
+      hardware.nvidia = {
+        prime = {
+          offload = {
+            enable = lib.mkForce true;
+            enableOffloadCmd = lib.mkForce true;
+          };
+          sync.enable = lib.mkForce false;
+        };
+        # powerManagement = {
+        #   enable = true;
+        #   finegrained = true;
+        # };
+      };
+    };
   };
 
   # Enable bluetooth
