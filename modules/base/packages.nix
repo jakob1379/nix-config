@@ -187,7 +187,6 @@ let
     (pkgs.writeShellScriptBin "bhelp" (builtins.readFile ../../bin/bathelp))
     (pkgs.writeShellScriptBin "pyvenv-setup" (builtins.readFile ../../bin/pyvenv-setup))
     (pkgs.writeShellScriptBin "docker-volume-copy" (builtins.readFile ../../bin/docker-volume-copy))
-    (pkgs.writeShellScriptBin "nix-find" (builtins.readFile ../../bin/nix-find))
     (pkgs.writeShellScriptBin "yqp" (builtins.readFile ../../bin/yqp))
     (pkgs.writeShellScriptBin "pywal-apply" ''
       ${pkgs.pywal16}/bin/wal -i "$(${pkgs.coreutils}/bin/cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"

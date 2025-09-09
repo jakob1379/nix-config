@@ -25,6 +25,9 @@
 
   config = {
     programs = {
+      nix-search-tv = {
+        enable = true;
+      };
       distrobox = {
         enable = true;
         containers = {
@@ -39,6 +42,9 @@
       bash = {
         enable = true;
         profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
+        initExtra = ''
+          nix-find() { nix-search-tv print | fzf --query "$@" --preview 'nix-search-tv preview {}' --scheme=history; }
+        '';
         bashrcExtra = ''
           if [[ $TERM = dumb ]]; then
               return
