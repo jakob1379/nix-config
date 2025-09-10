@@ -52,7 +52,7 @@ repos:
     rev: main
     hooks:
       - id: ruff # Run Ruff linter
-        args: ["--fix", "--exit-non-zero-on-fix"]
+        args: ["check", "--fix", "--exit-non-zero-on-fix"]
         types_or: [python, pyi]
       - id: ruff-format # Run Ruff formatter
         types_or: [python, pyi]
