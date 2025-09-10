@@ -33,5 +33,6 @@
   customDotfiles = {
     enableMediaControl = true;
     enableAider = true;
+    enableAutostart= true;
   };
 }

@@ -7,33 +7,58 @@
 }:
 
 let
-  aiderWrapper = pkgs.writeScriptBin "aider" ''
-    #!${pkgs.bash}/bin/bash
+  mkAiderWrapper =
+    {
+      name,
+      keyringService,
+      keyringUsername,
+      envVars ? { },
+    }:
+    pkgs.writeScriptBin name ''
+      #!${pkgs.bash}/bin/bash
 
-    API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get gemini api_key 2>/dev/null)"
-    if [ -z "$API_KEY" ]; then
-      echo "Error: Failed to retrieve GEMINI_API_KEY from keyring." >&2
+      API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get ${keyringService} ${keyringUsername} 2>/dev/null)"
+      if [ -z "$API_KEY" ]; then
+        echo "Error: Failed to retrieve API key from keyring: service='${keyringService}' account='${keyringUsername}'." >&2
         exit 1
-    fi
+      fi
 
-    export GEMINI_API_KEY="$API_KEY"
-    export AIDER_MODEL="gemini/gemini-2.5-pro-preview-06-05"
-    export AIDER_WEAK_MODEL="gemini/gemini-2.5-flash-preview-05-20"
-    export AIDER_THINKING_TOKENS="32k"
-    export AIDER_CHECK_UPDATE="false"
-    export AIDER_ANALYTICS="false"
-    export AIDER_NOTIFICATIONS="true"
+      # Common settings
+      export AIDER_CACHE_PROMPTS=true
+      export AIDER_CHECK_UPDATE=false
+      export AIDER_ANALYTICS=false
+      export AIDER_NOTIFICATIONS=true
 
-    exec ${pkgs.aider-chat-full}/bin/aider "$@"
-  '';
+      # Provider-specific settings
+      ${builtins.concatStringsSep "\n" (
+        builtins.attrValues (builtins.mapAttrs (k: v: "export ${k}=${v}") envVars)
+      )}
 
-  opencommitWrapper = pkgs.writeScriptBin "oco" ''
-    #!${pkgs.bash}/bin/bash
+      exec ${pkgs.aider-chat-full}/bin/aider "$@"
+    '';
 
-    export OPENAI_API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get opencommit api_key || exit 1)"
+  aiderWrapper-gemini = mkAiderWrapper {
+    name = "aider";
+    keyringService = "gemini";
+    keyringUsername = "api_key";
+    envVars = {
+      GEMINI_API_KEY = "$API_KEY";
+      AIDER_MODEL = "gemini/gemini-2.5-pro";
+      AIDER_WEAK_MODEL = "gemini/gemini-2.5-flash-lite";
+      AIDER_THINKING_TOKENS = "32k";
+    };
+  };
 
-    exec ${pkgs.opencommit}/bin/opencommit "$@"
-  '';
+  aiderWrapper-gpt = mkAiderWrapper {
+    name = "aider-gpt";
+    keyringService = "openai";
+    keyringUsername = "mds245";
+    envVars = {
+      OPENAI_API_KEY = "$API_KEY";
+      AIDER_MODEL = "openai/gpt-5";
+      AIDER_WEAK_MODEL = "openai/gpt-5-nano";
+    };
+  };
 
   karakeepWrapper = pkgs.writeScriptBin "karakeep" ''
     #!${pkgs.bash}/bin/bash
@@ -88,6 +113,7 @@ let
 
   guiPackages = with pkgs; [
     brave
+    tana
     code-cursor
     dbeaver-bin
     feh
@@ -120,11 +146,11 @@ let
       meslo-lgs-nf
       nerd-fonts.fira-code
       nodejs
-      opencommitWrapper
       pandoc
       poppler_utils
       uv
-      aiderWrapper
+      aiderWrapper-gemini
+      aiderWrapper-gpt
       dive
       frogmouth
       karakeepWrapper
@@ -134,7 +160,7 @@ let
     ++ lib.optionals (system != "aarch64-linux") [ jdk ];
 
   emacsPackages = with pkgs; [
-    # autotools-language-server
+    autotools-language-server
     aspellDicts.da
     aspellDicts.en
     aspellDicts.en-computers
@@ -161,7 +187,6 @@ let
     (pkgs.writeShellScriptBin "bhelp" (builtins.readFile ../../bin/bathelp))
     (pkgs.writeShellScriptBin "pyvenv-setup" (builtins.readFile ../../bin/pyvenv-setup))
     (pkgs.writeShellScriptBin "docker-volume-copy" (builtins.readFile ../../bin/docker-volume-copy))
-    (pkgs.writeShellScriptBin "nix-find" (builtins.readFile ../../bin/nix-find))
     (pkgs.writeShellScriptBin "yqp" (builtins.readFile ../../bin/yqp))
     (pkgs.writeShellScriptBin "pywal-apply" ''
       ${pkgs.pywal16}/bin/wal -i "$(${pkgs.coreutils}/bin/cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"

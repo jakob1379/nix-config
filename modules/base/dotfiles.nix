@@ -11,6 +11,7 @@
     enableEmacs = lib.mkEnableOption "Emacs dotfiles";
     enableMediaControl = lib.mkEnableOption "media control dotfiles";
     enableAider = lib.mkEnableOption "Aider dotfiles";
+    enableAutostart = lib.mkEnableOption "Autostart dotfiles";
 
     aider = lib.mkOption {
       type = lib.types.attrs;
@@ -24,6 +25,23 @@
         '';
       };
       description = "Aider dotfiles";
+    };
+
+    autostart = lib.mkOption {
+      type = lib.types.attrs;
+      default = {
+        ".config/autostart/netbird-ui.desktop".text = ''
+          [Desktop Entry]
+          Name=Netbird UI
+          Comment=Start the Netbird UI at login
+          Exec=${pkgs.netbird-ui}/bin/netbird-ui
+          Icon=netbird
+          Terminal=false
+          Type=Application
+          StartupNotify=false
+        '';
+      };
+      description = "Autostart dotfiles.";
     };
 
     ssh = lib.mkOption {
@@ -64,9 +82,11 @@
         (lib.mkIf cfg.enableSsh cfg.ssh)
         (lib.mkIf cfg.enableEmacs cfg.emacs)
         (lib.mkIf cfg.enableAider cfg.aider)
+        (lib.mkIf cfg.enableAutostart cfg.autostart)
         (lib.mkIf cfg.enableMediaControl cfg.mediaControl)
       ];
 
+      home.sessionPath = [ "$HOME/.local/bin" ];
       home.sessionVariables = {
         HISTCONTROL = "ignoreboth";
         LC_TIME = "en_GB.utf8";
