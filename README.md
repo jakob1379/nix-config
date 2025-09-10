@@ -1,4 +1,4 @@
-ñ# Nix Config
+# Nix Config
 
 This repository contains Nix configuration files for setting up and managing
 development environments.

@@ -79,12 +79,16 @@ in
   services.displayManager = {
     sddm.enable = true;
     sddm.wayland.enable = true;
+    defaultSession = "plasma";
   };
 
-  services.desktopManager.plasma6 = {
-    enable = true;
-    enableQt5Integration = true;
+  services = {
+    desktopManager.plasma6 = {
+      enable = true;
+      enableQt5Integration = true;
+    };
   };
+
   environment.plasma6.excludePackages = with pkgs.kdePackages; [ kate ];
 
   # # Define specializations
@@ -129,7 +133,22 @@ in
   hardware.graphics.enable = true;
   hardware.nvidia-container-toolkit.enable = true;
 
-  # hardware.firmware = [ displaylink ];
+  systemd.services.displaylink = {
+    enable = true;
+    description = "DisplayLink Manager";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "systemd-udevd.service" ];
+    requires = [ "systemd-udevd.service" ];
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = "${pkgs.displaylink}/bin/DisplayLinkManager";
+      Restart = "on-failure";
+      RestartSec = 5;
+      User = "root";
+      Group = "root";
+    };
+  };
+
   services.xserver.videoDrivers = [
     "displaylink"
     "modesetting"
@@ -141,19 +160,30 @@ in
     nvidiaSettings = true;
     open = false;
     prime = {
-      offload = {
-        enable = true;
-        enableOffloadCmd = true;
-      };
-      # sync.enable = true;
+      sync.enable = true;
       intelBusId = "PCI:0:2:0";
       nvidiaBusId = "PCI:45:0:0";
     };
-    powerManagement = {
-      enable = true;
-      finegrained = true;
-    };
     package = config.boot.kernelPackages.nvidiaPackages.beta;
+  };
+
+  specialisation = {
+    on-the-go.configuration = {
+      system.nixos.tags = [ "on-the-go" ];
+      hardware.nvidia = {
+        prime = {
+          offload = {
+            enable = lib.mkForce true;
+            enableOffloadCmd = lib.mkForce true;
+          };
+          sync.enable = lib.mkForce false;
+        };
+        # powerManagement = {
+        #   enable = true;
+        #   finegrained = true;
+        # };
+      };
+    };
   };
 
   # Enable bluetooth
@@ -203,8 +233,6 @@ in
       "wheel"
       "docker"
       "libvirtd"
-      "netbird-darerl"
-      "netbird-daisy"
     ];
     packages = with pkgs; [
       #  thunder bird
@@ -228,6 +256,10 @@ in
     bat
     displaylink
   ];
+
+  environment.variables = {
+    KWIN_DRM_PREFER_COLOR_DEPTH = "24";
+  };
 
   # Define variables to dynamically set stuff depending on the desktop environment
   environment.etc."environment.d/desktop-environment.conf".text = ''
@@ -288,15 +320,13 @@ in
     netbird = {
       enable = true;
       ui.enable = true;
-      # clients = {
-      #   darerl.port = 51822;
-      #   daisy.port = 51823;
-      # };
     };
   };
 
   # Bootloader.
   boot = {
+    extraModulePackages = [ config.boot.kernelPackages.evdi ];
+    initrd.kernelModules = [ "evdi" ];
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
 

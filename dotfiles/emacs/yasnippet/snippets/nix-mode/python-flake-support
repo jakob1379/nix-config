@@ -5,6 +5,7 @@
 
 {
   inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     utils.url = "github:numtide/flake-utils";
   };
   outputs = { self, nixpkgs, utils }: utils.lib.eachDefaultSystem (system:
@@ -25,7 +26,7 @@
 
             shellHook = ''
             export UV_PYTHON_PREFERENCE="managed"
-            export SSL_CERT_FILE=$(nix eval --raw nixpkgs.cacert)/etc/ssl/certs/ca-bundle.crt
+            export SSL_CERT_FILE=$(pkgs.cacert)/etc/ssl/certs/ca-bundle.crt
             '';
         };
       }
