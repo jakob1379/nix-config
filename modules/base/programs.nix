@@ -32,16 +32,19 @@
 
     };
 
-    xdg.autostart.enable = true;
-    xdg.autostart.entries.netbird-ui = lib.mkIf config.customDotfiles.enableAutostart {
-      name = "Netbird UI";
-      comment = "Start the Netbird UI at login";
-      exec = "${pkgs.netbird-ui}/bin/netbird-ui";
-      icon = "netbird";
-      terminal = false;
-      startupNotify = false;
-      type = "Application";
+    xdg.autostart = {
+      enable = true;
+      entries.netbird-ui = lib.mkIf config.customDotfiles.enableAutostart {
+        name = "Netbird UI";
+        comment = "Start the Netbird UI at login";
+        exec = "${pkgs.netbird-ui}/bin/netbird-ui";
+        icon = "netbird";
+        terminal = false;
+        startupNotify = false;
+        type = "Application";
+      };
     };
+
     programs = {
       niriswitcher.enable = true;
       nix-search-tv = {
