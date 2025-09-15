@@ -11,7 +11,6 @@
     enableEmacs = lib.mkEnableOption "Emacs dotfiles";
     enableMediaControl = lib.mkEnableOption "media control dotfiles";
     enableAider = lib.mkEnableOption "Aider dotfiles";
-    enableAutostart = lib.mkEnableOption "Autostart dotfiles (deprecated/no-op)";
 
     aider = lib.mkOption {
       type = lib.types.attrs;
@@ -26,7 +25,6 @@
       };
       description = "Aider dotfiles";
     };
-
 
     ssh = lib.mkOption {
       type = lib.types.attrs;

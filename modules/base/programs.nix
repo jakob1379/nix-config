@@ -35,7 +35,7 @@
     xdg.autostart = {
       enable = true;
       entries = [
-        "${pkgs.netbird-ui}/share/applications/netbird-ui.desktop"
+        "${pkgs.netbird-ui}/share/applications/netbird.desktop"
       ];
     };
 

@@ -1,7 +1,8 @@
 { lib }:
 let
   inherit (lib) mkHomeConfig;
-in {
+in
+{
   "pi@raspberrypi" = mkHomeConfig {
     system = "aarch64-linux";
     username = "pi";

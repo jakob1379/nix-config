@@ -34,7 +34,6 @@
     enableEmacs = lib.mkDefault true;
     enableMediaControl = lib.mkDefault false; # Opt-in per system
     enableAider = lib.mkDefault false;
-    enableAutostart = lib.mkDefault false;
   };
 
   home.stateVersion = "24.05";

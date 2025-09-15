@@ -2,7 +2,8 @@
 { pkgs }:
 let
   inherit (lib) generalPackages;
-in {
+in
+{
   default = pkgs.mkShell {
     packages = generalPackages pkgs;
     buildInputs = with pkgs; [ pre-commit ];

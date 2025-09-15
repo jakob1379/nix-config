@@ -14,6 +14,7 @@ let
       mountPath ? "${config.home.homeDirectory}/${name}",
       remotePath ? "/",
       configPath ? "${config.xdg.configHome}/rclone/rclone.conf",
+      cacheMode ? "full",
     }:
     {
       Unit = {
@@ -31,7 +32,7 @@ let
             --dir-cache-time 3h0m0s \
             --vfs-cache-max-age 6h \
             --vfs-cache-max-size 10G \
-            --vfs-cache-mode full \
+            --vfs-cache-mode "${cacheMode}" \
             --vfs-fast-fingerprint \
             ${remote}:${remotePath} ${mountPath}
         '';
@@ -51,7 +52,10 @@ in
       type = lib.types.attrs;
       default = {
         rclone-mount-dropbox-private = createRcloneMountService { name = "dropbox-private"; };
-        rclone-mount-onedrive-ku-crypt = createRcloneMountService { name = "onedrive-ku-crypt"; };
+        rclone-mount-onedrive-ku-crypt = createRcloneMountService {
+          name = "onedrive-ku-crypt";
+          cacheMode = "off";
+        };
         rclone-mount-onedrive-ku = createRcloneMountService { name = "onedrive-ku"; };
         rclone-mount-onedrive-darerl = createRcloneMountService { name = "onedrive-darerl"; };
       };
