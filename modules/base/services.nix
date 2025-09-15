@@ -137,11 +137,6 @@ in
         timeout = 5;
       };
 
-      kdeconnect = {
-        enable = true;
-        indicator = true;
-      };
-
       ssh-agent.enable = true;
       easyeffects.enable = true;
       mpris-proxy.enable = true;
