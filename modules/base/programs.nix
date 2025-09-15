@@ -34,15 +34,9 @@
 
     xdg.autostart = {
       enable = true;
-      entries.netbird-ui = lib.mkIf config.customDotfiles.enableAutostart {
-        name = "Netbird UI";
-        comment = "Start the Netbird UI at login";
-        exec = "${pkgs.netbird-ui}/bin/netbird-ui";
-        icon = "netbird";
-        terminal = false;
-        startupNotify = false;
-        type = "Application";
-      };
+      entries = [
+        "${pkgs.netbird-ui}/share/applications/netbird-ui.desktop"
+      ];
     };
 
     programs = {
