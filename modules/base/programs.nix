@@ -24,7 +24,15 @@
   };
 
   config = {
+    xdg.terminal-exec = {
+      enable = true;
+      settings.default = [
+        "net.local.ghostty.desktop"
+      ];
+
+    };
     programs = {
+      niriswitcher.enable = true;
       nix-search-tv = {
         enable = true;
       };
@@ -43,7 +51,7 @@
         enable = true;
         profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
         initExtra = ''
-          nix-find() { nix-search-tv print | fzf --query "$@" --preview 'nix-search-tv preview {}' --scheme=history; }
+          nix-find() { nix-search-tv print | fzf --preview 'nix-search-tv preview {}' --scheme history; }
         '';
         bashrcExtra = ''
           if [[ $TERM = dumb ]]; then
@@ -227,32 +235,32 @@
       let
         flakePath = "${config.xdg.configHome}/home-manager";
       in
-        {
-          nb-peers = ''command "$1" status --json | ${pkgs.jq}/bin/jq ".peers.details.[] | {fqdn, netbirdIp, status, connectionType}" -r'';
-          onefetch = "onefetch -E --nerd-fonts --no-color-palette";
-          cat = "bat";
-          watch = "hwatch";
-          cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
-          fm = "frogmouth";
-          db = "distrobox";
-          df = "duf --hide special";
-          open = "xdg-open";
-          nproc-1 = "$(( $(nproc) - 1))";
-          venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
-          rsync = "rsync --info=progress2";
-          plasma-restart = "systemctl restart --user plasma-plasmashell";
-          dcup = "docker compose up --remove-orphans";
-          dcview = "docker compose config | bat -l yml";
-          dk = "dragon --keep";
-          dx = "dragon --and-exit";
-          eda = "nix-shell -p python313Packages.rich python313Packages.ipython python313Packages.pandas python313Packages.seaborn python313Packages.plotly";
-          ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
-          grep = "grep --color=auto";
-          hs = ''f(){ home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-          hsu = ''f(){ nix flake update --flake ${flakePath} && home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-          ns = ''f(){ sudo -E nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-          nsu = ''f(){ sudo -E nix-channel --update && sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-          updateAll = ''
+      {
+        nb-peers = ''command "$1" status --json | ${pkgs.jq}/bin/jq ".peers.details.[] | {fqdn, netbirdIp, status, connectionType}" -r'';
+        onefetch = "onefetch -E --nerd-fonts --no-color-palette";
+        cat = "bat";
+        watch = "hwatch";
+        cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
+        fm = "frogmouth";
+        db = "distrobox";
+        df = "duf --hide special";
+        open = "xdg-open";
+        nproc-1 = "$(( $(nproc) - 1))";
+        venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
+        rsync = "rsync --info=progress2";
+        plasma-restart = "systemctl restart --user plasma-plasmashell";
+        dcup = "docker compose up --remove-orphans";
+        dcview = "docker compose config | bat -l yml";
+        dk = "dragon --keep";
+        dx = "dragon --and-exit";
+        eda = "nix-shell -p python313Packages.rich python313Packages.ipython python313Packages.pandas python313Packages.seaborn python313Packages.plotly";
+        ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
+        grep = "grep --color=auto";
+        hs = ''f(){ home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
+        hsu = ''f(){ nix flake update --flake ${flakePath} && home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
+        ns = ''f(){ sudo -E nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
+        nsu = ''f(){ sudo -E nix-channel --update && sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
+        updateAll = ''
           f() {
             # Parallel updates
             nix flake update --flake "${flakePath}" &
@@ -267,9 +275,9 @@
           }
           f
         '';
-          q = "qalc";
-          tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
-        };
+        q = "qalc";
+        tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
+      };
 
     # Nix configuration
     qt.enable = true;
