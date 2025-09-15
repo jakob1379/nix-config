@@ -91,6 +91,9 @@ in
 
   environment.plasma6.excludePackages = with pkgs.kdePackages; [ kate ];
 
+  # Enable niri the scrolling window manager
+  programs.niri.enable = true;
+
   # # Define specializations
   # specialisation = {};
 
