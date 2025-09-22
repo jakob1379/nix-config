@@ -38,7 +38,7 @@ repos:
         files: '\b\w+\.nix\b'
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.13.0
+    rev: v0.13.1
     hooks:
       - id: ruff
         args: ["check", "--fix", "--exit-non-zero-on-fix"]
