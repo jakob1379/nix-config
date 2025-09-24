@@ -236,9 +236,10 @@ in
       "wheel"
       "docker"
       "libvirtd"
+      "netbird-jgalabs"
     ];
+
     packages = with pkgs; [
-      #  thunder bird
       libsecret
       rclone
     ];
@@ -323,6 +324,7 @@ in
     netbird = {
       enable = true;
       ui.enable = true;
+      tunnels.jgalabs.port = 52821;
     };
   };
 
