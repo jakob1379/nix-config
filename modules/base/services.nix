@@ -50,16 +50,8 @@ in
   options = {
     customServices.rclone = lib.mkOption {
       type = lib.types.attrs;
-      default = {
-        rclone-mount-dropbox-private = createRcloneMountService { name = "dropbox-private"; };
-        rclone-mount-onedrive-ku-crypt = createRcloneMountService {
-          name = "onedrive-ku-crypt";
-          cacheMode = "off";
-        };
-        rclone-mount-onedrive-ku = createRcloneMountService { name = "onedrive-ku"; };
-        rclone-mount-onedrive-darerl = createRcloneMountService { name = "onedrive-darerl"; };
-      };
-      description = "Systemd services for rclone mounts.";
+      default = { };
+      description = "Deprecated: Systemd services for rclone mounts. Prefer configuring programs.rclone.remotes instead.";
     };
     customServices.pywal = lib.mkOption {
       type = lib.types.attrs;
