@@ -24,37 +24,7 @@
   };
 
   config = {
-    xdg.terminal-exec = {
-      enable = true;
-      settings.default = [
-        "net.local.ghostty.desktop"
-      ];
-
-    };
-
-    xdg.autostart = {
-      enable = true;
-      entries = [
-        "${pkgs.netbird-ui}/share/applications/netbird.desktop"
-      ];
-    };
-
     programs = {
-      niriswitcher.enable = true;
-      nix-search-tv = {
-        enable = true;
-      };
-      distrobox = {
-        enable = true;
-        containers = {
-          my-container = {
-            image = "ubuntu:latest"; # Specify your desired image here
-            init_hooks = "curl -LsSf https://astral.sh/uv/install.sh | sh"; # auto-install uv
-            additional_packages = "curl"; # Additional packages needed for init_hooks
-            entry = true; # Make this container enterable by default (optional)
-          };
-        };
-      };
       bash = {
         enable = true;
         profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
@@ -76,6 +46,48 @@
         '';
       };
 
+      distrobox = {
+        enable = true;
+        containers = {
+          ubuntu25 = {
+            image = "ubuntu:24.04"; # Specify your desired image here
+            init_hooks = "curl -LsSf https://astral.sh/uv/install.sh | sh";
+            additional_packages = "curl"; # Additional packages needed for init_hooks
+            entry = true; # Make this container enterable by default (optional)
+          };
+        };
+      };
+
+      direnv = {
+        enable = true;
+        enableBashIntegration = true;
+        nix-direnv.enable = true;
+      };
+
+      emacs = {
+        enable = true;
+        package = pkgs.emacs30-gtk3;
+      };
+
+      firefox = {
+        enable = true;
+        package = inputs."zen-browser".packages.${system}.zen-browser;
+        profiles.myuser = {
+          isDefault = true;
+          id = 0;
+          settings = {
+            "gfx.webrender.all" = true;
+            "webgl.force-enabled" = true;
+            "webgl.msaa-force" = true;
+            "browser.backspace_action" = 0;
+            "browser.download.alwaysOpenPanel" = false;
+            "services.sync.prefs.sync.browser.uiCustomization.state" = true;
+            "browser.sessionstore.restore_pinned_tabs_on_demand" = true;
+            "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
+          };
+          userChrome = builtins.readFile ../../dotfiles/firefox/firefox_userchrome.css;
+        };
+      };
       git = {
         enable = true;
         inherit (config.customGit) userName;
@@ -110,31 +122,6 @@
         };
       };
 
-      firefox = {
-        enable = true;
-        package = inputs."zen-browser".packages.${system}.zen-browser;
-        profiles.myuser = {
-          isDefault = true;
-          id = 0;
-          settings = {
-            "gfx.webrender.all" = true;
-            "webgl.force-enabled" = true;
-            "webgl.msaa-force" = true;
-            "browser.backspace_action" = 0;
-            "browser.download.alwaysOpenPanel" = false;
-            "services.sync.prefs.sync.browser.uiCustomization.state" = true;
-            "browser.sessionstore.restore_pinned_tabs_on_demand" = true;
-            "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
-          };
-          userChrome = builtins.readFile ../../dotfiles/firefox/firefox_userchrome.css;
-        };
-      };
-      hwatch.enable = true;
-
-      emacs = {
-        enable = true;
-        package = pkgs.emacs30-gtk3;
-      };
       ghostty = {
         enable = true;
         settings = {
@@ -143,6 +130,12 @@
         };
       };
 
+      hwatch.enable = true;
+
+
+      nix-search-tv = {
+        enable = true;
+      };
       tmux = {
         enable = true;
         newSession = true;
@@ -152,12 +145,6 @@
         terminal = "xterm-256color";
         focusEvents = true;
         extraConfig = builtins.readFile ../../dotfiles/tmux/tmux.conf;
-      };
-
-      direnv = {
-        enable = true;
-        enableBashIntegration = true;
-        nix-direnv.enable = true;
       };
 
       zoxide = {
@@ -196,8 +183,8 @@
           "--preview '${pkgs.eza}/bin/eza --tree --color=always {} | head -200'"
         ];
         changeDirWidgetCommand = "fd --type d";
-        fileWidgetCommand = "fd --type f";
-        fileWidgetOptions = [ "--preview '${pkgs.bat}/bin/bat -Pf {}'" ];
+        fileWidgetCommand = "fd --type --hidden f";
+        fileWidgetOptions = [ "--preview '${pkgs.bat}/bin/bat --style=changes,header-filename,snip,rule --paging always --force-colorization {}'" ];
       };
 
       bat = {
@@ -243,32 +230,32 @@
       let
         flakePath = "${config.xdg.configHome}/home-manager";
       in
-      {
-        nb-peers = ''command "$1" status --json | ${pkgs.jq}/bin/jq ".peers.details.[] | {fqdn, netbirdIp, status, connectionType}" -r'';
-        onefetch = "onefetch -E --nerd-fonts --no-color-palette";
-        cat = "bat";
-        watch = "hwatch";
-        cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
-        fm = "frogmouth";
-        db = "distrobox";
-        df = "duf --hide special";
-        open = "xdg-open";
-        nproc-1 = "$(( $(nproc) - 1))";
-        venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
-        rsync = "rsync --info=progress2";
-        plasma-restart = "systemctl restart --user plasma-plasmashell";
-        dcup = "docker compose up --remove-orphans";
-        dcview = "docker compose config | bat -l yml";
-        dk = "dragon --keep";
-        dx = "dragon --and-exit";
-        eda = "nix-shell -p python313Packages.rich python313Packages.ipython python313Packages.pandas python313Packages.seaborn python313Packages.plotly";
-        ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
-        grep = "grep --color=auto";
-        hs = ''f(){ home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-        hsu = ''f(){ nix flake update --flake ${flakePath} && home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-        ns = ''f(){ sudo -E nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-        nsu = ''f(){ sudo -E nix-channel --update && sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-        updateAll = ''
+        {
+          nb-peers = ''command "$1" status --json | ${pkgs.jq}/bin/jq ".peers.details.[] | {fqdn, netbirdIp, status, connectionType}" -r'';
+          onefetch = "onefetch -E --nerd-fonts --no-color-palette";
+          cat = "bat";
+          watch = "hwatch";
+          cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
+          fm = "frogmouth";
+          db = "distrobox";
+          df = "duf --hide special";
+          open = "xdg-open";
+          nproc-1 = "$(( $(nproc) - 1))";
+          venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
+          rsync = "rsync --info=progress2";
+          plasma-restart = "systemctl restart --user plasma-plasmashell";
+          dcup = "docker compose up --remove-orphans";
+          dcview = "docker compose config | bat -l yml";
+          dk = "dragon --keep";
+          dx = "dragon --and-exit";
+          eda = "nix-shell -p python313Packages.rich python313Packages.ipython python313Packages.pandas python313Packages.seaborn python313Packages.plotly";
+          ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
+          grep = "grep --color=auto";
+          hs = ''f(){ home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
+          hsu = ''f(){ nix flake update --flake ${flakePath} && home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
+          ns = ''f(){ sudo -E nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
+          nsu = ''f(){ sudo -E nix-channel --update && sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
+          updateAll = ''
           f() {
             # Parallel updates
             nix flake update --flake "${flakePath}" &
@@ -283,12 +270,10 @@
           }
           f
         '';
-        q = "qalc";
-        tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
-      };
+          q = "qalc";
+          tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
+        };
 
-    # Nix configuration
-    qt.enable = true;
     nix = {
       package = pkgs.nix;
       settings = {
@@ -303,6 +288,23 @@
         automatic = true;
         dates = "weekly";
         options = "--delete-older-than 2w";
+      };
+    };
+
+    qt.enable = true;
+
+    xdg = {
+      terminal-exec = {
+        enable = true;
+        settings.default = [
+          "net.local.ghostty.desktop"
+        ];
+      };
+      autostart = {
+        enable = true;
+        entries = [
+          "${pkgs.netbird-ui}/share/applications/netbird.desktop"
+        ];
       };
     };
   };
