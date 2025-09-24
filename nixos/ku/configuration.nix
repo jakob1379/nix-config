@@ -241,7 +241,6 @@ in
 
     packages = with pkgs; [
       libsecret
-      rclone
     ];
   };
 
