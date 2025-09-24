@@ -29,7 +29,7 @@
         enable = true;
         profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
         initExtra = ''
-          nix-find() { nix-search-tv print | fzf --query="$${1:-}" --preview 'nix-search-tv preview {}' --scheme history; }
+          nix-find() { nix-search-tv print | fzf --query="''${1:-}" --preview "nix-search-tv preview {}" --scheme history; }
         '';
         bashrcExtra = ''
           if [[ $TERM = dumb ]]; then
