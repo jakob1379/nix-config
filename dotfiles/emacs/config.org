@@ -263,7 +263,6 @@ Emacs is very conservative about assuming encoding. Everything is utf-8 these da
 (global-set-key [C-mouse-4]      'text-scale-increase)
 (global-set-key [C-mouse-5]      'text-scale-decrease)
 (global-set-key [C-tab]          'other-window)
-(global-set-key [f9]             'ispell-change-dictionary)
 (global-set-key [f10]            'treemacs)
 
 #+END_SRC
@@ -725,16 +724,6 @@ highlights uncommitted changes on the left side of the window
   (graphviz-dot-indent-width 2)
   )
 #+END_SRC
-*** Guess Language
-
-
-#+BEGIN_SRC emacs-lisp
-(use-package guess-language
-  :defer t
-  :config (setq guess-language-languages '(en da)
-                guess-language-min-paragraph-length 35))
-
-#+END_SRC
 *** Helm
 
 #+BEGIN_SRC emacs-lisp
@@ -878,6 +867,35 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
   :defer t
   :mode ("\\.ini\\'" . conf-toml-mode)
   )
+#+END_SRC
+*** Ispell
+#+BEGIN_SRC emacs-lisp
+(use-package ispell
+  :straight (:type built-in)
+  ;; :config
+  ;; (setq ispell-program-name "aspell"
+  ;;       ;; Pick your default here:
+  ;;       ispell-local-dictionary "en_US")
+  ;;       ispell-local-dictionary-alist
+  ;;       '(("da"    nil nil nil t ("-d" "da")    nil utf-8)
+  ;;         ("en"    nil nil nil t ("-d" "en")    nil utf-8)
+  ;;         ("en_US" nil nil nil t ("-d" "en_US") nil utf-8)
+  ;;         ("en_GB" nil nil nil t ("-d" "en_GB") nil utf-8)
+  ;;         ("en_GB-ise" nil nil nil t ("-d" "en_GB-ise") nil utf-8)
+  ;;         ("en_GB-ize" nil nil nil t ("-d" "en_GB-ize") nil utf-8)))
+  :bind (("C-c s w" . ispell-word)
+         ("C-c s r" . ispell-region)
+         ("C-c s d" . ispell-change-dictionary)))
+#+END_SRC
+
+**** Guess Language
+
+#+BEGIN_SRC emacs-lisp
+(use-package guess-language
+  :defer nil
+  :config (setq guess-language-languages '(en da)
+                guess-language-min-paragraph-length 35))
+
 #+END_SRC
 *** JavaScript
 #+BEGIN_SRC emacs-lisp

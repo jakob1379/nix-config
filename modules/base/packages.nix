@@ -160,10 +160,14 @@ let
 
   emacsPackages = with pkgs; [
     autotools-language-server
-    aspellDicts.da
-    aspellDicts.en
-    aspellDicts.en-computers
-    aspellDicts.en-science
+    (aspellWithDicts (
+      dicts: with dicts; [
+        da
+        en
+        en-computers
+        en-science
+      ]
+    ))
     bash-language-server
     hunspell
     ispell
