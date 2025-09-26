@@ -872,20 +872,10 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
 #+BEGIN_SRC emacs-lisp
 (use-package ispell
   :straight (:type built-in)
-  ;; :config
-  ;; (setq ispell-program-name "aspell"
-  ;;       ;; Pick your default here:
-  ;;       ispell-local-dictionary "en_US")
-  ;;       ispell-local-dictionary-alist
-  ;;       '(("da"    nil nil nil t ("-d" "da")    nil utf-8)
-  ;;         ("en"    nil nil nil t ("-d" "en")    nil utf-8)
-  ;;         ("en_US" nil nil nil t ("-d" "en_US") nil utf-8)
-  ;;         ("en_GB" nil nil nil t ("-d" "en_GB") nil utf-8)
-  ;;         ("en_GB-ise" nil nil nil t ("-d" "en_GB-ise") nil utf-8)
-  ;;         ("en_GB-ize" nil nil nil t ("-d" "en_GB-ize") nil utf-8)))
   :bind (("C-c s w" . ispell-word)
          ("C-c s r" . ispell-region)
-         ("C-c s d" . ispell-change-dictionary)))
+         ("C-c s d" . ispell-change-dictionary))
+  )
 #+END_SRC
 
 **** Guess Language
@@ -893,8 +883,10 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
 #+BEGIN_SRC emacs-lisp
 (use-package guess-language
   :defer nil
-  :config (setq guess-language-languages '(en da)
-                guess-language-min-paragraph-length 35))
+  :config
+  (setq guess-language-languages '(en da)
+                guess-language-min-paragraph-length 35)
+  )
 
 #+END_SRC
 *** JavaScript
@@ -1693,6 +1685,18 @@ simple package that enable titlecasing
   (treemacs-load-theme "all-the-icons")
   )
 #+END_SRC
+*** Typst
+#+BEGIN_SRC emacs-lisp
+(use-package typst-mode
+  :mode ("\\.typ\\'" . typst-mode)
+  :straight (:type git :host github :repo "Ziqi-Yang/typst-mode.el")
+  :custom
+  (typst-basic-offset 0)
+  (typst-basic-offset 2)
+  (indent-tabs-mode nil)
+  )
+#+END_SRC
+
 *** VLF - very large files
 #+BEGIN_SRC emacs-lisp
 (use-package vlf
