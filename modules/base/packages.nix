@@ -3,6 +3,7 @@
   lib,
   config,
   system,
+  inputs,
   ...
 }:
 
@@ -14,28 +15,36 @@ let
       keyringUsername,
       envVars ? { },
     }:
-    pkgs.writeScriptBin name ''
-      #!${pkgs.bash}/bin/bash
+    pkgs.writeShellApplication {
+      name = name;
+      runtimeInputs = [
+        pkgs.bash
+        pkgs.python3Packages.keyring
+        pkgs.aider-chat-full
+      ];
+      text = ''
+        #!${pkgs.bash}/bin/bash
 
-      API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get ${keyringService} ${keyringUsername} 2>/dev/null)"
-      if [ -z "$API_KEY" ]; then
-        echo "Error: Failed to retrieve API key from keyring: service='${keyringService}' account='${keyringUsername}'." >&2
-        exit 1
-      fi
+        API_KEY="$(keyring get ${keyringService} ${keyringUsername} 2>/dev/null)"
+        if [ -z "$API_KEY" ]; then
+          echo "Error: Failed to retrieve API key from keyring: service='${keyringService}' account='${keyringUsername}'." >&2
+          exit 1
+        fi
 
-      # Common settings
-      export AIDER_CACHE_PROMPTS=true
-      export AIDER_CHECK_UPDATE=false
-      export AIDER_ANALYTICS=false
-      export AIDER_NOTIFICATIONS=true
+        # Common settings
+        export AIDER_CACHE_PROMPTS=true
+        export AIDER_CHECK_UPDATE=false
+        export AIDER_ANALYTICS=false
+        export AIDER_NOTIFICATIONS=true
 
-      # Provider-specific settings
-      ${builtins.concatStringsSep "\n" (
-        builtins.attrValues (builtins.mapAttrs (k: v: "export ${k}=${v}") envVars)
-      )}
+        # Provider-specific settings
+        ${builtins.concatStringsSep "\n" (
+          builtins.attrValues (builtins.mapAttrs (k: v: "export ${k}=${v}") envVars)
+        )}
 
-      exec ${pkgs.aider-chat-full}/bin/aider "$@"
-    '';
+        exec aider "$@"
+      '';
+    };
 
   aiderWrapper-gemini = mkAiderWrapper {
     name = "aider";
@@ -60,16 +69,25 @@ let
     };
   };
 
-  karakeepWrapper = pkgs.writeScriptBin "karakeep" ''
-    #!${pkgs.bash}/bin/bash
+  karakeepWrapper = pkgs.writeShellApplication {
+    name = "karakeep";
+    runtimeInputs = [
+      pkgs.bash
+      pkgs.python3Packages.keyring
+      pkgs.karakeep
+    ];
+    text = ''
+      #!${pkgs.bash}/bin/bash
 
-    API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get hoarder.jgalabs.dk api_key || exit 1)"
+      API_KEY="$(keyring get hoarder.jgalabs.dk api_key || exit 1)"
 
-    export KARAKEEP_API_KEY="$API_KEY"
-    export KARAKEEP_SERVER_ADDR="https://hoarder.jgalabs.dk"
+      export KARAKEEP_API_KEY="$API_KEY"
+      export KARAKEEP_SERVER_ADDR="https://hoarder.jgalabs.dk"
 
-    exec ${pkgs.karakeep}/bin/karakeep "$@"
-  '';
+      exec karakeep "$@"
+    '';
+  };
+
 
   corePackages = with pkgs; [
     (btop.override { cudaSupport = true; })
@@ -133,7 +151,7 @@ let
     virt-manager
     vlc
     xdg-desktop-portal-wlr
-    xdragon
+    dragon-drop
     xorg.xkill
   ];
 
@@ -184,16 +202,88 @@ let
   ];
 
   customScripts = [
-    (pkgs.writeShellScriptBin "dragon-scp" (builtins.readFile ../../bin/dragon-scp))
-    (pkgs.writeShellScriptBin "bak" (builtins.readFile ../../bin/bak))
-    (pkgs.writeShellScriptBin "emacs-clean" (builtins.readFile ../../bin/emacs-clean))
-    (pkgs.writeShellScriptBin "bhelp" (builtins.readFile ../../bin/bathelp))
-    (pkgs.writeShellScriptBin "pyvenv-setup" (builtins.readFile ../../bin/pyvenv-setup))
-    (pkgs.writeShellScriptBin "docker-volume-copy" (builtins.readFile ../../bin/docker-volume-copy))
-    (pkgs.writeShellScriptBin "yqp" (builtins.readFile ../../bin/yqp))
-    (pkgs.writeShellScriptBin "pywal-apply" ''
-      ${pkgs.pywal16}/bin/wal -i "$(${pkgs.coreutils}/bin/cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"
-    '')
+    (pkgs.writeShellApplication {
+      name = "dragon-scp";
+      runtimeInputs = [
+        pkgs.openssh
+        pkgs.dragon-drop
+        pkgs.coreutils
+      ];
+      text = builtins.readFile ../../bin/dragon-scp;
+    })
+    (pkgs.writeShellApplication {
+      name = "bak";
+      runtimeInputs = [
+        pkgs.bash
+        pkgs.coreutils
+      ];
+      text = builtins.readFile ../../bin/bak;
+    })
+    (pkgs.writeShellApplication {
+      name = "emacs-clean";
+      runtimeInputs = [
+        pkgs.bash
+        pkgs.fd
+        pkgs.findutils
+        pkgs.coreutils
+      ];
+      text = builtins.readFile ../../bin/emacs-clean;
+    })
+    (pkgs.writeShellApplication {
+      name = "bhelp";
+      runtimeInputs = [
+        pkgs.bat
+      ];
+      text = builtins.readFile ../../bin/bathelp;
+    })
+    (pkgs.writeShellApplication {
+      name = "pyvenv-setup";
+      runtimeInputs = [
+        pkgs.bash
+        pkgs.nix
+        pkgs.direnv
+        pkgs.uv
+      ];
+      text = builtins.readFile ../../bin/pyvenv-setup;
+    })
+    (pkgs.writeShellApplication {
+      name = "docker-volume-copy";
+      runtimeInputs = [
+        pkgs.docker
+        pkgs.alpine
+      ];
+      text = builtins.readFile ../../bin/docker-volume-copy;
+    })
+    (pkgs.writeShellApplication {
+      name = "yqp";
+      runtimeInputs = [
+        pkgs.yq-go
+        pkgs.fzf
+        pkgs.bat
+        pkgs.coreutils
+      ];
+      text = builtins.readFile ../../bin/yqp;
+    })
+    (pkgs.writeShellApplication {
+      name = "pywal-apply";
+      runtimeInputs = [
+        pkgs.pywal16
+        pkgs.coreutils
+      ];
+      text = ''
+        wal -i "$(cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"
+      '';
+    })
+    (pkgs.writeShellApplication {
+      name = "nix-find";
+      runtimeInputs = [
+        pkgs.nix-search-tv
+        pkgs.fzf
+      ];
+      text = ''
+        nix-search-tv print | fzf --query="''${1:-}" --preview 'nix-search-tv preview {}' --scheme history
+      '';
+    })
   ];
 in
 {

@@ -28,9 +28,7 @@
       bash = {
         enable = true;
         profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
-        initExtra = ''
-          nix-find() { nix-search-tv print | fzf --query="''${1:-}" --preview "nix-search-tv preview {}" --scheme history; }
-        '';
+        initExtra = "";
         bashrcExtra = ''
           if [[ $TERM = dumb ]]; then
               return
@@ -132,9 +130,6 @@
 
       hwatch.enable = true;
 
-      nix-search-tv = {
-        enable = true;
-      };
       tmux = {
         enable = true;
         newSession = true;
@@ -224,7 +219,10 @@
         enable = true;
         enableBashIntegration = true;
       };
+      nix-search-tv.enable = true;
     };
+
+
 
     # Home shell aliases
     home.shellAliases =

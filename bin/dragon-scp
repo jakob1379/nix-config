@@ -14,7 +14,7 @@ file_name=$(basename "$remote_path")
 temp_file=$(mktemp -p /tmp/ "$file_name-XXXXXX")
 
 if scp "$remote_path" "$temp_file"; then
-    dragon "$temp_file"
+    xdragon "$temp_file"
     rm "$temp_file"
 else
     echo "Error in copying file from remote server."

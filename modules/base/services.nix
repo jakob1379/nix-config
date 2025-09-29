@@ -73,10 +73,20 @@ in
             WantedBy = [ "graphical-session.target" ];
           };
           Service = {
-            ExecStart = "${pkgs.writeShellScript "pywal-apply" ''
-              set -e
-              ${pkgs.pywal16}/bin/wal -ni "$(${pkgs.coreutils}/bin/cat ${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt)" && ${pkgs.pywal16}/bin/wal -R
-            ''}";
+            ExecStart = "${
+              pkgs.writeShellApplication {
+                name = "pywal-apply";
+                runtimeInputs = [
+                  pkgs.pywal16
+                  pkgs.coreutils
+                  pkgs.imagemagick
+                ];
+                text = ''
+                  set -e
+                  wal -ni "$(cat ${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt)" && wal -R
+                '';
+              }
+            }/bin/pywal-apply";
             Restart = "on-failure";
             RestartSec = 5;
             StandardOutput = "journal";
