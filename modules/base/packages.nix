@@ -201,7 +201,14 @@ let
 
   customScripts = [
     (pkgs.writeShellScriptBin "dragon-scp" (builtins.readFile ../../bin/dragon-scp))
-    (pkgs.writeShellScriptBin "bak" (builtins.readFile ../../bin/bak))
+    (pkgs.writeShellApplication {
+      name = "bak";
+      runtimeInputs = [
+        pkgs.bash
+        pkgs.coreutils
+      ];
+      text = builtins.readFile ../../bin/bak;
+    })
     (pkgs.writeShellScriptBin "emacs-clean" (builtins.readFile ../../bin/emacs-clean))
     (pkgs.writeShellScriptBin "bhelp" (builtins.readFile ../../bin/bathelp))
     (pkgs.writeShellScriptBin "pyvenv-setup" (builtins.readFile ../../bin/pyvenv-setup))
