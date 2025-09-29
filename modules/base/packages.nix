@@ -149,7 +149,7 @@ let
     virt-manager
     vlc
     xdg-desktop-portal-wlr
-    xdragon
+    dragon-drop
     xorg.xkill
   ];
 
