@@ -219,7 +219,11 @@ let
       ];
       text = builtins.readFile ../../bin/emacs-clean;
     })
-    (pkgs.writeShellScriptBin "bhelp" (builtins.readFile ../../bin/bathelp))
+    (pkgs.writeShellApplication {
+      name = "bhelp";
+      runtimeInputs = [ pkgs.bat ];
+      text = builtins.readFile ../../bin/bathelp;
+    })
     (pkgs.writeShellScriptBin "pyvenv-setup" (builtins.readFile ../../bin/pyvenv-setup))
     (pkgs.writeShellScriptBin "docker-volume-copy" (builtins.readFile ../../bin/docker-volume-copy))
     (pkgs.writeShellScriptBin "yqp" (builtins.readFile ../../bin/yqp))
