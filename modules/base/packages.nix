@@ -200,7 +200,15 @@ let
   ];
 
   customScripts = [
-    (pkgs.writeShellScriptBin "dragon-scp" (builtins.readFile ../../bin/dragon-scp))
+    (pkgs.writeShellApplication {
+      name = "dragon-scp";
+      runtimeInputs = [
+        pkgs.openssh
+        pkgs.coreutils
+        pkgs.xdragon
+      ];
+      text = builtins.readFile ../../bin/dragon-scp;
+    })
     (pkgs.writeShellScriptBin "bak" (builtins.readFile ../../bin/bak))
     (pkgs.writeShellScriptBin "emacs-clean" (builtins.readFile ../../bin/emacs-clean))
     (pkgs.writeShellScriptBin "bhelp" (builtins.readFile ../../bin/bathelp))
