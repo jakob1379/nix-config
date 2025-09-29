@@ -263,9 +263,18 @@ let
       ];
       text = builtins.readFile ../../bin/yqp;
     })
-    (pkgs.writeShellScriptBin "pywal-apply" ''
-      ${pkgs.pywal16}/bin/wal -i "$(${pkgs.coreutils}/bin/cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"
-    '')
+    (pkgs.writeShellApplication {
+      name = "pywal-apply";
+      runtimeInputs = [
+        pkgs.pywal16
+        pkgs.coreutils
+        pkgs.bash
+      ];
+      text = ''
+        #!${pkgs.bash}/bin/bash
+        ${pkgs.pywal16}/bin/wal -i "${pkgs.coreutils}/bin/cat ~/.config/variety/wallpaper/wallpaper.jpg.txt"
+      '';
+    })
   ];
 in
 {
