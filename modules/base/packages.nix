@@ -221,7 +221,9 @@ let
     })
     (pkgs.writeShellApplication {
       name = "bhelp";
-      runtimeInputs = [ pkgs.bat ];
+      runtimeInputs = [
+        pkgs.bat
+      ];
       text = builtins.readFile ../../bin/bathelp;
     })
     (pkgs.writeShellApplication {
