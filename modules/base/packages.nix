@@ -14,28 +14,36 @@ let
       keyringUsername,
       envVars ? { },
     }:
-    pkgs.writeScriptBin name ''
-      #!${pkgs.bash}/bin/bash
+    pkgs.writeShellApplication {
+      name = name;
+      runtimeInputs = [
+        pkgs.bash
+        pkgs.python3Packages.keyring
+        pkgs.aider-chat-full
+      ];
+      text = ''
+        #!${pkgs.bash}/bin/bash
 
-      API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get ${keyringService} ${keyringUsername} 2>/dev/null)"
-      if [ -z "$API_KEY" ]; then
-        echo "Error: Failed to retrieve API key from keyring: service='${keyringService}' account='${keyringUsername}'." >&2
-        exit 1
-      fi
+        API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get ${keyringService} ${keyringUsername} 2>/dev/null)"
+        if [ -z "$API_KEY" ]; then
+          echo "Error: Failed to retrieve API key from keyring: service='${keyringService}' account='${keyringUsername}'." >&2
+          exit 1
+        fi
 
-      # Common settings
-      export AIDER_CACHE_PROMPTS=true
-      export AIDER_CHECK_UPDATE=false
-      export AIDER_ANALYTICS=false
-      export AIDER_NOTIFICATIONS=true
+        # Common settings
+        export AIDER_CACHE_PROMPTS=true
+        export AIDER_CHECK_UPDATE=false
+        export AIDER_ANALYTICS=false
+        export AIDER_NOTIFICATIONS=true
 
-      # Provider-specific settings
-      ${builtins.concatStringsSep "\n" (
-        builtins.attrValues (builtins.mapAttrs (k: v: "export ${k}=${v}") envVars)
-      )}
+        # Provider-specific settings
+        ${builtins.concatStringsSep "\n" (
+          builtins.attrValues (builtins.mapAttrs (k: v: "export ${k}=${v}") envVars)
+        )}
 
-      exec ${pkgs.aider-chat-full}/bin/aider "$@"
-    '';
+        exec ${pkgs.aider-chat-full}/bin/aider "$@"
+      '';
+    };
 
   aiderWrapper-gemini = mkAiderWrapper {
     name = "aider";
@@ -60,16 +68,24 @@ let
     };
   };
 
-  karakeepWrapper = pkgs.writeScriptBin "karakeep" ''
-    #!${pkgs.bash}/bin/bash
+  karakeepWrapper = pkgs.writeShellApplication {
+    name = "karakeep";
+    runtimeInputs = [
+      pkgs.bash
+      pkgs.python3Packages.keyring
+      pkgs.karakeep
+    ];
+    text = ''
+      #!${pkgs.bash}/bin/bash
 
-    API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get hoarder.jgalabs.dk api_key || exit 1)"
+      API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get hoarder.jgalabs.dk api_key || exit 1)"
 
-    export KARAKEEP_API_KEY="$API_KEY"
-    export KARAKEEP_SERVER_ADDR="https://hoarder.jgalabs.dk"
+      export KARAKEEP_API_KEY="$API_KEY"
+      export KARAKEEP_SERVER_ADDR="https://hoarder.jgalabs.dk"
 
-    exec ${pkgs.karakeep}/bin/karakeep "$@"
-  '';
+      exec ${pkgs.karakeep}/bin/karakeep "$@"
+    '';
+  };
 
   corePackages = with pkgs; [
     (btop.override { cudaSupport = true; })
