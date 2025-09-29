@@ -24,7 +24,7 @@ let
       text = ''
         #!${pkgs.bash}/bin/bash
 
-        API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get ${keyringService} ${keyringUsername} 2>/dev/null)"
+        API_KEY="$(keyring get ${keyringService} ${keyringUsername} 2>/dev/null)"
         if [ -z "$API_KEY" ]; then
           echo "Error: Failed to retrieve API key from keyring: service='${keyringService}' account='${keyringUsername}'." >&2
           exit 1
@@ -41,7 +41,7 @@ let
           builtins.attrValues (builtins.mapAttrs (k: v: "export ${k}=${v}") envVars)
         )}
 
-        exec ${pkgs.aider-chat-full}/bin/aider "$@"
+        exec aider "$@"
       '';
     };
 
@@ -78,12 +78,12 @@ let
     text = ''
       #!${pkgs.bash}/bin/bash
 
-      API_KEY="$(${pkgs.python3Packages.keyring}/bin/keyring get hoarder.jgalabs.dk api_key || exit 1)"
+      API_KEY="$(keyring get hoarder.jgalabs.dk api_key || exit 1)"
 
       export KARAKEEP_API_KEY="$API_KEY"
       export KARAKEEP_SERVER_ADDR="https://hoarder.jgalabs.dk"
 
-      exec ${pkgs.karakeep}/bin/karakeep "$@"
+      exec karakeep "$@"
     '';
   };
 

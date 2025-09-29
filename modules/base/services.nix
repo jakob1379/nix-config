@@ -83,7 +83,7 @@ in
                 ];
                 text = ''
                   set -e
-                  ${pkgs.pywal16}/bin/wal -ni "$(${pkgs.coreutils}/bin/cat ${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt)" && ${pkgs.pywal16}/bin/wal -R
+                  wal -ni "$(cat ${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt)" && wal -R
                 '';
               }
             }/bin/pywal-apply";
