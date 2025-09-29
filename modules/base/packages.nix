@@ -200,7 +200,15 @@ let
   ];
 
   customScripts = [
-    (pkgs.writeShellScriptBin "dragon-scp" (builtins.readFile ../../bin/dragon-scp))
+    (pkgs.writeShellApplication {
+      name = "dragon-scp";
+      runtimeInputs = [
+        pkgs.openssh
+        pkgs.dragon-drop
+        pkgs.coreutils
+      ];
+      text = builtins.readFile ../../bin/dragon-scp;
+    })
     (pkgs.writeShellApplication {
       name = "bak";
       runtimeInputs = [
@@ -254,9 +262,16 @@ let
       ];
       text = builtins.readFile ../../bin/yqp;
     })
-    (pkgs.writeShellScriptBin "pywal-apply" ''
-      ${pkgs.pywal16}/bin/wal -i "$(${pkgs.coreutils}/bin/cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"
-    '')
+    (pkgs.writeShellApplication {
+      name = "pywal-apply";
+      runtimeInputs = [
+        pkgs.pywal16
+        pkgs.coreutils
+      ];
+      text = ''
+        wal -i "$(cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"
+      '';
+    })
   ];
 in
 {
