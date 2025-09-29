@@ -149,7 +149,7 @@ let
     virt-manager
     vlc
     xdg-desktop-portal-wlr
-    xdragon
+    dragon-drop
     xorg.xkill
   ];
 
@@ -205,7 +205,7 @@ let
       runtimeInputs = [
         pkgs.openssh
         pkgs.coreutils
-        pkgs.xdragon
+        pkgs.dragon-drop
       ];
       text = builtins.readFile ../../bin/dragon-scp;
     })
