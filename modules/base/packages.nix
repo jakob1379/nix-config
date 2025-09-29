@@ -245,11 +245,10 @@ let
     (pkgs.writeShellApplication {
       name = "yqp";
       runtimeInputs = [
-        pkgs.yq
+        pkgs.yq-go
         pkgs.fzf
         pkgs.bat
-        pkgs.paste
-        pkgs.util-linux
+        pkgs.coreutils
       ];
       text = builtins.readFile ../../bin/yqp;
     })
