@@ -1,11 +1,126 @@
 #!/usr/bin/env bash
-# bash completion for emacs
-# shellcheck disable=SC2034,SC2207
+# shellcheck shell=bash
+# Bash completion for emacs and emacsclient
 
-# To use:
-# - Place this file at ~/.local/share/bash-completion/completions/emacs
-#   or source it from your ~/.bashrc
-# - Requires bash-completion
+# Exit quietly if bash-completion isn't present
+type _init_completion >/dev/null 2>&1 || return 0
+
+# Helpers to avoid SC2207
+__compgen_words() {
+  # Usage: __compgen_words "word1 word2 ..." CURRENT [prefix_for_rewrite]
+  local list=$1
+  local cur=$2
+  local prefix=${3-}
+  mapfile -t COMPREPLY < <(compgen -W "$list" -- "$cur")
+  if [[ -n $prefix ]]; then
+    local i
+    for i in "${!COMPREPLY[@]}"; do
+      COMPREPLY[i]="${prefix}${COMPREPLY[i]}"
+    done
+  fi
+}
+
+__compgen_files() {
+  # Usage: __compgen_files CURRENT [prefix_for_rewrite]
+  local cur=$1
+  local prefix=${2-}
+  mapfile -t COMPREPLY < <(compgen -f -- "$cur")
+  if [[ -n $prefix ]]; then
+    local i
+    for i in "${!COMPREPLY[@]}"; do
+      COMPREPLY[i]="${prefix}${COMPREPLY[i]}"
+    done
+  fi
+}
+
+# ----------------------------
+# emacsclient completion
+# ----------------------------
+
+_emacsclient_opts_short=(
+  -V -H -t -nw -tty -c -r -F -e -n -w -q -u -d -s -f -a -T
+)
+
+_emacsclient_opts_long=(
+  --version
+  --help
+  --tty
+  --no-window-system
+  --create-frame
+  --reuse-frame
+  --frame-parameters=
+  --eval
+  --no-wait
+  --timeout=
+  --quiet
+  --suppress-output
+  --display=
+  --parent-id=
+  --socket-name=
+  --server-file=
+  --alternate-editor=
+  --tramp=
+)
+
+_emacsclient_complete() {
+  # shellcheck disable=SC2034  # words/cword are used implicitly by _init_completion
+  local cur prev words cword
+  _init_completion -n : || return
+
+  # --opt=value
+  if [[ $cur == --*=* ]]; then
+    local opt=${cur%%=*}
+    local val=${cur#*=}
+    case " $opt " in
+      " --timeout= " | " --parent-id= " )
+        COMPREPLY=()
+        return
+        ;;
+      " --display= " )
+        __compgen_words ":0 :1 localhost:0" "$val" "--display="
+        return
+        ;;
+      " --socket-name= " | " --server-file= " | " --alternate-editor= " | " --tramp= " )
+        __compgen_files "$val" "${opt}="
+        return
+        ;;
+      " --frame-parameters= " )
+        COMPREPLY=()
+        return
+        ;;
+    esac
+  fi
+
+  # prev expects arg
+  case "$prev" in
+    -w|-F|--frame-parameters=|--parent-id=)
+      COMPREPLY=()
+      return
+      ;;
+    -d|--display=)
+      __compgen_words ":0 :1 localhost:0" "$cur"
+      return
+      ;;
+    -s|--socket-name=|-f|--server-file=|-a|--alternate-editor=|-T|--tramp=)
+      __compgen_files "$cur"
+      return
+      ;;
+  esac
+
+  # options
+  if [[ $cur == -* ]]; then
+    local all_opts=( "${_emacsclient_opts_short[@]}" "${_emacsclient_opts_long[@]}" )
+    __compgen_words "${all_opts[*]}" "$cur"
+    return
+  fi
+
+  # positional files
+  _filedir
+}
+
+# ----------------------------
+# emacs completion
+# ----------------------------
 
 _emacs_opts_short=(
   -q -nl -nsl -nw -Q -x -d -t -u -f -l -L -T
@@ -78,132 +193,50 @@ _emacs_opts_long=(
   --version
 )
 
-# Options that take an argument (both short and long forms)
-_emacs_opts_with_arg_short=(-d -t -u -f -l -L -T -bg -bd -bw -cr -fn -fg -g -ib -lsp -ms)
-_emacs_opts_with_arg_long=(
-  --chdir
-  --bg-daemon=
-  --fg-daemon=
-  --display=
-  --dump-file
-  --seccomp=
-  --init-directory=
-  --script
-  --terminal=
-  --user=
-  --directory=
-  --eval
-  --execute
-  --file
-  --find-file
-  --funcall=
-  --insert
-  --load
-  --visit
-  --background-color=
-  --border-color=
-  --border-width=
-  --cursor-color=
-  --font=
-  --foreground-color=
-  --geometry=
-  --internal-border=
-  --line-spacing=
-  --mouse-color=
-  --name=
-  --title=
-  --xrm
-  --parent-id
-)
-
-# Options whose arg is typically a file/path
-_emacs_file_arg_opts=(
-  --chdir -d
-  --dump-file
-  --seccomp=
-  --init-directory=
-  --script
-  --directory= -L
-  --file --find-file --insert --load --visit -l
-  --font= -fn
-  --xrm
-)
-
-# Options whose arg is a display
-_emacs_display_arg_opts=(--display= -d)
-
-# Options with numeric args
-_emacs_numeric_arg_opts=(--border-width= -bw --internal-border= -ib --line-spacing= -lsp --parent-id)
-
-# Simple color placeholders
-_emacs_color_opts=(--background-color= -bg --border-color= -bd --cursor-color= -cr --foreground-color= -fg --mouse-color= -ms)
-
-_emacs_complete()
-{
+_emacs_complete() {
+  # shellcheck disable=SC2034  # words/cword are used implicitly by _init_completion
   local cur prev words cword
   _init_completion -n : || return
 
-  # Handle +LINE and +LINE:COLUMN pseudo-args:
-  # If current token starts with +, don't attempt filename completion.
+  # +LINE[:COLUMN]
   if [[ $cur == +* ]]; then
-    # Basic hinting for formats +N or +N:M (digits only)
     if [[ $cur == +([0-9])?(:+([0-9])) ]]; then
       COMPREPLY=()
     else
-      COMPREPLY=( $(compgen -W "+1 +10 +100 +1:1 +10:1" -- "$cur") )
+      __compgen_words "+1 +10 +100 +1:1 +10:1" "$cur"
     fi
     return
   fi
 
-  # Handle --opt=value forms
+  # --opt=value
   if [[ $cur == --*=* ]]; then
     local opt=${cur%%=*}
     local val=${cur#*=}
-
     case " $opt " in
-      # display
       " --display " )
-        COMPREPLY=( $(compgen -W ":0 :1 localhost:0" -- "$cur") )
+        __compgen_words ":0 :1 localhost:0" "$val" "--display="
         return
         ;;
-      # file-like args after =
       " --bg-daemon " | " --fg-daemon " )
-        # Name is free-form; no completion
         COMPREPLY=()
         return
         ;;
       " --dump-file " | " --seccomp " | " --init-directory " | \
       " --directory " | " --file " | " --find-file " | " --insert " | \
-      " --load " | " --visit " | " --font " )
-        local prefix="${opt}="
-        COMPREPLY=( $(compgen -f -- "$val") )
-        COMPREPLY=( "${COMPREPLY[@]/#/$prefix}" )
+      " --load " | " --visit " | " --font " | " --xrm " )
+        __compgen_files "$val" "${opt}="
         return
         ;;
-      # colors: provide common color names
       " --background-color " | " --border-color " | " --cursor-color " | \
       " --foreground-color " | " --mouse-color " )
-        local prefix="${opt}="
-        local colors="black white red green blue yellow magenta cyan gray grey"
-        COMPREPLY=( $(compgen -W "$colors" -- "$val") )
-        COMPREPLY=( "${COMPREPLY[@]/#/$prefix}" )
+        __compgen_words "black white red green blue yellow magenta cyan gray grey" "$val" "${opt}="
         return
         ;;
-      # geometry
       " --geometry " )
-        # simple hints; users can type full WxH+X+Y
-        local prefix="${opt}="
-        local hints="80x24 100x30 1920x1080+0+0"
-        COMPREPLY=( $(compgen -W "$hints" -- "$val") )
-        COMPREPLY=( "${COMPREPLY[@]/#/$prefix}" )
+        __compgen_words "80x24 100x30 1920x1080+0+0" "$val" "${opt}="
         return
         ;;
-      # numeric-like; no completion
-      " --border-width " | " --internal-border " | " --line-spacing " | " --parent-id " )
-        COMPREPLY=()
-        return
-        ;;
-      # generic string args
+      " --border-width " | " --internal-border " | " --line-spacing " | " --parent-id " | \
       " --name " | " --title " | " --color " )
         COMPREPLY=()
         return
@@ -211,47 +244,36 @@ _emacs_complete()
     esac
   fi
 
-  # If previous word is an option expecting an argument (space separated)
+  # prev expects arg
   case "$prev" in
-    # display
     -d|--display)
-      COMPREPLY=( $(compgen -W ":0 :1 localhost:0" -- "$cur") )
+      __compgen_words ":0 :1 localhost:0" "$cur"
       return
       ;;
-    # daemon names: free-form
     --bg-daemon|--fg-daemon)
       COMPREPLY=()
       return
       ;;
-    # files/dirs
     --chdir|-L|--directory|--dump-file|--seccomp|--init-directory|--script|\
     --file|--find-file|--insert|--load|--visit|-l|--font|-fn|--xrm)
       _filedir
       return
       ;;
-    # numeric-ish
     -bw|--border-width|-ib|--internal-border|-lsp|--line-spacing|--parent-id)
       COMPREPLY=()
       return
       ;;
-    # strings
-    -t|--terminal|-u|--user|-f|--funcall|-T|--title|--name|--color|--geometry)
-      COMPREPLY=()
-      return
-      ;;
-    # eval/execute elisp: leave empty
-    --eval|--execute)
+    -t|--terminal|-u|--user|-f|--funcall|-T|--title|--name|--color|--geometry|--eval|--execute)
       COMPREPLY=()
       return
       ;;
   esac
 
-  # If current starts with -, complete options (support GNU single-dash long opts)
+  # options (+ GNU single-dash long aliases)
   if [[ $cur == -* ]]; then
     local all_opts=(
       "${_emacs_opts_short[@]}"
       "${_emacs_opts_long[@]}"
-      # Single-dash long aliases for common ones (per help text hint)
       -batch -chdir -daemon -bg-daemon -fg-daemon -debug-init -display \
       -module-assertions -dump-file -fingerprint -seccomp -no-build-details \
       -no-desktop -no-init-file -no-loadup -no-site-file -no-x-resources \
@@ -264,13 +286,17 @@ _emacs_complete()
       -no-blinking-cursor -reverse-video -title -vertical-scroll-bars -xrm \
       -parent-id -help -version
     )
-    COMPREPLY=( $(compgen -W "${all_opts[*]}" -- "$cur") )
+    __compgen_words "${all_opts[*]}" "$cur"
     return
   fi
 
-  # Positional args: filenames (and +LINE[:COLUMN] handled earlier)
+  # positional files
   _filedir
 }
 
-# Register completion for emacs command
+# ----------------------------
+# Registration
+# ----------------------------
+
 complete -o filenames -F _emacs_complete emacs
+complete -o filenames -F _emacsclient_complete emacsclient
