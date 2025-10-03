@@ -245,7 +245,6 @@
         dcview = "docker compose config | bat -l yml";
         dk = "dragon --keep";
         dx = "dragon --and-exit";
-        eda = "nix-shell -p python313Packages.rich python313Packages.ipython python313Packages.pandas python313Packages.seaborn python313Packages.plotly";
         ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
         grep = "grep --color=auto";
         hs = ''f(){ home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';

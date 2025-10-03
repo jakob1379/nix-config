@@ -124,7 +124,6 @@ let
     speedtest-go
     tldr
     unar
-    xclip
     yq-go
   ];
 
