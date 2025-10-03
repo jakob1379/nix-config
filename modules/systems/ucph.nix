@@ -1,5 +1,6 @@
 {
   pkgs,
+  lib,
   ...
 }:
 
@@ -20,8 +21,7 @@
 
   # System-specific overrides for UCPH machine
   customPackages = {
-    enableGui = true; # Enable GUI packages for this desktop system
-
+    enableGui = lib.mkForce true; # Enable GUI packages for this desktop system
     # Add remmina package specifically for this system
     extra = with pkgs; [
       godot

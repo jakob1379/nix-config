@@ -347,7 +347,8 @@ These two packages enable the customization of the mode line to either hide or c
 nice developer icons
 #+BEGIN_SRC emacs-lisp
 (use-package all-the-icons
-  :if (display-graphic-p))
+  ;; :if (display-graphic-p)
+  )
 
 (use-package all-the-icons-completion
   :after all-the-icons
