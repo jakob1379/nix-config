@@ -88,7 +88,6 @@ let
     '';
   };
 
-
   corePackages = with pkgs; [
     (btop.override { cudaSupport = true; })
     busybox
@@ -272,16 +271,6 @@ let
       ];
       text = ''
         wal -i "$(cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"
-      '';
-    })
-    (pkgs.writeShellApplication {
-      name = "nix-find";
-      runtimeInputs = [
-        pkgs.nix-search-tv
-        pkgs.fzf
-      ];
-      text = ''
-        nix-search-tv print | fzf --query="''${1:-}" --preview 'nix-search-tv preview {}' --scheme history
       '';
     })
   ];
