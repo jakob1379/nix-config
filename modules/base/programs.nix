@@ -222,8 +222,6 @@
       nix-search-tv.enable = true;
     };
 
-
-
     # Home shell aliases
     home.shellAliases =
       let
@@ -262,10 +260,10 @@
             wait
 
             # Home Manager switch with output monitor
-            home-manager switch --flake "${flakePath}" "$@"
+            home-manager switch --flake "${flakePath}" "$@" |& "${pkgs.nix-output-monitor}/bin/nom"
 
             # NixOS switch with output monitor
-            sudo -E nixos-rebuild switch --flake "${flakePath}"
+            sudo -E nixos-rebuild switch --flake "${flakePath}" |& "${pkgs.nix-output-monitor}/bin/nom"
           }
           f
         '';

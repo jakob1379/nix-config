@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+flakePath="${XDG_CONFIG_HOME:-$HOME/.config}/home-manager"
+
+nix flake update --flake "$flakePath" && home-manager switch --flake "$flakePath" "$@" 2>&1 | nom

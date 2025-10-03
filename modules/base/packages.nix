@@ -88,7 +88,6 @@ let
     '';
   };
 
-
   corePackages = with pkgs; [
     (btop.override { cudaSupport = true; })
     busybox
@@ -279,10 +278,11 @@ let
       runtimeInputs = [
         pkgs.nix-search-tv
         pkgs.fzf
+        pkgs.busybox
+        pkgs.wl-clipboard
+        pkgs.xclip
       ];
-      text = ''
-        nix-search-tv print | fzf --query="''${1:-}" --preview 'nix-search-tv preview {}' --scheme history
-      '';
+      text = builtins.readFile ../../bin/nix-find;
     })
   ];
 in

@@ -17,12 +17,12 @@ in
     extraModules = [ ../modules/systems/wsl.nix ];
   };
 
-  "jga@yoga" = mkHomeConfig {
-    system = "x86_64-linux";
-    username = "jga";
-    homeDirectory = "/home/jga";
-    extraModules = [ ../modules/systems/yoga.nix ];
-  };
+  # "jga@yoga" = mkHomeConfig {
+  #   system = "x86_64-linux";
+  #   username = "jga";
+  #   homeDirectory = "/home/jga";
+  #   extraModules = [ ../modules/systems/yoga.nix ];
+  # };
 
   "jga@ku" = mkHomeConfig {
     system = "x86_64-linux";
