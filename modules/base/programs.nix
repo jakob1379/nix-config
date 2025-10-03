@@ -245,28 +245,8 @@
         dcview = "docker compose config | bat -l yml";
         dk = "dragon --keep";
         dx = "dragon --and-exit";
-        eda = "nix-shell -p python313Packages.rich python313Packages.ipython python313Packages.pandas python313Packages.seaborn python313Packages.plotly";
         ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
         grep = "grep --color=auto";
-        hs = ''f(){ home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-        hsu = ''f(){ nix flake update --flake ${flakePath} && home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-        ns = ''f(){ sudo -E nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-        nsu = ''f(){ sudo -E nix-channel --update && sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-        updateAll = ''
-          f() {
-            # Parallel updates
-            nix flake update --flake "${flakePath}" &
-            uv tool upgrade --all &
-            wait
-
-            # Home Manager switch with output monitor
-            home-manager switch --flake "${flakePath}" "$@" |& "${pkgs.nix-output-monitor}/bin/nom"
-
-            # NixOS switch with output monitor
-            sudo -E nixos-rebuild switch --flake "${flakePath}" |& "${pkgs.nix-output-monitor}/bin/nom"
-          }
-          f
-        '';
         q = "qalc";
         tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
       };

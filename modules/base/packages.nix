@@ -124,7 +124,6 @@ let
     speedtest-go
     tldr
     unar
-    xclip
     yq-go
   ];
 
@@ -283,6 +282,38 @@ let
         pkgs.xclip
       ];
       text = builtins.readFile ../../bin/nix-find;
+    })
+    (pkgs.writeShellApplication {
+      name = "hs";
+      runtimeInputs = [
+        pkgs.home-manager
+        pkgs.nix-output-monitor
+      ];
+      text = builtins.readFile ../../bin/hm-switch;
+    })
+    (pkgs.writeShellApplication {
+      name = "hsu";
+      runtimeInputs = [
+        pkgs.home-manager
+        pkgs.nix-output-monitor
+      ];
+      text = builtins.readFile ../../bin/hm-switch-update;
+    })
+    (pkgs.writeShellApplication {
+      name = "nixos-switch";
+      runtimeInputs = [
+        pkgs.nix-output-monitor
+      ];
+      text = builtins.readFile ../../bin/nixos-switch;
+    })
+    (pkgs.writeShellApplication {
+      name = "update-all";
+      runtimeInputs = [
+        pkgs.home-manager
+        pkgs.nix-output-monitor
+        pkgs.uv
+      ];
+      text = builtins.readFile ../../bin/update-all;
     })
   ];
 in

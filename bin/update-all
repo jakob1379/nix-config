@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+flakePath="${XDG_CONFIG_HOME:-$HOME/.config}/home-manager"
+
+
+# Parallel updates
+nix flake update --flake "${flakePath}" &
+uv tool upgrade --all &
+wait
+
+# Home Manager switch with output monitor
+home-manager switch --flake "${flakePath}" "$@" |& nom
+
+# NixOS switch with output monitor
+sudo -E nixos-rebuild switch --flake "${flakePath}" |& nom
