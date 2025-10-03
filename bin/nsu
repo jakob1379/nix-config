@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+flakePath="${XDG_CONFIG_HOME:-$HOME/.config}/home-manager"
+
+# Update channels and run nixos-rebuild with output monitor
+sudo -E nix-channel --update && sudo nixos-rebuild switch --flake "$flakePath" "$@" 2>&1 | nom
