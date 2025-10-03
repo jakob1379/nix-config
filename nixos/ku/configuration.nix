@@ -81,7 +81,10 @@ in
     sddm.wayland.enable = true;
     defaultSession = "plasma";
   };
-
+  qt = {
+    enable = true;
+    # style = "adwaita";
+  };
   services = {
     desktopManager.plasma6 = {
       enable = true;
