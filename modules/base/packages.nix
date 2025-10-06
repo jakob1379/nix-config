@@ -201,15 +201,6 @@ let
 
   customScripts = [
     (pkgs.writeShellApplication {
-      name = "dragon-scp";
-      runtimeInputs = [
-        pkgs.openssh
-        pkgs.dragon-drop
-        pkgs.coreutils
-      ];
-      text = builtins.readFile ../../bin/dragon-scp;
-    })
-    (pkgs.writeShellApplication {
       name = "bak";
       runtimeInputs = [
         pkgs.bash
@@ -218,31 +209,11 @@ let
       text = builtins.readFile ../../bin/bak;
     })
     (pkgs.writeShellApplication {
-      name = "emacs-clean";
-      runtimeInputs = [
-        pkgs.bash
-        pkgs.fd
-        pkgs.findutils
-        pkgs.coreutils
-      ];
-      text = builtins.readFile ../../bin/emacs-clean;
-    })
-    (pkgs.writeShellApplication {
       name = "bhelp";
       runtimeInputs = [
         pkgs.bat
       ];
       text = builtins.readFile ../../bin/bathelp;
-    })
-    (pkgs.writeShellApplication {
-      name = "pyvenv-setup";
-      runtimeInputs = [
-        pkgs.bash
-        pkgs.nix
-        pkgs.direnv
-        pkgs.uv
-      ];
-      text = builtins.readFile ../../bin/pyvenv-setup;
     })
     (pkgs.writeShellApplication {
       name = "docker-volume-copy";
@@ -253,35 +224,23 @@ let
       text = builtins.readFile ../../bin/docker-volume-copy;
     })
     (pkgs.writeShellApplication {
-      name = "yqp";
+      name = "dragon-scp";
       runtimeInputs = [
-        pkgs.yq-go
-        pkgs.fzf
-        pkgs.bat
+        pkgs.openssh
+        pkgs.dragon-drop
         pkgs.coreutils
       ];
-      text = builtins.readFile ../../bin/yqp;
+      text = builtins.readFile ../../bin/dragon-scp;
     })
     (pkgs.writeShellApplication {
-      name = "pywal-apply";
+      name = "emacs-clean";
       runtimeInputs = [
-        pkgs.pywal16
+        pkgs.bash
+        pkgs.fd
+        pkgs.findutils
         pkgs.coreutils
       ];
-      text = ''
-        wal -i "$(cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"
-      '';
-    })
-    (pkgs.writeShellApplication {
-      name = "nix-find";
-      runtimeInputs = [
-        pkgs.nix-search-tv
-        pkgs.fzf
-        pkgs.busybox
-        pkgs.wl-clipboard
-        pkgs.xclip
-      ];
-      text = builtins.readFile ../../bin/nix-find;
+      text = builtins.readFile ../../bin/emacs-clean;
     })
     (pkgs.writeShellApplication {
       name = "hs";
@@ -300,11 +259,42 @@ let
       text = builtins.readFile ../../bin/hm-switch-update;
     })
     (pkgs.writeShellApplication {
+      name = "nix-find";
+      runtimeInputs = [
+        pkgs.nix-search-tv
+        pkgs.fzf
+        pkgs.busybox
+        pkgs.wl-clipboard
+        pkgs.xclip
+      ];
+      text = builtins.readFile ../../bin/nix-find;
+    })
+    (pkgs.writeShellApplication {
       name = "nixos-switch";
       runtimeInputs = [
         pkgs.nix-output-monitor
       ];
       text = builtins.readFile ../../bin/nixos-switch;
+    })
+    (pkgs.writeShellApplication {
+      name = "pyvenv-setup";
+      runtimeInputs = [
+        pkgs.bash
+        pkgs.nix
+        pkgs.direnv
+        pkgs.uv
+      ];
+      text = builtins.readFile ../../bin/pyvenv-setup;
+    })
+    (pkgs.writeShellApplication {
+      name = "pywal-apply";
+      runtimeInputs = [
+        pkgs.pywal16
+        pkgs.coreutils
+      ];
+      text = ''
+        wal -i "$(cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"
+      '';
     })
     (pkgs.writeShellApplication {
       name = "update-all";
@@ -314,6 +304,16 @@ let
         pkgs.uv
       ];
       text = builtins.readFile ../../bin/update-all;
+    })
+    (pkgs.writeShellApplication {
+      name = "yqp";
+      runtimeInputs = [
+        pkgs.yq-go
+        pkgs.fzf
+        pkgs.bat
+        pkgs.coreutils
+      ];
+      text = builtins.readFile ../../bin/yqp;
     })
   ];
 in
