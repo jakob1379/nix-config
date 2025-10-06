@@ -187,7 +187,11 @@ let
     })
     (pkgs.writeShellApplication {
       name = "dragon-scp";
-      runtimeInputs = [ pkgs.openssh pkgs.dragon-drop pkgs.coreutils ];
+      runtimeInputs = [
+        pkgs.openssh
+        pkgs.dragon-drop
+        pkgs.coreutils
+      ];
       text = builtins.readFile ../../bin/dragon-scp;
     })
     (pkgs.writeShellApplication {
