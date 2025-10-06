@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+flakePath="${XDG_CONFIG_HOME:-$HOME/.config}/home-manager"
+
+# Run nixos-rebuild switch as root and pipe output to nom (nix-output-monitor)
+sudo -E nixos-rebuild switch --flake "$flakePath" "$@" 2>&1 | nom

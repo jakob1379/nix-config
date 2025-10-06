@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+queries=("$@")
+
+mapfile -t selections < <(
+  nix-search-tv print "${queries[@]}" \
+    | fzf \
+        --ansi \
+        --multi \
+        --query="${queries[*]}" \
+        --prompt="❄ nix> " \
+        --scheme=history \
+        --preview-window=down:60%:wrap \
+        --preview 'nix-search-tv preview {}' \
+        --bind "alt-c:execute-silent(echo {} | awk -F'/ +' '{print \$2}' | tr -d ' ' | wl-copy 2>/dev/null || xclip -selection clipboard)" \
+        --bind "alt-l:toggle-preview" \
+        --header $'ENTER select • TAB mark • Alt-C copy • Alt-L toggle preview'
+)
+status=$?
+
+if [ $status -eq 130 ]; then
+  echo "Selection cancelled." >&2
+  return 130
+elif [ ${#selections[@]} -eq 0 ]; then
+  echo "No package selected." >&2
+  return 0
+fi
+
+pkgs=()
+for sel in "${selections[@]}"; do
+  attr=$(echo "$sel" | awk -F'/ +' '{print $2}' | tr -d ' ')
+  pkgs+=("$attr")
+done
+
+# Print to terminal before exec
+echo "Running: nix-shell -p ${pkgs[*]}"
+
+# Replace current shell with nix-shell environment
+exec nix-shell -p "${pkgs[@]}"

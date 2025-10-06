@@ -161,6 +161,7 @@ repos:
 
   - repo: https://github.com/owenlamont/uv-secure
     rev: main
+    hooks:
     - id: uv-secure
       name: uv-secure
       description: "Run 'uv-secure' to check uv.lock dependencies for known vulnerabilities"

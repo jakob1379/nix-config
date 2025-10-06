@@ -16,6 +16,7 @@
       type = lib.types.attrs;
       default = {
         ".aider.conf.yml".text = ''
+          auto-lint: false
           attribute-author: false
           attribute-committer: false
           attribute-co-authored-by: false

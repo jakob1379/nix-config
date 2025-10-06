@@ -124,7 +124,6 @@ let
     speedtest-go
     tldr
     unar
-    xclip
     yq-go
   ];
 
@@ -202,6 +201,29 @@ let
 
   customScripts = [
     (pkgs.writeShellApplication {
+      name = "bak";
+      runtimeInputs = [
+        pkgs.bash
+        pkgs.coreutils
+      ];
+      text = builtins.readFile ../../bin/bak;
+    })
+    (pkgs.writeShellApplication {
+      name = "bhelp";
+      runtimeInputs = [
+        pkgs.bat
+      ];
+      text = builtins.readFile ../../bin/bathelp;
+    })
+    (pkgs.writeShellApplication {
+      name = "docker-volume-copy";
+      runtimeInputs = [
+        pkgs.docker
+        pkgs.alpine
+      ];
+      text = builtins.readFile ../../bin/docker-volume-copy;
+    })
+    (pkgs.writeShellApplication {
       name = "dragon-scp";
       runtimeInputs = [
         pkgs.openssh
@@ -209,14 +231,6 @@ let
         pkgs.coreutils
       ];
       text = builtins.readFile ../../bin/dragon-scp;
-    })
-    (pkgs.writeShellApplication {
-      name = "bak";
-      runtimeInputs = [
-        pkgs.bash
-        pkgs.coreutils
-      ];
-      text = builtins.readFile ../../bin/bak;
     })
     (pkgs.writeShellApplication {
       name = "emacs-clean";
@@ -229,11 +243,38 @@ let
       text = builtins.readFile ../../bin/emacs-clean;
     })
     (pkgs.writeShellApplication {
-      name = "bhelp";
+      name = "hs";
       runtimeInputs = [
-        pkgs.bat
+        pkgs.home-manager
+        pkgs.nix-output-monitor
       ];
-      text = builtins.readFile ../../bin/bathelp;
+      text = builtins.readFile ../../bin/hm-switch;
+    })
+    (pkgs.writeShellApplication {
+      name = "hsu";
+      runtimeInputs = [
+        pkgs.home-manager
+        pkgs.nix-output-monitor
+      ];
+      text = builtins.readFile ../../bin/hm-switch-update;
+    })
+    (pkgs.writeShellApplication {
+      name = "nix-find";
+      runtimeInputs = [
+        pkgs.nix-search-tv
+        pkgs.fzf
+        pkgs.busybox
+        pkgs.wl-clipboard
+        pkgs.xclip
+      ];
+      text = builtins.readFile ../../bin/nix-find;
+    })
+    (pkgs.writeShellApplication {
+      name = "nixos-switch";
+      runtimeInputs = [
+        pkgs.nix-output-monitor
+      ];
+      text = builtins.readFile ../../bin/nixos-switch;
     })
     (pkgs.writeShellApplication {
       name = "pyvenv-setup";
@@ -246,12 +287,23 @@ let
       text = builtins.readFile ../../bin/pyvenv-setup;
     })
     (pkgs.writeShellApplication {
-      name = "docker-volume-copy";
+      name = "pywal-apply";
       runtimeInputs = [
-        pkgs.docker
-        pkgs.alpine
+        pkgs.pywal16
+        pkgs.coreutils
       ];
-      text = builtins.readFile ../../bin/docker-volume-copy;
+      text = ''
+        wal -i "$(cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"
+      '';
+    })
+    (pkgs.writeShellApplication {
+      name = "update-all";
+      runtimeInputs = [
+        pkgs.home-manager
+        pkgs.nix-output-monitor
+        pkgs.uv
+      ];
+      text = builtins.readFile ../../bin/update-all;
     })
     (pkgs.writeShellApplication {
       name = "yqp";
@@ -262,16 +314,6 @@ let
         pkgs.coreutils
       ];
       text = builtins.readFile ../../bin/yqp;
-    })
-    (pkgs.writeShellApplication {
-      name = "pywal-apply";
-      runtimeInputs = [
-        pkgs.pywal16
-        pkgs.coreutils
-      ];
-      text = ''
-        wal -i "$(cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"
-      '';
     })
   ];
 in
