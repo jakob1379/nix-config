@@ -174,7 +174,15 @@
 
       bat = {
         enable = true;
-        config = { map-syntax = [ "*.conf:TOML" "*.gdextension:TOML" ]; };
+        extraPackages = with pkgs.bat-extras; [
+          batman
+        ];
+        config = {
+          map-syntax = [
+            "*.conf:TOML"
+            "*.gdextension:TOML"
+          ];
+        };
       };
 
       readline = {
