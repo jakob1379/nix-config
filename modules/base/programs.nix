@@ -1,11 +1,4 @@
-{
-  config,
-  pkgs,
-  inputs,
-  system,
-  lib,
-  ...
-}:
+{ config, pkgs, inputs, system, lib, ... }:
 
 {
   options = {
@@ -50,7 +43,8 @@
           ubuntu25 = {
             image = "ubuntu:24.04"; # Specify your desired image here
             init_hooks = "curl -LsSf https://astral.sh/uv/install.sh | sh";
-            additional_packages = "curl"; # Additional packages needed for init_hooks
+            additional_packages =
+              "curl"; # Additional packages needed for init_hooks
             entry = true; # Make this container enterable by default (optional)
           };
         };
@@ -83,7 +77,8 @@
             "browser.sessionstore.restore_pinned_tabs_on_demand" = true;
             "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
           };
-          userChrome = builtins.readFile ../../dotfiles/firefox/firefox_userchrome.css;
+          userChrome =
+            builtins.readFile ../../dotfiles/firefox/firefox_userchrome.css;
         };
       };
       git = {
@@ -105,9 +100,11 @@
         };
         aliases = {
           adog = "log --all --decorate --oneline --graph";
-          plog = "log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
+          plog =
+            "log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
           ignore-change = "update-index --assume-unchanged";
-          prune-deep = ''!git fetch --prune; branches=$(git branch -r | awk '"'"'{print $1}'"'"' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '"'"'{print $1}'"'"'); echo -e "branches:\n$branches"; read -p "Do you want to delete all these branches? (y/n): " confirm; if [ "$confirm" = "y" ]; then echo "$branches" | xargs git branch -d; else echo "No branches were deleted"; fi'';
+          prune-deep = ''
+            !git fetch --prune; branches=$(git branch -r | awk '"'"'{print $1}'"'"' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '"'"'{print $1}'"'"'); echo -e "branches:\n$branches"; read -p "Do you want to delete all these branches? (y/n): " confirm; if [ "$confirm" = "y" ]; then echo "$branches" | xargs git branch -d; else echo "No branches were deleted"; fi'';
           unstage = "restore --staged";
         };
       };
@@ -115,9 +112,7 @@
         enable = true;
         extensions = [ pkgs.gh-dash ];
         gitCredentialHelper.enable = false;
-        settings.aliases = {
-          web = "repo view --web";
-        };
+        settings.aliases = { web = "repo view --web"; };
       };
 
       ghostty = {
@@ -152,23 +147,17 @@
         enableBashIntegration = true;
         icons = "auto";
         git = true;
-        extraOptions = [
-          "--group-directories-first"
-          "--smart-group"
-        ];
+        extraOptions = [ "--group-directories-first" "--smart-group" ];
       };
 
       oh-my-posh = {
         enable = true;
         enableBashIntegration = true;
-        settings = builtins.fromJSON (
-          builtins.readFile ../../dotfiles/oh-my-posh/custom-hunks-theme.omp.json
-        );
+        settings = builtins.fromJSON (builtins.readFile
+          ../../dotfiles/oh-my-posh/custom-hunks-theme.omp.json);
       };
 
-      fastfetch = {
-        enable = true;
-      };
+      fastfetch = { enable = true; };
 
       fzf = {
         enable = true;
@@ -185,12 +174,7 @@
 
       bat = {
         enable = true;
-        config = {
-          map-syntax = [
-            "*.conf:TOML"
-            "*.gdextension:TOML"
-          ];
-        };
+        config = { map-syntax = [ "*.conf:TOML" "*.gdextension:TOML" ]; };
       };
 
       readline = {
@@ -206,9 +190,7 @@
         '';
       };
 
-      ssh = {
-        matchBlocks."*".forwardAgent = true;
-      };
+      ssh = { matchBlocks."*".forwardAgent = true; };
 
       navi = {
         enable = true;
@@ -223,63 +205,40 @@
     };
 
     # Home shell aliases
-    home.shellAliases =
-      let
-        flakePath = "${config.xdg.configHome}/home-manager";
-      in
-      {
-        nb-peers = ''get-peers() { command "$1" status --json | ${pkgs.jq}/bin/jq ".peers.details.[] | {fqdn, netbirdIp, status, connectionType}" -r}; get-peers'';
-        onefetch = "onefetch -E --nerd-fonts --no-color-palette";
-        cat = "bat";
-        watch = "hwatch";
-        cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
-        fm = "frogmouth";
-        db = "distrobox";
-        df = "duf --hide special";
-        open = "xdg-open";
-        nproc-1 = "$(( $(nproc) - 1))";
-        venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
-        rsync = "rsync --info=progress2";
-        plasma-restart = "systemctl restart --user plasma-plasmashell";
-        dcup = "docker compose up --remove-orphans";
-        dcview = "docker compose config | bat -l yml";
-        dk = "dragon --keep";
-        dx = "dragon --and-exit";
-        eda = "nix-shell -p python313Packages.rich python313Packages.ipython python313Packages.pandas python313Packages.seaborn python313Packages.plotly";
-        ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
-        grep = "grep --color=auto";
-        hs = ''f(){ home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-        hsu = ''f(){ nix flake update --flake ${flakePath} && home-manager switch --flake ${flakePath} "$@" |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-        ns = ''f(){ sudo -E nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-        nsu = ''f(){ sudo -E nix-channel --update && sudo nixos-rebuild switch --flake ${flakePath} |& "${pkgs.nix-output-monitor}/bin/nom"; }; f'';
-        updateAll = ''
-          f() {
-            # Parallel updates
-            nix flake update --flake "${flakePath}" &
-            uv tool upgrade --all &
-            wait
-
-            # Home Manager switch with output monitor
-            home-manager switch --flake "${flakePath}" "$@" |& "${pkgs.nix-output-monitor}/bin/nom"
-
-            # NixOS switch with output monitor
-            sudo -E nixos-rebuild switch --flake "${flakePath}" |& "${pkgs.nix-output-monitor}/bin/nom"
-          }
-          f
-        '';
-        q = "qalc";
-        tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
-      };
+    home.shellAliases = let flakePath = "${config.xdg.configHome}/home-manager";
+    in {
+      nb-peers = ''
+        get-peers() { command "$1" status --json | ${pkgs.jq}/bin/jq ".peers.details.[] | {fqdn, netbirdIp, status, connectionType}" -r}; get-peers'';
+      onefetch = "onefetch -E --nerd-fonts --no-color-palette";
+      cat = "bat";
+      watch = "hwatch";
+      cdd = ''
+        f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
+      fm = "frogmouth";
+      db = "distrobox";
+      df = "duf --hide special";
+      open = "xdg-open";
+      nproc-1 = "$(( $(nproc) - 1))";
+      venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
+      rsync = "rsync --info=progress2";
+      plasma-restart = "systemctl restart --user plasma-plasmashell";
+      dcup = "docker compose up --remove-orphans";
+      dcview = "docker compose config | bat -l yml";
+      dk = "dragon --keep";
+      dx = "dragon --and-exit";
+      ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
+      grep = "grep --color=auto";
+      q = "qalc";
+      tldr = ''
+        tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
+    };
 
     nix = {
       package = pkgs.nix;
       settings = {
         substituters = [ "https://cache.nixos.org/" ];
         max-jobs = 1;
-        experimental-features = [
-          "nix-command"
-          "flakes"
-        ];
+        experimental-features = [ "nix-command" "flakes" ];
       };
       gc = {
         automatic = true;
@@ -293,15 +252,11 @@
     xdg = {
       terminal-exec = {
         enable = true;
-        settings.default = [
-          "net.local.ghostty.desktop"
-        ];
+        settings.default = [ "net.local.ghostty.desktop" ];
       };
       autostart = {
         enable = true;
-        entries = [
-          "${pkgs.netbird-ui}/share/applications/netbird.desktop"
-        ];
+        entries = [ "${pkgs.netbird-ui}/share/applications/netbird.desktop" ];
       };
     };
   };

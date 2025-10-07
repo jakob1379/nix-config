@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+flakePath="${XDG_CONFIG_HOME:-$HOME/.config}/home-manager"
+
+# Run home-manager switch and pipe output to nom (nix-output-monitor)
+home-manager switch --flake "$flakePath" "$@" 2>&1 | nom

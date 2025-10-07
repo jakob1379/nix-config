@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ "$#" -lt 1 ]; then
+  echo "Usage: nb-peers <netbird-command>" >&2
+  exit 1
+fi
+
+cmd="$1"
+shift
+
+# Use jq from PATH (provided by runtimeInputs)
+command "$cmd" status --json | jq '.peers.details[] | {fqdn, netbirdIp, status, connectionType}' -r
