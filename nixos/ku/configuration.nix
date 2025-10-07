@@ -36,7 +36,6 @@ in
     };
   };
 
-  networking.hostName = "ku"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -44,11 +43,13 @@ in
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Enable networking
-  networking.networkmanager.enable = true;
-
+  networking = {
+    hostName = "ku"; # Define your hostname.
+    networkmanager.enable = true;
+    networkmanager.dns = "systemd-resolved";
+  };
   # Use systemd-resolved for dns
   services.resolved.enable = true;
-  networking.networkmanager.dns = "systemd-resolved";
 
   # Set your time zone.
   time.timeZone = "Europe/Copenhagen";

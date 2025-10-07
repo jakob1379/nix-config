@@ -35,8 +35,19 @@ repos:
         entry: nixfmt
         language: system
         types: [file]
-        files: '\b\w+\.nix\b'
-
+        files: \.nix$
+      - id: deadnix
+        name: find dead code
+        entry: deadnix
+        args: ["--fail"]
+        language: system
+        files: \.nix$
+      - id: statix
+        name: Lints and suggestions
+        entry: deadnix
+        args: ["--fail"]
+        language: system
+        files: \.nix$
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.13.3
     hooks:

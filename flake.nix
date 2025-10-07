@@ -11,5 +11,5 @@
     zen-browser.url = "github:youwen5/zen-browser-flake";
   };
 
-  outputs = inputs@{ nixpkgs, ... }: (import ./nix/outputs.nix) inputs;
+  outputs = inputs: (import ./nix/outputs.nix) inputs;
 }

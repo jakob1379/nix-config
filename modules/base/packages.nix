@@ -1,11 +1,20 @@
-{ pkgs, lib, config, system, inputs, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  system,
+  ...
+}:
 
 let
   mkAiderWrapper = { name, keyringService, keyringUsername, envVars ? { }, }:
     pkgs.writeShellApplication {
-      name = name;
-      runtimeInputs =
-        [ pkgs.bash pkgs.python3Packages.keyring pkgs.aider-chat-full ];
+      inherit name;
+      runtimeInputs = [
+        pkgs.bash
+        pkgs.python3Packages.keyring
+        pkgs.aider-chat-full
+      ];
       text = ''
         #!${pkgs.bash}/bin/bash
 
