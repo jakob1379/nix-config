@@ -7,7 +7,13 @@
 }:
 
 let
-  mkAiderWrapper = { name, keyringService, keyringUsername, envVars ? { }, }:
+  mkAiderWrapper =
+    {
+      name,
+      keyringService,
+      keyringUsername,
+      envVars ? { },
+    }:
     pkgs.writeShellApplication {
       inherit name;
       runtimeInputs = [
@@ -31,8 +37,9 @@ let
         export AIDER_NOTIFICATIONS=true
 
         # Provider-specific settings
-        ${builtins.concatStringsSep "\n" (builtins.attrValues
-          (builtins.mapAttrs (k: v: "export ${k}=${v}") envVars))}
+        ${builtins.concatStringsSep "\n" (
+          builtins.attrValues (builtins.mapAttrs (k: v: "export ${k}=${v}") envVars)
+        )}
 
         exec aider "$@"
       '';
@@ -63,7 +70,11 @@ let
 
   karakeepWrapper = pkgs.writeShellApplication {
     name = "karakeep";
-    runtimeInputs = [ pkgs.bash pkgs.python3Packages.keyring pkgs.karakeep ];
+    runtimeInputs = [
+      pkgs.bash
+      pkgs.python3Packages.keyring
+      pkgs.karakeep
+    ];
     text = ''
       #!${pkgs.bash}/bin/bash
 
@@ -141,7 +152,8 @@ let
     xorg.xkill
   ];
 
-  devPackages = with pkgs;
+  devPackages =
+    with pkgs;
     [
       android-tools
       graphviz
@@ -150,7 +162,6 @@ let
       nodejs
       pandoc
       poppler_utils
-      uv
       aiderWrapper-gemini
       aiderWrapper-gpt
       dive
@@ -158,11 +169,19 @@ let
       karakeepWrapper
       visidata
       wakatime
-    ] ++ lib.optionals (system != "aarch64-linux") [ jdk ];
+    ]
+    ++ lib.optionals (system != "aarch64-linux") [ jdk ];
 
   emacsPackages = with pkgs; [
     autotools-language-server
-    (aspellWithDicts (dicts: with dicts; [ da en en-computers en-science ]))
+    (aspellWithDicts (
+      dicts: with dicts; [
+        da
+        en
+        en-computers
+        en-science
+      ]
+    ))
     bash-language-server
     hunspell
     ispell
@@ -181,7 +200,10 @@ let
   customScripts = [
     (pkgs.writeShellApplication {
       name = "bak";
-      runtimeInputs = [ pkgs.bash pkgs.coreutils ];
+      runtimeInputs = [
+        pkgs.bash
+        pkgs.coreutils
+      ];
       text = builtins.readFile ../../bin/bak;
     })
     (pkgs.writeShellApplication {
@@ -191,7 +213,10 @@ let
     })
     (pkgs.writeShellApplication {
       name = "docker-volume-copy";
-      runtimeInputs = [ pkgs.docker pkgs.alpine ];
+      runtimeInputs = [
+        pkgs.docker
+        pkgs.alpine
+      ];
       text = builtins.readFile ../../bin/docker-volume-copy;
     })
     (pkgs.writeShellApplication {
@@ -205,17 +230,28 @@ let
     })
     (pkgs.writeShellApplication {
       name = "emacs-clean";
-      runtimeInputs = [ pkgs.bash pkgs.fd pkgs.findutils pkgs.coreutils ];
+      runtimeInputs = [
+        pkgs.bash
+        pkgs.fd
+        pkgs.findutils
+        pkgs.coreutils
+      ];
       text = builtins.readFile ../../bin/emacs-clean;
     })
     (pkgs.writeShellApplication {
       name = "hs";
-      runtimeInputs = [ pkgs.home-manager pkgs.nix-output-monitor ];
+      runtimeInputs = [
+        pkgs.home-manager
+        pkgs.nix-output-monitor
+      ];
       text = builtins.readFile ../../bin/hm-switch;
     })
     (pkgs.writeShellApplication {
       name = "hsu";
-      runtimeInputs = [ pkgs.home-manager pkgs.nix-output-monitor ];
+      runtimeInputs = [
+        pkgs.home-manager
+        pkgs.nix-output-monitor
+      ];
       text = builtins.readFile ../../bin/hm-switch-update;
     })
     (pkgs.writeShellApplication {
@@ -236,28 +272,46 @@ let
     })
     (pkgs.writeShellApplication {
       name = "pyvenv-setup";
-      runtimeInputs = [ pkgs.bash pkgs.nix pkgs.direnv pkgs.uv ];
+      runtimeInputs = [
+        pkgs.bash
+        pkgs.nix
+        pkgs.direnv
+        pkgs.uv
+      ];
       text = builtins.readFile ../../bin/pyvenv-setup;
     })
     (pkgs.writeShellApplication {
       name = "pywal-apply";
-      runtimeInputs = [ pkgs.pywal16 pkgs.coreutils ];
+      runtimeInputs = [
+        pkgs.pywal16
+        pkgs.coreutils
+      ];
       text = ''
         wal -i "$(cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"
       '';
     })
     (pkgs.writeShellApplication {
       name = "update-all";
-      runtimeInputs = [ pkgs.home-manager pkgs.nix-output-monitor pkgs.uv ];
+      runtimeInputs = [
+        pkgs.home-manager
+        pkgs.nix-output-monitor
+        pkgs.uv
+      ];
       text = builtins.readFile ../../bin/update-all;
     })
     (pkgs.writeShellApplication {
       name = "yqp";
-      runtimeInputs = [ pkgs.yq-go pkgs.fzf pkgs.bat pkgs.coreutils ];
+      runtimeInputs = [
+        pkgs.yq-go
+        pkgs.fzf
+        pkgs.bat
+        pkgs.coreutils
+      ];
       text = builtins.readFile ../../bin/yqp;
     })
   ];
-in {
+in
+{
   options.customPackages = {
     enableCore = lib.mkEnableOption "core packages";
     enableGui = lib.mkEnableOption "GUI packages";
@@ -277,12 +331,18 @@ in {
     };
   };
 
-  config = let
-    cfg = config.customPackages;
-    allPackages = (lib.optionals cfg.enableCore corePackages)
-      ++ (lib.optionals cfg.enableGui guiPackages)
-      ++ (lib.optionals cfg.enableDev devPackages)
-      ++ (lib.optionals cfg.enableEmacs emacsPackages)
-      ++ (lib.optionals cfg.enableScripts customScripts) ++ cfg.extra;
-  in { home.packages = lib.filter (p: !(lib.elem p cfg.exclude)) allPackages; };
+  config =
+    let
+      cfg = config.customPackages;
+      allPackages =
+        (lib.optionals cfg.enableCore corePackages)
+        ++ (lib.optionals cfg.enableGui guiPackages)
+        ++ (lib.optionals cfg.enableDev devPackages)
+        ++ (lib.optionals cfg.enableEmacs emacsPackages)
+        ++ (lib.optionals cfg.enableScripts customScripts)
+        ++ cfg.extra;
+    in
+    {
+      home.packages = lib.filter (p: !(lib.elem p cfg.exclude)) allPackages;
+    };
 }

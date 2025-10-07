@@ -1,4 +1,11 @@
-{ config, pkgs, inputs, system, lib, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  system,
+  lib,
+  ...
+}:
 
 {
   options = {
@@ -43,8 +50,7 @@
           ubuntu25 = {
             image = "ubuntu:24.04"; # Specify your desired image here
             init_hooks = "curl -LsSf https://astral.sh/uv/install.sh | sh";
-            additional_packages =
-              "curl"; # Additional packages needed for init_hooks
+            additional_packages = "curl"; # Additional packages needed for init_hooks
             entry = true; # Make this container enterable by default (optional)
           };
         };
@@ -77,8 +83,7 @@
             "browser.sessionstore.restore_pinned_tabs_on_demand" = true;
             "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
           };
-          userChrome =
-            builtins.readFile ../../dotfiles/firefox/firefox_userchrome.css;
+          userChrome = builtins.readFile ../../dotfiles/firefox/firefox_userchrome.css;
         };
       };
       git = {
@@ -100,11 +105,9 @@
         };
         aliases = {
           adog = "log --all --decorate --oneline --graph";
-          plog =
-            "log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
+          plog = "log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
           ignore-change = "update-index --assume-unchanged";
-          prune-deep = ''
-            !git fetch --prune; branches=$(git branch -r | awk '"'"'{print $1}'"'"' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '"'"'{print $1}'"'"'); echo -e "branches:\n$branches"; read -p "Do you want to delete all these branches? (y/n): " confirm; if [ "$confirm" = "y" ]; then echo "$branches" | xargs git branch -d; else echo "No branches were deleted"; fi'';
+          prune-deep = ''!git fetch --prune; branches=$(git branch -r | awk '"'"'{print $1}'"'"' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '"'"'{print $1}'"'"'); echo -e "branches:\n$branches"; read -p "Do you want to delete all these branches? (y/n): " confirm; if [ "$confirm" = "y" ]; then echo "$branches" | xargs git branch -d; else echo "No branches were deleted"; fi'';
           unstage = "restore --staged";
         };
       };
@@ -112,7 +115,9 @@
         enable = true;
         extensions = [ pkgs.gh-dash ];
         gitCredentialHelper.enable = false;
-        settings.aliases = { web = "repo view --web"; };
+        settings.aliases = {
+          web = "repo view --web";
+        };
       };
 
       ghostty = {
@@ -147,17 +152,23 @@
         enableBashIntegration = true;
         icons = "auto";
         git = true;
-        extraOptions = [ "--group-directories-first" "--smart-group" ];
+        extraOptions = [
+          "--group-directories-first"
+          "--smart-group"
+        ];
       };
 
       oh-my-posh = {
         enable = true;
         enableBashIntegration = true;
-        settings = builtins.fromJSON (builtins.readFile
-          ../../dotfiles/oh-my-posh/custom-hunks-theme.omp.json);
+        settings = builtins.fromJSON (
+          builtins.readFile ../../dotfiles/oh-my-posh/custom-hunks-theme.omp.json
+        );
       };
 
-      fastfetch = { enable = true; };
+      fastfetch = {
+        enable = true;
+      };
 
       fzf = {
         enable = true;
@@ -174,9 +185,7 @@
 
       bat = {
         enable = true;
-        extraPackages = with pkgs.bat-extras; [
-          batman
-        ];
+        extraPackages = with pkgs.bat-extras; [ batman ];
         config = {
           map-syntax = [
             "*.conf:TOML"
@@ -198,7 +207,9 @@
         '';
       };
 
-      ssh = { matchBlocks."*".forwardAgent = true; };
+      ssh = {
+        matchBlocks."*".forwardAgent = true;
+      };
 
       navi = {
         enable = true;
@@ -210,6 +221,14 @@
         enableBashIntegration = true;
       };
       nix-search-tv.enable = true;
+
+      uv = {
+        enable = true;
+        settings = {
+          python-preference = "managed";
+          python-version = "3.14";
+        };
+      };
     };
 
     # Home shell aliases
@@ -242,7 +261,10 @@
       settings = {
         substituters = [ "https://cache.nixos.org/" ];
         max-jobs = 1;
-        experimental-features = [ "nix-command" "flakes" ];
+        experimental-features = [
+          "nix-command"
+          "flakes"
+        ];
       };
       gc = {
         automatic = true;
