@@ -87,20 +87,10 @@ in
     # style = "adwaita";
   };
   services = {
-
     desktopManager.plasma6 = {
       enable = true;
       enableQt5Integration = true;
     };
-
-    login.u2fAuth = true;
-    sudo.u2fAuth = true;
-    netbird = {
-      enable = true;
-      ui.enable = true;
-      tunnels.jgalabs.port = 52821;
-    };
-
   };
 
   environment.plasma6.excludePackages = with pkgs.kdePackages; [ kate ];
@@ -328,7 +318,11 @@ in
 
   # List services that you want to enable:
 
-  # Enao enable netbird as our VPN of choice
+  # Enable the OpenSSH daemon.
+  # Others, should not log into this machine
+  services.openssh.enable = false;
+
+  # We also want to enable netbird as our VPN of choice
   services = {
     netbird = {
       enable = true;
