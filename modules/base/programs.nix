@@ -174,7 +174,15 @@
 
       bat = {
         enable = true;
-        config = { map-syntax = [ "*.conf:TOML" "*.gdextension:TOML" ]; };
+        extraPackages = with pkgs.bat-extras; [
+          batman
+        ];
+        config = {
+          map-syntax = [
+            "*.conf:TOML"
+            "*.gdextension:TOML"
+          ];
+        };
       };
 
       readline = {
@@ -205,15 +213,12 @@
     };
 
     # Home shell aliases
-    home.shellAliases = let flakePath = "${config.xdg.configHome}/home-manager";
-    in {
-      nb-peers = ''
-        get-peers() { command "$1" status --json | ${pkgs.jq}/bin/jq ".peers.details.[] | {fqdn, netbirdIp, status, connectionType}" -r}; get-peers'';
+    home.shellAliases = {
+      nb-peers = ''get-peers() { command "$1" status --json | ${pkgs.jq}/bin/jq ".peers.details.[] | {fqdn, netbirdIp, status, connectionType}" -r}; get-peers'';
       onefetch = "onefetch -E --nerd-fonts --no-color-palette";
       cat = "bat";
       watch = "hwatch";
-      cdd = ''
-        f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
+      cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
       fm = "frogmouth";
       db = "distrobox";
       df = "duf --hide special";
@@ -229,8 +234,7 @@
       ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
       grep = "grep --color=auto";
       q = "qalc";
-      tldr = ''
-        tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
+      tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
     };
 
     nix = {

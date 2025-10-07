@@ -2,13 +2,13 @@
 inputs@{ nixpkgs, ... }:
 let
   lib = import ./lib.nix { inherit nixpkgs inputs; };
-  inherit (lib) mkHomeConfig forAllSystems generalPackages;
-  homeConfigurations = import ./home-configurations.nix { lib = lib; };
+  inherit (lib) forAllSystems;
+  homeConfigurations = import ./home-configurations.nix { inherit lib; };
   nixosConfigurations = import ./nixos-configurations.nix { inherit nixpkgs inputs; };
-  devShellsFor = import ./devshells.nix { lib = lib; };
+  devShellsFor = import ./devshells.nix { inherit lib; };
 in
 {
   inherit nixosConfigurations;
-  homeConfigurations = homeConfigurations;
+  inherit homeConfigurations;
   devShells = forAllSystems (pkgs: devShellsFor { inherit pkgs; });
 }

@@ -36,7 +36,6 @@ in
     };
   };
 
-  networking.hostName = "ku"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -44,11 +43,13 @@ in
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Enable networking
-  networking.networkmanager.enable = true;
-
+  networking = {
+    hostName = "ku"; # Define your hostname.
+    networkmanager.enable = true;
+    networkmanager.dns = "systemd-resolved";
+  };
   # Use systemd-resolved for dns
   services.resolved.enable = true;
-  networking.networkmanager.dns = "systemd-resolved";
 
   # Set your time zone.
   time.timeZone = "Europe/Copenhagen";
@@ -86,10 +87,20 @@ in
     # style = "adwaita";
   };
   services = {
+
     desktopManager.plasma6 = {
       enable = true;
       enableQt5Integration = true;
     };
+
+    login.u2fAuth = true;
+    sudo.u2fAuth = true;
+    netbird = {
+      enable = true;
+      ui.enable = true;
+      tunnels.jgalabs.port = 52821;
+    };
+
   };
 
   environment.plasma6.excludePackages = with pkgs.kdePackages; [ kate ];
@@ -317,11 +328,7 @@ in
 
   # List services that you want to enable:
 
-  # Enable the OpenSSH daemon.
-  # Others, should not log into this machine
-  services.openssh.enable = false;
-
-  # We also want to enable netbird as our VPN of choice
+  # Enao enable netbird as our VPN of choice
   services = {
     netbird = {
       enable = true;
