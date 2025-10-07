@@ -125,14 +125,18 @@ in
   };
 
   config = {
-    systemd.user.startServices = true;
+    systemd = {
+      user = {
+        startServices = true;
 
-    systemd.user.services = lib.mkMerge [
-      config.customServices.rclone
-      config.customServices.pywal
-    ];
+        services = lib.mkMerge [
+          config.customServices.rclone
+          config.customServices.pywal
+        ];
 
-    systemd.user.paths = config.customServices.pywalPath;
+        paths = config.customServices.pywalPath;
+      };
+    };
 
     services = {
       emacs = {
