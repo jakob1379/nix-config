@@ -1,10 +1,5 @@
 # Minimal host-specific configuration for ku; common settings are in ../common.nix
-{
-  config,
-  pkgs,
-  lib,
-  ...
-}:
+{ config, lib, ... }:
 
 {
   imports = [
@@ -14,29 +9,6 @@
 
   # Only machine-specific overrides should remain here.
   networking.hostName = "ku";
-
-  services.netbird = {
-    ui.enable = true;
-    tunnels.jgalabs.port = 52821;
-  };
-
-  # Printing and mDNS are specific to this host
-  services.printing = {
-    enable = true;
-    drivers = with pkgs; [
-      gutenprint
-      hplip
-    ];
-  };
-
-  services.avahi = {
-    enable = true;
-    nssmdns4 = true;
-    openFirewall = true;
-  };
-
-  # Host-specific excluded plasma packages
-  environment.plasma6.excludePackages = with pkgs.kdePackages; [ kate ];
 
   # Keyboard layout for this host
   services.xserver.xkb = {
@@ -50,32 +22,32 @@
   # Enable the nvidia container toolkit only on this host
   hardware.nvidia-container-toolkit.enable = true;
 
-  # Append host-specific group for the main user
-  users.users.jga = lib.mkForce (
-    config.users.users.jga
-    // {
-      extraGroups = config.users.users.jga.extraGroups ++ [ "netbird-jgalabs" ];
-    }
-  );
-
-  # Keep U2F/Yubico PAM settings for this host
-  security.pam = {
-    u2f = {
-      enable = true;
-      settings.cue = true;
-    };
-    yubico = {
-      enable = true;
-      control = "sufficient";
-      mode = "challenge-response";
-      id = [
-        "22313001"
-        "22313027"
-      ];
-    };
-    services = {
-      login.u2fAuth = true;
-      sudo.u2fAuth = true;
+  # Specialisation (shared)
+  specialisation = {
+    on-the-go.configuration = {
+      system.nixos.tags = [ "on-the-go" ];
+      hardware.nvidia = {
+        prime = {
+          offload = {
+            enable = lib.mkForce true;
+            enableOffloadCmd = lib.mkForce true;
+          };
+          sync.enable = lib.mkForce false;
+        };
+      };
     };
   };
+
+  hardware.nvidia = {
+    modesetting.enable = true;
+    nvidiaSettings = true;
+    open = false;
+    prime = {
+      sync.enable = true;
+      intelBusId = "PCI:0:2:0";
+      nvidiaBusId = "PCI:45:0:0";
+    };
+    package = config.boot.kernelPackages.nvidiaPackages.beta;
+  };
+
 }

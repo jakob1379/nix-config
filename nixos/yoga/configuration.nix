@@ -1,31 +1,4 @@
-{
-  config,
-  pkgs,
-  lib,
-  ...
-}:
-let
-  createRcloneMountService =
-    {
-      name,
-      remote,
-      mountPath ? "/home/jga/${name}",
-      remotePath ? "/",
-    }:
-    {
-      description = "Rclone mount service for ${name}";
-      after = [ "network-online.target" ];
-      restartIfChanged = true;
-      enable = true;
-      wantedBy = [ "default.target" ];
-      serviceConfig = {
-        ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${mountPath}";
-        ExecStart = "${pkgs.rclone}/bin/rclone mount --config /home/jga/.config/rclone/rclone.conf --vfs-fast-fingerprint --vfs-cache-mode full ${remote}:${remotePath} ${mountPath}";
-        Type = "notify";
-        Environment = [ "PATH=/run/wrappers/bin/:$PATH" ];
-      };
-    };
-in
+{ config, ... }:
 {
   imports = [
     ./hardware-configuration.nix
@@ -40,8 +13,6 @@ in
     layout = "dk";
     variant = "";
   };
-
-  environment.plasma6.excludePackages = with pkgs.kdePackages; [ ];
 
   hardware.bluetooth = {
     enable = true;
@@ -58,20 +29,6 @@ in
       nvidiaBusId = "PCI:45:0:0";
     };
     package = config.boot.kernelPackages.nvidiaPackages.beta;
-  };
-
-  users.users.jga = lib.mkForce (
-    config.users.users.jga
-    // {
-      extraGroups = config.users.users.jga.extraGroups ++ [ "netbird-jgalabs" ];
-    }
-  );
-
-  systemd.user.services = {
-    rclone-mount-dropbox-private = createRcloneMountService {
-      name = "dropbox-private";
-      remote = "dropbox-private";
-    };
   };
 
   system.stateVersion = config.system.stateVersion;

@@ -72,12 +72,15 @@
     enable = true;
     enableQt5Integration = true;
   };
-
-  environment.plasma6.excludePackages = with pkgs.kdePackages; [ ];
+  environment.plasma6.excludePackages = with pkgs.kdePackages; [ kate ];
 
   # Common services
-  services.netbird.enable = true;
   services.fwupd.enable = true;
+  services.netbird = {
+    ui.enable = true;
+    enable = true;
+    tunnels.jgalabs.port = 52821;
+  };
 
   # Hardware defaults
   hardware.sensor.iio.enable = true;
@@ -87,6 +90,20 @@
   virtualisation.docker.enable = true;
   virtualisation.libvirtd.enable = true;
   programs.dconf.enable = true; # virt-manager/other tools
+
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+    openFirewall = true;
+  };
+
+  services.printing = {
+    enable = true;
+    drivers = with pkgs; [
+      gutenprint
+      hplip
+    ];
+  };
 
   # Audio
   services.pulseaudio.enable = false;
@@ -143,10 +160,9 @@
       "wheel"
       "docker"
       "libvirtd"
+      "netbird-jgalabs"
     ];
-    packages = with pkgs; [
-      libsecret
-    ];
+    packages = with pkgs; [ libsecret ];
   };
 
   # Common system packages
@@ -181,22 +197,6 @@
   # Programs commonly used
   programs.niri.enable = true;
 
-  # Specialisation (shared)
-  specialisation = {
-    on-the-go.configuration = {
-      system.nixos.tags = [ "on-the-go" ];
-      hardware.nvidia = {
-        prime = {
-          offload = {
-            enable = lib.mkForce true;
-            enableOffloadCmd = lib.mkForce true;
-          };
-          sync.enable = lib.mkForce false;
-        };
-      };
-    };
-  };
-
   # Boot & kernel defaults (shared)
   boot = {
     extraModulePackages = [ config.boot.kernelPackages.evdi ];
@@ -215,6 +215,27 @@
   # Firewall default
   networking.firewall = {
     enable = true;
+  };
+
+  # Keep U2F/Yubico PAM settings for this host
+  security.pam = {
+    u2f = {
+      enable = true;
+      settings.cue = true;
+    };
+    yubico = {
+      enable = true;
+      control = "sufficient";
+      mode = "challenge-response";
+      id = [
+        "22313001"
+        "22313027"
+      ];
+    };
+    services = {
+      login.u2fAuth = true;
+      sudo.u2fAuth = true;
+    };
   };
 
   system.stateVersion = "24.05";

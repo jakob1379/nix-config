@@ -111,35 +111,36 @@
           plog = "log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
           ignore-change = "update-index --assume-unchanged";
 
-          prune-deep = "!f() { \
-	    git fetch --prune; \
-	    current=$(git symbolic-ref --short HEAD 2>/dev/null || echo \"\"); \
-	    # Branches whose upstream is gone are marked [gone] by -vv
-	    branches=$(git branch -vv | awk '/\\[gone\\]/{print $1}'); \
-	    # Optionally protect some branches
-	    protect=\"main master develop $current\"; \
-	    filtered=\"\"; \
-	    for b in $branches; do \
-	      skip=0; \
-	      for p in $protect; do [ \"$b\" = \"$p\" ] && skip=1 && break; done; \
-	      [ $skip -eq 0 ] && filtered=\"$filtered $b\"; \
-	    done; \
-	    filtered=$(echo $filtered); \
-	    if [ -z \"$filtered\" ]; then \
-	      echo \"No local branches with gone upstreams.\"; \
-	      exit 0; \
-	    fi; \
-	    echo \"Branches with gone upstreams:\"; \
-	    for b in $filtered; do echo \"  $b\"; done; \
-	    printf \"Delete these branches? (y/N): \"; \
-	    read confirm; \
-	    if [ \"$confirm\" = \"y\" ] || [ \"$confirm\" = \"Y\" ]; then \
-	      # Use -d to be safe; change to -D if you want force
-	      for b in $filtered; do git branch -d \"$b\" || true; done; \
-	    else \
-	      echo \"No branches were deleted.\"; \
-	    fi; \
-	                           }; f";
+          prune-deep = ''
+            !f() {
+            	    git fetch --prune;
+            	    current=$(git symbolic-ref --short HEAD 2>/dev/null || echo "");
+            	    # Branches whose upstream is gone are marked [gone] by -vv
+            	    branches=$(git branch -vv | awk '/\[gone\]/{print $1}');
+            	    # Optionally protect some branches
+            	    protect="main master develop $current";
+            	    filtered="";
+            	    for b in $branches; do
+            	      skip=0;
+            	      for p in $protect; do [ "$b" = "$p" ] && skip=1 && break; done;
+            	      [ $skip -eq 0 ] && filtered="$filtered $b";
+            	    done;
+            	    filtered=$(echo $filtered);
+            	    if [ -z "$filtered" ]; then
+            	      echo "No local branches with gone upstreams.";
+            	      exit 0;
+            	    fi;
+            	    echo "Branches with gone upstreams:";
+            	    for b in $filtered; do echo "  $b"; done;
+            	    printf "Delete these branches? (y/N): ";
+            	    read confirm;
+            	    if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+            	      # Use -d to be safe; change to -D if you want force
+            	      for b in $filtered; do git branch -d "$b" || true; done;
+            	    else
+            	      echo "No branches were deleted.";
+            	    fi;
+            	                           }; f'';
           unstage = "restore --staged";
         };
       };
@@ -164,7 +165,6 @@
 
       jq = {
         enable = true;
-        colors = true;
       };
 
       jqp.enable = true;

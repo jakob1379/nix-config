@@ -61,24 +61,24 @@
     let
       cfg = config.customDotfiles;
     in
-      {
-        home = {
-          file = lib.mkMerge [
-            (lib.mkIf cfg.enableSsh cfg.ssh)
-            (lib.mkIf cfg.enableEmacs cfg.emacs)
-            (lib.mkIf cfg.enableAider cfg.aider)
-            (lib.mkIf cfg.enableMediaControl cfg.mediaControl)
-          ];
+    {
+      home = {
+        file = lib.mkMerge [
+          (lib.mkIf cfg.enableSsh cfg.ssh)
+          (lib.mkIf cfg.enableEmacs cfg.emacs)
+          (lib.mkIf cfg.enableAider cfg.aider)
+          (lib.mkIf cfg.enableMediaControl cfg.mediaControl)
+        ];
 
-          sessionPath = [ "$HOME/.local/bin" ];
-          sessionVariables = {
-            HISTCONTROL = "ignoreboth";
-            LC_TIME = "en_GB.utf8";
-            MANPAGER = "${pkgs.bat-extras.batman}/bin/batman";
-            NIX_BUILD_CORES = "$(( $(${pkgs.busybox}/bin/nproc) / 2 < 1 ? 1 : $(${pkgs.busybox}/bin/nproc) / 2 ))";
-            PAGER = "${pkgs.bat}/bin/bat -p";
-          };
+        sessionPath = [ "$HOME/.local/bin" ];
+        sessionVariables = {
+          HISTCONTROL = "ignoreboth";
+          LC_TIME = "en_GB.utf8";
+          MANPAGER = "${pkgs.bat-extras.batman}/bin/batman";
+          NIX_BUILD_CORES = "$(( $(${pkgs.busybox}/bin/nproc) / 2 < 1 ? 1 : $(${pkgs.busybox}/bin/nproc) / 2 ))";
+          PAGER = "${pkgs.bat}/bin/bat -p";
         };
-        fonts.fontconfig.enable = true;
       };
+      fonts.fontconfig.enable = true;
+    };
 }
