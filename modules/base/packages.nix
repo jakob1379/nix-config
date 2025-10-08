@@ -94,9 +94,7 @@ let
     dig
     duf
     entr
-    fd
     gdu
-    git
     gitflow
     gitleaks
     glib

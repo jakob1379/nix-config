@@ -67,6 +67,8 @@
         package = pkgs.emacs30-gtk3;
       };
 
+      fd.enable = true;
+
       firefox = {
         enable = true;
         package = inputs."zen-browser".packages.${system}.zen-browser;
@@ -86,6 +88,7 @@
           userChrome = builtins.readFile ../../dotfiles/firefox/firefox_userchrome.css;
         };
       };
+
       git = {
         enable = true;
         inherit (config.customGit) userName;
@@ -107,7 +110,36 @@
           adog = "log --all --decorate --oneline --graph";
           plog = "log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
           ignore-change = "update-index --assume-unchanged";
-          prune-deep = ''!git fetch --prune; branches=$(git branch -r | awk '"'"'{print $1}'"'"' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '"'"'{print $1}'"'"'); echo -e "branches:\n$branches"; read -p "Do you want to delete all these branches? (y/n): " confirm; if [ "$confirm" = "y" ]; then echo "$branches" | xargs git branch -d; else echo "No branches were deleted"; fi'';
+
+          prune-deep = "!f() { \
+	    git fetch --prune; \
+	    current=$(git symbolic-ref --short HEAD 2>/dev/null || echo \"\"); \
+	    # Branches whose upstream is gone are marked [gone] by -vv
+	    branches=$(git branch -vv | awk '/\\[gone\\]/{print $1}'); \
+	    # Optionally protect some branches
+	    protect=\"main master develop $current\"; \
+	    filtered=\"\"; \
+	    for b in $branches; do \
+	      skip=0; \
+	      for p in $protect; do [ \"$b\" = \"$p\" ] && skip=1 && break; done; \
+	      [ $skip -eq 0 ] && filtered=\"$filtered $b\"; \
+	    done; \
+	    filtered=$(echo $filtered); \
+	    if [ -z \"$filtered\" ]; then \
+	      echo \"No local branches with gone upstreams.\"; \
+	      exit 0; \
+	    fi; \
+	    echo \"Branches with gone upstreams:\"; \
+	    for b in $filtered; do echo \"  $b\"; done; \
+	    printf \"Delete these branches? (y/N): \"; \
+	    read confirm; \
+	    if [ \"$confirm\" = \"y\" ] || [ \"$confirm\" = \"Y\" ]; then \
+	      # Use -d to be safe; change to -D if you want force
+	      for b in $filtered; do git branch -d \"$b\" || true; done; \
+	    else \
+	      echo \"No branches were deleted.\"; \
+	    fi; \
+	                           }; f";
           unstage = "restore --staged";
         };
       };
@@ -129,6 +161,19 @@
       };
 
       hwatch.enable = true;
+
+      jq = {
+        enable = true;
+        colors = true;
+      };
+
+      jqp.enable = true;
+
+      nix-init.enable = true;
+
+      rclone = {
+        enable = true;
+      };
 
       tmux = {
         enable = true;
@@ -226,7 +271,6 @@
         enable = true;
         settings = {
           python-preference = "managed";
-          python-version = "3.14";
         };
       };
     };
