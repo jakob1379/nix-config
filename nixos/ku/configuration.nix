@@ -93,8 +93,6 @@ in
       enableQt5Integration = true;
     };
 
-    login.u2fAuth = true;
-    sudo.u2fAuth = true;
     netbird = {
       enable = true;
       ui.enable = true;
@@ -326,18 +324,6 @@ in
   programs.nix-ld.enable = true;
   programs.nix-ld.libraries = with pkgs; [ ];
 
-  # List services that you want to enable:
-
-  # Enao enable netbird as our VPN of choice
-  services = {
-    netbird = {
-      enable = true;
-      ui.enable = true;
-      tunnels.jgalabs.port = 52821;
-    };
-  };
-
-  # Bootloader.
   boot = {
     extraModulePackages = [ config.boot.kernelPackages.evdi ];
     initrd.kernelModules = [ "evdi" ];
@@ -345,7 +331,6 @@ in
     loader.efi.canTouchEfiVariables = true;
 
     kernelModules = [ "kvm-intel" ];
-
     kernelParams = [
       "acpi_backlight=native"
       "psmouse.synaptics_intertouch=0"
