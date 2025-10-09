@@ -44,10 +44,10 @@ repos:
         files: \.nix$
       - id: statix
         name: Lints and suggestions
-        entry: deadnix
-        args: ["--fail"]
+        entry: bash -lc 'xargs -r -n1 statix fix --'
         language: system
         files: \.nix$
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.13.3
     hooks:

@@ -94,9 +94,7 @@ let
     dig
     duf
     entr
-    fd
     gdu
-    git
     gitflow
     gitleaks
     glib
@@ -104,12 +102,9 @@ let
     hyperfine # benchmark CLI commands
     imagemagick
     isd
-    jq
-    jqp
     libqalculate
     libsecret
     miktex
-    nix-init
     nix-output-monitor
     nix-prefetch-github
     nix-search-cli
@@ -117,7 +112,6 @@ let
     nvtopPackages.full
     onefetch
     python3Packages.keyring
-    rclone
     rename
     silver-searcher
     speedtest-go
