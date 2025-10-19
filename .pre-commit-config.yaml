@@ -43,13 +43,14 @@ repos:
         language: system
         files: \.nix$
       - id: statix
-        name: Lints and suggestions
-        entry: bash -lc 'xargs -r -n1 statix fix --'
+        name: statix
+        entry: statix fix
         language: system
+        pass_filenames: false
         files: \.nix$
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.0
+    rev: v0.14.1
     hooks:
       - id: ruff-check
         args: [--fix]

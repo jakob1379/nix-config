@@ -1,5 +1,4 @@
-{ lib }:
-{ pkgs }:
+{ lib, pkgs }:
 let
   inherit (lib) generalPackages;
 in
@@ -8,9 +7,10 @@ in
     packages = generalPackages pkgs;
     buildInputs = with pkgs; [ pre-commit ];
     shellHook = ''
+      export SSL_CERT_FILE=$(pkgs.cacert)/etc/ssl/certs/ca-bundle.crt
       if [ ! -f .git/hooks/pre-commit ]; then
         echo "Running pre-commit install for the first time..."
-        pre-commit install
+        prek install
       fi
       export PS1="(dotfiles-shell 🫥) $PS1"
     '';

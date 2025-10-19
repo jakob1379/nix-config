@@ -44,10 +44,10 @@ The `Makefile` includes targets to install Nix and Home Manager:
 The `devShell` provides a consistent development environment:
 
 - **Packages**: Uses `generalPackages` for essential tools.
-- **Build Inputs**: Includes `pkgs.pre-commit` for managing pre-commit hooks.
+- **Build Inputs**: Includes `pkgs.prek` for managing prek hooks.
 - **Shell Hook**: Sets the `PATH` for local Node.js binaries and customizes the
   shell prompt.
-- **Post Build**: Installs and updates pre-commit hooks.
+- **Post Build**: Installs and updates prek hooks.
 
 Enter the development shell with:
 

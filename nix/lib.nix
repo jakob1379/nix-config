@@ -8,7 +8,7 @@ let
     );
   generalPackages =
     pkgs: with pkgs; [
-      pre-commit
+      prek
       yamllint
       nixfmt-rfc-style
       statix
