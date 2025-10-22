@@ -4,8 +4,7 @@ let
 in
 {
   default = pkgs.mkShell {
-    packages = generalPackages pkgs;
-    buildInputs = with pkgs; [ pre-commit ];
+    packages = (generalPackages pkgs) ++ [ pkgs.pre-commit ];
     shellHook = ''
       export SSL_CERT_FILE=$(pkgs.cacert)/etc/ssl/certs/ca-bundle.crt
       if [ ! -f .git/hooks/pre-commit ]; then
