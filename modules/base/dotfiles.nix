@@ -74,7 +74,6 @@
         sessionVariables = {
           HISTCONTROL = "ignoreboth";
           LC_TIME = "en_GB.utf8";
-          MANPAGER = "${pkgs.bat-extras.batman}/bin/batman";
           NIX_BUILD_CORES = "$(( $(${pkgs.busybox}/bin/nproc) / 2 < 1 ? 1 : $(${pkgs.busybox}/bin/nproc) / 2 ))";
           PAGER = "${pkgs.bat}/bin/bat -p";
         };
