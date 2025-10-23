@@ -7,67 +7,6 @@
 }:
 
 let
-  mkAiderWrapper =
-    {
-      name,
-      keyringService,
-      keyringUsername,
-      envVars ? { },
-    }:
-    pkgs.writeShellApplication {
-      inherit name;
-      runtimeInputs = [
-        pkgs.bash
-        pkgs.python3Packages.keyring
-        pkgs.aider-chat-full
-      ];
-      text = ''
-        #!${pkgs.bash}/bin/bash
-
-        API_KEY="$(keyring get ${keyringService} ${keyringUsername} 2>/dev/null)"
-        if [ -z "$API_KEY" ]; then
-          echo "Error: Failed to retrieve API key from keyring: service='${keyringService}' account='${keyringUsername}'." >&2
-          exit 1
-        fi
-
-        # Common settings
-        export AIDER_CACHE_PROMPTS=true
-        export AIDER_CHECK_UPDATE=false
-        export AIDER_ANALYTICS=false
-        export AIDER_NOTIFICATIONS=true
-
-        # Provider-specific settings
-        ${builtins.concatStringsSep "\n" (
-          builtins.attrValues (builtins.mapAttrs (k: v: "export ${k}=${v}") envVars)
-        )}
-
-        exec aider "$@"
-      '';
-    };
-
-  aiderWrapper-gemini = mkAiderWrapper {
-    name = "aider";
-    keyringService = "gemini";
-    keyringUsername = "api_key";
-    envVars = {
-      GEMINI_API_KEY = "$API_KEY";
-      AIDER_MODEL = "gemini/gemini-2.5-pro";
-      AIDER_WEAK_MODEL = "gemini/gemini-2.5-flash-lite";
-      AIDER_THINKING_TOKENS = "32k";
-    };
-  };
-
-  aiderWrapper-gpt = mkAiderWrapper {
-    name = "aider-gpt";
-    keyringService = "openai";
-    keyringUsername = "mds245";
-    envVars = {
-      OPENAI_API_KEY = "$API_KEY";
-      AIDER_MODEL = "openai/gpt-5";
-      AIDER_WEAK_MODEL = "openai/gpt-5-nano";
-    };
-  };
-
   karakeepWrapper = pkgs.writeShellApplication {
     name = "karakeep";
     runtimeInputs = [
@@ -156,8 +95,6 @@ let
       nodejs
       pandoc
       poppler_utils
-      aiderWrapper-gemini
-      aiderWrapper-gpt
       dive
       frogmouth
       karakeepWrapper

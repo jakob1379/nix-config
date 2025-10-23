@@ -10,22 +10,6 @@
     enableSsh = lib.mkEnableOption "SSH dotfiles";
     enableEmacs = lib.mkEnableOption "Emacs dotfiles";
     enableMediaControl = lib.mkEnableOption "media control dotfiles";
-    enableAider = lib.mkEnableOption "Aider dotfiles";
-
-    aider = lib.mkOption {
-      type = lib.types.attrs;
-      default = {
-        ".aider.conf.yml".text = ''
-          auto-lint: false
-          attribute-author: false
-          attribute-committer: false
-          attribute-co-authored-by: false
-          analytics: false
-          code-theme: monokai
-        '';
-      };
-      description = "Aider dotfiles";
-    };
 
     ssh = lib.mkOption {
       type = lib.types.attrs;
@@ -66,7 +50,6 @@
         file = lib.mkMerge [
           (lib.mkIf cfg.enableSsh cfg.ssh)
           (lib.mkIf cfg.enableEmacs cfg.emacs)
-          (lib.mkIf cfg.enableAider cfg.aider)
           (lib.mkIf cfg.enableMediaControl cfg.mediaControl)
         ];
 

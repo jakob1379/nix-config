@@ -40,7 +40,6 @@
           ${builtins.readFile ../../bin/secret-export}
 
           shopt -s cdspell
-          eval "$(${pkgs.aider-chat-full}/bin/aider --shell-completions bash)"
           eval "$(batman --export-env)"
         '';
       };
