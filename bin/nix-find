@@ -8,7 +8,7 @@ mapfile -t selections < <(
         --ansi \
         --multi \
         --query="${queries[*]}" \
-        --prompt="❄ nix> " \
+        --prompt="❄ Queury> " \
         --scheme=history \
         --preview-window=down:60%:wrap \
         --preview 'nix-search-tv preview {}' \
