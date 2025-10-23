@@ -73,7 +73,6 @@ let
     pika-backup
     pywal16
     signal-desktop
-    slack
     spotify
     stretchly
     thunderbird
