@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nix-config-app
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+    ports:
+      - "8000:8000"
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /workspace
+          ignore:
+            - .git
+            - .direnv
+            - .ruff_cache
+            - node_modules
+            - flake.lock
+        - action: rebuild
+          path: Dockerfile
+    restart: unless-stopped
+
+  cloudflared:
+    image: cloudflare/cloudflared:2024.10.0
+    depends_on:
+      - app
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - CLOUDFLARED_TUNNEL_TOKEN=${CLOUDFLARED_TUNNEL_TOKEN:-}
+    command:
+      - /bin/sh
+      - -c
+      - |
+        if [ "$${ENVIRONMENT:-development}" = "production" ]; then
+          if [ -z "$${CLOUDFLARED_TUNNEL_TOKEN:-}" ]; then
+            echo "CLOUDFLARED_TUNNEL_TOKEN is required in production" >&2
+            exit 1
+          fi
+          exec cloudflared tunnel run --token "$${CLOUDFLARED_TUNNEL_TOKEN}"
+        else
+          echo "Cloudflared sidecar disabled (ENVIRONMENT=$${ENVIRONMENT:-development})"
+          sleep infinity
+        fi
+    restart: unless-stopped
