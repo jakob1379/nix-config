@@ -60,10 +60,10 @@ tunnel using the supplied token, exposing the preview externally.
 
 Environment variables:
 
-| Variable                     | Default       | Purpose                                    |
-| ---------------------------- | ------------- | ------------------------------------------ |
-| `ENVIRONMENT`                | `development` | Toggles dev/production behaviour           |
-| `CLOUDFLARED_TUNNEL_TOKEN`   | unset         | Required in production to start Cloudflare |
+| Variable                   | Default       | Purpose                                    |
+| -------------------------- | ------------- | ------------------------------------------ |
+| `ENVIRONMENT`              | `development` | Toggles dev/production behaviour           |
+| `CLOUDFLARED_TUNNEL_TOKEN` | unset         | Required in production to start Cloudflare |
 
 ## Nix & Make Targets
 
