@@ -6,7 +6,19 @@
   lib,
   ...
 }:
-
+let
+  tmuxPing = pkgs.tmuxPlugins.mkTmuxPlugin {
+    pluginName = "tmux-ping";
+    version = "unstable-2024-08-01";
+    src = pkgs.fetchFromGitHub {
+      owner = "ayzenquwe";
+      repo = "tmux-ping";
+      rev = "853175737b5af4b6d00ba5d18e3e059c9a7e3973";
+      sha256 = "0vflnfjczd21hsr3nvmgdp41qi0bcyj0m2z8lrdcgf11j9y99gsa";
+    };
+    rtpFilePath = "ping.tmux";
+  };
+in
 {
   options = {
     customGit = {
@@ -187,6 +199,7 @@
         terminal = "xterm-256color";
         focusEvents = true;
         extraConfig = builtins.readFile ../../dotfiles/tmux/tmux.conf;
+        plugins = [ tmuxPing ];
       };
 
       zoxide = {
