@@ -19,6 +19,8 @@ let
     {
       Unit = {
         Description = "Rclone mount service for ${name}";
+        After = [ "network-online.target" ];
+        Wants = [ "network-online.target" ];
       };
 
       Service = {
@@ -37,7 +39,7 @@ let
             ${remote}:${remotePath} ${mountPath}
         '';
         ExecStop = "fusermount -u ${mountPath}";
-        Type = "notify";
+        Type = "simple";
         Restart = "on-failure";
         RestartSec = "10s";
       };
@@ -69,7 +71,16 @@ in
           pywal-apply-variety = {
             Unit = {
               Description = "Apply pywal theme based on Variety wallpaper";
-              After = [ "graphical-session.target" ];
+              After = [
+                "graphical-session.target"
+                "network-online.target"
+                "rclone-mount-dropbox-private.service"
+              ];
+              Wants = [
+                "network-online.target"
+                "rclone-mount-dropbox-private.service"
+              ];
+              Requires = [ "rclone-mount-dropbox-private.service" ];
             };
             Install = {
               WantedBy = [ "graphical-session.target" ];
@@ -109,7 +120,12 @@ in
           pywal-apply-variety = {
             Unit = {
               Description = "Monitor wallpaper file for changes";
-              Wants = [ "pywal-apply-variety.service" ];
+              After = [ "rclone-mount-dropbox-private.service" ];
+              Wants = [
+                "pywal-apply-variety.service"
+                "rclone-mount-dropbox-private.service"
+              ];
+              Requires = [ "rclone-mount-dropbox-private.service" ];
             };
             Install = {
               WantedBy = [ "graphical-session.target" ];
