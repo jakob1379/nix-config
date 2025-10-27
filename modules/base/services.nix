@@ -114,6 +114,36 @@ in
         description = "Systemd service for applying pywal theme.";
       };
 
+      variety = lib.mkOption {
+        type = lib.types.attrs;
+        default = {
+          variety = {
+            Unit = {
+              Description = "Launch Variety wallpaper changer";
+              After = [
+                "graphical-session.target"
+                "network-online.target"
+                "rclone-mount-dropbox-private.service"
+              ];
+              Wants = [
+                "network-online.target"
+                "rclone-mount-dropbox-private.service"
+              ];
+              Requires = [ "rclone-mount-dropbox-private.service" ];
+            };
+            Install = {
+              WantedBy = [ "graphical-session.target" ];
+            };
+            Service = {
+              ExecStart = "${pkgs.variety}/bin/variety";
+              Restart = "on-failure";
+              RestartSec = 10;
+            };
+          };
+        };
+        description = "Systemd service for Variety wallpaper changer.";
+      };
+
       pywalPath = lib.mkOption {
         type = lib.types.attrs;
         default = {
@@ -148,6 +178,7 @@ in
         services = lib.mkMerge [
           config.customServices.rclone
           config.customServices.pywal
+          config.customServices.variety
         ];
 
         paths = config.customServices.pywalPath;
