@@ -39,7 +39,7 @@ let
             ${remote}:${remotePath} ${mountPath}
         '';
         ExecStop = "fusermount -u ${mountPath}";
-        Type = "simple";
+        Type = "notify";
         Restart = "on-failure";
         RestartSec = "10s";
       };
@@ -135,7 +135,7 @@ in
               WantedBy = [ "graphical-session.target" ];
             };
             Service = {
-              ExecStart = "${pkgs.variety}/bin/variety";
+              ExecStart = "${pkgs.variety}/bin/variety --show-current";
               Restart = "on-failure";
               RestartSec = 10;
             };
