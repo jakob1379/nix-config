@@ -16,6 +16,8 @@
     variant = "";
   };
 
+  programs.appimage.enable = true;
+
   # Allow fuse mounts for normal users on this machine
   programs.fuse.userAllowOther = true;
 
