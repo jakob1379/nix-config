@@ -168,11 +168,32 @@ in
         };
       };
 
+      ranger = {
+        enable = true;
+        extraPackages = with pkgs; [
+          python3Packages.pillow
+        ];
+        settings = {
+          preview_images = true;
+          preview_images_method = "kitty";
+        };
+      };
+
       ghostty = {
         enable = true;
         settings = {
           bold-is-bright = true;
-          background-opacity = 0.9;
+          background-opacity = 0.85;
+          window-decoration = false;
+
+          clipboard-paste-protection = false;
+          confirm-close-surface = false;
+          copy-on-select = "clipboard";
+          cursor-style = "block";
+          cursor-style-blink = false;
+          shell-integration-features = "no-cursor";
+          term = "kitty";
+          unfocused-split-opacity = 1.0;
         };
       };
 
