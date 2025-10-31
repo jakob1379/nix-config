@@ -69,7 +69,7 @@ let
     keepassxc
     libnotify
     nodePackages.prettier
-    onlyoffice-bin
+    onlyoffice-desktopeditors
     pika-backup
     pywal16
     signal-desktop
@@ -93,12 +93,12 @@ let
       nerd-fonts.fira-code
       nodejs
       pandoc
-      poppler_utils
+      poppler-utils
       dive
       frogmouth
       karakeepWrapper
       visidata
-      wakatime
+      wakatime-cli
     ]
     ++ lib.optionals (system != "aarch64-linux") [ jdk ];
 

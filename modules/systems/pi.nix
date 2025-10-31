@@ -8,7 +8,7 @@ let
   packagesToExclude = with pkgs; [
     # The following are large GUI apps not needed on a server
     brave
-    onlyoffice-bin
+    onlyoffice-desktopeditors
     slack
     spotify
     thunderbird
