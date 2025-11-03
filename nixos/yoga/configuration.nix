@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 {
   imports = [
     ./hardware-configuration.nix
@@ -6,8 +6,16 @@
   ];
 
   networking.hostName = "yoga";
+  programs.fuse.userAllowOther = true;
 
   i18n.defaultLocale = "da_DK.UTF-8";
+
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = true;
+    pinentryPackage = pkgs.pinentry-gtk2;
+  };
+  services.pcscd.enable = true;
 
   services.xserver.xkb = {
     layout = "dk";
@@ -31,5 +39,4 @@
     package = config.boot.kernelPackages.nvidiaPackages.beta;
   };
 
-  system.stateVersion = config.system.stateVersion;
 }

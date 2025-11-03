@@ -16,7 +16,7 @@
   # Override git user and email for this system.
   customGit = {
     userName = "Jakob Stender Guldberg";
-    userEmail = "jakob.aaes@darerl.com";
+    userEmail = "jakob1379@gmail.com";
   };
 
   # System-specific overrides for UCPH machine
@@ -24,8 +24,6 @@
     enableGui = lib.mkForce true; # Enable GUI packages for this desktop system
     # Add remmina package specifically for this system
     extra = with pkgs; [
-      godot
-      remmina
     ];
   };
 

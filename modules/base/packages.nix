@@ -48,7 +48,6 @@ let
     nix-prefetch-github
     nix-search-cli
     nixfmt-classic
-    nvtopPackages.full
     onefetch
     python3Packages.keyring
     rename
