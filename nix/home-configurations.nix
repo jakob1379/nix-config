@@ -23,4 +23,12 @@ in
     homeDirectory = "/home/jga";
     extraModules = [ ../modules/systems/yoga.nix ];
   };
+
+  "jsg@amd" = mkHomeConfig {
+    system = "x86_64-linux";
+    username = "jsg";
+    homeDirectory = "/home/jsg";
+    extraModules = [ ../modules/systems/amd.nix ];
+  };
+
 }
