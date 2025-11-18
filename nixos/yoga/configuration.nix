@@ -1,4 +1,9 @@
-{ config, pkgs, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 {
   imports = [
     ./hardware-configuration.nix
@@ -26,6 +31,16 @@
     enable = true;
     powerOnBoot = true;
   };
+
+  hardware.nvidia-container-toolkit.enable = true;
+
+  services.xserver.videoDrivers = lib.mkAfter [ "nvidia" ];
+  kernelModules = [ "kvm-intel" ];
+
+  kernelParams = lib.mkAfter [
+    "nvidia-drm.modeset=1"
+    "nvidia-drm.fbdev=1"
+  ];
 
   hardware.nvidia = {
     modesetting.enable = true;

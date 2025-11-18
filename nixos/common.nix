@@ -14,7 +14,7 @@
       options = "--delete-older-than 7d";
     };
     settings = {
-      trusted-users = [ "jga" ];
+      trusted-users = [ "jsg" ];
       auto-optimise-store = true;
       experimental-features = [
         "nix-command"
@@ -79,7 +79,6 @@
   services.netbird = {
     ui.enable = true;
     enable = true;
-    tunnels.jgalabs.port = 52821;
   };
 
   # Hardware defaults
@@ -152,7 +151,7 @@
   console.keyMap = "dk-latin1";
 
   # Basic user
-  users.users.jga = {
+  users.users.jsg = {
     isNormalUser = true;
     description = "Jakob Stender Guldberg";
     extraGroups = [
@@ -160,7 +159,6 @@
       "wheel"
       "docker"
       "libvirtd"
-      "netbird-jgalabs"
     ];
     packages = with pkgs; [ libsecret ];
   };
@@ -175,7 +173,6 @@
   services.xserver.videoDrivers = [
     "displaylink"
     "modesetting"
-    "nvidia"
   ];
 
   systemd.services.displaylink = {
@@ -203,12 +200,10 @@
     initrd.kernelModules = [ "evdi" ];
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
-    kernelModules = [ "kvm-intel" ];
+    kernelModules = [ ];
     kernelParams = [
       "acpi_backlight=native"
       "psmouse.synaptics_intertouch=0"
-      "nvidia-drm.modeset=1"
-      "nvidia-drm.fbdev=1"
     ];
   };
 
