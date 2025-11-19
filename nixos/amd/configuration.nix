@@ -31,8 +31,15 @@
     powerOnBoot = true;
   };
 
+  # amd graphics
+  boot.initrd.kernelModules = lib.mkAfter [ "amdgpu" ];
+  services.xserver.videoDrivers = lib.mkAfter [ "amdgpu" ];
+
+  # fingerprint
   services.fprintd.enable = true;
   services.fprintd.tod.enable = true;
   services.fprintd.tod.driver = pkgs.libfprint-2-tod1-elan;
+
   system.stateVersion = lib.mkForce "25.05";
+
 }
