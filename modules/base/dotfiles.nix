@@ -59,6 +59,7 @@
           LC_TIME = "en_GB.utf8";
           NIX_BUILD_CORES = "$(( $(${pkgs.busybox}/bin/nproc) / 2 < 1 ? 1 : $(${pkgs.busybox}/bin/nproc) / 2 ))";
           PAGER = "${pkgs.bat}/bin/bat -p";
+          SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
         };
       };
       fonts.fontconfig.enable = true;
