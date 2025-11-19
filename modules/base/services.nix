@@ -60,7 +60,6 @@ in
             cacheMode = "off";
           };
           rclone-mount-onedrive-ku = createRcloneMountService { name = "onedrive-ku"; };
-          rclone-mount-onedrive-darerl = createRcloneMountService { name = "onedrive-darerl"; };
         };
         description = "Systemd services for rclone mounts.";
       };
