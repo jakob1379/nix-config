@@ -7,25 +7,6 @@
 }:
 
 let
-  karakeepWrapper = pkgs.writeShellApplication {
-    name = "karakeep";
-    runtimeInputs = [
-      pkgs.bash
-      pkgs.python3Packages.keyring
-      pkgs.karakeep
-    ];
-    text = ''
-      #!${pkgs.bash}/bin/bash
-
-      API_KEY="$(keyring get hoarder.jgalabs.dk api_key || exit 1)"
-
-      export KARAKEEP_API_KEY="$API_KEY"
-      export KARAKEEP_SERVER_ADDR="https://hoarder.jgalabs.dk"
-
-      exec karakeep "$@"
-    '';
-  };
-
   corePackages = with pkgs; [
     (btop.override { cudaSupport = true; })
     busybox
@@ -95,7 +76,6 @@ let
       poppler-utils
       dive
       frogmouth
-      karakeepWrapper
       visidata
       wakatime-cli
     ]
@@ -237,6 +217,13 @@ let
         pkgs.coreutils
       ];
       text = builtins.readFile ../../bin/yqp;
+    })
+    (pkgs.writeShellApplication {
+      name = "icat";
+      runtimeInputs = [ pkgs.kitty ];
+      text = ''
+        exec kitty +kitten icat "$@"
+      '';
     })
   ];
 in
