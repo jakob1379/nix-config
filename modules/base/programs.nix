@@ -272,6 +272,7 @@ in
           map-syntax = [
             "*.conf:TOML"
             "*.gdextension:TOML"
+            "u2f_keys:CSV"
           ];
         };
       };
