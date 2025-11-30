@@ -1338,10 +1338,18 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
    'org-babel-load-languages
    '((shell . t)
      (python . t)
+     (mermaid . t)
      (C . t))
    )
   )
 #+END_SRC
+
+**** Mermaid Diagrams
+#+BEGIN_SRC emacs-lisp
+(use-package mermaid-mode
+  :defer t)
+#+END_SRC
+
 **** Org modern ui theme
 #+BEGIN_SRC emacs-lisp
 (use-package org-modern
