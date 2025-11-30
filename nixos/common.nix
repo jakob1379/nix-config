@@ -105,7 +105,11 @@
   };
 
   # Audio
-  services.pulseaudio.enable = false;
+  services.pulseaudio = {
+    enable = false;
+    package = pkgs.pulseaudioFull;
+  };
+
   services.pipewire = {
     enable = true;
     alsa.enable = true;
