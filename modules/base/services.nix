@@ -4,10 +4,9 @@
   lib,
   ...
 }:
-
-
-
-
+{
+  options = {
+    customServices = {
       pywal = lib.mkOption {
         type = lib.types.attrs;
         default = {
@@ -23,7 +22,7 @@
                 "network-online.target"
 
               ];
-              Requires = [  ];
+              Requires = [ ];
             };
             Install = {
               WantedBy = [ "graphical-session.target" ];
@@ -72,7 +71,7 @@
                 "network-online.target"
 
               ];
-              Requires = [  ];
+              Requires = [ ];
             };
             Install = {
               WantedBy = [ "graphical-session.target" ];
@@ -93,12 +92,12 @@
           pywal-apply-variety = {
             Unit = {
               Description = "Monitor wallpaper file for changes";
-              After = [  ];
+              After = [ ];
               Wants = [
                 "pywal-apply-variety.service"
 
               ];
-              Requires = [  ];
+              Requires = [ ];
             };
             Install = {
               WantedBy = [ "graphical-session.target" ];
@@ -118,7 +117,10 @@
       user = {
         startServices = true;
 
-
+        services = lib.mkMerge [
+          config.customServices.pywal
+          config.customServices.variety
+        ];
 
         paths = config.customServices.pywalPath;
       };
