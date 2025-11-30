@@ -4,12 +4,12 @@ let
 in
 {
   default = pkgs.mkShell {
-    packages = (generalPackages pkgs) ++ [ pkgs.pre-commit ];
+    packages = generalPackages pkgs;
     shellHook = ''
       export SSL_CERT_FILE=$(pkgs.cacert)/etc/ssl/certs/ca-bundle.crt
       if [ ! -f .git/hooks/pre-commit ]; then
         echo "Running pre-commit install for the first time..."
-        prek install
+        ${pkgs.prek}/bin/prek install
       fi
       export PS1="(dotfiles-shell 🫥) $PS1"
     '';
