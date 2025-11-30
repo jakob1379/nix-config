@@ -25,7 +25,7 @@ in
   programs.firefox.enable = false;
 
   customServices = {
-    
+
     pywal = { };
     pywalPath = { };
   };

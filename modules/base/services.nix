@@ -17,11 +17,11 @@
               After = [
                 "graphical-session.target"
                 "network-online.target"
-                
+
               ];
               Wants = [
                 "network-online.target"
-                
+
               ];
               Requires = [  ];
             };
@@ -66,11 +66,11 @@
               After = [
                 "graphical-session.target"
                 "network-online.target"
-                
+
               ];
               Wants = [
                 "network-online.target"
-                
+
               ];
               Requires = [  ];
             };
@@ -96,7 +96,7 @@
               After = [  ];
               Wants = [
                 "pywal-apply-variety.service"
-                
+
               ];
               Requires = [  ];
             };
@@ -118,7 +118,7 @@
       user = {
         startServices = true;
 
-        
+
 
         paths = config.customServices.pywalPath;
       };
