@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ "$#" -lt 1 ]; then
-  echo "Usage: nb-peers <netbird-command>" >&2
-  exit 1
+# Description: Extracts peer details from netbird status.
+# Usage: nb-peers [netbird-binary] (defaults to 'netbird')
+
+readonly NB_CMD="${1:-netbird}"
+
+if [[ "${NB_CMD}" == "-h" || "${NB_CMD}" == "--help" ]]; then
+  echo "Usage: $(basename "$0") [netbird-binary]"
+  echo "  If binary is omitted, defaults to 'netbird'."
+  exit 0
 fi
 
-cmd="$1"
-shift
-
-# Use jq from PATH (provided by runtimeInputs)
-command "$cmd" status --json | jq '.peers.details[] | {fqdn, netbirdIp, status, connectionType}' -r
+"${NB_CMD}" status --json | jq -r '.peers.details[] | {fqdn, netbirdIp, status, connectionType}'

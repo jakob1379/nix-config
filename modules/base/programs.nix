@@ -315,7 +315,6 @@ in
 
     # Home shell aliases
     home.shellAliases = {
-      nb-peers = ''get-peers() { command "$1" status --json | ${pkgs.jq}/bin/jq ".peers.details.[] | {fqdn, netbirdIp, status, connectionType}" -r}; get-peers'';
       onefetch = "onefetch -E --nerd-fonts --no-color-palette";
       cat = "bat";
       watch = "hwatch";

@@ -108,6 +108,15 @@ let
 
   customScripts = [
     (pkgs.writeShellApplication {
+      name = "nb-peers";
+      runtimeInputs = [
+        pkgs.jq
+        pkgs.netbird
+      ];
+      text = builtins.readFile ../../bin/nb-peers;
+    })
+
+    (pkgs.writeShellApplication {
       name = "bak";
       runtimeInputs = [
         pkgs.bash
