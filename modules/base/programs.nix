@@ -18,6 +18,33 @@ let
     };
     rtpFilePath = "ping.tmux";
   };
+  createRcloneMount = name: {
+    remote = name;
+    mountPoint = "~/''${name}";
+    extraArgs = [
+      "--vfs-cache-mode=full"
+      "--vfs-cache-max-size=10G"
+      "--vfs-cache-max-age=6h"
+      "--dir-cache-time=3h"
+      "--attr-timeout=1h"
+      "--buffer-size=32M"
+      "--vfs-fast-fingerprint"
+    ];
+  };
+
+  rcloneMounts = {
+    "dropbox-private" = createRcloneMount "dropbox-private";
+    "onedrive-ku" = createRcloneMount "onedrive-ku";
+    "onedrive-ku-crypt" = createRcloneMount "onedrive-ku-crypt" // {
+      extraArgs = [
+        "--vfs-cache-mode=off"
+        "--dir-cache-time=3h"
+        "--attr-timeout=1h"
+        "--buffer-size=32M"
+        "--vfs-fast-fingerprint"
+      ];
+    };
+  };
 in
 {
   options = {
@@ -209,45 +236,7 @@ in
 
       rclone = {
         enable = true;
-        mounts = {
-          "dropbox-private" = {
-            remote = "dropbox-private";
-            mountPoint = "~/dropbox-private";
-            extraArgs = [
-              "--vfs-cache-mode=full"
-              "--vfs-cache-max-size=10G"
-              "--vfs-cache-max-age=6h"
-              "--dir-cache-time=3h"
-              "--attr-timeout=1h"
-              "--buffer-size=32M"
-              "--vfs-fast-fingerprint"
-            ];
-          };
-          "onedrive-ku" = {
-            remote = "onedrive-ku";
-            mountPoint = "~/onedrive-ku";
-            extraArgs = [
-              "--vfs-cache-mode=full"
-              "--vfs-cache-max-size=10G"
-              "--vfs-cache-max-age=6h"
-              "--dir-cache-time=3h"
-              "--attr-timeout=1h"
-              "--buffer-size=32M"
-              "--vfs-fast-fingerprint"
-            ];
-          };
-          "onedrive-ku-crypt" = {
-            remote = "onedrive-ku-crypt";
-            mountPoint = "~/onedrive-ku-crypt";
-            extraArgs = [
-              "--vfs-cache-mode=off"
-              "--dir-cache-time=3h"
-              "--attr-timeout=1h"
-              "--buffer-size=32M"
-              "--vfs-fast-fingerprint"
-            ];
-          };
-        };
+        mounts = rcloneMounts;
       };
 
       tmux = {
