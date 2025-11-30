@@ -24,6 +24,7 @@
     enableGui = lib.mkForce true; # Enable GUI packages for this desktop system
     # Add remmina package specifically for this system
     extra = with pkgs; [
+      clockify
     ];
   };
 

@@ -45,7 +45,6 @@ let
     dbeaver-bin
     feh
     gnome-boxes
-    gnome-pomodoro
     keepassxc
     libnotify
     nodePackages.prettier
@@ -78,6 +77,7 @@ let
       frogmouth
       visidata
       wakatime-cli
+      mermaid-cli
     ]
     ++ lib.optionals (system != "aarch64-linux") [ jdk ];
 

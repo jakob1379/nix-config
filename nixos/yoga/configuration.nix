@@ -16,7 +16,7 @@
   i18n.defaultLocale = "da_DK.UTF-8";
 
   programs.gnupg.agent = {
-    enable = true;
+    enable = false;
     enableSSHSupport = true;
     pinentryPackage = pkgs.pinentry-gtk2;
   };

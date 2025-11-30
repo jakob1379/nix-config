@@ -273,6 +273,7 @@ in
             "*.conf:TOML"
             "*.gdextension:TOML"
             "u2f_keys:CSV"
+            "justfile:make"
           ];
         };
       };

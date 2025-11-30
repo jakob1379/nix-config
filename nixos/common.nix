@@ -6,6 +6,9 @@
 }:
 
 {
+  # Disable screenreader
+  services.orca.enable = false;
+
   # Nix settings
   nix = {
     gc = {
@@ -118,6 +121,7 @@
   };
 
   security.rtkit.enable = true;
+  security.polkit.enable = true;
 
   services.libinput.enable = true;
 

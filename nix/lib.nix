@@ -9,7 +9,6 @@ let
   generalPackages =
     pkgs: with pkgs; [
       prek
-      pre-commit
       yamllint
       nixfmt-rfc-style
       statix
