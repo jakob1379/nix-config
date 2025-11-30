@@ -1736,15 +1736,14 @@ simple package that enable titlecasing
 (defun get-wakatime-api-key ()
   "Get Wakatime API key from .wakatime.cfg file."
   (let* ((home (expand-file-name "~"))
-         (wakacfg (concat (file-name-as-directory home) ".wakatime.cfg"))
-         (content (when (file-exists-p wakacfg)
-                    (with-temp-buffer
-                      (insert-file-contents wakacfg)
-                      (buffer-string)))))
-    (when content
-      (let ((start (string-match "^api_key\\s-*=\\s-*" content)))
-        (when start
-          (string-trim (substring content (match-end 0))))))))
+         (wakacfg (concat (file-name-as-directory home) ".wakatime.cfg")))
+    (when (file-exists-p wakacfg)
+      (with-temp-buffer
+        (insert-file-contents wakacfg)
+        (let* ((content (buffer-string))
+               (start (string-match "^api_key\\s-*=\\s-*" content)))
+          (when start
+            (string-trim (substring content (match-end 0)))))))))
 
 (use-package wakatime-mode
   :init
