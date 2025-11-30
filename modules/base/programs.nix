@@ -209,6 +209,45 @@ in
 
       rclone = {
         enable = true;
+        mounts = {
+          "dropbox-private" = {
+            remote = "dropbox-private";
+            mountPoint = "~/dropbox-private";
+            extraArgs = [
+              "--vfs-cache-mode=full"
+              "--vfs-cache-max-size=10G"
+              "--vfs-cache-max-age=6h"
+              "--dir-cache-time=3h"
+              "--attr-timeout=1h"
+              "--buffer-size=32M"
+              "--vfs-fast-fingerprint"
+            ];
+          };
+          "onedrive-ku" = {
+            remote = "onedrive-ku";
+            mountPoint = "~/onedrive-ku";
+            extraArgs = [
+              "--vfs-cache-mode=full"
+              "--vfs-cache-max-size=10G"
+              "--vfs-cache-max-age=6h"
+              "--dir-cache-time=3h"
+              "--attr-timeout=1h"
+              "--buffer-size=32M"
+              "--vfs-fast-fingerprint"
+            ];
+          };
+          "onedrive-ku-crypt" = {
+            remote = "onedrive-ku-crypt";
+            mountPoint = "~/onedrive-ku-crypt";
+            extraArgs = [
+              "--vfs-cache-mode=off"
+              "--dir-cache-time=3h"
+              "--attr-timeout=1h"
+              "--buffer-size=32M"
+              "--vfs-fast-fingerprint"
+            ];
+          };
+        };
       };
 
       tmux = {

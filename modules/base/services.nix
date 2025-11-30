@@ -5,64 +5,8 @@
   ...
 }:
 
-let
-  # Create a function for rclone mount services
-  createRcloneMountService =
-    {
-      name,
-      remote ? "${name}",
-      mountPath ? "${config.home.homeDirectory}/${name}",
-      remotePath ? "/",
-      configPath ? "${config.xdg.configHome}/rclone/rclone.conf",
-      cacheMode ? "full",
-    }:
-    {
-      Unit = {
-        Description = "Rclone mount service for ${name}";
-        After = [ "network-online.target" ];
-        Wants = [ "network-online.target" ];
-      };
 
-      Service = {
-        ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${mountPath}";
-        ExecStart = ''
-          ${pkgs.rclone}/bin/rclone mount \
-            --allow-other \
-            --attr-timeout 1h \
-            --buffer-size=32M \
-            --config "${configPath}" \
-            --dir-cache-time 3h0m0s \
-            --vfs-cache-max-age 6h \
-            --vfs-cache-max-size 10G \
-            --vfs-cache-mode "${cacheMode}" \
-            --vfs-fast-fingerprint \
-            ${remote}:${remotePath} ${mountPath}
-        '';
-        ExecStop = "fusermount -u ${mountPath}";
-        Type = "notify";
-        Restart = "on-failure";
-        RestartSec = "10s";
-      };
-      Install = {
-        WantedBy = [ "default.target" ];
-      };
-    };
-in
-{
-  options = {
-    customServices = {
-      rclone = lib.mkOption {
-        type = lib.types.attrs;
-        default = {
-          rclone-mount-dropbox-private = createRcloneMountService { name = "dropbox-private"; };
-          rclone-mount-onedrive-ku-crypt = createRcloneMountService {
-            name = "onedrive-ku-crypt";
-            cacheMode = "off";
-          };
-          rclone-mount-onedrive-ku = createRcloneMountService { name = "onedrive-ku"; };
-        };
-        description = "Systemd services for rclone mounts.";
-      };
+
 
       pywal = lib.mkOption {
         type = lib.types.attrs;
@@ -73,13 +17,13 @@ in
               After = [
                 "graphical-session.target"
                 "network-online.target"
-                "rclone-mount-dropbox-private.service"
+                
               ];
               Wants = [
                 "network-online.target"
-                "rclone-mount-dropbox-private.service"
+                
               ];
-              Requires = [ "rclone-mount-dropbox-private.service" ];
+              Requires = [  ];
             };
             Install = {
               WantedBy = [ "graphical-session.target" ];
@@ -122,13 +66,13 @@ in
               After = [
                 "graphical-session.target"
                 "network-online.target"
-                "rclone-mount-dropbox-private.service"
+                
               ];
               Wants = [
                 "network-online.target"
-                "rclone-mount-dropbox-private.service"
+                
               ];
-              Requires = [ "rclone-mount-dropbox-private.service" ];
+              Requires = [  ];
             };
             Install = {
               WantedBy = [ "graphical-session.target" ];
@@ -149,12 +93,12 @@ in
           pywal-apply-variety = {
             Unit = {
               Description = "Monitor wallpaper file for changes";
-              After = [ "rclone-mount-dropbox-private.service" ];
+              After = [  ];
               Wants = [
                 "pywal-apply-variety.service"
-                "rclone-mount-dropbox-private.service"
+                
               ];
-              Requires = [ "rclone-mount-dropbox-private.service" ];
+              Requires = [  ];
             };
             Install = {
               WantedBy = [ "graphical-session.target" ];
@@ -174,11 +118,7 @@ in
       user = {
         startServices = true;
 
-        services = lib.mkMerge [
-          config.customServices.rclone
-          config.customServices.pywal
-          config.customServices.variety
-        ];
+        
 
         paths = config.customServices.pywalPath;
       };
