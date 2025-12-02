@@ -5,10 +5,14 @@
   username,
   homeDirectory,
   extraModules ? [ ],
+  lib,
 }:
 
 inputs.home-manager.lib.homeManagerConfiguration {
-  pkgs = inputs.nixpkgs.legacyPackages.${system};
+  pkgs = import inputs.nixpkgs {
+    inherit system;
+    config.allowUnfreePredicate = lib.allowUnfreePredicate;
+  };
   modules = [
     # All systems import the common base configuration
     ../modules/systems/common.nix

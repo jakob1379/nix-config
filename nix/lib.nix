@@ -6,6 +6,11 @@ let
     nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-linux" ] (
       system: function nixpkgs.legacyPackages.${system}
     );
+  allowUnfreePredicate =
+    pkg:
+    builtins.elem (pkg.pname or "") [
+      "zen-browser"
+    ];
   generalPackages =
     pkgs: with pkgs; [
       prek
@@ -16,5 +21,10 @@ let
     ];
 in
 {
-  inherit mkHomeConfig forAllSystems generalPackages;
+  inherit
+    mkHomeConfig
+    forAllSystems
+    generalPackages
+    allowUnfreePredicate
+    ;
 }
