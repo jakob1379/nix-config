@@ -15,7 +15,6 @@
       type = lib.types.attrs;
       default = {
         ".ssh/keepassxc-prompt".source = ../../bin/keepassxc-prompt;
-        ".ssh/config".source = ../../dotfiles/ssh/common;
       };
       description = "SSH dotfiles.";
     };

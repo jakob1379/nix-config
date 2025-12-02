@@ -201,7 +201,10 @@ in
         timeout = 5;
       };
 
-      ssh-agent.enable = true;
+      ssh-agent = {
+        enable = true;
+        enableBashIntegration = true;
+      };
       easyeffects.enable = true;
       mpris-proxy.enable = true;
       home-manager.autoExpire.enable = true;

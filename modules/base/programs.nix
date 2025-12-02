@@ -292,7 +292,23 @@ in
       };
 
       ssh = {
-        matchBlocks."*".forwardAgent = true;
+        enable = true;
+        enableDefaultConfig = false;
+        includes = [ "~/.ssh/local_config" ];
+        extraOptionOverrides = {
+          ProxyCommand = "$HOME/.ssh/keepassxc-prompt %h %p";
+        };
+        matchBlocks = {
+          "*" = {
+            forwardAgent = true;
+            addKeysToAgent = "yes";
+            controlMaster = "auto";
+            controlPath = "~/.ssh/sockets/%r@%h-%p";
+            controlPersist = "yes";
+            serverAliveInterval = 30;
+            serverAliveCountMax = 3;
+          };
+        };
       };
 
       navi = {

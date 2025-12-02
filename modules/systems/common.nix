@@ -30,7 +30,6 @@
 
   # Enable dotfile groups by default. Systems can override these.
   customDotfiles = {
-    enableSsh = lib.mkDefault true;
     enableEmacs = lib.mkDefault true;
     enableMediaControl = lib.mkDefault false; # Opt-in per system
   };
