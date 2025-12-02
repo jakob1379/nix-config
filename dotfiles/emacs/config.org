@@ -1343,10 +1343,9 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
    )
   )
 #+END_SRC
-
-**** Mermaid Diagrams
+**** org mermaid integration
 #+BEGIN_SRC emacs-lisp
-(use-package mermaid-mode
+(use-package ob-mermaid
   :defer t)
 #+END_SRC
 
@@ -1467,6 +1466,11 @@ The native graph viewer of org-roam gets the job done, but it isn't pretty. This
 (use-package ox-twbs
   :defer t)
 (use-package ox-pandoc
+  :defer t)
+#+END_SRC
+*** Mermaid Diagrams
+#+BEGIN_SRC emacs-lisp
+(use-package mermaid-mode
   :defer t)
 #+END_SRC
 *** PDF Tools
