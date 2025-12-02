@@ -18,6 +18,7 @@ let
       nixfmt-rfc-style
       statix
       deadnix
+      git-crypt
     ];
 in
 {

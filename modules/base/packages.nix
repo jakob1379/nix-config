@@ -44,8 +44,8 @@ let
     tana
     dbeaver-bin
     feh
+    netpeek
     gnome-boxes
-    keepassxc
     libnotify
     nodePackages.prettier
     onlyoffice-desktopeditors

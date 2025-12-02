@@ -138,16 +138,6 @@
     DESKTOP_SESSION=$XDG_SESSION_DESKTOP
   '';
 
-  # SSH askpass helper (default to KDE ksshaskpass)
-  programs.ssh.askPassword = lib.mkForce (
-    if builtins.getEnv "DESKTOP_SESSION" == "plasma" then
-      "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass"
-    else if builtins.getEnv "DESKTOP_SESSION" == "gnome" then
-      "${pkgs.seahorse}/libexec/seahorse/ssh-askpass"
-    else
-      "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass"
-  );
-
   security.sudo.package = pkgs.sudo.override { withInsults = true; };
 
   # No swap by default

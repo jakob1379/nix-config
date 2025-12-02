@@ -79,6 +79,10 @@ in
         package = pkgs.emacs30-gtk3;
       };
 
+      fastfetch = {
+        enable = true;
+      };
+
       fd.enable = true;
 
       firefox = {
@@ -168,17 +172,6 @@ in
         };
       };
 
-      ranger = {
-        enable = true;
-        extraPackages = with pkgs; [
-          python3Packages.pillow
-        ];
-        settings = {
-          preview_images = true;
-          preview_images_method = "kitty";
-        };
-      };
-
       ghostty = {
         enable = true;
         settings = {
@@ -248,8 +241,20 @@ in
         );
       };
 
-      fastfetch = {
+      keepassxc = {
         enable = true;
+        autostart = true;
+      };
+
+      ranger = {
+        enable = true;
+        extraPackages = with pkgs; [
+          python3Packages.pillow
+        ];
+        settings = {
+          preview_images = true;
+          preview_images_method = "kitty";
+        };
       };
 
       fzf = {
