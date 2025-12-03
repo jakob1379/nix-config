@@ -31,6 +31,7 @@
   # Enable dotfile groups by default. Systems can override these.
   customDotfiles = {
     enableEmacs = lib.mkDefault true;
+    enableDroid = lib.mkDefault true;
     enableMediaControl = lib.mkDefault false; # Opt-in per system
   };
 

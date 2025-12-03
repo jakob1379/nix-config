@@ -7,10 +7,19 @@
 
 {
   options.customDotfiles = {
-    enableSsh = lib.mkEnableOption "SSH dotfiles";
-    enableEmacs = lib.mkEnableOption "Emacs dotfiles";
-    enableMediaControl = lib.mkEnableOption "media control dotfiles";
 
+    enableDroid = lib.mkEnableOption "media control dotfiles";
+    droid = lib.mkOption {
+      type = lib.types.attrs;
+      default = {
+        ".factory/droids".source = ../../dotfiles/droid/droids;
+        ".factory/commands".source = ../../dotfiles/droid/commands;
+        ".factory/skills".source = ../../dotfiles/droid/skills;
+      };
+      description = "Factory droid configs";
+    };
+
+    enableSsh = lib.mkEnableOption "SSH dotfiles";
     ssh = lib.mkOption {
       type = lib.types.attrs;
       default = {
@@ -18,6 +27,8 @@
       };
       description = "SSH dotfiles.";
     };
+
+    enableEmacs = lib.mkEnableOption "Emacs dotfiles";
     emacs = lib.mkOption {
       type = lib.types.attrs;
       default = {
@@ -27,6 +38,8 @@
       };
       description = "Emacs dotfiles.";
     };
+
+    enableMediaControl = lib.mkEnableOption "media control dotfiles";
     mediaControl = lib.mkOption {
       type = lib.types.attrs;
       default = {
@@ -49,6 +62,7 @@
         file = lib.mkMerge [
           (lib.mkIf cfg.enableSsh cfg.ssh)
           (lib.mkIf cfg.enableEmacs cfg.emacs)
+          (lib.mkIf cfg.enableDroid cfg.droid)
           (lib.mkIf cfg.enableMediaControl cfg.mediaControl)
         ];
 
