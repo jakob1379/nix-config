@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+
+# Constants
+readonly SESSION_PATTERN='droid --resume [a-f0-9-]*'
+
+# Cleanup temporary files on exit
+cleanup() {
+  local exit_code=$?
+  [[ -n "${stderr_file:-}" && -f "$stderr_file" ]] && rm -f "$stderr_file"
+  return "$exit_code"
+}
+trap cleanup EXIT
+
+# Extract session ID from stderr output
+extract_session_id() {
+  local stderr_file="$1"
+
+  if ! grep -q "$SESSION_PATTERN" "$stderr_file"; then
+    return 1
+  fi
+
+  grep -o "$SESSION_PATTERN" "$stderr_file" | \
+    sed 's/droid --resume //'
+}
+
+# Determine session file path
+get_session_file_path() {
+    local git_root
+    if git_root=$(git rev-parse --show-toplevel 2>/dev/null); then
+        echo "$git_root/.droid"
+    else
+        echo "./.droid"
+    fi
+}
+
+# Save session ID to file
+save_session_id() {
+  local session_id="$1"
+  local session_file
+  session_file=$(get_session_file_path)
+  echo "$session_id" > "$session_file"
+}
+
+# Load session ID from file, clean up if empty
+load_session_id() {
+  local session_file
+  session_file=$(get_session_file_path)
+  [[ ! -f "$session_file" ]] && return 1
+
+  local session_id
+  session_id=$(cat "$session_file" | tr -d '[:space:]')
+
+  if [[ -z "$session_id" ]]; then
+    rm -f "$session_file"
+    return 1
+  fi
+
+  echo "$session_id"
+}
+
+# Main execution
+main() {
+    local stderr_file
+    local session_id
+    local force_new_session=false
+    local droid_args=()
+
+    # Simple argument parsing
+    for arg in "$@"; do
+        case "$arg" in
+            -n|--new)
+                force_new_session=true
+                ;;
+            *)
+                droid_args+=("$arg")
+                ;;
+        esac
+    done
+
+    stderr_file=$(mktemp)
+
+    # Attempt to resume existing session
+    if [[ "$force_new_session" == false ]] && session_id=$(load_session_id); then
+        echo "Resuming droid session: $session_id"
+        droid --resume "$session_id" "${droid_args[@]}" 2>"$stderr_file"
+    else
+        droid "${droid_args[@]}" 2>"$stderr_file"
+    fi
+
+    # Extract and persist any new session ID
+    if new_session_id=$(extract_session_id "$stderr_file"); then
+        save_session_id "$new_session_id"
+        echo "Session ID saved: $new_session_id" >&2
+    fi
+}
+
+main "$@"

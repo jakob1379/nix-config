@@ -89,3 +89,4 @@ __pycache__/
 /flake.lock
 .aider*
 .aider.*
+/.droid

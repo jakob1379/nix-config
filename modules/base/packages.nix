@@ -138,6 +138,16 @@ let
       text = builtins.readFile ../../bin/docker-volume-copy;
     })
     (pkgs.writeShellApplication {
+      name = "ddroid";
+      runtimeInputs = [
+        pkgs.bash
+        pkgs.coreutils
+        pkgs.gnugrep
+        pkgs.gnused
+      ];
+      text = builtins.readFile ../../bin/ddroid;
+    })
+    (pkgs.writeShellApplication {
       name = "dragon-scp";
       runtimeInputs = [
         pkgs.openssh
