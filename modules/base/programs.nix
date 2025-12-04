@@ -36,6 +36,26 @@ in
   };
 
   config = {
+    nixpkgs.overlays = [
+      (_final: prev: {
+        keepassxc =
+          prev.runCommand "${prev.keepassxc.name}-xcb"
+            {
+              inherit (prev.keepassxc) meta;
+            }
+            ''
+              cp -r ${prev.keepassxc} $out
+
+              for desktopFile in $out/share/applications/*.desktop; do
+                if [[ -f "$desktopFile" ]]; then
+                  substituteInPlace "$desktopFile" \
+                    --replace-fail 'Exec=keepassxc' 'Exec=keepassxc -platform xcb'
+                fi
+              done
+            '';
+      })
+    ];
+
     programs = {
       bash = {
         enable = true;
@@ -158,7 +178,7 @@ in
               	        else
               	          echo "No branches were deleted.";
               	        fi;
-              	                               }; f'';
+              	            }; f'';
             unstage = "restore --staged";
           };
         };
@@ -244,6 +264,7 @@ in
       keepassxc = {
         enable = true;
         autostart = true;
+        package = pkgs.keepassxc;
       };
 
       ranger = {
