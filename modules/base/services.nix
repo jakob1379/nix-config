@@ -64,55 +64,6 @@ in
         description = "Systemd services for rclone mounts.";
       };
 
-      pywal = lib.mkOption {
-        type = lib.types.attrs;
-        default = {
-          pywal-apply-variety = {
-            Unit = {
-              Description = "Apply pywal theme based on Variety wallpaper";
-              After = [
-                "graphical-session.target"
-                "network-online.target"
-                "rclone-mount-dropbox-private.service"
-              ];
-              Wants = [
-                "network-online.target"
-                "rclone-mount-dropbox-private.service"
-              ];
-              Requires = [ "rclone-mount-dropbox-private.service" ];
-            };
-            Install = {
-              WantedBy = [ "graphical-session.target" ];
-            };
-            Service = {
-              ExecStart = "${
-                pkgs.writeShellApplication {
-                  name = "pywal-apply";
-                  runtimeInputs = [
-                    pkgs.pywal16
-                    pkgs.coreutils
-                    pkgs.imagemagick
-                  ];
-                  text = ''
-                    set -e
-                    wal -ni "$(cat ${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt)" && wal -R
-                  '';
-                }
-              }/bin/pywal-apply";
-              Restart = "on-failure";
-              RestartSec = 5;
-              StandardOutput = "journal";
-              StandardError = "journal";
-              Environment = [
-                "SYSTEMD_LOG_LEVEL=debug"
-                "PATH=${pkgs.imagemagick}/bin:$PATH"
-              ];
-            };
-          };
-        };
-        description = "Systemd service for applying pywal theme.";
-      };
-
       variety = lib.mkOption {
         type = lib.types.attrs;
         default = {
@@ -143,29 +94,58 @@ in
         description = "Systemd service for Variety wallpaper changer.";
       };
 
-      pywalPath = lib.mkOption {
+      wallust = lib.mkOption {
         type = lib.types.attrs;
         default = {
-          pywal-apply-variety = {
-            Unit = {
-              Description = "Monitor wallpaper file for changes";
-              After = [ "rclone-mount-dropbox-private.service" ];
-              Wants = [
-                "pywal-apply-variety.service"
-                "rclone-mount-dropbox-private.service"
-              ];
-              Requires = [ "rclone-mount-dropbox-private.service" ];
+          service = {
+            "wallust-apply-variety" = {
+              Unit = {
+                # Unit definition for the service
+                Description = "Apply wallpaper colors with Wallust";
+                After = [ "rclone-mount-dropbox-private.service" ];
+                Wants = [ "rclone-mount-dropbox-private.service" ];
+                Requires = [ "rclone-mount-dropbox-private.service" ];
+              };
+              Service = {
+                # Service-specific configuration
+                ExecStart = ''
+                  ${pkgs.bash}/bin/bash -c '${pkgs.wallust}/bin/wallust run \"$(<${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt)\"'
+                '';
+                Type = "oneshot";
+              };
+              Install = {
+                # Install-specific configuration
+                WantedBy = [ "graphical-session.target" ];
+              };
             };
-            Install = {
-              WantedBy = [ "graphical-session.target" ];
-            };
-            Path = {
-              PathModified = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
+          };
+
+          path = {
+            "wallust-apply-variety" = {
+              Unit = {
+                # Unit definition for the path
+                Description = "Monitor wallpaper file for changes for Wallust";
+                After = [ "rclone-mount-dropbox-private.service" ];
+                Wants = [
+                  "wallust-apply-variety.service" # Reference the full service unit name here
+                  "rclone-mount-dropbox-private.service"
+                ];
+                Requires = [ "rclone-mount-dropbox-private.service" ];
+              };
+              Install = {
+                # Install-specific configuration
+                WantedBy = [ "graphical-session.target" ];
+              };
+              Path = {
+                # Path-specific configuration
+                PathModified = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
+              };
             };
           };
         };
-        description = "Systemd path for pywal service.";
+        description = "Systemd service and path for wallust to apply colors based on wallpaper changes.";
       };
+
     };
   };
 
@@ -176,11 +156,13 @@ in
 
         services = lib.mkMerge [
           config.customServices.rclone
-          config.customServices.pywal
           config.customServices.variety
+          config.customServices.wallust.service
         ];
 
-        paths = config.customServices.pywalPath;
+        paths = lib.mkMerge [
+          config.customServices.wallust.path
+        ];
       };
     };
 

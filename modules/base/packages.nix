@@ -50,7 +50,6 @@ let
     nodePackages.prettier
     onlyoffice-desktopeditors
     pika-backup
-    pywal16
     signal-desktop
     spotify
     stretchly
@@ -207,16 +206,6 @@ let
         pkgs.uv
       ];
       text = builtins.readFile ../../bin/pyvenv-setup;
-    })
-    (pkgs.writeShellApplication {
-      name = "pywal-apply";
-      runtimeInputs = [
-        pkgs.pywal16
-        pkgs.coreutils
-      ];
-      text = ''
-        wal -i "$(cat ~/.config/variety/wallpaper/wallpaper.jpg.txt)"
-      '';
     })
     (pkgs.writeShellApplication {
       name = "update-all";

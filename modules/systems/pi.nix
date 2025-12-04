@@ -19,8 +19,7 @@ in
 
   customServices = {
     rclone = { };
-    pywal = { };
-    pywalPath = { };
+    wallust = { };
   };
 
   services = {
