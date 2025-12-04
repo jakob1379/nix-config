@@ -11,14 +11,6 @@ in
     inherit lib;
   };
 
-  "fuzie@Fuzie-pc" = mkHomeConfig {
-    system = "x86_64-linux";
-    username = "fuzie";
-    homeDirectory = "/home/fuzie";
-    extraModules = [ ../modules/systems/wsl.nix ];
-    inherit lib;
-  };
-
   "jga@yoga" = mkHomeConfig {
     system = "x86_64-linux";
     username = "jga";

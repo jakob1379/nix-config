@@ -6,23 +6,16 @@
 let
   # Packages to exclude on the Raspberry Pi to save space/resources
   packagesToExclude = with pkgs; [
-    # The following are large GUI apps not needed on a server
-    brave
-    onlyoffice-desktopeditors
-    slack
-    spotify
-    thunderbird
-    vlc
   ];
 in
 {
   # System-specific overrides for Raspberry Pi
   customPackages = {
-    enableGui = false; # Disable GUI packages
+    enableGui = false;
     exclude = packagesToExclude;
   };
 
-  programs.firefox.enable = false;
+  programs.firefox.enable = pkgs.lib.mkForce false;
 
   customServices = {
     rclone = { };
@@ -31,13 +24,8 @@ in
   };
 
   services = {
-    unclutter.enable = false;
-    easyeffects.enable = false;
-    mpris-proxy.enable = false;
+    unclutter.enable = pkgs.lib.mkForce false;
+    easyeffects.enable = pkgs.lib.mkForce false;
+    mpris-proxy.enable = pkgs.lib.mkForce false;
   };
-  # Override SSH config for Pi
-  home.file.".ssh/config".text = ''
-    Host *
-      AddKeysToAgent yes
-  '';
 }
