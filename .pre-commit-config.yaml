@@ -1,4 +1,15 @@
 ---
+ci:
+  autoupdate_commit_msg: 'chore: update pre-commit hooks'
+  autofix_commit_msg: 'style: pre-commit fixes'
+  autoupdate_schedule: monthly
+  skip: []
+  submodules: false
+# Default stages for hooks
+default_stages: [pre-commit, commit-msg, pre-push]
+
+# Default hook types to install
+default_install_hook_types: [pre-commit, commit-msg, pre-push]
 repos:
   # Standard meta hooks
   - repo: meta
@@ -14,20 +25,20 @@ repos:
       - id: check-merge-conflict
       - id: check-shebang-scripts-are-executable
       - id: check-yaml
-        args: ["--unsafe"]
+        args: [--unsafe]
+      - id: check-toml  # Check toml syntax
       - id: debug-statements
       - id: detect-private-key
       - id: end-of-file-fixer
       - id: fix-byte-order-marker
       - id: mixed-line-ending
-        args: ["--fix=auto"]
+        args: [--fix=auto]
       - id: trailing-whitespace
     rev: v6.0.0
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.30.0
     hooks:
       - id: gitleaks
-
   - repo: local
     hooks:
       - id: nixfmt
@@ -39,7 +50,7 @@ repos:
       - id: deadnix
         name: find dead code
         entry: deadnix
-        args: ["--fail"]
+        args: [--fail]
         language: system
         files: \.nix$
       - id: statix
@@ -48,7 +59,6 @@ repos:
         language: system
         pass_filenames: false
         files: \.nix$
-
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.14.7
     hooks:
@@ -56,31 +66,36 @@ repos:
         args: [--fix]
       - id: ruff-format
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.7.3
+    rev: v3.7.4
     hooks:
       - id: prettier
-        types_or: [yaml, markdown, html, css, scss, javascript, json]
+        types_or: [markdown, html, css, scss, javascript, json]
         args: [--prose-wrap=always]
         additional_dependencies:
           - prettier@3.2.4
           - prettier-plugin-sort-json@3.1.0
-
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
       - id: codespell
-        args: ["--write-changes"]
-        additional_dependencies:
-          - tomli
-
-  - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.37.1
+        args: [--write-changes]
+        additional_dependencies: [tomli]
+  - repo: https://github.com/lyz-code/yamlfix
+    rev: 1.19.0
     hooks:
-      - id: yamllint
-        args: ["--strict"]
-        files: \.(yaml|yml)$
-
+      - id: yamlfix
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.11.0.1
     hooks:
       - id: shellcheck
+  - repo: https://github.com/pappasam/toml-sort
+    rev: v0.24.3
+    hooks:
+      - id: toml-sort-fix
+        files: \.toml$
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.35.0
+    hooks:
+      - id: check-github-workflows  # Validate GitHub workflow files
+      - id: check-dependabot  # Validate Dependabot config
+      # Add other schema checks if needed (e.g., check-readthedocs)
