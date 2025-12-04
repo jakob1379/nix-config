@@ -1,0 +1,24 @@
+---
+name: Nix Cache
+on:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v1
+      - name: Set up Cachix
+        uses: cachix/cachix-action@v12
+        with:
+          name: jgalabs-homelab
+          authToken: ${{ secrets.CACHIX_TOKEN }}
+      - name: Build home-manager configurations
+        run: |-
+          nix build .#homeConfigurations.\"pi@raspberrypi\".activationPackage || exit_code_pi=$?
+          nix build .#homeConfigurations.\"jga@yoga\".activationPackage || exit_code_jga=$?
+          nix build .#homeConfigurations.\"jsg@amd\".activationPackage || exit_code_jsg=$?
+          exit $((exit_code_pi + exit_code_fuzie + exit_code_jga + exit_code_jsg))
