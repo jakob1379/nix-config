@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+#
+# Nix-Index with Temporary Swap Manager
+#
+# This script creates a temporary 32GB swap file to provide additional
+# memory for running nix-index, then automatically cleans up the swap
+# file regardless of success or failure conditions.
+#
+# Usage: Simply execute the script. It requires sudo privileges for
+# swap file operations and nix-index to be installed.
+#
+# Cleanup: The script implements robust error handling with a trap-based
+# cleanup function that removes swap files even if the script fails
+# at any point.
+
+set -euo pipefail  # Exit on error, undefined vars, and pipe failures
+
+# Default values
+SWAP_SIZE="32G"
+PARALLEL_JOBS="2"
+
+displayUsage() {
+  # <>  angle brackets for required parameters
+  # []  square brackets for optional parameters
+  # ... ellipses for repeated items
+  #  |  vertical bars for choice of items
+  cat << 'EOF'
+usage:  nix-index-swap [options]
+options:
+  -s <size> | --size <size>       swap file size (default: 32G)
+  -j <jobs> | --jobs <jobs>       parallel jobs for nix-index (default: 2)
+  -h | --help                     shows this dialogue
+
+examples:
+  nix-index-swap                          # Use defaults: 32GB swap, 2 jobs
+  nix-index-swap -s 16G                   # Use 16GB swap with default jobs
+  nix-index-swap -s 64G -j 8              # Use 64GB swap with 8 parallel jobs
+
+operations:
+  nix-index-swap {-h help} shows this dialogue
+EOF
+}
+
+# Cleanup function - always runs before exit
+cleanup() {
+    local exit_code=$?
+
+    # Only attempt cleanup if swap file was created
+    if [[ -n "${SWAP_FILE:-}" && -b "$SWAP_FILE" ]]; then
+        echo "Deactivating swap on $SWAP_FILE..." >&2
+        sudo swapoff "$SWAP_FILE" 2>/dev/null || true
+    fi
+
+    if [[ -n "${SWAP_FILE:-}" && -f "$SWAP_FILE" ]]; then
+        echo "Removing temporary swap file $SWAP_FILE..." >&2
+        sudo rm -f "$SWAP_FILE" 2>/dev/null || true
+    fi
+
+    if (( exit_code != 0 )); then
+        echo "Script failed with exit code $exit_code" >&2
+        echo "Cleanup completed." >&2
+    fi
+}
+
+# Set trap to run cleanup on exit (any signal)
+trap cleanup EXIT
+
+# Validate that all required system commands are available
+for cmd in sudo fallocate mkswap swapon swapoff nix-index mktemp; do
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+        echo "Error: Required command '$cmd' not found" >&2
+        exit 1
+    fi
+done
+
+# Parse command line arguments using getopts
+while getopts ":hs:j:" opt; do
+    case ${opt} in
+        s)
+            SWAP_SIZE="${OPTARG}"
+            ;;
+        j)
+            PARALLEL_JOBS="${OPTARG}"
+            ;;
+        h)
+            displayUsage
+            exit 0
+            ;;
+        \?)
+            echo "Invalid option: -${OPTARG}" 1>&2
+            exit 2
+            ;;
+        :)
+            echo "Option -${OPTARG} requires an argument" 1>&2
+            exit 2
+            ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+# Validate parallel jobs argument
+if ! [[ "$PARALLEL_JOBS" =~ ^[0-9]+$ ]] || (( PARALLEL_JOBS < 1 )); then
+    echo "Error: Parallel jobs must be a positive integer (got: '$PARALLEL_JOBS')" >&2
+    exit 1
+fi
+
+# Generate unique swap file name using mktemp with better collision resistance
+SWAP_FILE="$(mktemp -u /tmp/nix_index_swap.XXXXXXXX)"
+
+echo "Creating a ${SWAP_SIZE} temporary swap file at $SWAP_FILE..."
+if ! sudo fallocate -l "$SWAP_SIZE" "$SWAP_FILE"; then
+    echo "Error: Failed to allocate swap file" >&2
+    exit 1
+fi
+
+echo "Setting permissions for $SWAP_FILE..."
+if ! sudo chmod 600 "$SWAP_FILE"; then
+    echo "Error: Failed to set permissions" >&2
+    exit 1
+fi
+
+echo "Setting up swap on $SWAP_FILE..."
+if ! sudo mkswap "$SWAP_FILE"; then
+    echo "Error: Failed to set up swap" >&2
+    exit 1
+fi
+
+echo "Activating swap on $SWAP_FILE..."
+if ! sudo swapon "$SWAP_FILE"; then
+    echo "Error: Failed to activate swap" >&2
+    exit 1
+fi
+
+echo "Verifying swap is active:"
+free -h
+
+echo "Running nix-index with $PARALLEL_JOBS parallel job(s)..."
+if ! RAYON_NUM_THREADS="$PARALLEL_JOBS" nix-index; then
+    echo "Error: nix-index command failed" >&2
+    exit 1
+fi
+
+echo "Nix-index with temporary swap completed successfully."
