@@ -30,6 +30,9 @@
     powerOnBoot = false;
   };
 
+  # dynamic swap
+  services.swapspace.enable = true;
+
   # amd graphics
   boot.initrd.kernelModules = lib.mkAfter [ "amdgpu" ];
   services.xserver.videoDrivers = lib.mkAfter [ "amdgpu" ];
