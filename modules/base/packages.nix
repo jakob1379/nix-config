@@ -233,6 +233,15 @@ let
         exec kitty +kitten icat "$@"
       '';
     })
+    (pkgs.writeShellApplication {
+      name = "nix-index-with-temp-swap";
+      runtimeInputs = with pkgs; [
+        nix-index
+        coreutils # Provides fallocate, chmod, rm
+        util-linux # Provides mkswap, swapon, swapoff
+      ];
+      text = builtins.readFile ../../bin/nix-index-swap;
+    })
   ];
 in
 {
