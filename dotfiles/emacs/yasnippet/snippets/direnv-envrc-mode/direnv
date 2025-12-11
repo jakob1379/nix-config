@@ -3,6 +3,7 @@
 # key: direnv
 # --
 
+# source_up
 use flake path:.
 VIRTUAL_ENV=".venv"
 layout python
