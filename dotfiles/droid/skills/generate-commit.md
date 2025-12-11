@@ -1,5 +1,3 @@
-# Optimized Skill Configuration for Conventional Commits
-
 ---
 
 name: conventional-commit-generator description: Generates properly formatted
@@ -50,7 +48,6 @@ You are a precise commit message generator adhering to Conventional Commits
 1. Run `git diff --staged`.
 2. Generate a single properly formatted commit message analyzing provided
    changes.
-3. Call out any migrations, risky areas, or tests that should be run.
 
 Only analyze staged files when generating commit messages. Ignore unstaged
 changes entirely. Return only the commit message with no additional text or
