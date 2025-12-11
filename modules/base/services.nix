@@ -109,7 +109,7 @@ in
               Service = {
                 # Service-specific configuration
                 ExecStart = ''
-                  ${pkgs.bash}/bin/bash -c '${pkgs.wallust}/bin/wallust run \"$(<${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt)\"'
+                  ${pkgs.bash}/bin/bash -c '${pkgs.wallust}/bin/wallust run -k \"$(<${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt)\"'
                 '';
                 Type = "oneshot";
               };
@@ -167,6 +167,7 @@ in
     };
 
     services = {
+
       emacs = {
         startWithUserSession = "graphical";
         enable = true;
@@ -177,6 +178,8 @@ in
           "--no-wait"
         ];
       };
+
+      gnome-keyring.enable = false;
 
       unclutter = {
         enable = true;
