@@ -350,7 +350,13 @@ in
         enable = true;
         enableBashIntegration = true;
       };
-      nix-search-tv.enable = true;
+
+      nix-search-tv = {
+        enable = true;
+        settings = {
+          update_interval = "12h";
+        };
+      };
 
       uv = {
         enable = true;
