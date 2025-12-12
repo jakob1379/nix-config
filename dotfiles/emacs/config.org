@@ -563,6 +563,7 @@ let dired know how to use native system applications to open files.
 (use-package direnv
   :defer t
   :hook (after-init . direnv-mode)
+  :mode ("\\.envrc\\'" . direnv-envrc-mode)
   :custom
   (direnv-always-show-summary t)
   :config
@@ -592,6 +593,14 @@ read and understand ~.editorconfig~ files
   :config
   (editorconfig-mode 1))
 #+END_SRC
+*** Justfile mode
+#+BEGIN_SRC emacs-lisp
+(use-package just-mode
+  :defer t
+  :mode ("justfile" . justfile-mode)
+  )
+#+END_SRC
+
 *** eldoc - document it all!
 #+BEGIN_SRC emacs-lisp
 (use-package eldoc

@@ -125,6 +125,11 @@ in
         };
       };
 
+      difftastic = {
+        enable = true;
+        git.enable = true;
+      };
+
       git = {
         enable = true;
         signing = {
