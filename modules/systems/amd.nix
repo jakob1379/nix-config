@@ -1,9 +1,4 @@
-{
-  pkgs,
-  lib,
-  inputs,
-  ...
-}:
+{ pkgs, lib, inputs, ... }:
 
 {
   # Import all base modules. This was the missing piece.
@@ -39,9 +34,7 @@
   };
 
   # Enable media control dotfiles for this system.
-  customDotfiles = {
-    enableMediaControl = true;
-  };
+  customDotfiles = { enableMediaControl = true; };
 
   # Override gnome-keyring for niri
   services.gnome-keyring.enable = lib.mkForce true;
@@ -53,7 +46,11 @@
       spawn-at-startup = [
         { command = [ "${lib.getExe pkgs.waybar}" ]; }
         { command = [ "${lib.getExe pkgs.networkmanagerapplet}" ]; }
-        { command = [ "${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1" ]; }
+        {
+          command = [
+            "${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1"
+          ];
+        }
         { command = [ "${lib.getExe pkgs.wl-clipboard}" ]; }
       ];
       input.keyboard.xkb.layout = "dk";

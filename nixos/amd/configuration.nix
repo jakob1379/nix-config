@@ -37,17 +37,6 @@
   boot.initrd.kernelModules = lib.mkAfter [ "amdgpu" ];
   services.xserver.videoDrivers = lib.mkAfter [ "amdgpu" ];
 
-  # Additional AMD GPU configuration
-  hardware.graphics.enable32Bit = true;
-  hardware.graphics.extraPackages = with pkgs; [
-    rocmPackages.clr.icd
-  ];
-  environment.variables = {
-    ROC_ENABLE_PRE_VEGA = "1";
-  };
-  services.lact.enable = true;
-  environment.systemPackages = with pkgs; [ clinfo ];
-
   # fingerprint
   services.fprintd.enable = true;
   services.fprintd.tod.enable = true;
