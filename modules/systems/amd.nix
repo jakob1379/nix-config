@@ -9,6 +9,11 @@
   # home.username and home.homeDirectory have been moved to flake.nix
   # to keep system-specific modules reusable.
 
+  # Note: Plasma is set as the default session in nixos/amd/configuration.nix
+  # This niri configuration is available when starting niri manually or via SDDM
+  # (if niri desktop entry is installed). Plasma native lockscreen will be used
+  # when using the plasma session.
+
   # Override git user and email for this system.
   customGit = {
     userName = "Jakob Stender Guldberg";
@@ -30,6 +35,8 @@
       networkmanagerapplet
       kdePackages.polkit-kde-agent-1
       xdg-desktop-portal-gnome
+      xdg-desktop-portal-gtk
+      xwayland-satellite
     ];
   };
 
