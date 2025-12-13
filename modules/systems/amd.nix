@@ -62,12 +62,13 @@ in
       layout.border.inactive.color = "#666666";
 
       # Override terminal bind to use XDG default terminal (ghostty)
-      binds = {
-        "Mod+T" = {
-          action = "spawn";
-          command = [ "xdg-terminal-exec" ];
-        };
-      };
+      # Temporarily disabled - figuring out correct syntax
+      # binds = {
+      #   "Mod+T" = {
+      #     action = "spawn";
+      #     command = [ "xdg-terminal-exec" ];
+      #   };
+      # };
     };
   };
 }
