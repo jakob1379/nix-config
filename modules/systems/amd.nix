@@ -67,7 +67,7 @@
       layout.border.width = 1;
       layout.border.active.color = "#ffffff";
       layout.border.inactive.color = "#666666";
-      
+
       # Override terminal bind to use XDG default terminal (ghostty)
       binds = {
         "Mod+T" = {
