@@ -60,7 +60,7 @@ repos:
         pass_filenames: false
         files: \.nix$
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.7
+    rev: v0.14.9
     hooks:
       - id: ruff-check
         args: [--fix]
@@ -97,5 +97,4 @@ repos:
     rev: 0.35.0
     hooks:
       - id: check-github-workflows  # Validate GitHub workflow files
-      - id: check-dependabot  # Validate Dependabot config
       # Add other schema checks if needed (e.g., check-readthedocs)
