@@ -25,6 +25,9 @@
     variant = "";
   };
 
+  # Explicitly set plasma as default session (inherited from common.nix but made explicit here)
+  services.displayManager.defaultSession = "plasma";
+
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = false;
