@@ -65,8 +65,7 @@ in
       binds = {
         "Mod+T" = {
           action = "spawn";
-          argv = [ "xdg-terminal-exec" ];
-          hotkey-overlay-title = "Open a Terminal: ghostty";
+          command = [ "xdg-terminal-exec" ];
         };
       };
     };
