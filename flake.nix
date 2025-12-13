@@ -9,7 +9,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     zen-browser.url = "github:youwen5/zen-browser-flake";
-    niri-flake.url = "github:sodiboo/niri-flake";
   };
 
   outputs = inputs: (import ./nix/outputs.nix) inputs;

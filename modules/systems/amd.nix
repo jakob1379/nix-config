@@ -4,7 +4,7 @@
   # Import all base modules. This was the missing piece.
   # By importing this, you make all the options and configurations
   # from the base modules available to this system.
-  imports = [ ../base/default.nix inputs.niri-flake.homeModules.niri ];
+  imports = [ ../base/default.nix ];
 
   # home.username and home.homeDirectory have been moved to flake.nix
   # to keep system-specific modules reusable.
@@ -38,7 +38,6 @@
       xdg-desktop-portal-gtk
       xwayland-satellite
       fuzzel
-      alacritty
     ];
   };
 
