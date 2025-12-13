@@ -13,12 +13,12 @@ let
       xwayland-satellite
       fuzzel
     ];
-
+in
 {
   # Import all base modules. This was the missing piece.
   # By importing this, you make all the options and configurations
   # from the base modules available to this system.
-  imports = [ ../base/default.nix ];
+  imports = [ ../base/default.nix inputs.niri-flake.homeModules.niri ];
 
   # Override git user and email for this system.
   customGit = {

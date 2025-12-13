@@ -39,4 +39,5 @@
 
   system.stateVersion = lib.mkForce "25.05";
 
+  programs.niri.enable = true;
 }
