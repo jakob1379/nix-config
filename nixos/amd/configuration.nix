@@ -1,5 +1,14 @@
-{ pkgs, lib, inputs, ... }: {
-  imports = [ ./hardware-configuration.nix ../common.nix ];
+{
+  pkgs,
+  lib,
+  inputs,
+  ...
+}:
+{
+  imports = [
+    ./hardware-configuration.nix
+    ../common.nix
+  ];
 
   networking.hostName = "amd";
   programs.fuse.userAllowOther = true;

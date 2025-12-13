@@ -1,24 +1,32 @@
-{ pkgs, lib, inputs, ... }:
+{
+  pkgs,
+  lib,
+  inputs,
+  ...
+}:
 let
   niriPackages = with pkgs; [
-      waybar
-      swaybg
-      mako
-      rofi
-      wl-clipboard
-      networkmanagerapplet
-      kdePackages.polkit-kde-agent-1
-      xdg-desktop-portal-gnome
-      xdg-desktop-portal-gtk
-      xwayland-satellite
-      fuzzel
-    ];
+    waybar
+    swaybg
+    mako
+    rofi
+    wl-clipboard
+    networkmanagerapplet
+    kdePackages.polkit-kde-agent-1
+    xdg-desktop-portal-gnome
+    xdg-desktop-portal-gtk
+    xwayland-satellite
+    fuzzel
+  ];
 in
 {
   # Import all base modules. This was the missing piece.
   # By importing this, you make all the options and configurations
   # from the base modules available to this system.
-  imports = [ ../base/default.nix inputs.niri-flake.homeModules.niri ];
+  imports = [
+    ../base/default.nix
+    inputs.niri-flake.homeModules.niri
+  ];
 
   # Override git user and email for this system.
   customGit = {
@@ -30,12 +38,13 @@ in
   customPackages = {
     enableGui = lib.mkForce true; # Enable GUI packages for this desktop system
     # Add remmina package specifically for this system
-    extra = with pkgs; [
-      clockify ] ++ niriPackages;
+    extra = with pkgs; [ clockify ] ++ niriPackages;
   };
 
   # Enable media control dotfiles for this system.
-  customDotfiles = { enableMediaControl = true; };
+  customDotfiles = {
+    enableMediaControl = true;
+  };
 
   # Override gnome-keyring for niri
   services.gnome-keyring.enable = lib.mkForce true;

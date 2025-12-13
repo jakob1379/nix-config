@@ -1,4 +1,11 @@
-{ config, pkgs, inputs, system, lib, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  system,
+  lib,
+  ...
+}:
 let
   tmuxPing = pkgs.tmuxPlugins.mkTmuxPlugin {
     pluginName = "tmux-ping";
@@ -11,7 +18,8 @@ let
     };
     rtpFilePath = "ping.tmux";
   };
-in {
+in
+{
   options = {
     customGit = {
       userName = lib.mkOption {
@@ -30,18 +38,21 @@ in {
   config = {
     nixpkgs.overlays = [
       (_final: prev: {
-        keepassxc = prev.runCommand "${prev.keepassxc.name}-xcb" {
-          inherit (prev.keepassxc) meta;
-        } ''
-          cp -r ${prev.keepassxc} $out
+        keepassxc =
+          prev.runCommand "${prev.keepassxc.name}-xcb"
+            {
+              inherit (prev.keepassxc) meta;
+            }
+            ''
+              cp -r ${prev.keepassxc} $out
 
-          for desktopFile in $out/share/applications/*.desktop; do
-            if [[ -f "$desktopFile" ]]; then
-              substituteInPlace "$desktopFile" \
-                --replace-fail 'Exec=keepassxc' 'Exec=keepassxc -platform xcb'
-            fi
-          done
-        '';
+              for desktopFile in $out/share/applications/*.desktop; do
+                if [[ -f "$desktopFile" ]]; then
+                  substituteInPlace "$desktopFile" \
+                    --replace-fail 'Exec=keepassxc' 'Exec=keepassxc -platform xcb'
+                fi
+              done
+            '';
       })
     ];
 
@@ -71,8 +82,7 @@ in {
           ubuntu25 = {
             image = "ubuntu:24.04"; # Specify your desired image here
             init_hooks = "curl -LsSf https://astral.sh/uv/install.sh | sh";
-            additional_packages =
-              "curl"; # Additional packages needed for init_hooks
+            additional_packages = "curl"; # Additional packages needed for init_hooks
             entry = true; # Make this container enterable by default (optional)
           };
         };
@@ -89,7 +99,9 @@ in {
         package = pkgs.emacs30-gtk3;
       };
 
-      fastfetch = { enable = true; };
+      fastfetch = {
+        enable = true;
+      };
 
       fd.enable = true;
 
@@ -109,8 +121,7 @@ in {
             "browser.sessionstore.restore_pinned_tabs_on_demand" = true;
             "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
           };
-          userChrome =
-            builtins.readFile ../../dotfiles/firefox/firefox_userchrome.css;
+          userChrome = builtins.readFile ../../dotfiles/firefox/firefox_userchrome.css;
         };
       };
 
@@ -141,8 +152,7 @@ in {
           credential.helper = "libsecret";
           alias = {
             adog = "log --all --decorate --oneline --graph";
-            plog =
-              "log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
+            plog = "log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
             ignore-change = "update-index --assume-unchanged";
             prune-deep = ''
                             !f() {
@@ -182,7 +192,9 @@ in {
         enable = true;
         extensions = [ pkgs.gh-dash ];
         gitCredentialHelper.enable = true;
-        settings.aliases = { web = "repo view --web"; };
+        settings.aliases = {
+          web = "repo view --web";
+        };
       };
 
       ghostty = {
@@ -205,13 +217,17 @@ in {
 
       hwatch.enable = true;
 
-      jq = { enable = true; };
+      jq = {
+        enable = true;
+      };
 
       jqp.enable = true;
 
       nix-init.enable = true;
 
-      rclone = { enable = true; };
+      rclone = {
+        enable = true;
+      };
 
       tmux = {
         enable = true;
@@ -236,14 +252,18 @@ in {
         enableBashIntegration = true;
         icons = "auto";
         git = true;
-        extraOptions = [ "--group-directories-first" "--smart-group" ];
+        extraOptions = [
+          "--group-directories-first"
+          "--smart-group"
+        ];
       };
 
       oh-my-posh = {
         enable = true;
         enableBashIntegration = true;
-        settings = builtins.fromJSON (builtins.readFile
-          ../../dotfiles/oh-my-posh/custom-hunks-theme.omp.json);
+        settings = builtins.fromJSON (
+          builtins.readFile ../../dotfiles/oh-my-posh/custom-hunks-theme.omp.json
+        );
       };
 
       keepassxc = {
@@ -325,7 +345,9 @@ in {
         enableBashIntegration = true;
       };
 
-      wallust = { enable = true; };
+      wallust = {
+        enable = true;
+      };
 
       nix-index = {
         enable = true;
@@ -334,12 +356,16 @@ in {
 
       nix-search-tv = {
         enable = true;
-        settings = { update_interval = "12h"; };
+        settings = {
+          update_interval = "12h";
+        };
       };
 
       uv = {
         enable = true;
-        settings = { python-preference = "managed"; };
+        settings = {
+          python-preference = "managed";
+        };
       };
     };
 
@@ -348,8 +374,7 @@ in {
       onefetch = "onefetch -E --nerd-fonts --no-color-palette";
       cat = "bat";
       watch = "hwatch";
-      cdd = ''
-        f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
+      cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
       fm = "frogmouth";
       db = "distrobox";
       df = "duf --hide special";
@@ -365,8 +390,7 @@ in {
       ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
       grep = "grep --color=auto";
       q = "qalc";
-      tldr = ''
-        tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
+      tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
     };
 
     nix = {
@@ -374,7 +398,10 @@ in {
       settings = {
         substituters = [ "https://cache.nixos.org/" ];
         max-jobs = 1;
-        experimental-features = [ "nix-command" "flakes" ];
+        experimental-features = [
+          "nix-command"
+          "flakes"
+        ];
       };
       gc = {
         automatic = true;
