@@ -62,6 +62,7 @@ We want it to integrate nicely with usepackage
       straight-vc-git-default-clone-depth 1
       straight-vc-git-default-protocol 'https
       ;; use-package-always-defer t
+      use-package-compute-statistics t
       vc-follow-symlinks t
   	  straight-use-package-by-default t
       )
