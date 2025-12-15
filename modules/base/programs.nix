@@ -125,6 +125,11 @@ in
         };
       };
 
+      difftastic = {
+        enable = true;
+        git.enable = true;
+      };
+
       git = {
         enable = true;
         signing = {
@@ -269,9 +274,7 @@ in
 
       ranger = {
         enable = true;
-        extraPackages = with pkgs; [
-          python3Packages.pillow
-        ];
+        extraPackages = with pkgs; [ python3Packages.pillow ];
         settings = {
           preview_images = true;
           preview_images_method = "kitty";

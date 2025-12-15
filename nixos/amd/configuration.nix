@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  inputs,
   ...
 }:
 {
@@ -25,6 +26,9 @@
     variant = "";
   };
 
+  # Explicitly set plasma as default session (inherited from common.nix but made explicit here)
+  services.displayManager.defaultSession = "plasma";
+
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = false;
@@ -44,4 +48,5 @@
 
   system.stateVersion = lib.mkForce "25.05";
 
+  programs.niri.enable = true;
 }
