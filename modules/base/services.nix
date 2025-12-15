@@ -179,8 +179,6 @@ in
         ];
       };
 
-      gnome-keyring.enable = false;
-
       unclutter = {
         enable = true;
         timeout = 5;

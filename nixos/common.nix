@@ -205,6 +205,8 @@
     ];
   };
 
+  services.gnome.gnome-keyring.enable = false;
+
   # Firewall default
   networking.firewall = {
     enable = true;
