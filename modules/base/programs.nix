@@ -73,12 +73,6 @@ in
 
           shopt -s cdspell
           eval "$(batman --export-env)"
-
-          # Bind Ctrl+F to nix-find (similar to fzf keybindings)
-          _nix_find() {
-            nix-find
-          }
-          bind -x '"\C-f": _nix_find'
         '';
       };
 
