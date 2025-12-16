@@ -11,11 +11,16 @@
     enableDroid = lib.mkEnableOption "media control dotfiles";
     droid = lib.mkOption {
       type = lib.types.attrs;
-      default = {
-        ".factory/droids".source = ../../dotfiles/droid/droids;
-        ".factory/commands".source = ../../dotfiles/droid/commands;
-        ".factory/skills".source = ../../dotfiles/droid/skills;
-      };
+      default =
+        let
+          droidDir = ../../dotfiles/droid;
+        in
+        lib.mapAttrs' (name: _: {
+          name = ".factory/${name}";
+          value = {
+            source = droidDir + "/${name}";
+          };
+        }) (builtins.readDir droidDir);
       description = "Factory droid configs";
     };
 
