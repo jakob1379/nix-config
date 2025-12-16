@@ -73,6 +73,9 @@ in
 
           shopt -s cdspell
           eval "$(batman --export-env)"
+
+          # bind nix-find
+          bind '"\C-f": "nix-find\n"'
         '';
       };
 
