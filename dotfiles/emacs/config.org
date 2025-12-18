@@ -1400,7 +1400,9 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
   (setq org-roam-v2-ack t)
   :bind (("C-c n l" . org-roam-buffer-toggle)
          ("C-c n a" . org-roam-alias-add)
-         ("C-c n c" . org-roam-capture))
+         ("C-c n c" . org-roam-capture)
+         ("C-c n f" . org-roam-node-find)
+         )
   :config
   ;; Set variables in :config for deferred packages
   (setq
