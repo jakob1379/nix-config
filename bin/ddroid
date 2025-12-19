@@ -11,6 +11,20 @@ cleanup() {
 }
 trap cleanup EXIT
 
+display_usage() {
+    echo "Usage: $(basename "$0") [-n] [-r session_id] [--] [droid_args...]"
+    echo
+    echo "Wrapper for 'droid' that manages session persistence."
+    echo
+    echo "Options:"
+    echo "  -n              Force a new session (ignore existing .droid file)"
+    echo "  -r session_id   Resume a specific session"
+    echo "  -h              Show this help and droid's help"
+    echo
+    echo "Original droid help:"
+    droid --help
+}
+
 # Extract session ID from stderr output
 extract_session_id() {
   local stderr_file="$1"
@@ -60,26 +74,42 @@ load_session_id() {
 
 # Main execution
 main() {
-    local stderr_file
     local session_id
     local force_new_session=false
     local droid_args=()
 
-    # Simple argument parsing
-    for arg in "$@"; do
-        case "$arg" in
-            -n|--new)
+    # Reset OPTIND for local scope
+    local OPTIND=1
+    while getopts ":hnr:" opt; do
+        case "${opt}" in
+            h)
+                display_usage
+                return 0
+                ;;
+            n)
                 force_new_session=true
                 ;;
-            *)
-                droid_args+=("$arg")
+            r)
+                force_new_session=true
+                droid_args+=("-r" "${OPTARG}")
+                ;;
+            \?)
+                echo "Invalid option: -${OPTARG}" >&2
+                return 2
+                ;;
+            :)
+                echo "Option -${OPTARG} requires an argument" >&2
+                return 2
                 ;;
         esac
     done
 
+    shift $((OPTIND - 1))
+    # Capture remaining positional arguments
+    droid_args+=("$@")
+
     stderr_file=$(mktemp)
 
-    # Attempt to resume existing session
     if [[ "$force_new_session" == false ]] && session_id=$(load_session_id); then
         echo "Resuming droid session: $session_id"
         droid --resume "$session_id" "${droid_args[@]}" 2>"$stderr_file"
@@ -87,11 +117,15 @@ main() {
         droid "${droid_args[@]}" 2>"$stderr_file"
     fi
 
-    # Extract and persist any new session ID
+    local droid_exit_code=$?
+
     if new_session_id=$(extract_session_id "$stderr_file"); then
         save_session_id "$new_session_id"
         echo "Session ID saved: $new_session_id" >&2
     fi
+
+    # Forward the droid exit code
+    return $droid_exit_code
 }
 
 main "$@"
