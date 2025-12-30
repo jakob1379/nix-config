@@ -97,7 +97,6 @@ let
     nixd
     powershell
     python3
-    python313Packages.python-lsp-server
     silver-searcher
     taplo
     texlab
@@ -196,16 +195,6 @@ let
       name = "nixos-switch";
       runtimeInputs = [ pkgs.nix-output-monitor ];
       text = builtins.readFile ../../bin/nixos-switch;
-    })
-    (pkgs.writeShellApplication {
-      name = "pyvenv-setup";
-      runtimeInputs = [
-        pkgs.bash
-        pkgs.nix
-        pkgs.direnv
-        pkgs.uv
-      ];
-      text = builtins.readFile ../../bin/pyvenv-setup;
     })
     (pkgs.writeShellApplication {
       name = "update-all";
