@@ -167,6 +167,11 @@ in
     };
 
     services = {
+      gpg-agent = {
+        enable = true;
+        pinentry.package = pkgs.pinentry-gtk2;
+        pinentry.program = "pinentry-gtk-2";
+      };
 
       emacs = {
         startWithUserSession = "graphical";

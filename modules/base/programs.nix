@@ -198,6 +198,8 @@ in
         };
       };
 
+      gpg.enable = true;
+
       ghostty = {
         enable = true;
         settings = {
