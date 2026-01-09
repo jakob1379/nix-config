@@ -1,4 +1,50 @@
 #!/usr/bin/env bash
+#
+# droid-session-wrapper
+#
+# PURPOSE
+#   Wrapper around `droid` that persists the latest session id in a `.droid`
+#   file and automatically resumes it on subsequent runs.
+#
+# SESSION FILE RESOLUTION
+#   - If inside a git worktree:
+#       - On resume: searches for `.droid` starting in the current directory
+#         and walking up parent directories until the git repo root.
+#       - On save (default): writes to `<git-root>/.droid`.
+#   - If NOT inside a git worktree:
+#       - On resume: only checks `./.droid`.
+#       - On save: writes to `./.droid`.
+#
+# FLAGS
+#   -n
+#     Force a new session (ignores any discovered `.droid` on resume).
+#     Still saves the new session id to the default session file location:
+#       - git repo: `<git-root>/.droid`
+#       - non-git:  `./.droid`
+#
+#   -f
+#     Force session to be anchored in the current directory.
+#     Creates/overwrites `./.droid` with the new session id.
+#     Also implies `-n` (i.e. will not resume an existing session).
+#
+#   -r <session_id>
+#     Instructs droid to resume a specific session id (passed through as
+#     `-r <session_id>`). Also implies `-n` (no `.droid` auto-resume).
+#     The resulting session id emitted by droid (if any) is persisted per the
+#     save rules above (default or `-f`).
+#
+# USAGE
+#   droidw [-n] [-f] [-r session_id] [--] [droid_args...]
+#
+# EXIT CODES
+#   - Returns the exit code of the underlying `droid` invocation.
+#
+# NOTES
+#   - Session id extraction relies on matching stderr lines containing:
+#       `droid --resume <hex-and-dashes>`
+#   - The wrapper captures stderr to a temp file in order to parse the id.
+
+set -u
 
 # Constants
 readonly SESSION_PATTERN='droid --resume [a-f0-9-]*'
@@ -12,20 +58,31 @@ cleanup() {
 trap cleanup EXIT
 
 display_usage() {
-    echo "Usage: $(basename "$0") [-n] [-r session_id] [--] [droid_args...]"
-    echo
-    echo "Wrapper for 'droid' that manages session persistence."
-    echo
-    echo "Options:"
-    echo "  -n              Force a new session (ignore existing .droid file)"
-    echo "  -r session_id   Resume a specific session"
-    echo "  -h              Show this help and droid's help"
-    echo
-    echo "Original droid help:"
-    droid --help
+  echo "\
+#################################################################################
+# Usage: $(basename "$0") [-n] [-f] [-r session_id] [--] [droid_args...]        #
+#                                                                               #
+# Wrapper for 'droid' that manages session persistence.                         #
+#                                                                               #
+# Options:                                                                      #
+#   -n              Force a new session (ignore existing .droid file)           #
+#   -f              Force session in current directory (create new .droid here) #
+#   -r session_id   Resume a specific session                                   #
+#   -h              Show this help and droid's help                             #
+#################################################################################
+
+Original droid help:
+"
+  droid --help
 }
 
 # Extract session ID from stderr output
+# Arguments:
+#   $1: path to stderr capture file
+# Output:
+#   Prints session id to stdout
+# Returns:
+#   0 if session id extracted, 1 otherwise
 extract_session_id() {
   local stderr_file="$1"
 
@@ -33,99 +90,162 @@ extract_session_id() {
     return 1
   fi
 
-  grep -o "$SESSION_PATTERN" "$stderr_file" | \
-    sed 's/droid --resume //'
+  grep -o "$SESSION_PATTERN" "$stderr_file" | sed 's/droid --resume //'
 }
 
-# Determine session file path
-get_session_file_path() {
-    local git_root
-    if git_root=$(git rev-parse --show-toplevel 2>/dev/null); then
-        echo "$git_root/.droid"
-    else
-        echo "./.droid"
+# Find a `.droid` file by searching parent directories.
+# Behavior:
+#   - In git repo: searches from $PWD up to git root (inclusive)
+#   - Not in git: checks only `$PWD/.droid`
+# Output:
+#   Prints the found `.droid` filepath to stdout
+# Returns:
+#   0 if found, 1 otherwise
+find_droid_file() {
+  local current_dir="$PWD"
+  local git_root
+  local search_limit=""
+
+  if git_root=$(git rev-parse --show-toplevel 2>/dev/null); then
+    search_limit="$git_root"
+  else
+    if [[ -f "$current_dir/.droid" ]]; then
+      echo "$current_dir/.droid"
+      return 0
     fi
+    return 1
+  fi
+
+  while [[ "$current_dir" != "$search_limit" && "$current_dir" != "/" ]]; do
+    if [[ -f "$current_dir/.droid" ]]; then
+      echo "$current_dir/.droid"
+      return 0
+    fi
+    current_dir=$(dirname "$current_dir")
+  done
+
+  if [[ -f "$search_limit/.droid" ]]; then
+    echo "$search_limit/.droid"
+    return 0
+  fi
+
+  return 1
 }
 
-# Save session ID to file
+# Determine default session file path for saving.
+# Behavior:
+#   - In git repo: `<git-root>/.droid`
+#   - Not in git: `./.droid`
+# Output:
+#   Prints the default save path to stdout
+get_default_session_file_path() {
+  local git_root
+  if git_root=$(git rev-parse --show-toplevel 2>/dev/null); then
+    echo "$git_root/.droid"
+  else
+    echo "./.droid"
+  fi
+}
+
+# Save session id to a specific `.droid` file.
+# Arguments:
+#   $1: session id
+#   $2: session file path
 save_session_id() {
   local session_id="$1"
-  local session_file
-  session_file=$(get_session_file_path)
-  echo "$session_id" > "$session_file"
+  local session_file="$2"
+  echo "$session_id" >"$session_file"
 }
 
-# Load session ID from file, clean up if empty
+# Load session id from the discovered `.droid` file.
+# Behavior:
+#   - Uses find_droid_file() resolution rules.
+# Output:
+#   Prints session id to stdout
+# Returns:
+#   0 if loaded, 1 otherwise
+# Side-effects:
+#   - If `.droid` exists but is empty/whitespace, it is removed.
 load_session_id() {
-  local session_file
-  session_file=$(get_session_file_path)
-  [[ ! -f "$session_file" ]] && return 1
+  local droid_file
+  if ! droid_file=$(find_droid_file); then
+    return 1
+  fi
 
   local session_id
-  session_id=$(cat "$session_file" | tr -d '[:space:]')
+  session_id=$(cat "$droid_file" | tr -d '[:space:]')
 
   if [[ -z "$session_id" ]]; then
-    rm -f "$session_file"
+    rm -f "$droid_file"
     return 1
   fi
 
   echo "$session_id"
 }
 
-# Main execution
 main() {
-    local session_id
-    local force_new_session=false
-    local droid_args=()
+  local session_id
+  local force_new_session=false
+  local force_current_dir=false
+  local droid_args=()
 
-    # Reset OPTIND for local scope
-    local OPTIND=1
-    while getopts ":hnr:" opt; do
-        case "${opt}" in
-            h)
-                display_usage
-                return 0
-                ;;
-            n)
-                force_new_session=true
-                ;;
-            r)
-                force_new_session=true
-                droid_args+=("-r" "${OPTARG}")
-                ;;
-            \?)
-                echo "Invalid option: -${OPTARG}" >&2
-                return 2
-                ;;
-            :)
-                echo "Option -${OPTARG} requires an argument" >&2
-                return 2
-                ;;
-        esac
-    done
+  local OPTIND=1
+  while getopts ":hnfr:" opt; do
+    case "${opt}" in
+      h)
+        display_usage
+        return 0
+        ;;
+      n)
+        force_new_session=true
+        ;;
+      f)
+        force_current_dir=true
+        force_new_session=true
+        ;;
+      r)
+        force_new_session=true
+        droid_args+=("-r" "${OPTARG}")
+        ;;
+      \?)
+        echo "Invalid option: -${OPTARG}" >&2
+        return 2
+        ;;
+      :)
+        echo "Option -${OPTARG} requires an argument" >&2
+        return 2
+        ;;
+    esac
+  done
 
-    shift $((OPTIND - 1))
-    # Capture remaining positional arguments
-    droid_args+=("$@")
+  shift $((OPTIND - 1))
+  droid_args+=("$@")
 
-    stderr_file=$(mktemp)
+  stderr_file=$(mktemp)
 
-    if [[ "$force_new_session" == false ]] && session_id=$(load_session_id); then
-        echo "Resuming droid session: $session_id"
-        droid --resume "$session_id" "${droid_args[@]}" 2>"$stderr_file"
-    else
-        droid "${droid_args[@]}" 2>"$stderr_file"
-    fi
+  # Where to persist a new session id (not where to resume from).
+  local session_file
+  if [[ "$force_current_dir" == true ]]; then
+    session_file="./.droid"
+  else
+    session_file=$(get_default_session_file_path)
+  fi
 
-    local droid_exit_code=$?
+  if [[ "$force_new_session" == false ]] && session_id=$(load_session_id); then
+    echo "Resuming droid session: $session_id"
+    droid --resume "$session_id" "${droid_args[@]}" 2>"$stderr_file"
+  else
+    droid "${droid_args[@]}" 2>"$stderr_file"
+  fi
 
-    if new_session_id=$(extract_session_id "$stderr_file"); then
-        save_session_id "$new_session_id"
-        echo "Session ID saved: $new_session_id" >&2
-    fi
+  local droid_exit_code=$?
 
-    # Forward the droid exit code
-    return $droid_exit_code
+  if new_session_id=$(extract_session_id "$stderr_file"); then
+    save_session_id "$new_session_id" "$session_file"
+    echo "Session ID saved to $session_file: $new_session_id" >&2
+  fi
+
+  return $droid_exit_code
 }
 
 main "$@"
