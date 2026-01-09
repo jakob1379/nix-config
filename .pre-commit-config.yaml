@@ -3,7 +3,8 @@ ci:
   autoupdate_commit_msg: 'chore: update pre-commit hooks'
   autofix_commit_msg: 'style: pre-commit fixes'
   autoupdate_schedule: monthly
-  skip: []
+  # Skip nix hooks on CI as they require nix tooling not available in pre-commit.ci environment
+  skip: [nixfmt, deadnix, statix]
   submodules: false
 # Default stages for hooks
 default_stages: [pre-commit, commit-msg, pre-push]
