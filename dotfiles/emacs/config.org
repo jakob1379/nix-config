@@ -128,33 +128,7 @@ state.
 #+BEGIN_SRC emacs-lisp
 (setq inhibit-compacting-font-caches t)
 #+END_SRC
-** Package setup
-#+BEGIN_SRC emacs-lisp
-(require 'package)
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("gnu" . "https://elpa.gnu.org/packages/")
-                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
-(package-initialize)
-;; https://github.com/jwiegley/use-package/issues/319#issuecomment-845214233
-;; makes sure the :pin is respected
-(assq-delete-all 'org package--builtins)
-(assq-delete-all 'org package--builtin-versions)
 
-;; make sure packages are refreshed
-(when (not package-archive-contents)
-  (package-refresh-contents))
-
-;; ensure use-package is installed and loaded
-(dolist (package '(use-package))
-  (unless (package-installed-p package)
-    (package-install package)))
-(eval-when-compile (require 'use-package))
-
-;; reduces the number of themes loaded at boot
-(advice-add 'load-theme :before
-            (lambda (&rest _) (mapc #'disable-theme custom-enabled-themes)))
-
-#+END_SRC
 ** Use the garbage collector magic hack
 #+BEGIN_SRC emacs-lisp
 (use-package gcmh
@@ -970,7 +944,6 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
   )
 
 (use-package company-auctex
-  :pin melpa
   :defer t
   :after tex
   :init
@@ -978,7 +951,6 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
   (add-hook 'LaTeX-mode-hook 'company-auctex-init))
 
 (use-package reftex
-  :pin gnu
   :defer t
   :custom
   (reftex-cite-prompt-optional-args t)) ; Prompt for empty optional arguments in cite
@@ -1362,8 +1334,7 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
 #+END_SRC
 **** org mermaid integration
 #+BEGIN_SRC emacs-lisp
-(use-package ob-mermaid
-  :defer t)
+(use-package ob-mermaid)
 #+END_SRC
 
 **** Org modern ui theme
