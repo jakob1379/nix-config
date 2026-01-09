@@ -13,8 +13,12 @@
           "foreground": "#ffffff",
           "background": "#c44569",
           "leading_diamond": "\ue0b6",
-          "cache": { "duration": "none" },
-          "properties": { "windows": "\ue62a" },
+          "cache": {
+            "duration": "none"
+          },
+          "properties": {
+            "windows": "\ue62a"
+          },
           "template": "{{ if .Env.CONTAINER_ID }}{{ $distroIcons := dict \"almalinux\" \"\uf31d\" \"alpine\" \"\uf300\" \"android\" \"\uf17b\" \"aosc\" \"\uf301\" \"arch\" \"\uf303\" \"centos\" \"\uf304\" \"coreos\" \"\uf305\" \"debian\" \"\uf306\" \"deepin\" \"\uf321\" \"devuan\" \"\uf307\" \"elementary\" \"\uf309\" \"endeavouros\" \"\uf322\" \"fedora\" \"\uf30a\" \"gentoo\" \"\uf30d\" \"mageia\" \"\uf310\" \"manjaro\" \"\uf312\" \"mint\" \"\uf30e\" \"nixos\" \"\uf313\" \"opensuse-tumbleweed\" \"\uf314\" \"opensuse\" \"\uf314\" \"raspbian\" \"\uf315\" \"redhat\" \"\uf316\" \"rocky\" \"\uf32b\" \"sabayon\" \"\uf317\" \"slackware\" \"\uf319\" \"ubuntu\" \"\uf31b\" }}\uebca\udb85\udd46{{ readFile \"/etc/os-release\" | regexFind \"(?m)^ID=(.*)\" | trimPrefix \"ID=\" | lower | get $distroIcons }}{{ else }}{{ if .WSL }}WSL at {{ end }}{{ .Icon }}{{ end }}"
         },
         {
@@ -24,7 +28,9 @@
           "foreground": "#ffffff",
           "background": "#c44569",
           "template": "{{ .Path }} ",
-          "properties": { "style": "full" }
+          "properties": {
+            "style": "powerlevel"
+          }
         },
         {
           "type": "nix-shell",
@@ -32,7 +38,7 @@
           "powerline_symbol": "\ue0b0",
           "foreground": "#ffffff",
           "background": "#C2DDEF",
-          "template": "{{ if not (eq .Type \"unknown\") }} \uf313 nix{{ end }}",
+          "template": "{{ if not (eq .Type \"unknown\") }} \uf313 {{ .Type }} {{ end }}",
           "properties": {
             "style": "full"
           }
@@ -71,7 +77,12 @@
           "template": " {{ .UpstreamIcon }}{{ .HEAD }}{{ if .Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Working.Changed }} \uf044 {{ .Working.String }}{{ end }} ",
           "properties": {
             "fetch_status": true,
-            "fetch_upstream_icon": true
+            "fetch_upstream_icon": true,
+            "mapped_branches": {
+              "feat/*": "🚀",
+              "bug/*": "🐛",
+              "fix/*": "🩹"
+            }
           }
         }
       ]

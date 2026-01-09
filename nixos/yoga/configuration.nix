@@ -35,9 +35,9 @@
   hardware.nvidia-container-toolkit.enable = true;
 
   services.xserver.videoDrivers = lib.mkAfter [ "nvidia" ];
-  kernelModules = [ "kvm-intel" ];
+  boot.kernelModules = [ "kvm-intel" ];
 
-  kernelParams = lib.mkAfter [
+  boot.kernelParams = lib.mkAfter [
     "nvidia-drm.modeset=1"
     "nvidia-drm.fbdev=1"
   ];
