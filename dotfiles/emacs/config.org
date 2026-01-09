@@ -451,14 +451,6 @@ order things accordingly
   :config
   (company-statistics-mode))
 #+END_SRC
-**** Company all the icons
-#+BEGIN_SRC emacs-lisp
-(use-package company-all-the-icons
-  :after company
-  :defer t
-  :config
-  (company-all-the-icons-mode 1))
-#+END_SRC
 **** Company shell
 #+BEGIN_SRC emacs-lisp
 (use-package company-shell
@@ -471,7 +463,7 @@ order things accordingly
 #+BEGIN_SRC emacs-lisp
 (use-package company-box
   :diminish
-  :after company-all-the-icons
+  :after all-the-icons
   :defer t
   :config
   (company-box-mode 1))
