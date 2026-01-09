@@ -15,7 +15,7 @@ let
     pkgs: with pkgs; [
       prek
       yamllint
-      nixfmt-rfc-style
+      nixfmt
       statix
       deadnix
       git-crypt

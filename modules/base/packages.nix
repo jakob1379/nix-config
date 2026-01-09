@@ -24,11 +24,9 @@ let
     isd
     libqalculate
     libsecret
-    miktex
     nix-output-monitor
     nix-prefetch-github
     nix-search-cli
-    nixfmt-classic
     onefetch
     python3Packages.keyring
     rename
@@ -43,6 +41,7 @@ let
     brave
     tana
     dbeaver-bin
+    wifi-qr
     feh
     netpeek
     gnome-boxes
@@ -131,7 +130,6 @@ let
       name = "docker-volume-copy";
       runtimeInputs = [
         pkgs.docker
-        pkgs.alpine
       ];
       text = builtins.readFile ../../bin/docker-volume-copy;
     })

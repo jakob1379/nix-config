@@ -561,7 +561,6 @@ let dired know how to use native system applications to open files.
 *** Direnv
 #+BEGIN_SRC emacs-lisp
 (use-package direnv
-  :defer t
   :hook (after-init . direnv-mode)
   :custom
   (direnv-always-show-summary t)
