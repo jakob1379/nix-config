@@ -128,33 +128,7 @@ state.
 #+BEGIN_SRC emacs-lisp
 (setq inhibit-compacting-font-caches t)
 #+END_SRC
-** Package setup
-#+BEGIN_SRC emacs-lisp
-(require 'package)
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("gnu" . "https://elpa.gnu.org/packages/")
-                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
-(package-initialize)
-;; https://github.com/jwiegley/use-package/issues/319#issuecomment-845214233
-;; makes sure the :pin is respected
-(assq-delete-all 'org package--builtins)
-(assq-delete-all 'org package--builtin-versions)
 
-;; make sure packages are refreshed
-(when (not package-archive-contents)
-  (package-refresh-contents))
-
-;; ensure use-package is installed and loaded
-(dolist (package '(use-package))
-  (unless (package-installed-p package)
-    (package-install package)))
-(eval-when-compile (require 'use-package))
-
-;; reduces the number of themes loaded at boot
-(advice-add 'load-theme :before
-            (lambda (&rest _) (mapc #'disable-theme custom-enabled-themes)))
-
-#+END_SRC
 ** Use the garbage collector magic hack
 #+BEGIN_SRC emacs-lisp
 (use-package gcmh
@@ -277,10 +251,10 @@ Emacs is very conservative about assuming encoding. Everything is utf-8 these da
 #+END_SRC
 ** Extra Garbage Collection (disabled)
 #+BEGIN_SRC emacs-lisp
-(add-function :after after-focus-change-function
-              (defun me/garbage-collect-maybe ()
-                (unless (frame-focus-state)
-                  (garbage-collect))))
+;; (add-function :after after-focus-change-function
+;;               (defun me/garbage-collect-maybe ()
+;;                 (unless (frame-focus-state)
+;;                   (garbage-collect))))
 #+END_SRC
 ** non-ASCII characters
 #+BEGIN_SRC emacs-lisp
@@ -451,12 +425,19 @@ order things accordingly
   :config
   (company-statistics-mode))
 #+END_SRC
+**** Company shell
+#+BEGIN_SRC emacs-lisp
+(use-package company-shell
+  :after company
+  :defer t
+  :config
+  (add-to-list 'company-backends '(company-shell company-shell-env)))
 #+END_SRC
 **** Company box - pretty icons
 #+BEGIN_SRC emacs-lisp
 (use-package company-box
   :diminish
-  :after company-all-the-icons
+  :after all-the-icons
   :defer t
   :config
   (company-box-mode 1))
@@ -963,7 +944,6 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
   )
 
 (use-package company-auctex
-  :pin melpa
   :defer t
   :after tex
   :init
@@ -971,7 +951,6 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
   (add-hook 'LaTeX-mode-hook 'company-auctex-init))
 
 (use-package reftex
-  :pin gnu
   :defer t
   :custom
   (reftex-cite-prompt-optional-args t)) ; Prompt for empty optional arguments in cite
@@ -1034,6 +1013,7 @@ helm is awesome
    (typst-mode . lsp-deferred)
    (yaml-mode . lsp-deferred)
    (toml-mode . lsp-deferred)
+   (sh-mode . lsp-deferred)
    (lsp-mode . lsp-enable-which-key-integration))
 
   :init
@@ -1056,6 +1036,15 @@ helm is awesome
                                      )
                       :server-id 'tinymist))
 
+  ;; bash
+  (add-to-list 'lsp-language-id-configuration '(sh-mode . "shellscript"))
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection '("bash-language-server" "start"))
+    :activation-fn (lsp-activate-on "shellscript")
+    :major-modes '(sh-mode)
+    :server-id 'bash-ls))
+
   (lsp-register-custom-settings
    '(("pylsp.plugins.mypy.enabled" t t)
      ("pylsp.plugins.mypy.live_mode" nil t)
@@ -1068,12 +1057,12 @@ helm is awesome
 
   :custom
   (lsp-auto-guess-root t)
-  (lsp-completion-provider :capf)  ; Fixed deprecated option
+  (lsp-completion-provider :none)  ; Use company for completion via company-capf
   (lsp-eldoc-enable-hover t)
   (lsp-enable-snippet t)
   (lsp-file-watch-threshold 5000)
   (lsp-headerline-breadcrumb-enable t)
-  (lsp-idle-delay 0.5)  ; Increased for better performance
+  (lsp-idle-delay 1.0)  ; Better performance balance
   (lsp-keep-workspace-alive nil)
   (lsp-modeline-diagnostics-enable t)
   (lsp-auto-execute-action nil)
@@ -1345,8 +1334,7 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
 #+END_SRC
 **** org mermaid integration
 #+BEGIN_SRC emacs-lisp
-(use-package ob-mermaid
-  :defer t)
+(use-package ob-mermaid)
 #+END_SRC
 
 **** Org modern ui theme
@@ -1808,7 +1796,7 @@ snippets for common operations instead of macros, allows it to be portable and p
   :init
   (yas-global-mode 1)
   :custom
-  (yas-prompt-functions '(yas-ido-prompt)))
+  (yas-prompt-functions '(yas-completing-prompt)))
 (use-package yasnippet-snippets
   :after yasnippet
   :config
