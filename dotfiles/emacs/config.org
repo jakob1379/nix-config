@@ -893,6 +893,11 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
   :custom
   (js-indent-level 2))
 #+END_SRC
+*** Justfile mode
+#+BEGIN_SRC emacs-lisp
+(use-package just-mode)
+#+END_SRC
+
 *** LaTeX
 #+BEGIN_SRC emacs-lisp
 (use-package latex
@@ -1230,6 +1235,11 @@ Makefile modes comes with Emacs, but we still want to use it and be able to conf
   :defer t
   )
 #+end_src
+*** Mermaid Diagrams
+#+BEGIN_SRC emacs-lisp
+(use-package mermaid-mode
+  :defer t)
+#+END_SRC
 *** Move buffer
 #+BEGIN_SRC emacs-lisp
 (use-package buffer-move
@@ -1456,11 +1466,6 @@ The native graph viewer of org-roam gets the job done, but it isn't pretty. This
 (use-package ox-twbs
   :defer t)
 (use-package ox-pandoc
-  :defer t)
-#+END_SRC
-*** Mermaid Diagrams
-#+BEGIN_SRC emacs-lisp
-(use-package mermaid-mode
   :defer t)
 #+END_SRC
 *** PDF Tools
