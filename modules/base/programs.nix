@@ -76,6 +76,9 @@ in
 
           # bind nix-find
           bind '"\C-w": "nix-find\n"'
+
+          # Ensure correct fzf command (override stale environment variable)
+          export FZF_CTRL_T_COMMAND="fd --type file --hidden --no-ignore-vcs"
         '';
       };
 
@@ -426,8 +429,9 @@ in
 
     xdg = {
       configFile = {
-        "opencode/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink
-          (config.home.homeDirectory + "/.config/home-manager/dotfiles/droid/AGENTS.md");
+        "opencode/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink (
+          config.home.homeDirectory + "/.config/home-manager/dotfiles/droid/AGENTS.md"
+        );
       };
       terminal-exec = {
         enable = true;

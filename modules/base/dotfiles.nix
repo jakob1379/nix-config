@@ -29,8 +29,9 @@
     ssh = lib.mkOption {
       type = lib.types.attrs;
       default = {
-        ".ssh/keepassxc-prompt".source = config.lib.file.mkOutOfStoreSymlink
-          (config.home.homeDirectory + "/.config/home-manager/bin/keepassxc-prompt");
+        ".ssh/keepassxc-prompt".source = config.lib.file.mkOutOfStoreSymlink (
+          config.home.homeDirectory + "/.config/home-manager/bin/keepassxc-prompt"
+        );
       };
       description = "SSH dotfiles.";
     };
@@ -39,12 +40,15 @@
     emacs = lib.mkOption {
       type = lib.types.attrs;
       default = {
-        ".emacs.d/config.org".source = config.lib.file.mkOutOfStoreSymlink
-          (config.home.homeDirectory + "/.config/home-manager/dotfiles/emacs/config.org");
-        ".emacs.d/init.el".source = config.lib.file.mkOutOfStoreSymlink
-          (config.home.homeDirectory + "/.config/home-manager/dotfiles/emacs/init.el");
-        ".local/share/bash-completion/completions/emacs".source = config.lib.file.mkOutOfStoreSymlink
-          (config.home.homeDirectory + "/.config/home-manager/dotfiles/emacs/emacs-completions.sh");
+        ".emacs.d/config.org".source = config.lib.file.mkOutOfStoreSymlink (
+          config.home.homeDirectory + "/.config/home-manager/dotfiles/emacs/config.org"
+        );
+        ".emacs.d/init.el".source = config.lib.file.mkOutOfStoreSymlink (
+          config.home.homeDirectory + "/.config/home-manager/dotfiles/emacs/init.el"
+        );
+        ".local/share/bash-completion/completions/emacs".source = config.lib.file.mkOutOfStoreSymlink (
+          config.home.homeDirectory + "/.config/home-manager/dotfiles/emacs/emacs-completions.sh"
+        );
       };
       description = "Emacs dotfiles.";
     };
