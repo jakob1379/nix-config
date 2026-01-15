@@ -426,7 +426,8 @@ in
 
     xdg = {
       configFile = {
-        "opencode/AGENTS.md".source = ../../dotfiles/droid/AGENTS.md;
+        "opencode/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink
+          (config.home.homeDirectory + "/.config/home-manager/dotfiles/droid/AGENTS.md");
       };
       terminal-exec = {
         enable = true;
