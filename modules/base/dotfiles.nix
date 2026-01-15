@@ -14,13 +14,14 @@
       default =
         let
           droidDir = ../../dotfiles/droid;
-        in
-        lib.mapAttrs' (name: _: {
-          name = ".factory/${name}";
-          value = {
-            source = droidDir + "/${name}";
+          mkSymlink = name: {
+            name = ".factory/${name}";
+            value = {
+              source = config.lib.file.mkOutOfStoreSymlink (droidDir + "/${name}");
+            };
           };
-        }) (builtins.readDir droidDir);
+        in
+        lib.mapAttrs' (name: _: mkSymlink name) (builtins.readDir droidDir);
       description = "Factory droid configs";
     };
 
@@ -37,9 +38,10 @@
     emacs = lib.mkOption {
       type = lib.types.attrs;
       default = {
-        ".emacs.d/config.org".source = ../../dotfiles/emacs/config.org;
-        ".emacs.d/init.el".source = ../../dotfiles/emacs/init.el;
-        ".local/share/bash-completion/completions/emacs".source = ../../dotfiles/emacs/emacs-completions.sh;
+        ".emacs.d/config.org".source = config.lib.file.mkOutOfStoreSymlink ../../dotfiles/emacs/config.org;
+        ".emacs.d/init.el".source = config.lib.file.mkOutOfStoreSymlink ../../dotfiles/emacs/init.el;
+        ".local/share/bash-completion/completions/emacs".source =
+          config.lib.file.mkOutOfStoreSymlink ../../dotfiles/emacs/emacs-completions.sh;
       };
       description = "Emacs dotfiles.";
     };

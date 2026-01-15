@@ -75,7 +75,7 @@ in
           eval "$(batman --export-env)"
 
           # bind nix-find
-          bind '"\C-f": "nix-find\n"'
+          bind '"\C-w": "nix-find\n"'
         '';
       };
 
@@ -293,9 +293,12 @@ in
           "--preview '${pkgs.eza}/bin/eza --tree --color=always {} | head -200'"
         ];
         changeDirWidgetCommand = "fd --type d";
-        fileWidgetCommand = "fd --type f --hidden";
+        # fileWidgetCommand = "fd --type file --hidden --no-ignore-vcs";
         fileWidgetOptions = [
-          "--preview '${pkgs.bat}/bin/bat --style=changes,header-filename,snip,rule --paging always --force-colorization {}'"
+          "--preview '${pkgs.bat}/bin/bat \
+             --style=changes,header-filename,number,snip,rule \
+             --paging always \
+             --force-colorization {}'"
         ];
       };
 
@@ -306,8 +309,10 @@ in
           map-syntax = [
             "*.conf:TOML"
             "*.gdextension:TOML"
-            "u2f_keys:CSV"
+            ".env.*:toml"
+            ".envrc:bash"
             "justfile:make"
+            "u2f_keys:CSV"
           ];
         };
       };
@@ -353,6 +358,8 @@ in
       wallust = {
         enable = true;
       };
+
+      opencode.enable = true;
 
       nix-index = {
         enable = true;
@@ -418,6 +425,9 @@ in
     qt.enable = true;
 
     xdg = {
+      configFile = {
+        "opencode/AGENTS.md".source = ../../dotfiles/droid/AGENTS.md;
+      };
       terminal-exec = {
         enable = true;
         settings.default = [ "net.local.ghostty.desktop" ];
