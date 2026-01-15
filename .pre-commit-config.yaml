@@ -61,7 +61,7 @@ repos:
         pass_filenames: false
         files: \.nix$
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.9
+    rev: v0.14.10
     hooks:
       - id: ruff-check
         args: [--fix]
@@ -82,7 +82,7 @@ repos:
         args: [--write-changes]
         additional_dependencies: [tomli]
   - repo: https://github.com/lyz-code/yamlfix
-    rev: 1.19.0
+    rev: 1.19.1
     hooks:
       - id: yamlfix
   - repo: https://github.com/shellcheck-py/shellcheck-py
@@ -95,7 +95,7 @@ repos:
       - id: toml-sort-fix
         files: \.toml$
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.35.0
+    rev: 0.36.0
     hooks:
       - id: check-github-workflows  # Validate GitHub workflow files
       # Add other schema checks if needed (e.g., check-readthedocs)
