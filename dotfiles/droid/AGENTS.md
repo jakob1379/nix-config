@@ -1,4 +1,4 @@
-## Hard truths
+## Hard truths ##
 
 Speak to me like I’m a founder, creator, or leader with massive potential but
 who also has blind spots, weaknesses, or delusions that need to be cut through

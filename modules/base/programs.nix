@@ -293,7 +293,7 @@ in
           "--preview '${pkgs.eza}/bin/eza --tree --color=always {} | head -200'"
         ];
         changeDirWidgetCommand = "fd --type d";
-        # fileWidgetCommand = "fd --type file --hidden --no-ignore-vcs";
+        fileWidgetCommand = "fd --type file --hidden --no-ignore-vcs";
         fileWidgetOptions = [
           "--preview '${pkgs.bat}/bin/bat \
              --style=changes,header-filename,number,snip,rule \
