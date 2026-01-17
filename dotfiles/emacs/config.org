@@ -9,9 +9,7 @@
 
 But it sure does take a lot of inspiration from it to improve performance.
 
-The config is divided into sensible sections (hopefully) to segregate what is mode specific and
-external packages. As much as the config is done using =use-package=. See the link in this section
-title for more information.
+The config is divided into sensible sections (hopefully) to segregate mode-specific configurations from external package configurations. Most of the config is done using =use-package=. See the link in the title for more information.
 
 * Startup
 ** Profiling
@@ -40,9 +38,9 @@ title for more information.
             gcs-done)))
 #+END_SRC
 ** Early init
-:properties:
+:PROPERTIES:
 :header-args+: :tangle "~/.emacs.d/early-init.el"
-:end:
+:END:
 In Emacs 27+, package initialization occurs before ~user-init-file~ is loaded, but after
 ~early-init-file~. We handle package initialization, so we must prevent Emacs from doing it early!
 
@@ -52,9 +50,9 @@ In Emacs 27+, package initialization occurs before ~user-init-file~ is loaded, b
 (setq native-comp-async-report-warnings-errors nil)
 #+END_SRC
 ** Straight
-Straight is an package manager for emacs making it easier to fetch packages from anywhere.
+Straight is a package manager for Emacs making it easier to fetch packages from anywhere.
 
-We want it to integrate nicely with usepackage
+We want it to integrate nicely with use-package
 #+BEGIN_SRC emacs-lisp
 (setq straight-cache-autoloads t
       straight-check-for-modifications '(check-on-save find-when-checking)
@@ -110,7 +108,7 @@ Following [[https://github.com/hlissner/doom-emacs/blob/develop/docs/faq.org#how
 #+END_SRC
 ** Temporarily avoid special handling of files
 
-this script temporarily disables file name handlers during the startup of Emacs to speed up the
+This script temporarily disables file name handlers during the startup of Emacs to speed up the
 process. Once Emacs has finished starting up, it restores the file name handlers to their original
 state.
 #+BEGIN_SRC emacs-lisp
@@ -136,7 +134,7 @@ state.
   :config
   (gcmh-mode 1))
 #+END_SRC
-* General emacs settings
+* General Emacs settings
 ** Sane defaults
 #+BEGIN_SRC emacs-lisp
 ;; Global Settings
@@ -191,7 +189,7 @@ state.
 ;; (windmove-default-keybindings)
 #+END_SRC
 ** UTF-8 by Default
-Emacs is very conservative about assuming encoding. Everything is utf-8 these days, lets have that as the default.
+Emacs is very conservative about assuming encoding. Everything is UTF-8 these days, let's have that as the default.
 #+BEGIN_SRC emacs-lisp
 (prefer-coding-system 'utf-8)
 (set-buffer-file-coding-system 'utf-8)
@@ -260,9 +258,9 @@ Emacs is very conservative about assuming encoding. Everything is utf-8 these da
 #+BEGIN_SRC emacs-lisp
 (require 'iso-transl)
 #+END_SRC
-** start emacs server
+** Start Emacs server
 
-If emacs is not running as a server, start one. It should've been started by systemd, but this is just to be sure
+If Emacs is not running as a server, start one. It should've been started by systemd, but this is just to be sure
 #+BEGIN_SRC emacs-lisp
 (require 'server)
 (unless (server-running-p)
@@ -281,7 +279,7 @@ If emacs is not running as a server, start one. It should've been started by sys
 ;; highlight the current line
 (global-hl-line-mode t)
 
-;; fix color display when loading emacs in terminal
+;; fix color display when loading Emacs in terminal
 (defun enable-256color-term ()
   (interactive)
   (load-library "term/xterm")
@@ -307,19 +305,16 @@ If emacs is not running as a server, start one. It should've been started by sys
 #+END_SRC
 * Mode Configs
 ** Before the rest
-*** Delight and Deminish
-These two packages enable the customization of the mode line to either hide or customize text.
+*** Delight and Diminish
+These two packages allow customizing the mode line to either hide or change text.
 
 #+BEGIN_SRC emacs-lisp
 (use-package delight)
 (use-package diminish)
 #+END_SRC
 ** The Rest
-:PROPERTIES:
-:header-args: :tangle yes
-:END:
 *** All the icons
-nice developer icons
+Nice developer icons.
 #+BEGIN_SRC emacs-lisp
 (use-package all-the-icons
   ;; :if (display-graphic-p)
@@ -334,9 +329,7 @@ nice developer icons
   (all-the-icons-completion-mode 1))
 #+END_SRC
 *** Ansible
-Ansible is a bit funky in that it should be only be loaded if there is a local variable
-defining that the file indeed is part of an ansible project. This is done by with a in the
-projects with something like in
+Ansible mode should only be loaded when a local variable indicates that the file is part of an Ansible project. This is typically done with a `.dir-locals.el` file in the project directory.
 
 #+BEGIN_SRC emacs-lisp
 (use-package ansible
@@ -351,7 +344,7 @@ projects with something like in
   :delight
   )
 #+END_SRC
-*** Auto update emacs packages
+*** Auto update Emacs packages
 #+BEGIN_SRC emacs-lisp
 (use-package auto-package-update
   :defer t
@@ -360,9 +353,9 @@ projects with something like in
         auto-package-update-interval 7)
   )
 #+END_SRC
-vc-follow-symlinks
+
 *** Beacon
-Don't lose your cursor
+Don't lose your cursor.
 #+BEGIN_SRC emacs-lisp
 (use-package beacon
   :delight
@@ -373,50 +366,46 @@ Don't lose your cursor
   :config (beacon-mode 1))
 #+END_SRC
 *** Company mode
-This configures the nice dropdown autocompletion system called company modes. It is highly
-extensible but package specific extensions like lsp, yasnippet, etc., should be configures in their
-section and not here.
+This configures the nice dropdown autocompletion system called company mode. It is highly extensible, but package-specific extensions like LSP, yasnippet, etc., should be configured in their respective sections, not here.
 **** Company package
 #+BEGIN_SRC emacs-lisp
-(use-package company
-  :init
-  (global-company-mode t)
-  :custom
-  (company-tooltip-limit 20)
-  :config
-  ;; Separate general backends and mode-specific backends
-  (setq company-backends
-        '((company-capf company-dabbrev company-files company-keywords company-yasnippet)
-          (company-ispell)
-          (company-etags company-semantic)))
+  (use-package company
+    :init
+    (global-company-mode t)
+    :config
+    ;; Separate general backends and mode-specific backends
+    (setq company-backends
+          '((company-capf company-dabbrev company-files company-keywords company-yasnippet)
+            (company-ispell)
+            (company-etags company-semantic)))
 
-  :custom
-  (company-dabbrev-downcase nil)
-  (company-echo-delay 0.1)
-  (company-idle-delay 0.01)
-  (company-minimum-prefix-length 1)
-  (company-selection-wrap-around t)
-  (company-show-numbers t)
-  (company-tooltip-align-annotations t)
-  (company-tooltip-limit 20)
+    :custom
+    (company-tooltip-limit 20)
+    (company-dabbrev-downcase nil)
+    (company-echo-delay 0.1)
+    (company-idle-delay 0.01)
+    (company-minimum-prefix-length 1)
+    (company-selection-wrap-around t)
+    (company-show-numbers t)
+    (company-tooltip-align-annotations t)
+    (company-tooltip-limit 20)
 
-  :custom-face
-  ;; (company-tooltip ((t (:inherit default :background "#f8f8f2"))))
-  ;; (company-scrollbar-bg ((t (:background "#3E3D31"))))
-  ;; (company-scrollbar-fg ((t (:background "#9A9A9A"))))
-  (company-tooltip-selection ((t (:background "#CC6666" :foreground "#F8F8F2"))))
-  (company-tooltip-common ((t (:foreground "#F92672"))))
-  (company-tooltip-common-selection ((t (:foreground "#FD971F"))))
-  (company-preview-common ((t (:foreground "#B6E63E" :underline t))))
-  (company-preview ((t (:background "#2B2B2B" :foreground "#A6E22E"))))
-  (company-preview-search ((t (:inherit match))))
-  (company-template-field ((t (:background "#272822" :foreground "#F8F8F2"))))
-  )
+    :custom-face
+    ;; (company-tooltip ((t (:inherit default :background "#f8f8f2"))))
+    ;; (company-scrollbar-bg ((t (:background "#3E3D31"))))
+    ;; (company-scrollbar-fg ((t (:background "#9A9A9A"))))
+    (company-tooltip-selection ((t (:background "#CC6666" :foreground "#F8F8F2"))))
+    (company-tooltip-common ((t (:foreground "#F92672"))))
+    (company-tooltip-common-selection ((t (:foreground "#FD971F"))))
+    (company-preview-common ((t (:foreground "#B6E63E" :underline t))))
+    (company-preview ((t (:background "#2B2B2B" :foreground "#A6E22E"))))
+    (company-preview-search ((t (:inherit match))))
+    (company-template-field ((t (:background "#272822" :foreground "#F8F8F2"))))
+    )
 #+END_SRC
 **** Company-statistics
 
-This backend helps improve the user experience by keeping track of completions used and
-order things accordingly
+This backend helps improve the user experience by keeping track of completions used and ordering them accordingly.
 
 #+BEGIN_SRC emacs-lisp
 (use-package company-statistics
@@ -443,7 +432,7 @@ order things accordingly
   (company-box-mode 1))
 #+END_SRC
 **** Prescient
-Teaches company to sort better
+Teaches company to sort better.
 #+BEGIN_SRC emacs-lisp
 (use-package prescient
   :defer t
@@ -452,7 +441,7 @@ Teaches company to sort better
   (prescient-persist-mode 1))
 #+END_SRC
 *** Conf-mode
-Associate various files with conf-mode
+Associate various files with conf-mode.
 #+BEGIN_SRC emacs-lisp
 (use-package conf-mode
   :mode
@@ -475,8 +464,7 @@ Associate various files with conf-mode
                       (toggle-truncate-lines -1))))
 #+END_SRC
 *** Dired mode
-even though dired mode is coming with emacs there are some improvements we can add like git, pretty
-icons, file preview, etc.
+Even though Dired mode comes with Emacs, there are some improvements we can add, like git integration, pretty icons, file preview, etc.
 
 #+begin_src emacs-lisp
 ;; Dired and related packages configuration
@@ -539,16 +527,6 @@ let dired know how to use native system applications to open files.
     (dired-rainbow-define-chmod executable-unix "#38c172" "-.*x.*")
     ))
 #+END_SRC
-*** Direnv
-#+BEGIN_SRC emacs-lisp
-(use-package direnv
-  :hook (after-init . direnv-mode)
-  :custom
-  (direnv-always-show-summary t)
-  :config
-  (add-hook 'prog-mode-hook #'direnv--maybe-update-environment)
-  )
-#+END_SRC
 *** Docker
 We want modes for docker compose and Dockerfiles
 
@@ -578,6 +556,11 @@ read and understand ~.editorconfig~ files
   :config
   (global-eldoc-mode t))
 #+END_SRC
+*** envrc
+#+BEGIN_SRC emacs-lisp
+(use-package envrc
+  :hook (after-init . envrc-global-mode))
+#+END_SRC
 *** Expand region
 #+BEGIN_SRC emacs-lisp
 (use-package expand-region
@@ -586,7 +569,7 @@ read and understand ~.editorconfig~ files
   :bind ("C-=" . er/expand-region))
 #+END_SRC
 *** Fast Scrolling
-Always redraw immediately when scrolling, more responsive and doesn't hang! Sourced from http://emacs.stackexchange.com/a/31427/2418
+Always redraw immediately when scrolling, making it more responsive and preventing hangs. Source: http://emacs.stackexchange.com/a/31427/2418
 
 #+BEGIN_SRC emacs-lisp
 ;; (setq fast-but-imprecise-scrolling t
@@ -608,17 +591,16 @@ Always redraw immediately when scrolling, more responsive and doesn't hang! Sour
 *** Flyspell
 
 #+BEGIN_SRC emacs-lisp
-(use-package flyspell
-  :defer t
-  :delight
-  :hook (prog-mode . (lambda () (setq flyspell-prog-text-faces
-                                      (delq 'font-lock-string-face
-                                            flyspell-prog-text-faces))))
-  (text-mode . flyspell-mode)
-  (prog-mode . flyspell-prog-mode)
-  :custom
-  (flyspell-issue-welcome-flag nil)
-  )
+  (use-package flyspell
+    :defer t
+    :delight
+    :hook ((prog-mode . (lambda () (setq flyspell-prog-text-faces
+                                         (delq 'font-lock-string-face
+                                               flyspell-prog-text-faces))))
+           (text-mode . flyspell-mode)
+           (prog-mode . flyspell-prog-mode))
+    :custom
+    (flyspell-issue-welcome-flag nil))
 #+END_SRC
 
 #+RESULTS:
@@ -873,18 +855,17 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
 #+END_SRC
 *** JavaScript
 #+BEGIN_SRC emacs-lisp
-(use-package js2-mode
-  :defer t
-  :interpreter (("node" . js2-mode))
-  :config
-  (add-hook 'js-mode-hook #'js2-minor-mode)
-  (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
-  (add-to-list 'auto-mode-alist '("\\.json$" . js2-mode))
-  :custom
-  (js-basic-offset 0)
-  (js2-basic-offset 2)
-  (indent-tabs-mode nil)
-  )
+  (use-package js2-mode
+    :defer t
+    :interpreter (("node" . js2-mode))
+    :config
+    (add-hook 'js-mode-hook #'js2-minor-mode)
+    (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+    (add-to-list 'auto-mode-alist '("\\.json$" . js2-mode))
+    :custom
+    (js-basic-offset 0)
+    (js2-basic-offset 2)
+    )
 #+END_SRC
 *** JSON
 #+BEGIN_SRC emacs-lisp
@@ -897,7 +878,6 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
 #+BEGIN_SRC emacs-lisp
 (use-package just-mode)
 #+END_SRC
-
 *** LaTeX
 #+BEGIN_SRC emacs-lisp
 (use-package latex
@@ -1307,7 +1287,6 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
 (use-package org
   :defer t
   :delight
-  :straight (:type built-in)
   :custom
   (org-agenda-files "~/dropbox-private/Documents/RoamNotes")
   (org-cycle-separator-lines -1)
@@ -1469,7 +1448,7 @@ The native graph viewer of org-roam gets the job done, but it isn't pretty. This
   :defer t)
 #+END_SRC
 *** PDF Tools
-We want to be able to view pdfs in emacs
+We want to be able to view PDFs in Emacs
 #+BEGIN_SRC emacs-lisp
 (use-package pdf-tools
   :defer t
@@ -1559,7 +1538,7 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
   :hook ((org-mode . rainbow-delimiters-mode)
          (prog-mode . rainbow-delimiters-mode)))
 #+END_SRC
-*** restart emacs function
+*** Restart Emacs function
 #+BEGIN_SRC emacs-lisp
 (use-package restart-emacs
   :defer t)
@@ -1569,7 +1548,7 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
 (use-package rst
   :defer t)
 #+END_SRC
-*** Shell (ba)sh-mode
+*** Shell mode (bash/sh)
 #+BEGIN_SRC emacs-lisp
 (use-package sh-mode
   :defer t
@@ -1648,7 +1627,7 @@ necessarily superseded by the ssh config.
   ("\\.link\\'" . systemd-mode))
 #+END_SRC
 *** Themes
-**** Doom emacs theme
+**** Doom Emacs theme
 #+begin_src emacs-lisp
 (use-package doom-themes
   :config
@@ -1714,9 +1693,7 @@ simple package that enable titlecasing
   :mode ("\\.typ\\'" . typst-mode)
   :straight (:type git :host github :repo "Ziqi-Yang/typst-mode.el")
   :custom
-  (typst-basic-offset 0)
   (typst-basic-offset 2)
-  (indent-tabs-mode nil)
   )
 #+END_SRC
 

@@ -11,7 +11,6 @@ let
     (btop.override { cudaSupport = true; })
     busybox
     dconf
-    dig
     duf
     entr
     gdu
@@ -40,11 +39,9 @@ let
   guiPackages = with pkgs; [
     brave
     tana
-    dbeaver-bin
     wifi-qr
     feh
     netpeek
-    gnome-boxes
     libnotify
     nodePackages.prettier
     onlyoffice-desktopeditors
@@ -52,7 +49,6 @@ let
     signal-desktop
     spotify
     stretchly
-    thunderbird
     variety
     virt-manager
     vlc
@@ -73,7 +69,6 @@ let
       poppler-utils
       dive
       frogmouth
-      visidata
       wakatime-cli
       mermaid-cli
     ]
