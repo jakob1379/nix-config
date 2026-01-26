@@ -1570,6 +1570,19 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
                     (highlight-indentation-current-column-mode -1)
                     (highlight-indentation-current-column-mode 1)))))))
 #+END_SRC
+
+;; Alternative: highlight-indent-guides (more modern, fewer bugs)
+;; #+BEGIN_SRC emacs-lisp :tangle no
+;; (use-package highlight-indent-guides
+;;   :straight t
+;;   :defer t
+;;   :hook (prog-mode . highlight-indent-guides-mode)
+;;   :custom
+;;   (highlight-indent-guides-method 'character)
+;;   (highlight-indent-guides-character ?\|)
+;;   (highlight-indent-guides-responsive 'top))
+;; #+END_SRC
+
 *** Restart Emacs function
 #+BEGIN_SRC emacs-lisp
 (use-package restart-emacs
