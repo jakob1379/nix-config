@@ -1552,8 +1552,23 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
 *** Highlight indentation
 #+BEGIN_SRC emacs-lisp
 (use-package highlight-indentation
+  :straight t
   :defer t
-  :hook (prog-mode . highlight-indentation-current-column-mode))
+  :hook (prog-mode . highlight-indentation-current-column-mode)
+  :config
+  ;; Ensure the overlay appears on top of other overlays
+  (setq highlight-indentation-current-column-overlay-priority 100)
+  ;; Make the current‑column face stand out (adjust to your theme)
+  (set-face-attribute 'highlight-indentation-current-column-face nil
+                      :background "#2e2e3e")
+  ;; Force a redraw after the mode is enabled (workaround for initial paint)
+  (add-hook 'prog-mode-hook
+            (lambda ()
+              (when highlight-indentation-current-column-mode
+                (run-with-idle-timer 0.1 nil
+                  (lambda ()
+                    (highlight-indentation-current-column-mode -1)
+                    (highlight-indentation-current-column-mode 1)))))))
 #+END_SRC
 *** Restart Emacs function
 #+BEGIN_SRC emacs-lisp
