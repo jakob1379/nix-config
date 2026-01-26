@@ -102,7 +102,7 @@ in
 
       emacs = {
         enable = true;
-        package = pkgs.emacs30-gtk3;
+        package = pkgs.emacs;
       };
 
       fastfetch = {
@@ -298,10 +298,12 @@ in
         changeDirWidgetCommand = "fd --type d";
         fileWidgetCommand = "fd --type file --hidden --no-ignore-vcs";
         fileWidgetOptions = [
-          "--preview '${pkgs.bat}/bin/bat \
-             --style=changes,header-filename,number,snip,rule \
-             --paging always \
-             --force-colorization {}'"
+          ''
+            --preview '${pkgs.bat}/bin/bat
+            --style=changes,header-filename,number,snip,rule
+            --paging always
+            --force-colorization {}'
+          ''
         ];
       };
 

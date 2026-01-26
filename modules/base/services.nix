@@ -174,6 +174,7 @@ in
       };
 
       emacs = {
+        package = pkgs.emacs;
         startWithUserSession = "graphical";
         enable = true;
         defaultEditor = true;
