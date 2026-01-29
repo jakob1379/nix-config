@@ -1551,38 +1551,9 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
 #+END_SRC
 *** Highlight indentation
 #+BEGIN_SRC emacs-lisp
-(use-package highlight-indentation
-  :straight t
-  :defer t
-  :hook (prog-mode . highlight-indentation-current-column-mode)
-  :config
-  ;; Ensure the overlay appears on top of other overlays
-  (setq highlight-indentation-current-column-overlay-priority 100)
-  ;; Make the current‑column face stand out (adjust to your theme)
-  (set-face-attribute 'highlight-indentation-current-column-face nil
-                      :background "#2e2e3e")
-  ;; Force a redraw after the mode is enabled (workaround for initial paint)
-  (add-hook 'prog-mode-hook
-            (lambda ()
-              (when highlight-indentation-current-column-mode
-                (run-with-idle-timer 0.1 nil
-                  (lambda ()
-                    (highlight-indentation-current-column-mode -1)
-                    (highlight-indentation-current-column-mode 1)))))))
-#+END_SRC
-
-;; Alternative: highlight-indent-guides (more modern, fewer bugs)
-;; #+BEGIN_SRC emacs-lisp :tangle no
-;; (use-package highlight-indent-guides
-;;   :straight t
-;;   :defer t
-;;   :hook (prog-mode . highlight-indent-guides-mode)
-;;   :custom
-;;   (highlight-indent-guides-method 'character)
-;;   (highlight-indent-guides-character ?\|)
-;;   (highlight-indent-guides-responsive 'top))
-;; #+END_SRC
-
+(use-package highlight-indent-guides
+  :hook (after-change-major-mode-hook . highlight-indent-guides-mode)
+  :config (highlight-indent-guides-responsive "stack"))
 *** Restart Emacs function
 #+BEGIN_SRC emacs-lisp
 (use-package restart-emacs
@@ -1602,7 +1573,6 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
                                      indent-tabs-mode nil)))
   )
 #+END_SRC
-
 *** Solaire mode
 [[https://github.com/hlissner/emacs-solaire-mode][solaire-mode]] darkens non-important buffers, to help you focus on what matters.
 
