@@ -161,7 +161,7 @@ state.
  compilation-ask-about-save nil                     ;; Do not ask about saving when compiling
  compilation-save-buffers-predicate '(lambda () nil);; Do not save unrelated buffers
  delete-by-moving-to-trash t                        ;; Delete files to trash
- highlight-indentation-current-column-mode t        ;; Show a column line for the current lines
+
  indent-tabs-mode nil                               ;; Go away, tabs - use spaces!
  lazy-highlight-syntax 'lazy
  read-process-output-max (* 1024 1024)              ;; Increase read size per process
@@ -1549,6 +1549,11 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
   :hook ((org-mode . rainbow-delimiters-mode)
          (prog-mode . rainbow-delimiters-mode)))
 #+END_SRC
+*** Highlight indentation
+#+BEGIN_SRC emacs-lisp
+(use-package highlight-indent-guides
+  :hook (after-change-major-mode-hook . highlight-indent-guides-mode)
+  :config (highlight-indent-guides-responsive "stack"))
 *** Restart Emacs function
 #+BEGIN_SRC emacs-lisp
 (use-package restart-emacs
@@ -1568,7 +1573,6 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
                                      indent-tabs-mode nil)))
   )
 #+END_SRC
-
 *** Solaire mode
 [[https://github.com/hlissner/emacs-solaire-mode][solaire-mode]] darkens non-important buffers, to help you focus on what matters.
 
