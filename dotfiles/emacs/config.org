@@ -1726,19 +1726,18 @@ simple package that enable titlecasing
 #+BEGIN_SRC emacs-lisp
 (defun get-wakatime-api-key ()
   "Get Wakatime API key from .wakatime.cfg file."
-  (let* ((home (expand-file-name "~"))
-         (wakacfg (concat (file-name-as-directory home) ".wakatime.cfg")))
+  (let ((wakacfg (expand-file-name "~/.wakatime.cfg")))
     (when (file-exists-p wakacfg)
       (with-temp-buffer
         (insert-file-contents wakacfg)
-        (let* ((content (buffer-string))
-               (start (string-match "^api_key\\s-*=\\s-*" content)))
-          (when start
-            (string-trim (substring content (match-end 0)))))))))
+        (goto-char (point-min))
+        (when (re-search-forward "^api_key\\s-*=\\s-*\\(.+\\)$" nil t)
+          (match-string 1))))))
 
 (use-package wakatime-mode
   :init
-  (setq wakatime-cli-path "/home/jga/.nix-profile/bin/wakatime-cli")
+  ;; Use expand-file-name to ensure correct user, or omit if in PATH
+  (setq wakatime-cli-path (expand-file-name "~/.nix-profile/bin/wakatime-cli"))
   (setq wakatime-api-key (get-wakatime-api-key))
   :diminish
   :config (global-wakatime-mode))
