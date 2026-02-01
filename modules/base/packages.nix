@@ -8,7 +8,10 @@
 
 let
   corePackages = with pkgs; [
-    (btop.override { cudaSupport = true; })
+    (btop.override {
+      rocmSupport = true;
+      cudaSupport = true;
+    })
     busybox
     dconf
     duf
