@@ -380,6 +380,7 @@ This configures the nice dropdown autocompletion system called company mode. It 
             (company-etags company-semantic)))
 
     :custom
+    (company-minimum-prefix-length 1)
     (company-tooltip-limit 20)
     (company-dabbrev-downcase nil)
     (company-echo-delay 0.1)
@@ -390,17 +391,14 @@ This configures the nice dropdown autocompletion system called company mode. It 
     (company-tooltip-align-annotations t)
     (company-tooltip-limit 20)
 
-    :custom-face
-    ;; (company-tooltip ((t (:inherit default :background "#f8f8f2"))))
-    ;; (company-scrollbar-bg ((t (:background "#3E3D31"))))
-    ;; (company-scrollbar-fg ((t (:background "#9A9A9A"))))
-    (company-tooltip-selection ((t (:background "#CC6666" :foreground "#F8F8F2"))))
-    (company-tooltip-common ((t (:foreground "#F92672"))))
-    (company-tooltip-common-selection ((t (:foreground "#FD971F"))))
-    (company-preview-common ((t (:foreground "#B6E63E" :underline t))))
-    (company-preview ((t (:background "#2B2B2B" :foreground "#A6E22E"))))
-    (company-preview-search ((t (:inherit match))))
-    (company-template-field ((t (:background "#272822" :foreground "#F8F8F2"))))
+    ;; :custom-face
+    ;; (company-tooltip-selection ((t (:background "#CC6666" :foreground "#F8F8F2"))))
+    ;; (company-tooltip-common ((t (:foreground "#F92672"))))
+    ;; (company-tooltip-common-selection ((t (:foreground "#FD971F"))))
+    ;; (company-preview-common ((t (:foreground "#B6E63E" :underline t))))
+    ;; (company-preview ((t (:background "#2B2B2B" :foreground "#A6E22E"))))
+    ;; (company-preview-search ((t (:inherit match))))
+    ;; (company-template-field ((t (:background "#272822" :foreground "#F8F8F2"))))
     )
 #+END_SRC
 **** Company-statistics
@@ -427,9 +425,11 @@ This backend helps improve the user experience by keeping track of completions u
 (use-package company-box
   :diminish
   :after all-the-icons
-  :defer t
-  :config
-  (company-box-mode 1))
+  :hook (company-mode . company-box-mode)
+  :custom
+  (company-box-doc-enable t)
+  (company-box-doc-delay 0.2)
+  )
 #+END_SRC
 **** Prescient
 Teaches company to sort better.
