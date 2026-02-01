@@ -28,6 +28,8 @@
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = false;
+    package = pkgs.pulseaudioFull;
+    settings.General.Experimental = true;
   };
 
   # dynamic swap
