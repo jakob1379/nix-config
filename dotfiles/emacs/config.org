@@ -353,7 +353,6 @@ Ansible mode should only be loaded when a local variable indicates that the file
         auto-package-update-interval 7)
   )
 #+END_SRC
-
 *** Beacon
 Don't lose your cursor.
 #+BEGIN_SRC emacs-lisp
@@ -376,7 +375,6 @@ This configures the nice dropdown autocompletion system called company mode. It 
     ;; Separate general backends and mode-specific backends
     (setq company-backends
           '((company-capf company-dabbrev company-files company-keywords company-yasnippet)
-            (company-ispell)
             (company-etags company-semantic)))
 
     :custom
@@ -400,17 +398,6 @@ This configures the nice dropdown autocompletion system called company mode. It 
     ;; (company-preview-search ((t (:inherit match))))
     ;; (company-template-field ((t (:background "#272822" :foreground "#F8F8F2"))))
     )
-#+END_SRC
-**** Company-statistics
-
-This backend helps improve the user experience by keeping track of completions used and ordering them accordingly.
-
-#+BEGIN_SRC emacs-lisp
-(use-package company-statistics
-  :after company
-  :defer t
-  :config
-  (company-statistics-mode))
 #+END_SRC
 **** Company shell
 #+BEGIN_SRC emacs-lisp
