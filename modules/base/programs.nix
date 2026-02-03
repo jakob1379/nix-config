@@ -76,9 +76,6 @@ in
 
           # bind nix-find
           bind '"\C-w": "nix-find\n"'
-
-          # Ensure correct fzf command (override stale environment variable)
-          export FZF_CTRL_T_COMMAND="fd --type file --hidden --no-ignore-vcs"
         '';
       };
 
@@ -298,12 +295,7 @@ in
         changeDirWidgetCommand = "fd --type d";
         fileWidgetCommand = "fd --type file --hidden --no-ignore-vcs";
         fileWidgetOptions = [
-          ''
-            --preview '${pkgs.bat}/bin/bat
-            --style=changes,header-filename,number,snip,rule
-            --paging always
-            --force-colorization {}'
-          ''
+          "--preview '${pkgs.bat}/bin/bat {} --style=changes,header-filename,numbers,snip,rule --paging always --force-colorization'"
         ];
       };
 
