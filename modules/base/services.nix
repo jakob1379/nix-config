@@ -24,7 +24,7 @@ let
       };
 
       Service = {
-        ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${mountPath}";
+        ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg mountPath}";
         ExecStart = ''
           ${pkgs.rclone}/bin/rclone mount \
             --allow-other \
@@ -36,9 +36,9 @@ let
             --vfs-cache-max-size 10G \
             --vfs-cache-mode "${cacheMode}" \
             --vfs-fast-fingerprint \
-            ${remote}:${remotePath} ${mountPath}
+            ${remote}:${remotePath} ${lib.escapeShellArg mountPath}
         '';
-        ExecStop = "fusermount -u ${mountPath}";
+        ExecStop = "fusermount -u ${lib.escapeShellArg mountPath}";
         Type = "notify";
         Restart = "on-failure";
         RestartSec = "10s";
@@ -109,7 +109,7 @@ in
               Service = {
                 # Service-specific configuration
                 ExecStart = ''
-                  ${pkgs.bash}/bin/bash -c '${pkgs.wallust}/bin/wallust run -k \"$(<${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt)\"'
+                  ${pkgs.bash}/bin/bash -c '${pkgs.wallust}/bin/wallust run -k \"$(<${lib.escapeShellArg "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt"})\"'
                 '';
                 Type = "oneshot";
               };

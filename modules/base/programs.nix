@@ -60,8 +60,11 @@ in
       bash = {
         enable = true;
         profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
-        initExtra = "";
+        initExtra = ''
+          bind '"\C-w": "nix-find\n"'
+        '';
         shellOptions = [ "cdspell" ];
+        historyControl = [ "ignoreboth" ];
         bashrcExtra = ''
           if [[ $TERM = dumb ]]; then
               return
@@ -73,9 +76,6 @@ in
           ${builtins.readFile ../../bin/secret-export}
 
           eval "$(batman --export-env)"
-
-          # bind nix-find
-          bind '"\C-w": "nix-find\n"'
         '';
       };
 
@@ -290,12 +290,12 @@ in
         enable = true;
         enableBashIntegration = true;
         changeDirWidgetOptions = [
-          "--preview '${pkgs.eza}/bin/eza --tree --color=always {} | head -200'"
+          "--preview '${pkgs.eza}/bin/eza --tree --color=always \"{}\" | head -200'"
         ];
         changeDirWidgetCommand = "fd --type d";
         fileWidgetCommand = "fd --type file --hidden --no-ignore-vcs";
         fileWidgetOptions = [
-          "--preview '${pkgs.bat}/bin/bat {} --style=changes,header-filename,numbers,snip,rule --paging always --force-colorization'"
+          "--preview '${pkgs.bat}/bin/bat \"{}\" --style=changes,header-filename,numbers,snip,rule --paging always --force-colorization'"
         ];
       };
 
@@ -318,13 +318,14 @@ in
         enable = true;
         extraConfig = ''
           $include /etc/inputrc
-
-          set completion-ignore-case On
-          set completion-prefix-display-length 3
-          set mark-symlinked-directories On
-          set show-all-if-ambiguous On
-          set show-all-if-unmodified On
         '';
+        variables = {
+          completion-ignore-case = true;
+          completion-prefix-display-length = 3;
+          mark-symlinked-directories = true;
+          show-all-if-ambiguous = true;
+          show-all-if-unmodified = true;
+        };
       };
 
       ssh = {
