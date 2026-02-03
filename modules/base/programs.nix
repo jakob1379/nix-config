@@ -61,6 +61,7 @@ in
         enable = true;
         profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
         initExtra = "";
+        shellOptions = [ "cdspell" ];
         bashrcExtra = ''
           if [[ $TERM = dumb ]]; then
               return
@@ -71,7 +72,6 @@ in
           fi
           ${builtins.readFile ../../bin/secret-export}
 
-          shopt -s cdspell
           eval "$(batman --export-env)"
 
           # bind nix-find
