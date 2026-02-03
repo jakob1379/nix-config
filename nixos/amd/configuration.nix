@@ -28,7 +28,7 @@
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = false;
-    package = pkgs.pulseaudioFull;
+    # package = pkgs.pulseaudioFull;
     settings.General.Experimental = true;
   };
 
