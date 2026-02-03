@@ -202,16 +202,6 @@ let
       text = builtins.readFile ../../bin/update-all;
     })
     (pkgs.writeShellApplication {
-      name = "yqp";
-      runtimeInputs = [
-        pkgs.yq-go
-        pkgs.fzf
-        pkgs.bat
-        pkgs.coreutils
-      ];
-      text = builtins.readFile ../../bin/yqp;
-    })
-    (pkgs.writeShellApplication {
       name = "icat";
       runtimeInputs = [ pkgs.kitty ];
       text = ''
