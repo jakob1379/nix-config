@@ -78,7 +78,7 @@
         sessionVariables = {
           MANPAGER = "sh -c '${pkgs.unixtools.col}/bin/col -bx | ${pkgs.bat}/bin/bat -l man -p'";
           LC_TIME = "en_GB.utf8";
-          NIX_BUILD_CORES = "$(( $(${pkgs.busybox}/bin/nproc) / 2 < 1 ? 1 : $(${pkgs.busybox}/bin/nproc) / 2 ))";
+          NIX_BUILD_CORES = "$(( (${pkgs.busybox}/bin/nproc + 1) / 2 ))";
           PAGER = "${pkgs.bat}/bin/bat -p";
           SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
         };
