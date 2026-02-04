@@ -1779,12 +1779,12 @@ snippets for common operations instead of macros, allows it to be portable and p
   :init
   (yas-global-mode 1)
   :custom
-  (yas-prompt-functions '(yas-completing-prompt)))
+  (yas-prompt-functions '(yas-completing-prompt))
+  (yas-snippet-dirs '("~/.config/home-manager/dotfiles/emacs/yasnippet/snippets")))
 (use-package yasnippet-snippets
   :after yasnippet
   :config
   (yasnippet-snippets-initialize)
-  ;; (yas-recompile-all)
   (yas-reload-all)
   )
 #+end_src
