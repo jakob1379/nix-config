@@ -546,7 +546,9 @@ read and understand ~.editorconfig~ files
 *** envrc
 #+BEGIN_SRC emacs-lisp
 (use-package envrc
-  :hook (after-init . envrc-global-mode))
+  :hook (after-init . envrc-global-mode)
+  :mode ("\\.envrc\\'" . conf-toml-mode)
+  )
 #+END_SRC
 *** Expand region
 #+BEGIN_SRC emacs-lisp
