@@ -6,9 +6,9 @@ eval "$(batman --export-env)"
 
 ag_fuzzy_search() {
     if [ $# -gt 0 ]; then
-        ag --nocolor --column "$@" 2>/dev/null
+        ag --nocolor --column --one-device -US "$@" 2>/dev/null
     else
-        ag --nocolor --column . 2>/dev/null
+        ag --nocolor --column --one-device -US . 2>/dev/null
     fi
 }
 
