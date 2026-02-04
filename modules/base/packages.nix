@@ -188,6 +188,16 @@ let
       text = builtins.readFile ../../bin/nix-find;
     })
     (pkgs.writeShellApplication {
+      name = "ag-fuzzy";
+      runtimeInputs = [
+        pkgs.silver-searcher
+        pkgs.fzf
+        pkgs.bat
+        pkgs.wl-clipboard
+      ];
+      text = builtins.readFile ../../bin/ag-fuzzy;
+    })
+    (pkgs.writeShellApplication {
       name = "nixos-switch";
       runtimeInputs = [ pkgs.nix-output-monitor ];
       text = builtins.readFile ../../bin/nixos-switch;

@@ -62,6 +62,7 @@ in
         profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
         initExtra = ''
           bind '"\C-w": "nix-find\n"'
+          bind '"\C-q": "ag-fuzzy\n"'
         '';
         shellOptions = [ "cdspell" ];
         historyControl = [ "ignoreboth" ];

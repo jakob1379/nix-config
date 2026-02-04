@@ -13,15 +13,17 @@ ag_fuzzy_search() {
 }
 
 ag_fuzzy_preview() {
+    # shellcheck disable=SC2034
     local entry="$1"
+    # shellcheck disable=SC2034
     local query="${2:-}"
 
     local file line
     file=$(echo "$entry" | cut -d: -f1)
     line=$(echo "$entry" | cut -d: -f2)
 
-
     [ -z "$file" ] || [ ! -f "$file" ] || [ -z "$line" ] && exit 1
+    # shellcheck disable=SC2086
     bat --force-colorization --style=numbers,header-filename --highlight-line $line "$file"
 }
 export -f ag_fuzzy_preview
@@ -36,21 +38,6 @@ ag_fuzzy_line() {
 }
 export -f ag_fuzzy_line
 
-get_editor_cmd() {
-    local file="$1" line="$2"
-    local editor="${EDITOR:-${VISUAL:-vim}}"
-
-    case "$editor" in
-        *nvim*|*vim*) echo "$editor +$line $file" ;;
-        *emacs*) echo "emacsclient --no-wait +$line $file" ;;
-        nano) echo "$editor +$line $file" ;;
-        code) echo "$editor --goto $file:$line" ;;
-        subl|*sublime*) echo "$editor $file:$line" ;;
-        vi) echo "$editor +$line $file" ;;
-        *) echo "$editor +$line $file" ;;
-    esac
-}
-
 mapfile -t selections < <(
     ag_fuzzy_search "$@" | \
     fzf \
@@ -60,7 +47,7 @@ mapfile -t selections < <(
         --prompt="🔎 Ag> " \
         --scheme=history \
         --tac \
-        --bind "alt-enter:execute-silent($(get_editor_cmd "$(ag_fuzzy_file {})" "$(ag_fuzzy_line {})"))" \
+        --bind "alt-enter:execute(${EDITOR:-vim} +{2} {1})+abort" \
         --bind "ctrl-y:execute-silent(ag_fuzzy_file {} | wl-copy 2>/dev/null)" \
         --bind "tab:down" \
         --bind "ctrl-l:toggle-preview" \
