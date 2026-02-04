@@ -38,8 +38,6 @@
     emacs = lib.mkOption {
       type = lib.types.attrs;
       default = {
-        ".emacs.d/etc/yasnippet".source =
-          config.lib.file.mkOutOfStoreSymlink ../../dotfiles/emacs/yasnippet;
         ".emacs.d/config.org".source = ../../dotfiles/emacs/config.org;
         ".emacs.d/init.el".source = ../../dotfiles/emacs/init.el;
         ".local/share/bash-completion/completions/emacs".source = ../../dotfiles/emacs/emacs-completions.sh;
