@@ -1,99 +1,79 @@
 #!/usr/bin/env bash
 
-# ag-fuzzy: fuzzy finder for ag (silver searcher) with bat preview
-# Shows ag output format (file:line:column:content) in fzf list
-# Preview updates dynamically with query changes, highlights all matches
-# ENTER: open file in editor at match line
-# Ctrl-O: open in default app
-# Ctrl-Y: copy path to clipboard
-# Ctrl-L: toggle preview
-
 set -euo pipefail
 
-# Force bat theming via batman
 eval "$(batman --export-env)"
 
-# Preview function: shows file with all current query matches highlighted
-# Usage: ag_fuzzy_preview <entry> <query>
+ag_fuzzy_search() {
+    if [ $# -gt 0 ]; then
+        ag --nocolor --column "$@" 2>/dev/null
+    else
+        ag --nocolor --column . 2>/dev/null
+    fi
+}
+
 ag_fuzzy_preview() {
     local entry="$1"
-    local query="$2"
-    
-    # Parse file from entry
-    local file
+    local query="${2:-}"
+
+    local file line
     file=$(echo "$entry" | cut -d: -f1)
-    
-    # Validate
-    [ -z "$file" ] && exit 1
-    [ ! -f "$file" ] && exit 1
-    [ -z "$query" ] && bat --color=always --style=header-filename "$file" 2>/dev/null && exit 0
-    
-    # Find all matching lines for current query
-    local lines
-    lines=$(ag --nocolor -n "$query" "$file" 2>/dev/null | cut -d: -f1 | sort -nu | tr '\n' ',' | sed 's/,$//')
-    
-    # No matches = just show the file
-    if [ -z "$lines" ]; then
-        bat --color=always --style=header-filename "$file" 2>/dev/null
-        return
-    fi
-    
-    # Get first line for positioning
-    local first_line
-    first_line=$(echo "$lines" | cut -d, -f1)
-    
-    # Show file with all matching lines highlighted, view centered at first match
-    bat --color=always --style=full --decorations=never \
-        --highlight-line "$lines" \
-        --pager "less -j.5 +$first_line" \
-        "$file" 2>/dev/null
+    line=$(echo "$entry" | cut -d: -f2)
+
+
+    [ -z "$file" ] || [ ! -f "$file" ] || [ -z "$line" ] && exit 1
+    bat --force-colorization --style=numbers,header-filename --highlight-line $line "$file"
 }
 export -f ag_fuzzy_preview
 
-# Extract file from ag output
-ag_fuzzy_get_file() {
+ag_fuzzy_file() {
     echo "$1" | cut -d: -f1
 }
-export -f ag_fuzzy_get_file
+export -f ag_fuzzy_file
 
-# Extract line from ag output
-ag_fuzzy_get_line() {
+ag_fuzzy_line() {
     echo "$1" | cut -d: -f2
 }
-export -f ag_fuzzy_get_line
+export -f ag_fuzzy_line
 
-# Execute fzf with ag output format
+get_editor_cmd() {
+    local file="$1" line="$2"
+    local editor="${EDITOR:-${VISUAL:-vim}}"
+
+    case "$editor" in
+        *nvim*|*vim*) echo "$editor +$line $file" ;;
+        *emacs*) echo "emacsclient --no-wait +$line $file" ;;
+        nano) echo "$editor +$line $file" ;;
+        code) echo "$editor --goto $file:$line" ;;
+        subl|*sublime*) echo "$editor $file:$line" ;;
+        vi) echo "$editor +$line $file" ;;
+        *) echo "$editor +$line $file" ;;
+    esac
+}
+
 mapfile -t selections < <(
-    ag --nocolor 2>/dev/null | \
+    ag_fuzzy_search "$@" | \
     fzf \
+        --delimiter=: \
+        --with-nth 1.. \
         --ansi \
-        --multi \
         --prompt="🔎 Ag> " \
         --scheme=history \
         --tac \
-        --bind "start:reload(ag --nocolor 2>/dev/null)" \
-        --bind "change:reload(ag --nocolor {q} 2>/dev/null)+first" \
-        --bind "enter:execute-silent(${EDITOR:-vim} +$(ag_fuzzy_get_line {}) $(ag_fuzzy_get_file {}))" \
-        --bind "ctrl-o:execute-silent(xdg-open $(ag_fuzzy_get_file {}) 2>/dev/null || open $(ag_fuzzy_get_file {}) 2>/dev/null || echo 'No opener available' >&2)" \
-        --bind "ctrl-y:execute-silent(ag_fuzzy_get_file {} | wl-copy 2>/dev/null || echo 'wl-copy unavailable' >&2)" \
+        --bind "alt-enter:execute-silent($(get_editor_cmd "$(ag_fuzzy_file {})" "$(ag_fuzzy_line {})"))" \
+        --bind "ctrl-y:execute-silent(ag_fuzzy_file {} | wl-copy 2>/dev/null)" \
         --bind "tab:down" \
         --bind "ctrl-l:toggle-preview" \
-        --preview-window="down:60%:wrap" \
+        --preview-window="down:60%:wrap:~3,+{2}+3/2" \
         --preview 'ag_fuzzy_preview {} {q}' \
-        --header $'ENTER editor • Ctrl-O external • Ctrl-Y copy • Ctrl-L preview' \
+        --header $'ENTER print • Alt-Enter editor • Ctrl-Y copy • Ctrl-L preview' \
         --info=inline
 )
+
 status=$?
+[ $status -eq 130 ] && exit 130
+[ ${#selections[@]} -eq 0 ] && exit 0
 
-if [ $status -eq 130 ]; then
-    exit 130
-fi
-
-if [ ${#selections[@]} -eq 0 ]; then
-    exit 0
-fi
-
-# Output selected entries (ag format)
 for entry in "${selections[@]}"; do
     echo "$entry"
 done
