@@ -1089,6 +1089,22 @@ helm is awesome
   (lsp-signature-render-documentation t)
   (lsp-eldoc-enable-hover nil)
 
+  ;; Ensure LSP completions work well with corfu
+  ;; lsp-completion-provider :capf registers lsp-completion-at-point
+  ;; which corfu will use automatically via completion-at-point-functions
+  (lsp-completion-enable t)
+  (lsp-completion-use-last-result t)
+
+  :hook
+  ;; Ensure corfu is enabled when LSP starts
+  (lsp-mode . (lambda ()
+                ;; Ensure LSP completion is at the front of CAPF list
+                (when (boundp 'lsp-completion-at-point)
+                  (setq-local completion-at-point-functions
+                              (cons #'lsp-completion-at-point
+                                    (remove #'lsp-completion-at-point
+                                            completion-at-point-functions))))))
+
   :custom-face
   (lsp-face-highlight-read ((t (:underline t))))
   (lsp-face-highlight-textual ((t (:underline t))))
