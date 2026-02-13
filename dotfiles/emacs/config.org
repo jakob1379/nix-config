@@ -407,16 +407,38 @@ Corfu is a fast, minimal completion UI using Emacs' native completion-at-point-f
         ("M-h" . corfu-info-documentation)))
 #+END_SRC
 **** Corfu popup info - documentation popup
+Display documentation for completion candidates (functions, methods, variables).
+Shows LSP documentation, docstrings, and type info similar to company-lsp.
 #+BEGIN_SRC emacs-lisp
 (use-package corfu-popupinfo
   :straight nil  ; Included with corfu
   :after corfu
   :hook (corfu-mode . corfu-popupinfo-mode)
   :custom
-  ;; Delay before showing documentation
-  (corfu-popupinfo-delay 0.5)
-  ;; Maximum height of popup
-  (corfu-popupinfo-max-height 20))
+  ;; Delay: (INITIAL-DELAY . SUBSEQUENT-DELAY)
+  ;; Initial delay before showing docs, faster when navigating candidates
+  (corfu-popupinfo-delay '(0.4 . 0.2))
+  ;; Maximum height of documentation popup
+  (corfu-popupinfo-max-height 20)
+  ;; Don't hide popup when scrolling through candidates
+  (corfu-popupinfo-hide nil)
+
+  :bind (:map corfu-map
+              ("M-d" . corfu-popupinfo-toggle)      ; Toggle docs manually
+              ("M-p" . corfu-popupinfo-scroll-down) ; Scroll docs up
+              ("M-n" . corfu-popupinfo-scroll-up)   ; Scroll docs down
+              ("M-h" . lsp-ui-doc-show)))           ; Show detailed LSP docs
+#+END_SRC
+**** Corfu echo - fallback documentation in echo area
+Alternative documentation display for terminal or minimal setup.
+Shows docs in the echo area at the bottom of the screen.
+#+BEGIN_SRC emacs-lisp
+(use-package corfu-echo
+  :straight nil  ; Included with corfu
+  :after corfu
+  :hook (corfu-mode . corfu-echo-mode)
+  :custom
+  (corfu-echo-delay 0.4))
 #+END_SRC
 **** Cape - Completion At Point Extensions
 Cape provides additional completion backends and utilities for corfu.
@@ -1094,6 +1116,11 @@ helm is awesome
   ;; which corfu will use automatically via completion-at-point-functions
   (lsp-completion-enable t)
   (lsp-completion-use-last-result t)
+  ;; Show detailed documentation with completions (for corfu-popupinfo)
+  (lsp-completion-show-detail t)
+  (lsp-completion-show-kind t)
+  ;; Enable documentation in completion items
+  (lsp-completion-enable-additional-text-edit t)
 
   :hook
   ;; Ensure corfu is enabled when LSP starts
