@@ -364,68 +364,121 @@ Don't lose your cursor.
                      (what-cursor-position)))
   :config (beacon-mode 1))
 #+END_SRC
-*** Company mode
-This configures the nice dropdown autocompletion system called company mode. It is highly extensible, but package-specific extensions like LSP, yasnippet, etc., should be configured in their respective sections, not here.
-**** Company package
+*** Corfu - Completion Overlay Region FUnction
+Corfu is a fast, minimal completion UI using Emacs' native completion-at-point-functions (CAPF). Unlike company-mode, it uses text properties/overlays instead of childframes, providing better performance and lower latency.
+**** Corfu package
 #+BEGIN_SRC emacs-lisp
-  (use-package company
-    :init
-    (global-company-mode t)
-    :config
-    ;; Separate general backends and mode-specific backends
-    (setq company-backends
-          '((company-capf company-dabbrev company-files company-keywords company-yasnippet)
-            (company-etags company-semantic)))
-
-    :custom
-    (company-minimum-prefix-length 1)
-    (company-tooltip-limit 20)
-    (company-dabbrev-downcase nil)
-    (company-echo-delay 0.1)
-    (company-idle-delay 0.01)
-    (company-minimum-prefix-length 1)
-    (company-selection-wrap-around t)
-    (company-show-numbers t)
-    (company-tooltip-align-annotations t)
-    (company-tooltip-limit 20)
-
-    ;; :custom-face
-    ;; (company-tooltip-selection ((t (:background "#CC6666" :foreground "#F8F8F2"))))
-    ;; (company-tooltip-common ((t (:foreground "#F92672"))))
-    ;; (company-tooltip-common-selection ((t (:foreground "#FD971F"))))
-    ;; (company-preview-common ((t (:foreground "#B6E63E" :underline t))))
-    ;; (company-preview ((t (:background "#2B2B2B" :foreground "#A6E22E"))))
-    ;; (company-preview-search ((t (:inherit match))))
-    ;; (company-template-field ((t (:background "#272822" :foreground "#F8F8F2"))))
-    )
-#+END_SRC
-**** Company shell
-#+BEGIN_SRC emacs-lisp
-(use-package company-shell
-  :after company
-  :defer t
-  :config
-  (add-to-list 'company-backends '(company-shell company-shell-env)))
-#+END_SRC
-**** Company box - pretty icons
-#+BEGIN_SRC emacs-lisp
-(use-package company-box
-  :diminish
-  :after all-the-icons
-  :hook (company-mode . company-box-mode)
+(use-package corfu
   :custom
-  (company-box-doc-enable t)
-  (company-box-doc-delay 0.2)
-  )
+  ;; Enable auto-completion
+  (corfu-auto t)
+  ;; Delay before auto-completion starts (balance responsiveness vs noise)
+  (corfu-auto-delay 0.1)
+  ;; Minimum prefix length to trigger completion
+  (corfu-auto-prefix 2)
+  ;; Enable cycling through candidates
+  (corfu-cycle t)
+  ;; Preselect first candidate
+  (corfu-preselect 'prompt)
+  ;; Enable echo area documentation
+  (corfu-echo-documentation nil)
+  ;; Quit if no match
+  (corfu-quit-no-match 'separator)
+  ;; Max number of candidates to show
+  (corfu-count 10)
+  ;; Max width of popup
+  (corfu-max-width 80)
+  ;; Minimum width of popup
+  (corfu-min-width 20)
+
+  :init
+  (global-corfu-mode)
+
+  :bind
+  (:map corfu-map
+        ("TAB" . corfu-next)
+        ([tab] . corfu-next)
+        ("S-TAB" . corfu-previous)
+        ([backtab] . corfu-previous)
+        ("C-n" . corfu-next)
+        ("C-p" . corfu-previous)
+        ("C-g" . corfu-quit)
+        ("M-g" . corfu-info-location)
+        ("M-h" . corfu-info-documentation)))
+#+END_SRC
+**** Corfu popup info - documentation popup
+Display documentation for completion candidates (functions, methods, variables).
+Shows LSP documentation, docstrings, and type info similar to company-lsp.
+#+BEGIN_SRC emacs-lisp
+(use-package corfu-popupinfo
+  :straight nil  ; Included with corfu
+  :after corfu
+  :hook (corfu-mode . corfu-popupinfo-mode)
+  :custom
+  ;; Delay: (INITIAL-DELAY . SUBSEQUENT-DELAY)
+  ;; Initial delay before showing docs, faster when navigating candidates
+  (corfu-popupinfo-delay '(0.4 . 0.2))
+  ;; Maximum height of documentation popup
+  (corfu-popupinfo-max-height 20)
+  ;; Don't hide popup when scrolling through candidates
+  (corfu-popupinfo-hide nil)
+
+  :bind (:map corfu-map
+              ("M-d" . corfu-popupinfo-toggle)      ; Toggle docs manually
+              ("M-p" . corfu-popupinfo-scroll-down) ; Scroll docs up
+              ("M-n" . corfu-popupinfo-scroll-up)   ; Scroll docs down
+              ("M-h" . lsp-ui-doc-show)))           ; Show detailed LSP docs
+#+END_SRC
+**** Corfu echo - fallback documentation in echo area
+Alternative documentation display for terminal or minimal setup.
+Shows docs in the echo area at the bottom of the screen.
+#+BEGIN_SRC emacs-lisp
+(use-package corfu-echo
+  :straight nil  ; Included with corfu
+  :after corfu
+  :hook (corfu-mode . corfu-echo-mode)
+  :custom
+  (corfu-echo-delay 0.4))
+#+END_SRC
+**** Cape - Completion At Point Extensions
+Cape provides additional completion backends and utilities for corfu.
+#+BEGIN_SRC emacs-lisp
+(use-package cape
+  :defer t
+  :init
+  ;; Add to the global default value of `completion-at-point-functions'
+  (add-hook 'completion-at-point-functions #'cape-file)
+  (add-hook 'completion-at-point-functions #'cape-dabbrev)
+  (add-hook 'completion-at-point-functions #'cape-keyword)
+  :bind
+  ("C-c p p" . completion-at-point)     ; Complete at point
+  ("C-c p t" . complete-tag)            ; Complete etags
+  ("C-c p d" . cape-dabbrev)            ; Complete dabbrev
+  ("C-c p f" . cape-file)               ; Complete file name
+  ("C-c p k" . cape-keyword))           ; Complete keyword
+#+END_SRC
+**** Kind-icon - icons for corfu
+Provides icons in corfu completion popup similar to company-box.
+#+BEGIN_SRC emacs-lisp
+(use-package kind-icon
+  :after corfu
+  :custom
+  (kind-icon-default-face 'corfu-default)
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 #+END_SRC
 **** Prescient
-Teaches company to sort better.
+Teaches completion to sort better based on usage history.
 #+BEGIN_SRC emacs-lisp
 (use-package prescient
   :defer t
-  :after company
   :config
   (prescient-persist-mode 1))
+
+(use-package corfu-prescient
+  :after (corfu prescient)
+  :config
+  (corfu-prescient-mode 1))
 #+END_SRC
 *** Conf-mode
 Associate various files with conf-mode.
@@ -917,12 +970,9 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
   (LaTeX-mode-hook . reftex-plug-into-AUCTeX)
   )
 
-(use-package company-auctex
-  :defer t
-  :after tex
-  :init
-  (company-auctex-init)
-  (add-hook 'LaTeX-mode-hook 'company-auctex-init))
+;; LaTeX completion via cape and auctex
+;; Note: AUCTeX provides its own completion via TeX-complete-symbol
+;; which works with corfu through completion-at-point-functions
 
 (use-package reftex
   :defer t
@@ -1015,6 +1065,14 @@ helm is awesome
                                        typst--code-mode
                                        )
                         :server-id 'tinymist))
+  ;; justfile
+  (add-to-list 'lsp-language-id-configuration '(just-mode . "just"))
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection "just-lsp")
+    :activation-fn (lsp-activate-on "just")
+    :major-modes '(just-mode)
+    :server-id 'just-ls))
 
   ;; bash
   (add-to-list 'lsp-language-id-configuration '(sh-mode . "shellscript"))
@@ -1039,7 +1097,7 @@ helm is awesome
   (lsp-auto-execute-action nil)
   (lsp-auto-guess-root t)
   (lsp-before-save-edits nil)
-  (lsp-completion-provider :none)  ; Use company for completion via company-capf
+  (lsp-completion-provider :capf)  ; Use CAPF for completion (corfu-compatible)
   (lsp-enable-links t)
   (lsp-enable-on-type-formatting t)
   (lsp-enable-snippet t)
@@ -1052,6 +1110,27 @@ helm is awesome
   (lsp-signature-auto-activate t)
   (lsp-signature-render-documentation t)
   (lsp-eldoc-enable-hover nil)
+
+  ;; Ensure LSP completions work well with corfu
+  ;; lsp-completion-provider :capf registers lsp-completion-at-point
+  ;; which corfu will use automatically via completion-at-point-functions
+  (lsp-completion-enable t)
+  (lsp-completion-use-last-result t)
+  ;; Show detailed documentation with completions (for corfu-popupinfo)
+  (lsp-completion-show-detail t)
+  (lsp-completion-show-kind t)
+  ;; Enable documentation in completion items
+  (lsp-completion-enable-additional-text-edit t)
+
+  :hook
+  ;; Ensure corfu is enabled when LSP starts
+  (lsp-mode . (lambda ()
+                ;; Ensure LSP completion is at the front of CAPF list
+                (when (boundp 'lsp-completion-at-point)
+                  (setq-local completion-at-point-functions
+                              (cons #'lsp-completion-at-point
+                                    (remove #'lsp-completion-at-point
+                                            completion-at-point-functions))))))
 
   :custom-face
   (lsp-face-highlight-read ((t (:underline t))))
