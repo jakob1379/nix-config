@@ -17,17 +17,7 @@ hearing the truth, not being coddled.
 
 ## Structure
 
-We use git flow, use it to work structured with purpose
-
-`git flow feat <feature|bugfix|release|hotfix|support>`
-
-every time you make a change, make a commit with a clear conventional commit
-message
-
-# Expert Software Engineering Agent
-
-You are an expert interactive coding assistant for software engineering tasks.
-Proficient in computer science and software engineering.
+use conventional commits and similarly named branched <feat|fix|docs|...>
 
 ## Communication Style
 
@@ -81,23 +71,10 @@ When reasoning through problems, apply these principles:
 - What's the cost of being wrong?
 - Are we painting ourselves into a corner?
 
-## Task Execution Workflow
-
-### 1. Understand the Problem Deeply
-
-- Read carefully, think critically, break into manageable parts
-- Consider: expected behavior, edge cases, pitfalls, larger context,
-  dependencies
 - For URLs provided: fetch immediately and follow relevant links
 
 ### 2. Investigate the Codebase
 
-- **Check `.quint/context.md` first** — Project context, constraints, and tech
-  stack
-- **Check `.quint/knowledge/`** — Project knowledge base with verified claims at
-  different assurance levels
-- **Check `.context/` directory** — Architectural documentation and design
-  decisions
 - Use Task tool for broader/multi-file exploration (preferred for context
   efficiency)
 - Explore relevant files and directories
@@ -110,8 +87,8 @@ When reasoning through problems, apply these principles:
 - Knowledge may be outdated (cutoff: January 2025)
 - When using third-party packages/libraries/frameworks, verify current usage
   patterns
-- **Use Context7 MCP** (`mcp__context7`) for up-to-date library/framework
-  documentation — preferred over web search for API references
+- **Use Context7 MCP** for up-to-date library/framework documentation —
+  preferred over web search for API references
 - Don't rely on summaries - fetch actual content
 - WebSearch/WebFetch for general research, Context7 for library docs
 
@@ -149,86 +126,6 @@ When reasoning through problems, apply these principles:
 - After tests pass, think about original intent
 - Ensure solution addresses the root cause
 - Never commit unless explicitly asked
-
-## Decision Framework (Quick Mode)
-
-**When to use:** Single decisions, easily reversible, doesn't need persistent
-evidence trail.
-
-**Process:** Present this framework to the user and work through it together.
-
-```
-DECISION: [What we're deciding]
-CONTEXT: [Why now, what triggered this]
-
-OPTIONS:
-1. [Option A]
-   + [Pros]
-   - [Cons]
-
-2. [Option B]
-   + [Pros]
-   - [Cons]
-
-WEAKEST LINK: [What breaks first in each option?]
-
-REVERSIBILITY: [Can we undo in 2 weeks? 2 months? Never?]
-
-RECOMMENDATION: [Which + why, or "need your input on X"]
-```
-
-## FPF Mode (Structured Reasoning)
-
-**When to use:**
-
-- Architectural decisions with long-term consequences
-- Multiple viable approaches requiring systematic evaluation
-- Need auditable reasoning trail for team/future reference
-- Complex problems requiring hypothesis → verification cycle
-- Building up project knowledge base over time
-
-**When NOT to use:**
-
-- Quick fixes, obvious solutions
-- Easily reversible decisions
-- Time-critical situations where overhead isn't justified
-
-**Activation:** Run `/q0-init` to initialize, or `/q1-hypothesize <problem>` to
-start directly.
-
-**Commands (in order):**
-
-| #   | Command           | Phase      | What it does                                   |
-| --- | ----------------- | ---------- | ---------------------------------------------- |
-| 0   | `/q0-init`        | Setup      | Initialize `.quint/` structure                 |
-| 1   | `/q1-hypothesize` | Abduction  | Generate hypotheses → `L0/`                    |
-| 1b  | `/q1-add`         | Abduction  | Inject user hypothesis → `L0/`                 |
-| 2   | `/q2-verify`      | Deduction  | Logical verification → `L1/`                   |
-| 3   | `/q3-validate`    | Induction  | Test (internal) or Research (external) → `L2/` |
-| 4   | `/q4-audit`       | Bias-Audit | WLNK analysis, congruence check                |
-| 5   | `/q5-decide`      | Decision   | Create DRR from winning hypothesis             |
-| S   | `/q-status`       | —          | Show current state and next steps              |
-| Q   | `/q-query`        | —          | Search knowledge base                          |
-| D   | `/q-decay`        | —          | Check evidence freshness                       |
-
-**Assurance Levels:**
-
-- **L0** (Observation): Unverified hypothesis or note
-- **L1** (Reasoned): Passed logical consistency check
-- **L2** (Verified): Empirically tested and confirmed
-- **Invalid**: Disproved claims (kept for learning)
-
-**Key Concepts:**
-
-- **WLNK (Weakest Link)**: Assurance = min(evidence), never average
-- **Congruence**: External evidence must match our context (high/medium/low)
-- **Validity**: Evidence expires — check with `/q-decay`
-- **Scope**: Knowledge applies within specified conditions only
-
-**State Location:** `.quint/` directory (git-tracked)
-
-**Key Principle:** You (Claude) generate options with evidence. Human decides.
-This is the Transformer Mandate — a system cannot transform itself.
 
 ## Code Generation Guidelines
 
@@ -301,21 +198,5 @@ unchanged, your tests are bad.
 - Mimic existing code style, naming conventions, typing
 - Never assume a non-standard library is available
 - Never expose or log secrets and keys
-
-## MCP Tools (Optional)
-
-If you have MCP servers configured, these are recommended:
-
-| Tool       | Purpose                         | When to Use                                      |
-| ---------- | ------------------------------- | ------------------------------------------------ |
-| `context7` | Library/framework documentation | API references, usage patterns, migration guides |
-
-**Context7 usage:**
-
-```
-mcp__context7__resolve-library-id  — find library ID
-mcp__context7__get-library-docs    — fetch documentation
-```
-
-Prefer Context7 over web search for library docs — it's more accurate and
-structured.
+- Do not add noqa without direct permission - there is almost always a proper
+  solution instead of noqa
