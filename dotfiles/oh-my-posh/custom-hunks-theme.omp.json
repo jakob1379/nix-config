@@ -38,7 +38,7 @@
           "powerline_symbol": "\ue0b0",
           "foreground": "#ffffff",
           "background": "#C2DDEF",
-          "template": "{{ if not (eq .Type \"unknown\") }} \uf313 {{ .Type }} {{ end }}",
+          "template": "{{ if not (eq .Type \"unknown\") }} \uf313 Nix {{ end }}",
           "properties": {
             "style": "full"
           }
