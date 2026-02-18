@@ -21,6 +21,7 @@ let
     gitleaks
     glib
     gnumake
+    unixtools.ping
     hyperfine # benchmark CLI commands
     imagemagick
     isd
@@ -57,7 +58,7 @@ let
     vlc
     xdg-desktop-portal-wlr
     dragon-drop
-    xorg.xkill
+    xkill
   ];
 
   devPackages =
@@ -79,6 +80,7 @@ let
 
   emacsPackages = with pkgs; [
     autotools-language-server
+    just-lsp
     (aspellWithDicts (
       dicts: with dicts; [
         da
