@@ -1,11 +1,15 @@
 {
+  config,
   lib,
   ...
 }:
 
 {
   # Common configuration for all systems
-  imports = [ ../base ];
+  imports = [
+    ../base
+  ]
+  ++ lib.optionals config.customPackages.enableGui [ ../base/niri.nix ];
 
   nixpkgs.config.allowUnfree = true;
   programs.home-manager.enable = true;

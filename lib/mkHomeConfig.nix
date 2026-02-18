@@ -25,5 +25,8 @@ inputs.home-manager.lib.homeManagerConfiguration {
   ]
   # And add their system-specific modules
   ++ extraModules;
-  extraSpecialArgs = { inherit inputs system; };
+  extraSpecialArgs = {
+    inherit inputs system;
+    inherit (inputs) noctalia;
+  };
 }
