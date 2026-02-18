@@ -219,6 +219,14 @@ let
       '';
     })
     (pkgs.writeShellApplication {
+      name = "noqa-stats";
+      runtimeInputs = [
+        pkgs.gum
+        pkgs.silver-searcher
+      ];
+      text = builtins.readFile ../../bin/noqa-stats;
+    })
+    (pkgs.writeShellApplication {
       name = "nix-index-with-temp-swap";
       runtimeInputs = with pkgs; [
         nix-index

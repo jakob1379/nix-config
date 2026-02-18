@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+IFS=$'\n\t'
+
+readonly SCRIPT_NAME="${0##*/}"
+
+usage() {
+   cat << EOF
+Usage: ${SCRIPT_NAME} [OPTIONS]
+
+Analyze noqa comments in Python files and display statistics.
+
+OPTIONS:
+   -h, --help      Show this help message and exit
+   -d, --dir DIR   Search in DIR instead of current directory
+   -p, --pattern   Pattern to search (default: "noqa:")
+
+EXAMPLES:
+   ${SCRIPT_NAME}
+   ${SCRIPT_NAME} --dir ./backend
+   ${SCRIPT_NAME} --pattern "type: ignore"
+
+EOF
+}
+
+print_rule_totals() {
+   local raw_data="$1"
+
+   gum style --foreground 212 --bold --underline "NOQA Rule Totals"
+   echo "${raw_data}" | awk -F'noqa: ' '{
+       split($2, r, " ")
+       gsub(/,/, "", r[1])
+       split(r[1], rules, ",")
+       for (i in rules) {
+           rule = rules[i]
+           if (rule != "") count[rule]++
+       }
+   } END {
+       for (rule in count) printf "%s\t%d\n", rule, count[rule]
+   }' | sort -t$'\t' -k2 -nr | gum table --print --separator $'\t' \
+       --columns "Rule,Count" --widths 20,10
+}
+
+print_file_counts() {
+   local search_dir="$1"
+   local pattern="$2"
+
+   gum style --foreground 212 --bold --underline "NOQA Counts Per File"
+   ag "${pattern}" -c "${search_dir}" 2>/dev/null | sort -t: -k2 -nr | \
+       awk -F: '{printf "%s\t%s\n", $1, $2}' | \
+       gum table --print --separator $'\t' --columns "File,Count" --widths 70,10
+}
+
+main() {
+   local search_dir="."
+   local pattern="noqa:"
+
+   while [[ $# -gt 0 ]]; do
+       case $1 in
+           -h|--help)
+               usage
+               exit 0
+               ;;
+           -d|--dir)
+               search_dir="${2:-.}"
+               shift 2
+               ;;
+           -p|--pattern)
+               pattern="${2:-noqa:}"
+               shift 2
+               ;;
+           *)
+               echo "Unknown option: $1" >&2
+               usage >&2
+               exit 1
+               ;;
+       esac
+   done
+
+   if [[ ! -d "${search_dir}" ]]; then
+       echo "Error: Directory not found: ${search_dir}" >&2
+       exit 1
+   fi
+
+   local raw_data
+   if ! raw_data=$(ag "${pattern}" "${search_dir}" 2>/dev/null); then
+       gum style --foreground 196 "No '${pattern}' findings in ${search_dir}"
+       exit 0
+   fi
+
+   print_rule_totals "${raw_data}"
+   echo ""
+   print_file_counts "${search_dir}" "${pattern}"
+}
+
+main "$@"
