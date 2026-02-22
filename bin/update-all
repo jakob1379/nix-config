@@ -12,4 +12,5 @@ wait
 home-manager switch --flake "${flakePath}" "$@" |& nom
 
 # NixOS switch with output monitor
+sudo -v
 sudo -E nixos-rebuild switch --flake "${flakePath}" |& nom
