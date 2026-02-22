@@ -25,26 +25,45 @@
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
+  # old NVME
+  # fileSystems."/" = {
+  #   device = "/dev/disk/by-uuid/5a78706c-5df5-48e9-a654-5e75a84748e1";
+  #   fsType = "ext4";
+  # };
+
+  # boot.initrd.luks.devices."luks-a7b45b63-67d2-4fee-872b-28f09325390d".device =
+  #   "/dev/disk/by-uuid/a7b45b63-67d2-4fee-872b-28f09325390d";
+
+  # fileSystems."/boot" = {
+  #   device = "/dev/disk/by-uuid/B72E-1A0D";
+  #   fsType = "vfat";
+  #   options = [
+  #     "fmask=0077"
+  #     "dmask=0077"
+  #   ];
+  # };
+
+  # swapDevices = [
+  #   { device = "/dev/disk/by-uuid/977d5355-054b-4a70-9541-83b3b442714d"; }
+  # ];
+
+  # new big NVME
   fileSystems."/" = {
-    device = "/dev/disk/by-uuid/5a78706c-5df5-48e9-a654-5e75a84748e1";
+    device = "/dev/disk/by-uuid/6b0afcf2-edde-4e1f-98cf-3e29bfada739";
     fsType = "ext4";
   };
 
-  boot.initrd.luks.devices."luks-a7b45b63-67d2-4fee-872b-28f09325390d".device =
-    "/dev/disk/by-uuid/a7b45b63-67d2-4fee-872b-28f09325390d";
+  boot.initrd.luks.devices."luks-ea16a7e6-eb08-41b8-b57e-d3066592eae9".device =
+    "/dev/disk/by-uuid/ea16a7e6-eb08-41b8-b57e-d3066592eae9";
 
   fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/B72E-1A0D";
+    device = "/dev/disk/by-uuid/617A-6E41";
     fsType = "vfat";
     options = [
       "fmask=0077"
       "dmask=0077"
     ];
   };
-
-  swapDevices = [
-    { device = "/dev/disk/by-uuid/977d5355-054b-4a70-9541-83b3b442714d"; }
-  ];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
   # (the default) this is the recommended approach. When using systemd-networkd it's
