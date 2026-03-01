@@ -1,0 +1,167 @@
+#!/usr/bin/env bash
+#
+# docker-compose-deps - Visualize docker-compose service dependencies as a Mermaid graph
+#
+# Usage: docker-compose-deps [OPTIONS]
+#
+# Renders a dependency graph of services defined in docker-compose.yml directly
+# in the terminal using kitty's image display capabilities.
+#
+# Dependencies:
+#   - docker compose (config export)
+#   - jq (JSON parsing)
+#   - mermaid-cli (mmdc) (graph rendering)
+#   - kitty +kitten icat (terminal image display)
+#
+# Examples:
+#   docker-compose-deps                      # Render graph for docker-compose.yml
+#   docker-compose-deps -f docker-compose.yml -f docker-compose.override.yml
+#   docker-compose-deps -e .env -e .env.local
+#   docker-compose-deps --help               # Show this help message
+#
+# Author: Generated for home-manager
+# Version: 1.0.0
+#
+
+set -euo pipefail
+
+readonly SCRIPT_NAME="${0##*/}"
+readonly VERSION="1.0.0"
+
+# Arrays to collect docker compose options
+declare -a COMPOSE_FILES=()
+declare -a ENV_FILES=()
+
+# Display usage information
+usage() {
+    cat <<EOF
+Usage: $SCRIPT_NAME [OPTIONS]
+
+Visualize docker-compose service dependencies as a Mermaid graph in the terminal.
+
+Options:
+    -f, --file FILE         Specify compose configuration file (can be used multiple times)
+    -e, --env-file FILE     Specify environment file (can be used multiple times)
+    -h, --help              Show this help message and exit
+    -v, --version           Show version information and exit
+
+Description:
+    Parses the docker-compose.yml, extracts service dependencies,
+    generates a Mermaid flowchart, renders it to PNG, and displays it in
+    the terminal using kitty's image protocol.
+
+Examples:
+    $SCRIPT_NAME                           # Default docker-compose.yml
+    $SCRIPT_NAME -f prod.yml               # Use specific file
+    $SCRIPT_NAME -f base.yml -f local.yml  # Multiple files
+    $SCRIPT_NAME -e .env -e .env.local     # With env files
+
+EOF
+}
+
+# Display version
+version() {
+    echo "$SCRIPT_NAME version $VERSION"
+}
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -f|--file)
+            if [[ -z "${2:-}" ]]; then
+                echo "Error: $1 requires an argument" >&2
+                exit 1
+            fi
+            COMPOSE_FILES+=("$2")
+            shift 2
+            ;;
+        -e|--env-file)
+            if [[ -z "${2:-}" ]]; then
+                echo "Error: $1 requires an argument" >&2
+                exit 1
+            fi
+            ENV_FILES+=("$2")
+            shift 2
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        -v|--version)
+            version
+            exit 0
+            ;;
+        -*)
+            echo "Error: Unknown option '$1'" >&2
+            usage >&2
+            exit 1
+            ;;
+        *)
+            echo "Error: Unexpected argument '$1'" >&2
+            usage >&2
+            exit 1
+            ;;
+    esac
+done
+
+# Build docker compose command options
+DOCKER_COMPOSE_OPTS=()
+for f in "${COMPOSE_FILES[@]}"; do
+    DOCKER_COMPOSE_OPTS+=("-f" "$f")
+done
+for e in "${ENV_FILES[@]}"; do
+    DOCKER_COMPOSE_OPTS+=("--env-file" "$e")
+done
+
+# Validate dependencies are available
+command -v docker >/dev/null 2>&1 || { echo "Error: docker is required" >&2; exit 1; }
+command -v jq >/dev/null 2>&1 || { echo "Error: jq is required" >&2; exit 1; }
+command -v mmdc >/dev/null 2>&1 || { echo "Error: mermaid-cli (mmdc) is required" >&2; exit 1; }
+
+# Check if running in kitty
+if [[ -z "${KITTY_PID:-}" && -z "${KITTY_WINDOW_ID:-}" ]]; then
+    echo "Warning: Not running in kitty terminal. Image display may not work." >&2
+fi
+
+# Create temp files
+MERMAID_FILE=$(mktemp --suffix=.mmd)
+OUTPUT_FILE=$(mktemp --suffix=.png)
+
+trap 'rm -f "$MERMAID_FILE" "$OUTPUT_FILE"' EXIT
+
+# Get docker compose config and project name
+CONFIG_JSON=$(docker compose "${DOCKER_COMPOSE_OPTS[@]}" config --format json)
+PROJECT_NAME=$(echo "$CONFIG_JSON" | jq -r '.name // "unknown"')
+
+# Generate mermaid graph from docker-compose config
+# Handles both array and object formats for depends_on
+echo "$CONFIG_JSON" | jq -r --arg name "$PROJECT_NAME" '
+  .services as $services |
+  ["---", "title: " + $name + " - Dependency Graph", "---", "graph TD"] +
+  ($services |
+   to_entries |
+   map(
+     .key as $service |
+     (.value.depends_on // {}) |
+     if type == "array" then
+       map($service + " --> " + .)
+     else
+       keys | map($service + " --> " + .)
+     end
+   ) |
+   flatten |
+   map("  " + .)) +
+  ($services |
+   to_entries |
+   map(select(.value.depends_on == null or (.value.depends_on | length == 0)) |
+       "  " + .key
+   )
+  ) |
+  .[]
+' > "$MERMAID_FILE"
+
+# Render with mermaid-cli (white background for visibility on dark terminals)
+mmdc --input "$MERMAID_FILE" --output "$OUTPUT_FILE" --backgroundColor white
+
+# Display with kitty
+kitty +kitten icat "$OUTPUT_FILE"
