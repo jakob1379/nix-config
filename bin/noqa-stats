@@ -31,8 +31,21 @@ EOF
 print_rule_totals() {
    local raw_data="$1"
 
-   gum style --foreground 212 --bold --underline "NOQA Rule Totals"
-   echo "${raw_data}" | awk '{
+   # Fancy header with border and icon
+   gum style \
+       --border double \
+       --border-foreground 212 \
+       --margin "1 0" \
+       --padding "0 2" \
+       --align center \
+       "📊  $(gum style --foreground 212 --bold "Rule Totals")  📊"
+
+   # Subtitle
+   gum style --foreground 240 --italic "  Visual breakdown of noqa suppression rules"
+
+   # First pass: collect counts and find max
+   local counts_data
+   counts_data=$(echo "${raw_data}" | awk '{
        if (match($0, /# noqa[: \t]+([^#]+)/)) {
            content = substr($0, RSTART + 7, RLENGTH - 7)
            sub(/^[ \t]*/, "", content)
@@ -44,9 +57,36 @@ print_rule_totals() {
            }
        }
    } END {
-       for (rule in count) printf "%s\t%d\n", rule, count[rule]
-   }' | sort -t$'\t' -k2 -nr | gum table --print --separator $'\t' \
-       --columns "Rule,Count" --widths 20,10
+       max = 0
+       for (rule in count) {
+           if (count[rule] > max) max = count[rule]
+           printf "%s\t%d\n", rule, count[rule]
+       }
+       print "MAX:\t" max
+   }' | sort -t$'\t' -k2 -nr)
+
+   # Extract max count
+   local max_count
+   max_count=$(echo "${counts_data}" | awk -F'\t' '$1 == "MAX:" {print $2; exit}')
+
+   # Generate table with styled count + gradient bar
+   echo "${counts_data}" | grep -v "^MAX:" | awk -F'\t' -v max="${max_count}" 'BEGIN { OFS="\t" }
+   {
+       rule = $1
+       count = $2
+       bar_width = 0
+       if (max > 0) {
+           bar_width = int(count * 12 / max)
+           if (bar_width == 0 && count > 0) bar_width = 1
+       }
+       bar = ""
+       for (i=1; i<=bar_width; i++) bar = bar "▓"
+       # Pad bar to 12 chars for alignment
+       while (length(bar) < 12) bar = bar "░"
+       print rule, count, bar
+   }' | gum table --print --separator $'\t' \
+       --columns "Rule,Count,Distribution" \
+       --widths 25,6,15
 }
 
 print_file_counts() {
@@ -63,7 +103,17 @@ print_file_counts() {
         rules_width=30
     fi
 
-    gum style --foreground 212 --bold --underline "NOQA Counts Per File"
+    # Fancy header with border and icon
+    gum style \
+        --border double \
+        --border-foreground 141 \
+        --margin "1 0 0 0" \
+        --padding "0 2" \
+        --align center \
+        "📁  $(gum style --foreground 141 --bold "Per-File Breakdown")  📁"
+
+    # Subtitle
+    gum style --foreground 240 --italic "  Files ranked by noqa count, with rule distribution"
 
     ag "${pattern}" "${search_dir}" 2>/dev/null | \
     awk -F':' '
@@ -171,14 +221,57 @@ main() {
    local raw_data
    raw_data=$(gum spin --spinner dot --title "Scanning for '${pattern}' in ${search_dir}..." -- ag "${pattern}" "${search_dir}" 2>/dev/null || true)
 
-   if [[ -z "${raw_data}" ]]; then
-       gum style --foreground 82 --bold "✓ No '${pattern}' comments found in ${search_dir}"
-       exit 0
-   fi
+    if [[ -z "${raw_data}" ]]; then
+        # Success state with nice styling
+        gum style \
+            --border rounded \
+            --border-foreground 82 \
+            --margin "1" \
+            --padding "1 2" \
+            "$(gum style --foreground 82 --bold "✓  All Clear")" \
+            "" \
+            "$(gum style --foreground 250 "   No '${pattern}' comments found in ${search_dir}")"
+        exit 0
+    fi
 
-   print_rule_totals "${raw_data}"
-   echo ""
-   print_file_counts "${search_dir}" "${pattern}"
+    local total_rules total_files
+    total_rules=$(echo "${raw_data}" | wc -l)
+    total_files=$(echo "${raw_data}" | cut -d: -f1 | sort -u | wc -l)
+
+    gum style \
+        --border double \
+        --border-foreground 212 \
+        --background 234 \
+        --margin "1 0" \
+        --padding "1 4" \
+        --align center \
+        "$(gum style --foreground 212 --bold "✨  NOQA Statistics")" \
+        "$(gum style --foreground 240 "${search_dir}")" \
+        "" \
+        "$(gum style --foreground 183 --bold "🔍  Found ${total_rules} noqa occurrences")" \
+        "$(gum style --foreground 240 "across ${total_files} files")"
+
+    print_rule_totals "${raw_data}"
+
+    # Decorative separator
+    local term_width
+    term_width=$(tput cols 2>/dev/null || echo 80)
+    gum style --foreground 240 --margin "1 0" "  $(printf '─%.0s' $(seq 1 $((term_width - 4))))"
+
+    print_file_counts "${search_dir}" "${pattern}"
+
+    # Summary footer with key stats
+    local unique_rules
+    unique_rules=$(echo "${raw_data}" | grep -oP '# noqa[: \t]+\K[^#]+' | tr ',' '\n' | tr ' ' '\n' | sed 's/^[ \t]*//;s/[ \t]*$//' | grep -v '^$' | sort -u | wc -l)
+
+    gum style \
+        --border rounded \
+        --border-foreground 240 \
+        --margin "1 0 0 0" \
+        --padding "0 2" \
+        --align center \
+        "$(gum style --foreground 240 --italic "${unique_rules} unique rules • ${total_files} files • ${total_rules} total")" \
+        "$(gum style --foreground 238 --italic "$(date '+%H:%M:%S')")"
 }
 
 main "$@"
