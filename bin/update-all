@@ -6,6 +6,7 @@ flakePath="${XDG_CONFIG_HOME:-$HOME/.config}/home-manager"
 # Parallel updates
 nix flake update --flake "${flakePath}" &
 uv tool upgrade --all &
+opencode models --refresh --verbose &
 wait
 
 # Home Manager switch with output monitor
