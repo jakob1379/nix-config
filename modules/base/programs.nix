@@ -217,6 +217,7 @@ in
           shell-integration-features = "no-cursor";
           term = "kitty";
           unfocused-split-opacity = 1.0;
+          # scrollbar = "system";
         };
       };
 
@@ -359,7 +360,56 @@ in
         enable = true;
       };
 
-      opencode.enable = true;
+      opencode = {
+        enable = true;
+        settings = {
+          lsp = {
+            pyright = {
+              disabled = true;
+            };
+            ty = {
+              command = [ "uv run --with ty ty server || uvx ty server" ];
+              extensions = [
+                ".py"
+                ".pyi"
+              ];
+            };
+          };
+          mcp = {
+            context7 = {
+              type = "remote";
+              url = "https://mcp.context7.com/mcp";
+              enabled = true;
+            };
+          };
+          provider = {
+            deepseek = {
+              options = {
+                apiKey = "{env:DEEPSEEK_API_KEY}";
+                baseURL = "https://api.deepseek.com/v1";
+              };
+            };
+            # kimi-for-coding.options.apiKey = "{env:KIMI_API_KEY}";
+          };
+          small_model = "openai/gpt-5-mini";
+          plugin = [
+            "oh-my-opencode-slim"
+            "@mohak34/opencode-notifier@latest"
+          ];
+          keybinds = {
+            app_exit = "ctrl+shift+q";
+            input_clear = "ctrl+c";
+          };
+          agent = {
+            explore = {
+              disable = true;
+            };
+            general = {
+              disable = true;
+            };
+          };
+        };
+      };
 
       nix-index = {
         enable = true;

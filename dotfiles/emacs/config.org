@@ -1041,6 +1041,7 @@ helm is awesome
    (sh-mode . lsp-deferred)
    (toml-mode . lsp-deferred)
    (typst-mode . lsp-deferred)
+   (typescript-mode . lsp-deferred)
    (yaml-mode . lsp-deferred)
    )
 
@@ -1074,16 +1075,35 @@ helm is awesome
     :major-modes '(just-mode)
     :server-id 'just-ls))
 
-  ;; bash
-  (add-to-list 'lsp-language-id-configuration '(sh-mode . "shellscript"))
-  (lsp-register-client
-   (make-lsp-client
-    :new-connection (lsp-stdio-connection '("bash-language-server" "start"))
-    :activation-fn (lsp-activate-on "shellscript")
-    :major-modes '(sh-mode)
-    :server-id 'bash-ls))
+   ;; bash
+   (add-to-list 'lsp-language-id-configuration '(sh-mode . "shellscript"))
+   (lsp-register-client
+    (make-lsp-client
+     :new-connection (lsp-stdio-connection '("bash-language-server" "start"))
+     :activation-fn (lsp-activate-on "shellscript")
+     :major-modes '(sh-mode)
+     :server-id 'bash-ls))
 
-  (lsp-register-custom-settings
+   ;; typescript/tsx - vtsls
+   (add-to-list 'lsp-language-id-configuration '(typescript-mode . "typescript"))
+   (lsp-register-client
+     (make-lsp-client
+      :new-connection (lsp-stdio-connection "vtsls")
+      :activation-fn (lsp-activate-on "typescript")
+      :major-modes '(typescript-mode)
+      :server-id 'vtsls))
+
+   ;; Python - Ty language server with uv
+   (add-to-list 'lsp-language-id-configuration '(python-mode . "python"))
+   (lsp-register-client
+    (make-lsp-client
+     :new-connection (lsp-stdio-connection
+                      (lambda () (list "sh" "-c" "uv run --with ty ty server || uvx ty server")))
+     :activation-fn (lsp-activate-on "python")
+     :major-modes '(python-mode)
+     :server-id 'ty))
+
+   (lsp-register-custom-settings
    '(("pylsp.plugins.mypy.enabled" t t)
      ("pylsp.plugins.mypy.live_mode" nil t)
      ("pylsp.plugins.black.enabled" t t)
@@ -1779,6 +1799,12 @@ simple package that enable titlecasing
   (typst-basic-offset 2)
   )
 #+END_SRC
+*** Typescript
+#+BEGIN_SRC emacs-lisp
+(use-package typescript-mode)
+
+#+END_SRC
+
 
 *** VLF - very large files
 #+BEGIN_SRC emacs-lisp
