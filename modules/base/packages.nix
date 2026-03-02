@@ -56,7 +56,6 @@ let
     variety
     virt-manager
     vlc
-    xdg-desktop-portal-wlr
     dragon-drop
     xkill
   ];
@@ -144,6 +143,28 @@ let
       text = builtins.readFile ../../bin/ddroid;
     })
     (pkgs.writeShellApplication {
+      name = "ooc";
+      runtimeInputs = [
+        pkgs.bash
+        pkgs.coreutils
+        pkgs.gnugrep
+        pkgs.gnused
+        pkgs.opencode
+        pkgs.util-linux
+      ];
+      text = builtins.readFile ../../bin/ooc;
+    })
+    (pkgs.writeShellApplication {
+      name = "docker-compose-deps";
+      runtimeInputs = with pkgs; [
+        docker-compose
+        jq
+        nodePackages.mermaid-cli
+        kitty
+      ];
+      text = builtins.readFile ../../bin/docker-compose-deps;
+    })
+    (pkgs.writeShellApplication {
       name = "dragon-scp";
       runtimeInputs = [
         pkgs.openssh
@@ -212,6 +233,14 @@ let
         pkgs.uv
       ];
       text = builtins.readFile ../../bin/update-all;
+    })
+    (pkgs.writeShellApplication {
+      name = "up";
+      runtimeInputs = [
+        pkgs.coreutils
+        pkgs.gum
+      ];
+      text = builtins.readFile ../../bin/up;
     })
     (pkgs.writeShellApplication {
       name = "icat";

@@ -77,6 +77,7 @@ in
           ${builtins.readFile ../../bin/secret-export}
 
           eval "$(batman --export-env)"
+          eval "$(command up --init bash)"
         '';
       };
 
@@ -429,9 +430,12 @@ in
           config.home.homeDirectory + "/.config/home-manager/dotfiles/droid/AGENTS.md"
         );
       };
+      portal.extraPortals = [
+        pkgs.kdePackages.xdg-desktop-portal-kde
+      ];
       terminal-exec = {
         enable = true;
-        settings.default = [ "net.local.ghostty.desktop" ];
+        settings.default = [ "com.mitchellh.ghostty.desktop" ];
       };
       autostart = {
         enable = true;

@@ -1,0 +1,182 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+print_help() {
+  cat <<'EOF'
+up - pick a parent directory
+
+Usage:
+  up                Pick a parent directory interactively
+  up <depth>        Print parent at depth (1 = parent, 2 = grandparent)
+  up --read         Force numeric prompt instead of gum
+  up --init bash    Print shell function for cd integration
+
+Examples:
+  cd "$(up)"
+  cd "$(up 3)"
+  eval "$(up --init bash)"
+EOF
+}
+
+print_init() {
+  local up_bin=""
+
+  if command -v realpath >/dev/null 2>&1; then
+    up_bin="$(realpath "$0")"
+  else
+    up_bin="$0"
+  fi
+
+  case "$1" in
+    bash | zsh)
+      cat <<EOF
+up() {
+  local target
+  target="\$("$up_bin" --print "\$@")" || return \$?
+  [ -n "\$target" ] || return 1
+  cd "\$target" || return
+}
+EOF
+      ;;
+    *)
+      printf 'Unsupported shell: %s\n' "$1" >&2
+      return 1
+      ;;
+  esac
+}
+
+is_integer() {
+  [[ "$1" =~ ^[0-9]+$ ]]
+}
+
+parent_at_depth() {
+  local depth="$1"
+  local dir="$PWD"
+
+  while (( depth > 0 )) && [[ "$dir" != "/" ]]; do
+    dir="$(dirname "$dir")"
+    ((depth--))
+  done
+
+  printf '%s\n' "$dir"
+}
+
+list_parents() {
+  local dir="$PWD"
+
+  while :; do
+    printf '%s\n' "$dir"
+    [[ "$dir" == "/" ]] && break
+    dir="$(dirname "$dir")"
+  done
+}
+
+choose_interactive() {
+  local use_read="$1"
+  local -a parents
+  mapfile -t parents < <(list_parents)
+
+  if (( ${#parents[@]} <= 1 )); then
+    printf '/\n'
+    return 0
+  fi
+
+  local -a choices=("${parents[@]:1}")
+  local -a indexed_choices=()
+  local i=1
+  local dir
+
+  for dir in "${choices[@]}"; do
+    indexed_choices+=("$(printf '%d) %s' "$i" "$dir")")
+    ((i++))
+  done
+
+  if (( use_read == 0 )) && command -v gum >/dev/null 2>&1 && [[ -t 2 ]]; then
+    local selected
+    selected="$(gum choose --header "Go up to:" "${indexed_choices[@]}")" || return
+
+    local choice
+    choice="${selected%%)*}"
+
+    if ! is_integer "$choice" || (( choice < 1 || choice > ${#choices[@]} )); then
+      printf 'Invalid choice.\n' >&2
+      return 1
+    fi
+
+    printf '%s\n' "${choices[$((choice - 1))]}"
+    return 0
+  fi
+
+  for dir in "${indexed_choices[@]}"; do
+    printf '%s\n' "$dir" >&2
+  done
+
+  printf 'Choose a directory [1-%d]: ' "${#choices[@]}" >&2
+  local choice
+  read -r choice
+
+  if ! is_integer "$choice" || (( choice < 1 || choice > ${#choices[@]} )); then
+    printf 'Invalid choice.\n' >&2
+    return 1
+  fi
+
+  printf '%s\n' "${choices[$((choice - 1))]}"
+}
+
+main() {
+  local use_read=0
+  local depth=""
+
+  while (( $# > 0 )); do
+    case "$1" in
+      -h | --help)
+        print_help
+        return 0
+        ;;
+      -r | --read)
+        use_read=1
+        ;;
+      -p | --print)
+        ;;
+      --init)
+        shift
+        if (( $# == 0 )); then
+          printf 'Missing shell for --init.\n' >&2
+          return 1
+        fi
+        print_init "$1"
+        return 0
+        ;;
+      --)
+        shift
+        break
+        ;;
+      -* )
+        printf 'Invalid option: %s\n' "$1" >&2
+        return 1
+        ;;
+      *)
+        if [[ -n "$depth" ]]; then
+          printf 'Too many arguments.\n' >&2
+          return 1
+        fi
+        depth="$1"
+        ;;
+    esac
+    shift
+  done
+
+  if [[ -n "$depth" ]]; then
+    if ! is_integer "$depth"; then
+      printf 'Depth must be a non-negative integer.\n' >&2
+      return 1
+    fi
+    parent_at_depth "$depth"
+    return 0
+  fi
+
+  choose_interactive "$use_read"
+}
+
+main "$@"
