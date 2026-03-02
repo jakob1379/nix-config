@@ -169,7 +169,6 @@
 
   # Common displaylink service and video drivers
   services.xserver.videoDrivers = [
-    "displaylink"
     "modesetting"
   ];
 
