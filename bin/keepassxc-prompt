@@ -1,16 +1,51 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
+# Validate dependencies exist
+for cmd in secret-tool keepassxc nc ssh-add; do
+  if ! command -v "$cmd" &> /dev/null; then
+    echo "Error: $cmd not found in PATH" >&2
+    exit 1
+  fi
+done
+
+# Validate arguments
+if [[ $# -lt 2 ]]; then
+  echo "Usage: $0 <host> <port>" >&2
+  exit 1
+fi
+
+MAX_RETRIES=${MAX_RETRIES:-30}
+RETRY_COUNT=0
+KEEPASSXC_LAUNCHED=false
+
 until ssh-add -l &> /dev/null
 do
-  echo "Waiting for agent. Please unlock the database."
-
-  # Call secret-tool and check its exit code
-  if ! secret-tool search -a . . &> /dev/null; then
-    echo "secret-tool failed. Launching KeePassXC..."
-    keepassxc &> /dev/null
+  if [[ $RETRY_COUNT -ge $MAX_RETRIES ]]; then
+    echo "Error: Timed out waiting for SSH agent after ${MAX_RETRIES} attempts" >&2
+    exit 1
   fi
 
+  echo "Waiting for agent. Please unlock the database."
+
+  # Check if secret-tool can access the keyring
+  if ! secret-tool search -a . . &> /dev/null; then
+    if [[ "$KEEPASSXC_LAUNCHED" == false ]]; then
+      echo "Keyring not accessible. Launching KeePassXC..."
+
+      if ! keepassxc &> /dev/null; then
+        echo "Error: Failed to launch KeePassXC" >&2
+        exit 1
+      fi
+
+      KEEPASSXC_LAUNCHED=true
+      echo "KeePassXC launched, waiting for database unlock..."
+    fi
+  fi
+
+  ((RETRY_COUNT++))
   sleep 1
 done
 
-/usr/bin/env nc "$1" "$2"
+nc "$1" "$2"
