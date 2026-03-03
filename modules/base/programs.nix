@@ -36,26 +36,6 @@ in
   };
 
   config = {
-    nixpkgs.overlays = [
-      (_final: prev: {
-        keepassxc =
-          prev.runCommand "${prev.keepassxc.name}-xcb"
-            {
-              inherit (prev.keepassxc) meta;
-            }
-            ''
-              cp -r ${prev.keepassxc} $out
-
-              for desktopFile in $out/share/applications/*.desktop; do
-                if [[ -f "$desktopFile" ]]; then
-                  substituteInPlace "$desktopFile" \
-                    --replace-fail 'Exec=keepassxc' 'Exec=keepassxc -platform xcb'
-                fi
-              done
-            '';
-      })
-    ];
-
     programs = {
       bash = {
         enable = true;
@@ -231,6 +211,24 @@ in
 
       nix-init.enable = true;
 
+      # niriswitcher = {
+      #   enable = true;
+      #   package = pkgs.niriswitcher;
+      #   settings = {
+      #     keys = {
+      #       modifier = "Super";
+      #       switch = {
+      #         next = "Tab";
+      #         prev = "Shift+Tab";
+      #       };
+      #       window = {
+      #         abort = "Escape";
+      #       };
+      #     };
+      #     center_on_focus = true;
+      #   };
+      # };
+
       rclone = {
         enable = true;
       };
@@ -274,7 +272,7 @@ in
 
       keepassxc = {
         enable = true;
-        autostart = true;
+        autostart = false;
         package = pkgs.keepassxc;
       };
 
@@ -307,8 +305,9 @@ in
         extraPackages = with pkgs.bat-extras; [ batman ];
         config = {
           map-syntax = [
-            "*.conf:TOML"
-            "*.gdextension:TOML"
+            "_.conf:TOML"
+            "_.gdextension:TOML"
+            "*.kdl:java"
             ".env.*:toml"
             ".envrc:bash"
             "justfile:make"
@@ -479,6 +478,39 @@ in
         "opencode/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink (
           config.home.homeDirectory + "/.config/home-manager/dotfiles/droid/AGENTS.md"
         );
+        "autostart/org.keepassxc.KeePassXC.desktop".text = ''
+          [Desktop Entry]
+          Name=KeePassXC
+          Exec=keepassxc
+          TryExec=keepassxc
+          Icon=keepassxc
+          StartupNotify=false
+          Terminal=false
+          Type=Application
+          Version=1.5
+          X-GNOME-Autostart-enabled=true
+        '';
+      };
+      dataFile = {
+        "applications/org.keepassxc.KeePassXC.desktop".text = ''
+          [Desktop Entry]
+          Name=KeePassXC
+          GenericName=Password Manager
+          Comment=Community-driven port of KeePass Password Safe
+          Exec=keepassxc %f
+          TryExec=keepassxc
+          Icon=keepassxc
+          StartupWMClass=keepassxc
+          StartupNotify=false
+          Terminal=false
+          Type=Application
+          Version=1.5
+          Categories=Utility;Security;Qt;
+          MimeType=application/x-keepass2;
+          SingleMainWindow=true
+          X-GNOME-SingleWindow=true
+          Keywords=security;privacy;password-manager;yubikey;password;keepass;
+        '';
       };
       portal.extraPortals = [
         pkgs.kdePackages.xdg-desktop-portal-kde
