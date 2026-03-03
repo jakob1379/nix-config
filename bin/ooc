@@ -3,33 +3,33 @@
 # opencode-session-wrapper
 #
 # PURPOSE
-#   Wrapper around `opencode` that persists the latest session id in a `.opencode`
+#   Wrapper around `opencode` that persists the latest session id in a `.ooc`
 #   file and automatically resumes it on subsequent runs.
 #
 # SESSION FILE RESOLUTION
 #   - If inside a git worktree:
-#       - On resume: searches for `.opencode` starting in the current directory
+#       - On resume: searches for `.ooc` starting in the current directory
 #         and walking up parent directories until the git repo root.
-#       - On save (default): writes to `<git-root>/.opencode`.
+#       - On save (default): writes to `<git-root>/.ooc`.
 #   - If NOT inside a git worktree:
-#       - On resume: only checks `./.opencode`.
-#       - On save: writes to `./.opencode`.
+#       - On resume: only checks `./.ooc`.
+#       - On save: writes to `./.ooc`.
 #
 # FLAGS
 #   -n
-#     Force a new session (ignores any discovered `.opencode` on resume).
+#     Force a new session (ignores any discovered `.ooc` on resume).
 #     Still saves the new session id to the default session file location:
-#       - git repo: `<git-root>/.opencode`
-#       - non-git:  `./.opencode`
+#       - git repo: `<git-root>/.ooc`
+#       - non-git:  `./.ooc`
 #
 #   -f
 #     Force session to be anchored in the current directory.
-#     Creates/overwrites `./.opencode` with the new session id.
+#     Creates/overwrites `./.ooc` with the new session id.
 #     Also implies `-n` (i.e. will not resume an existing session).
 #
 #   -s <session_id>
 #     Instructs opencode to resume a specific session id (passed through as
-#     `-s <session_id>`). Also implies `-n` (no `.opencode` auto-resume).
+#     `-s <session_id>`). Also implies `-n` (no `.ooc` auto-resume).
 #     The resulting session id emitted by opencode (if any) is persisted per the
 #     save rules above (default or `-f`).
 #
@@ -48,6 +48,7 @@ set -u
 # Constants
 readonly SESSION_PATTERN='opencode -s ses_[A-Za-z0-9_-]*'
 readonly EXIT_MARKER='__OOC_EXIT_CODE__:'
+readonly SESSION_FILE_NAME='.ooc'
 
 cleanup() {
   local exit_code=$?
@@ -65,8 +66,8 @@ display_usage() {
 # Wrapper for 'opencode' that manages session persistence.                      #
 #                                                                               #
 # Options:                                                                      #
-#   -n              Force a new session (ignore existing .opencode file)         #
-#   -f              Force session in current directory (create new .opencode here) #
+#   -n              Force a new session (ignore existing .ooc file)              #
+#   -f              Force session in current directory (create new .ooc here)    #
 #   -s session_id   Resume a specific session                                    #
 #   -h              Show this help and opencode's help                           #
 #################################################################################
@@ -95,12 +96,12 @@ extract_session_id() {
   echo "$session_id"
 }
 
-# Find a `.opencode` file by searching parent directories.
+# Find a `.ooc` file by searching parent directories.
 # Behavior:
 #   - In git repo: searches from $PWD up to git root (inclusive)
-#   - Not in git: checks only `$PWD/.opencode`
+#   - Not in git: checks only `$PWD/.ooc`
 # Output:
-#   Prints the found `.opencode` filepath to stdout
+#   Prints the found `.ooc` filepath to stdout
 # Returns:
 #   0 if found, 1 otherwise
 find_ooc_file() {
@@ -111,23 +112,23 @@ find_ooc_file() {
   if git_root=$(git rev-parse --show-toplevel 2>/dev/null); then
     search_limit="$git_root"
   else
-    if [[ -f "$current_dir/.opencode" ]]; then
-      echo "$current_dir/.opencode"
+    if [[ -f "$current_dir/$SESSION_FILE_NAME" ]]; then
+      echo "$current_dir/$SESSION_FILE_NAME"
       return 0
     fi
     return 1
   fi
 
   while [[ "$current_dir" != "$search_limit" && "$current_dir" != "/" ]]; do
-    if [[ -f "$current_dir/.opencode" ]]; then
-      echo "$current_dir/.opencode"
+    if [[ -f "$current_dir/$SESSION_FILE_NAME" ]]; then
+      echo "$current_dir/$SESSION_FILE_NAME"
       return 0
     fi
     current_dir=$(dirname "$current_dir")
   done
 
-  if [[ -f "$search_limit/.opencode" ]]; then
-    echo "$search_limit/.opencode"
+  if [[ -f "$search_limit/$SESSION_FILE_NAME" ]]; then
+    echo "$search_limit/$SESSION_FILE_NAME"
     return 0
   fi
 
@@ -136,20 +137,20 @@ find_ooc_file() {
 
 # Determine default session file path for saving.
 # Behavior:
-#   - In git repo: `<git-root>/.opencode`
-#   - Not in git: `./.opencode`
+#   - In git repo: `<git-root>/.ooc`
+#   - Not in git: `./.ooc`
 # Output:
 #   Prints the default save path to stdout
 get_default_session_file_path() {
   local git_root
   if git_root=$(git rev-parse --show-toplevel 2>/dev/null); then
-    echo "$git_root/.opencode"
+    echo "$git_root/$SESSION_FILE_NAME"
   else
-    echo "./.opencode"
+    echo "./$SESSION_FILE_NAME"
   fi
 }
 
-# Save session id to a specific `.opencode` file.
+# Save session id to a specific `.ooc` file.
 # Arguments:
 #   $1: session id
 #   $2: session file path
@@ -159,7 +160,7 @@ save_session_id() {
   echo "$session_id" >"$session_file"
 }
 
-# Load session id from the discovered `.opencode` file.
+# Load session id from the discovered `.ooc` file.
 # Behavior:
 #   - Uses find_ooc_file() resolution rules.
 # Output:
@@ -167,7 +168,7 @@ save_session_id() {
 # Returns:
 #   0 if loaded, 1 otherwise
 # Side-effects:
-#   - If `.opencode` exists but is empty/whitespace, it is removed.
+#   - If `.ooc` exists but is empty/whitespace, it is removed.
 load_session_id() {
   local ooc_file
   if ! ooc_file=$(find_ooc_file); then
@@ -231,7 +232,7 @@ main() {
   # Where to persist a new session id (not where to resume from).
   local session_file
   if [[ "$force_current_dir" == true ]]; then
-    session_file="./.opencode"
+    session_file="./$SESSION_FILE_NAME"
   else
     session_file=$(get_default_session_file_path)
   fi

@@ -4,6 +4,9 @@ set -euo pipefail
 state_dir="${XDG_CACHE_HOME:-$HOME/.cache}"
 mirror_pid_file="$state_dir/display-mode-picker.wl-mirror.pid"
 mode_state_file="$state_dir/display-mode-picker.mode"
+cooldown_state_file="$state_dir/display-mode-picker.last-switch-ms"
+lock_dir="$state_dir/display-mode-picker.lock"
+cooldown_ms=900
 
 mode_cycle=(
   internal-only
@@ -13,6 +16,39 @@ mode_cycle=(
 )
 
 mkdir -p "$state_dir"
+
+acquire_lock() {
+  mkdir "$lock_dir" 2>/dev/null
+}
+
+release_lock() {
+  rmdir "$lock_dir" 2>/dev/null || true
+}
+
+now_ms() {
+  date +%s%3N
+}
+
+within_cooldown() {
+  local now_ms_value last_ms delta
+
+  if [[ ! -f "$cooldown_state_file" ]]; then
+    return 1
+  fi
+
+  read -r last_ms < "$cooldown_state_file" || return 1
+  if [[ ! "$last_ms" =~ ^[0-9]+$ ]]; then
+    return 1
+  fi
+
+  now_ms_value="$(now_ms)"
+  delta="$((now_ms_value - last_ms))"
+  [[ "$delta" -lt "$cooldown_ms" ]]
+}
+
+mark_switch_time() {
+  printf '%s\n' "$(now_ms)" > "$cooldown_state_file"
+}
 
 notify() {
   notify-send --expire-time=3000 "Display mode" "$1" >/dev/null 2>&1 || true
@@ -38,71 +74,86 @@ mode_short() {
   esac
 }
 
-mode_chip() {
-  local mode="$1"
-  local active="$2"
-  local short
-
-  short="$(mode_short "$mode")"
-  if [[ "$mode" == "$active" ]]; then
-    printf '%s\n' "[${short^^}]"
-  else
-    printf '%s\n' "$short"
-  fi
+mode_icon_name() {
+  case "$1" in
+    internal-only)
+      printf '%s\n' "computer-laptop-symbolic"
+      ;;
+    mirror)
+      printf '%s\n' "preferences-desktop-display-randr-symbolic"
+      ;;
+    extend)
+      printf '%s\n' "monitor-symbolic"
+      ;;
+    external-only)
+      printf '%s\n' "video-television-symbolic"
+      ;;
+    *)
+      printf '%s\n' "monitor-symbolic"
+      ;;
+  esac
 }
 
-mode_strip() {
-  local active="$1"
+next_mode_after() {
+  local current="$1"
+  local idx next_idx
 
-  printf '%s | %s | %s | %s\n' \
-    "$(mode_chip internal-only "$active")" \
-    "$(mode_chip mirror "$active")" \
-    "$(mode_chip extend "$active")" \
-    "$(mode_chip external-only "$active")"
+  idx="$(mode_index "$current")"
+  if [[ "$idx" -lt 0 ]]; then
+    idx=0
+  fi
+
+  next_idx="$(( (idx + 1) % ${#mode_cycle[@]} ))"
+  printf '%s\n' "${mode_cycle[$next_idx]}"
 }
 
 notify_mode() {
   local mode="$1"
-  local details="$2"
-  local icon label strip summary body
+  local CURRENT_LAYOUT NEXT_MODE NEXT_LAYOUT
 
-  case "$mode" in
-    internal-only)
-      icon="computer-laptop"
-      label="Laptop only"
-      ;;
-    mirror)
-      icon="video-display"
-      label="Mirror"
-      ;;
-    extend)
-      icon="preferences-desktop-display"
-      label="Extend"
-      ;;
-    external-only)
-      icon="video-display"
-      label="External only"
-      ;;
-    *)
-      icon="preferences-desktop-display"
-      label="$mode"
-      ;;
-  esac
+  CURRENT_LAYOUT="$(mode_short "$mode")"
+  NEXT_MODE="$(next_mode_after "$mode")"
+  NEXT_LAYOUT="$(mode_short "$NEXT_MODE")"
 
-  strip="$(mode_strip "$mode")"
-  summary="Display mode: $label"
-  body="$strip"
-  if [[ -n "$details" ]]; then
-    body+=$'\n'
-    body+="$details"
+  notify-send -i "$(mode_icon_name "$mode")" -t 3000 "${CURRENT_LAYOUT}" "${NEXT_LAYOUT}" >/dev/null 2>&1 || true
+}
+
+pick_mode_with_fuzzel() {
+  local current mode label selected
+
+  current="$(normalize_mode "$(detect_current_mode)")"
+  selected="$(
+    {
+      for mode in "${mode_cycle[@]}"; do
+        label="$(mode_short "$mode")"
+        if [[ "$mode" == "$current" ]]; then
+          label+=" [Current]"
+        fi
+
+        printf '%s\t%s\0icon\x1f%s\n' "$mode" "$label" "$(mode_icon_name "$mode")"
+      done
+    } | fuzzel --dmenu \
+      --prompt="Display > " \
+      --lines="${#mode_cycle[@]}" \
+      --width=32 \
+      --background=1f2430ff \
+      --text-color=d8dee9ff \
+      --selection-color=3b4252ff \
+      --selection-text-color=88c0d0ff \
+      --prompt-color=81a1c1ff \
+      --border-width=2 \
+      --border-radius=8 \
+      --with-nth=2 \
+      --accept-nth=1 \
+      --nth-delimiter=$'\t' \
+      --no-run-if-empty
+  )" || return 1
+
+  if [[ -z "$selected" ]]; then
+    return 1
   fi
 
-  notify-send \
-    -i "$icon" \
-    -t 2800 \
-    -h string:x-canonical-private-synchronous:display-mode-picker \
-    -h string:x-dunst-stack-tag:display-mode-picker \
-    "$summary" "$body" >/dev/null 2>&1 || true
+  normalize_mode "$selected"
 }
 
 normalize_mode() {
@@ -133,7 +184,7 @@ mode_index() {
 }
 
 mirror_is_active() {
-  local -a alive_pids
+  local -a alive_pids=()
   local pid
 
   if [[ ! -f "$mirror_pid_file" ]]; then
@@ -247,6 +298,11 @@ pick_next_mode() {
   printf '%s\n' "${mode_cycle[$next_idx]}"
 }
 
+if ! acquire_lock; then
+  exit 0
+fi
+trap release_lock EXIT
+
 outputs_json="$(niri msg --json outputs)"
 
 internal_output="$(jq -r 'to_entries[] | select(.key | test("^eDP-")) | .key' <<<"$outputs_json" | head -n1)"
@@ -270,7 +326,10 @@ fi
 
 mode="${1:-}"
 if [[ -z "$mode" ]]; then
-  mode="$(pick_next_mode)"
+  mode="$(pick_mode_with_fuzzel || true)"
+  if [[ -z "$mode" ]]; then
+    exit 0
+  fi
 fi
 
 if [[ "$mode" == "cycle" ]]; then
@@ -283,6 +342,10 @@ if [[ -n "$normalized_mode" ]]; then
 fi
 
 if [[ -z "$mode" ]]; then
+  exit 0
+fi
+
+if within_cooldown; then
   exit 0
 fi
 
@@ -369,3 +432,4 @@ case "$mode" in
 esac
 
 printf '%s\n' "$mode" > "$mode_state_file"
+mark_switch_time

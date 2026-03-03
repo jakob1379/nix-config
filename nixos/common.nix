@@ -106,6 +106,7 @@ in
 
   # Common services
   services.fwupd.enable = true;
+  services.udisks2.enable = true;
   services.netbird = {
     ui.enable = true;
     enable = true;

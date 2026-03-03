@@ -57,6 +57,7 @@ let
     signal-desktop
     spotify
     stretchly
+    udiskie
     variety
     virt-manager
     vlc
@@ -274,6 +275,7 @@ let
       name = "display-mode-picker";
       runtimeInputs = with pkgs; [
         coreutils
+        fuzzel
         jq
         libnotify
         niri

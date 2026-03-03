@@ -229,12 +229,6 @@ in
     };
 
     services = {
-      gpg-agent = {
-        enable = true;
-        pinentry.package = pkgs.pinentry-gtk2;
-        pinentry.program = "pinentry-gtk-2";
-      };
-
       emacs = {
         package = pkgs.emacs-pgtk;
         startWithUserSession = "graphical";
@@ -245,6 +239,17 @@ in
           "--reuse-frame"
           "--no-wait"
         ];
+      };
+
+      gpg-agent = {
+        enable = true;
+        pinentry.package = pkgs.pinentry-gtk2;
+        pinentry.program = "pinentry-gtk-2";
+      };
+
+      udiskie = {
+        enable = true;
+        tray = "never";
       };
 
       unclutter = {
