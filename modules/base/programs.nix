@@ -512,9 +512,6 @@ in
           Keywords=security;privacy;password-manager;yubikey;password;keepass;
         '';
       };
-      portal.extraPortals = [
-        pkgs.kdePackages.xdg-desktop-portal-kde
-      ];
       terminal-exec = {
         enable = true;
         settings.default = [ "com.mitchellh.ghostty.desktop" ];
