@@ -43,8 +43,12 @@ let
   guiPackages = with pkgs; [
     brave
     tana
+    noctalia-shell
+    xwayland-satellite
+    wdisplays
     wifi-qr
     feh
+    swaybg
     netpeek
     libnotify
     nodePackages.prettier
@@ -265,6 +269,17 @@ let
         util-linux # Provides mkswap, swapon, swapoff
       ];
       text = builtins.readFile ../../bin/nix-index-swap;
+    })
+    (pkgs.writeShellApplication {
+      name = "display-mode-picker";
+      runtimeInputs = with pkgs; [
+        coreutils
+        jq
+        libnotify
+        niri
+        wl-mirror
+      ];
+      text = builtins.readFile ../../bin/display-mode-picker;
     })
   ];
 in

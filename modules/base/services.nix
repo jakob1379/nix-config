@@ -85,7 +85,7 @@ in
               WantedBy = [ "graphical-session.target" ];
             };
             Service = {
-              ExecStart = "${pkgs.variety}/bin/variety --show-current";
+              ExecStart = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "if ${pkgs.coreutils}/bin/printenv XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qi niri; then export XDG_CURRENT_DESKTOP=sway; fi; exec ${pkgs.variety}/bin/variety"}";
               Restart = "on-failure";
               RestartSec = 10;
             };
@@ -146,6 +146,32 @@ in
         description = "Systemd service and path for wallust to apply colors based on wallpaper changes.";
       };
 
+      noctalia = lib.mkOption {
+        type = lib.types.attrs;
+        default = {
+          noctalia = {
+            Unit = {
+              Description = "Launch Noctalia shell";
+              PartOf = [ "niri.service" ];
+              Requisite = [ "niri.service" ];
+              After = [
+                "graphical-session.target"
+                "niri.service"
+              ];
+            };
+            Install = {
+              WantedBy = [ "niri.service" ];
+            };
+            Service = {
+              ExecStart = "${pkgs.noctalia-shell}/bin/noctalia-shell";
+              Restart = "on-failure";
+              RestartSec = 1;
+            };
+          };
+        };
+        description = "Systemd service for starting Noctalia with niri.";
+      };
+
     };
   };
 
@@ -158,6 +184,7 @@ in
           config.customServices.rclone
           config.customServices.variety
           config.customServices.wallust.service
+          config.customServices.noctalia
         ];
 
         paths = lib.mkMerge [
