@@ -25,6 +25,10 @@
     # Add remmina package specifically for this system
     extra = with pkgs; [
       clockify
+      adw-gtk3
+      kdePackages.qt6ct
+      libsForQt5.qt5ct
+      nwg-look
     ];
   };
 

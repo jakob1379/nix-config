@@ -9,6 +9,7 @@ let
   allowUnfreePredicate =
     pkg:
     builtins.elem (pkg.pname or "") [
+      "clockify"
       "zen-browser"
     ];
   generalPackages =
