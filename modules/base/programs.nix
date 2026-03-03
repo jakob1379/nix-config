@@ -185,10 +185,8 @@ in
       ghostty = {
         enable = true;
         settings = {
-          bold-is-bright = true;
           background-opacity = 0.85;
-          window-decoration = false;
-
+          bold-is-bright = true;
           clipboard-paste-protection = false;
           confirm-close-surface = false;
           copy-on-select = "clipboard";
@@ -197,6 +195,7 @@ in
           shell-integration-features = "no-cursor";
           term = "kitty";
           unfocused-split-opacity = 1.0;
+          window-decoration = false;
           # scrollbar = "system";
         };
       };

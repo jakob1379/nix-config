@@ -190,7 +190,6 @@
 
   # Programs commonly used
   programs.niri.enable = true;
-  programs.firejail.enable = true;
   services.clamav.daemon.enable = true;
   services.clamav.updater.enable = true;
   # Boot & kernel defaults (shared)
