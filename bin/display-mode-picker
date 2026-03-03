@@ -3,11 +3,156 @@ set -euo pipefail
 
 state_dir="${XDG_CACHE_HOME:-$HOME/.cache}"
 mirror_pid_file="$state_dir/display-mode-picker.wl-mirror.pid"
+mode_state_file="$state_dir/display-mode-picker.mode"
+
+mode_cycle=(
+  internal-only
+  mirror
+  extend
+  external-only
+)
 
 mkdir -p "$state_dir"
 
 notify() {
-  notify-send "Display mode" "$1" >/dev/null 2>&1 || true
+  notify-send --expire-time=3000 "Display mode" "$1" >/dev/null 2>&1 || true
+}
+
+mode_short() {
+  case "$1" in
+    internal-only)
+      printf '%s\n' "Laptop"
+      ;;
+    mirror)
+      printf '%s\n' "Mirror"
+      ;;
+    extend)
+      printf '%s\n' "Extend"
+      ;;
+    external-only)
+      printf '%s\n' "External"
+      ;;
+    *)
+      printf '%s\n' "$1"
+      ;;
+  esac
+}
+
+mode_chip() {
+  local mode="$1"
+  local active="$2"
+  local short
+
+  short="$(mode_short "$mode")"
+  if [[ "$mode" == "$active" ]]; then
+    printf '%s\n' "[${short^^}]"
+  else
+    printf '%s\n' "$short"
+  fi
+}
+
+mode_strip() {
+  local active="$1"
+
+  printf '%s | %s | %s | %s\n' \
+    "$(mode_chip internal-only "$active")" \
+    "$(mode_chip mirror "$active")" \
+    "$(mode_chip extend "$active")" \
+    "$(mode_chip external-only "$active")"
+}
+
+notify_mode() {
+  local mode="$1"
+  local details="$2"
+  local icon label strip summary body
+
+  case "$mode" in
+    internal-only)
+      icon="computer-laptop"
+      label="Laptop only"
+      ;;
+    mirror)
+      icon="video-display"
+      label="Mirror"
+      ;;
+    extend)
+      icon="preferences-desktop-display"
+      label="Extend"
+      ;;
+    external-only)
+      icon="video-display"
+      label="External only"
+      ;;
+    *)
+      icon="preferences-desktop-display"
+      label="$mode"
+      ;;
+  esac
+
+  strip="$(mode_strip "$mode")"
+  summary="Display mode: $label"
+  body="$strip"
+  if [[ -n "$details" ]]; then
+    body+=$'\n'
+    body+="$details"
+  fi
+
+  notify-send \
+    -i "$icon" \
+    -t 2800 \
+    -h string:x-canonical-private-synchronous:display-mode-picker \
+    -h string:x-dunst-stack-tag:display-mode-picker \
+    "$summary" "$body" >/dev/null 2>&1 || true
+}
+
+normalize_mode() {
+  case "$1" in
+    internal-only|laptop-only)
+      printf '%s\n' internal-only
+      ;;
+    external-only|mirror|extend)
+      printf '%s\n' "$1"
+      ;;
+    *)
+      printf '%s\n' ""
+      ;;
+  esac
+}
+
+mode_index() {
+  local target="$1"
+  local idx
+  for idx in "${!mode_cycle[@]}"; do
+    if [[ "${mode_cycle[$idx]}" == "$target" ]]; then
+      printf '%s\n' "$idx"
+      return 0
+    fi
+  done
+
+  printf '%s\n' "-1"
+}
+
+mirror_is_active() {
+  local -a alive_pids
+  local pid
+
+  if [[ ! -f "$mirror_pid_file" ]]; then
+    return 1
+  fi
+
+  while IFS= read -r pid; do
+    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+      alive_pids+=("$pid")
+    fi
+  done < "$mirror_pid_file"
+
+  if [[ "${#alive_pids[@]}" -eq 0 ]]; then
+    rm -f "$mirror_pid_file"
+    return 1
+  fi
+
+  printf '%s\n' "${alive_pids[@]}" > "$mirror_pid_file"
+  return 0
 }
 
 stop_mirror() {
@@ -61,6 +206,47 @@ join_csv() {
   done
 }
 
+detect_current_mode() {
+  local current=""
+
+  if mirror_is_active; then
+    printf '%s\n' mirror
+    return 0
+  fi
+
+  if [[ -n "$internal_mode" && "${#external_enabled_outputs[@]}" -gt 0 ]]; then
+    current="extend"
+  elif [[ -n "$internal_mode" ]]; then
+    current="internal-only"
+  elif [[ "${#external_enabled_outputs[@]}" -gt 0 ]]; then
+    current="external-only"
+  fi
+
+  printf '%s\n' "$current"
+}
+
+pick_next_mode() {
+  local current="" next_idx idx
+
+  if [[ -f "$mode_state_file" ]]; then
+    current="$(normalize_mode "$(<"$mode_state_file")")"
+  fi
+  if [[ -z "$current" ]]; then
+    current="$(normalize_mode "$(detect_current_mode)")"
+  fi
+  if [[ -z "$current" ]]; then
+    current="${mode_cycle[0]}"
+  fi
+
+  idx="$(mode_index "$current")"
+  if [[ "$idx" -lt 0 ]]; then
+    idx=0
+  fi
+  next_idx="$(( (idx + 1) % ${#mode_cycle[@]} ))"
+
+  printf '%s\n' "${mode_cycle[$next_idx]}"
+}
+
 outputs_json="$(niri msg --json outputs)"
 
 internal_output="$(jq -r 'to_entries[] | select(.key | test("^eDP-")) | .key' <<<"$outputs_json" | head -n1)"
@@ -84,7 +270,16 @@ fi
 
 mode="${1:-}"
 if [[ -z "$mode" ]]; then
-  mode="$(printf '%s\n' external-only internal-only mirror extend | fuzzel --dmenu --prompt 'Display mode: ')"
+  mode="$(pick_next_mode)"
+fi
+
+if [[ "$mode" == "cycle" ]]; then
+  mode="$(pick_next_mode)"
+fi
+
+normalized_mode="$(normalize_mode "$mode")"
+if [[ -n "$normalized_mode" ]]; then
+  mode="$normalized_mode"
 fi
 
 if [[ -z "$mode" ]]; then
@@ -109,9 +304,9 @@ case "$mode" in
     fi
 
     external_outputs_label="$(join_csv "${external_outputs[@]}")"
-    notify "external-only ($external_outputs_label)"
+    notify_mode external-only "$external_outputs_label"
     ;;
-  internal-only|laptop-only)
+  internal-only)
     stop_mirror
     if [[ -z "$internal_output" ]]; then
       notify "No internal panel detected"
@@ -124,28 +319,36 @@ case "$mode" in
       niri msg output "$output" off
     done
 
-    notify "internal-only"
+    notify_mode internal-only "$internal_output"
     ;;
   mirror)
     mirror_targets_label=""
     stop_mirror
-    if [[ -z "$internal_output" || "${#external_enabled_outputs[@]}" -eq 0 ]]; then
-      notify "Need internal and enabled external displays"
+    if [[ -z "$internal_output" && "${#external_outputs[@]}" -eq 0 ]]; then
+      notify "No displays detected to mirror"
+      exit 1
+    fi
+    if [[ -z "$internal_output" ]]; then
+      notify "Only external display detected; no internal source to mirror"
+      exit 1
+    fi
+    if [[ "${#external_outputs[@]}" -eq 0 ]]; then
+      notify "Only internal display detected; no external target to mirror"
       exit 1
     fi
 
     niri msg output "$internal_output" on
 
     : > "$mirror_pid_file"
-    for output in "${external_enabled_outputs[@]}"; do
+    for output in "${external_outputs[@]}"; do
       niri msg output "$output" on
       set_output_mode_to_internal_resolution "$output"
       wl-mirror --fullscreen-output "$output" "$internal_output" >/dev/null 2>&1 &
       echo "$!" >> "$mirror_pid_file"
     done
 
-    mirror_targets_label="$(join_csv "${external_enabled_outputs[@]}")"
-    notify "mirror ($internal_output -> $mirror_targets_label)"
+    mirror_targets_label="$(join_csv "${external_outputs[@]}")"
+    notify_mode mirror "$internal_output -> $mirror_targets_label"
     ;;
   extend)
     stop_mirror
@@ -157,10 +360,12 @@ case "$mode" in
       niri msg output "$output" on
     done
 
-    notify "extend"
+    notify_mode extend ""
     ;;
   *)
     notify "Unknown mode: $mode"
     exit 1
     ;;
 esac
+
+printf '%s\n' "$mode" > "$mode_state_file"
