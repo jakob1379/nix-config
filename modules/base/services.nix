@@ -47,6 +47,28 @@ let
         WantedBy = [ "default.target" ];
       };
     };
+
+  varietyWallpaperPointerFile = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
+
+  noctaliaWallpaperSyncScript = pkgs.writeShellScript "noctalia-sync-variety-wallpaper" ''
+    set -eu
+
+    if ! ${pkgs.procps}/bin/pgrep -x niri >/dev/null; then
+      exit 0
+    fi
+
+    if [ ! -r '${varietyWallpaperPointerFile}' ]; then
+      exit 0
+    fi
+
+    IFS= read -r wallpaper_path < '${varietyWallpaperPointerFile}' || true
+    if [ -z "''${wallpaper_path:-}" ] || [ ! -r "$wallpaper_path" ]; then
+      exit 0
+    fi
+
+    ${pkgs.noctalia-shell}/bin/noctalia-shell ipc --newest call wallpaper set "$wallpaper_path" all >/dev/null 2>&1 || true
+  '';
+
 in
 {
   options = {
@@ -146,30 +168,42 @@ in
         description = "Systemd service and path for wallust to apply colors based on wallpaper changes.";
       };
 
-      noctalia = lib.mkOption {
+      noctaliaWallpaper = lib.mkOption {
         type = lib.types.attrs;
         default = {
-          noctalia = {
-            Unit = {
-              Description = "Launch Noctalia shell";
-              PartOf = [ "niri.service" ];
-              Requisite = [ "niri.service" ];
-              After = [
-                "graphical-session.target"
-                "niri.service"
-              ];
+          service = {
+            "noctalia-sync-variety-wallpaper" = {
+              Unit = {
+                Description = "Sync Variety wallpaper to Noctalia";
+                After = [ "graphical-session.target" ];
+                StartLimitIntervalSec = 0;
+              };
+              Service = {
+                ExecStart = "${noctaliaWallpaperSyncScript}";
+                Type = "oneshot";
+              };
+              Install = {
+                WantedBy = [ "graphical-session.target" ];
+              };
             };
-            Install = {
-              WantedBy = [ "niri.service" ];
-            };
-            Service = {
-              ExecStart = "${pkgs.noctalia-shell}/bin/noctalia-shell";
-              Restart = "on-failure";
-              RestartSec = 1;
+          };
+
+          path = {
+            "noctalia-sync-variety-wallpaper" = {
+              Unit = {
+                Description = "Monitor Variety wallpaper changes for Noctalia";
+                Wants = [ "noctalia-sync-variety-wallpaper.service" ];
+              };
+              Install = {
+                WantedBy = [ "graphical-session.target" ];
+              };
+              Path = {
+                PathModified = varietyWallpaperPointerFile;
+              };
             };
           };
         };
-        description = "Systemd service for starting Noctalia with niri.";
+        description = "Systemd service and path to sync Variety wallpaper into Noctalia.";
       };
 
     };
@@ -184,11 +218,12 @@ in
           config.customServices.rclone
           config.customServices.variety
           config.customServices.wallust.service
-          config.customServices.noctalia
+          config.customServices.noctaliaWallpaper.service
         ];
 
         paths = lib.mkMerge [
           config.customServices.wallust.path
+          config.customServices.noctaliaWallpaper.path
         ];
       };
     };
