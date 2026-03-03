@@ -1,0 +1,166 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+state_dir="${XDG_CACHE_HOME:-$HOME/.cache}"
+mirror_pid_file="$state_dir/display-mode-picker.wl-mirror.pid"
+
+mkdir -p "$state_dir"
+
+notify() {
+  notify-send "Display mode" "$1" >/dev/null 2>&1 || true
+}
+
+stop_mirror() {
+  if [[ -f "$mirror_pid_file" ]]; then
+    while IFS= read -r pid; do
+      if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+        kill -TERM "$pid" 2>/dev/null || true
+      fi
+    done < "$mirror_pid_file"
+    rm -f "$mirror_pid_file"
+  fi
+}
+
+set_output_mode_to_internal_resolution() {
+  local output="$1"
+  local candidate_mode width height refresh mode
+
+  if [[ -z "$internal_width" || -z "$internal_height" || -z "$internal_refresh" ]]; then
+    return 0
+  fi
+
+  candidate_mode="$(jq -r \
+    --arg output "$output" \
+    --argjson width "$internal_width" \
+    --argjson height "$internal_height" \
+    --argjson refresh "$internal_refresh" '
+      .[$output].modes
+      | map(select(.width == $width and .height == $height))
+      | if length == 0 then empty else min_by((.refresh_rate - $refresh) | abs) | "\(.width) \(.height) \(.refresh_rate)" end
+    ' <<<"$outputs_json")"
+
+  if [[ -z "$candidate_mode" ]]; then
+    notify "$output has no ${internal_width}x${internal_height} mode"
+    return 0
+  fi
+
+  read -r width height refresh <<<"$candidate_mode"
+  mode="${width}x${height}@$(printf '%d.%03d' "$((refresh / 1000))" "$((refresh % 1000))")"
+  niri msg output "$output" mode "$mode"
+}
+
+join_csv() {
+  local first=1 item
+  for item in "$@"; do
+    if [[ "$first" -eq 1 ]]; then
+      printf '%s' "$item"
+      first=0
+    else
+      printf ', %s' "$item"
+    fi
+  done
+}
+
+outputs_json="$(niri msg --json outputs)"
+
+internal_output="$(jq -r 'to_entries[] | select(.key | test("^eDP-")) | .key' <<<"$outputs_json" | head -n1)"
+mapfile -t external_outputs < <(jq -r 'to_entries[] | select(.key | test("^eDP-") | not) | .key' <<<"$outputs_json")
+mapfile -t external_enabled_outputs < <(jq -r 'to_entries[] | select((.key | test("^eDP-") | not) and (.value.current_mode != null)) | .key' <<<"$outputs_json")
+
+internal_mode="$(jq -r --arg output "$internal_output" '
+  if $output == "" or .[$output] == null or .[$output].current_mode == null then
+    empty
+  else
+    .[$output].modes[.[$output].current_mode] | "\(.width) \(.height) \(.refresh_rate)"
+  end
+' <<<"$outputs_json")"
+
+internal_width=""
+internal_height=""
+internal_refresh=""
+if [[ -n "$internal_mode" ]]; then
+  read -r internal_width internal_height internal_refresh <<<"$internal_mode"
+fi
+
+mode="${1:-}"
+if [[ -z "$mode" ]]; then
+  mode="$(printf '%s\n' external-only internal-only mirror extend | fuzzel --dmenu --prompt 'Display mode: ')"
+fi
+
+if [[ -z "$mode" ]]; then
+  exit 0
+fi
+
+case "$mode" in
+  external-only)
+    external_outputs_label=""
+    stop_mirror
+    if [[ "${#external_outputs[@]}" -eq 0 ]]; then
+      notify "No external display detected"
+      exit 1
+    fi
+
+    for output in "${external_outputs[@]}"; do
+      niri msg output "$output" on
+    done
+
+    if [[ -n "$internal_output" ]]; then
+      niri msg output "$internal_output" off
+    fi
+
+    external_outputs_label="$(join_csv "${external_outputs[@]}")"
+    notify "external-only ($external_outputs_label)"
+    ;;
+  internal-only|laptop-only)
+    stop_mirror
+    if [[ -z "$internal_output" ]]; then
+      notify "No internal panel detected"
+      exit 1
+    fi
+
+    niri msg output "$internal_output" on
+
+    for output in "${external_outputs[@]}"; do
+      niri msg output "$output" off
+    done
+
+    notify "internal-only"
+    ;;
+  mirror)
+    mirror_targets_label=""
+    stop_mirror
+    if [[ -z "$internal_output" || "${#external_enabled_outputs[@]}" -eq 0 ]]; then
+      notify "Need internal and enabled external displays"
+      exit 1
+    fi
+
+    niri msg output "$internal_output" on
+
+    : > "$mirror_pid_file"
+    for output in "${external_enabled_outputs[@]}"; do
+      niri msg output "$output" on
+      set_output_mode_to_internal_resolution "$output"
+      wl-mirror --fullscreen-output "$output" "$internal_output" >/dev/null 2>&1 &
+      echo "$!" >> "$mirror_pid_file"
+    done
+
+    mirror_targets_label="$(join_csv "${external_enabled_outputs[@]}")"
+    notify "mirror ($internal_output -> $mirror_targets_label)"
+    ;;
+  extend)
+    stop_mirror
+    if [[ -n "$internal_output" ]]; then
+      niri msg output "$internal_output" on
+    fi
+
+    for output in "${external_outputs[@]}"; do
+      niri msg output "$output" on
+    done
+
+    notify "extend"
+    ;;
+  *)
+    notify "Unknown mode: $mode"
+    exit 1
+    ;;
+esac
