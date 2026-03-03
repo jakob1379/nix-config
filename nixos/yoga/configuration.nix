@@ -13,7 +13,7 @@
   networking.hostName = "yoga";
   programs.fuse.userAllowOther = true;
 
-  i18n.defaultLocale = "da_DK.UTF-8";
+  i18n.defaultLocale = "en_US.UTF-8";
 
   programs.gnupg.agent = {
     enable = false;
