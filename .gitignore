@@ -94,3 +94,4 @@ __pycache__/
 dotfiles/noctalia/*.json~
 dotfiles/niri/config.kdl~
 result
+/dotfiles/noctalia/colors.json
