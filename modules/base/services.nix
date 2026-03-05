@@ -49,6 +49,7 @@ let
     };
 
   varietyWallpaperPointerFile = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
+  niriFocusGradientFile = "${config.xdg.configHome}/niri/generated/wallust-focus-ring.kdl";
 
   noctaliaWallpaperSyncScript = pkgs.writeShellScript "noctalia-sync-variety-wallpaper" ''
     set -eu
@@ -71,6 +72,61 @@ let
 
   niriSessionExecCondition = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "${pkgs.coreutils}/bin/printenv XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qi niri"}";
   lockScreenCommand = "${pkgs.noctalia-shell}/bin/noctalia-shell ipc --newest call lockScreen lock";
+  niriFocusGradientSyncScript = pkgs.writeShellScript "sync-niri-focus-gradient" ''
+    set -eu
+
+    wallust_cache_dir="${config.xdg.cacheHome}/wallust"
+    noctalia_colors_file="${config.xdg.configHome}/noctalia/colors.json"
+    target_file="${niriFocusGradientFile}"
+
+    from_color=""
+    to_color=""
+    latest_dir=""
+
+    if [ -d "$wallust_cache_dir" ]; then
+      for dir in "$wallust_cache_dir"/*_1.7; do
+        [ -d "$dir" ] || continue
+        if [ -z "$latest_dir" ] || [ "$dir" -nt "$latest_dir" ]; then
+          latest_dir="$dir"
+        fi
+      done
+
+      if [ -n "$latest_dir" ]; then
+        for candidate in "$latest_dir"/*; do
+          [ -f "$candidate" ] || continue
+          if ${pkgs.jq}/bin/jq -e '.color12 and .color10' "$candidate" >/dev/null 2>&1; then
+            from_color="$(${pkgs.jq}/bin/jq -r '.color12 // empty' "$candidate")"
+            to_color="$(${pkgs.jq}/bin/jq -r '.color10 // empty' "$candidate")"
+            break
+          fi
+        done
+      fi
+    fi
+
+    if [ -z "$from_color" ] || [ -z "$to_color" ]; then
+      if [ -r "$noctalia_colors_file" ]; then
+        from_color="$(${pkgs.jq}/bin/jq -r '.mPrimary // empty' "$noctalia_colors_file")"
+        to_color="$(${pkgs.jq}/bin/jq -r '.mHover // empty' "$noctalia_colors_file")"
+      fi
+    fi
+
+    [ -n "$from_color" ] || exit 0
+    [ -n "$to_color" ] || exit 0
+
+    ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target_file")"
+    tmp_file="$target_file.tmp"
+    ${pkgs.coreutils}/bin/printf '%s\n' \
+      'layout {' \
+      '    focus-ring {' \
+      "        active-gradient from=\"$from_color\" to=\"$to_color\" angle=45" \
+      '    }' \
+      '}' > "$tmp_file"
+    ${pkgs.coreutils}/bin/mv "$tmp_file" "$target_file"
+
+    if ${pkgs.procps}/bin/pgrep -x niri >/dev/null 2>&1; then
+      ${pkgs.niri}/bin/niri msg action load-config-file >/dev/null 2>&1 || true
+    fi
+  '';
 
 in
 {
@@ -136,6 +192,7 @@ in
                 ExecStart = ''
                   ${pkgs.bash}/bin/bash -c '${pkgs.wallust}/bin/wallust run -k \"$(<${lib.escapeShellArg "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt"})\"'
                 '';
+                ExecStartPost = "${niriFocusGradientSyncScript}";
                 Type = "oneshot";
               };
               Install = {
@@ -213,6 +270,19 @@ in
   };
 
   config = {
+    home.activation.ensureNiriFocusGradientFile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      target_file="${niriFocusGradientFile}"
+      ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target_file")"
+      if [ ! -f "$target_file" ]; then
+        ${pkgs.coreutils}/bin/printf '%s\n' \
+          'layout {' \
+          '    focus-ring {' \
+          '        active-gradient from="#80c8ff" to="#c7ff7f" angle=45' \
+          '    }' \
+          '}' > "$target_file"
+      fi
+    '';
+
     systemd = {
       user = {
         startServices = true;
