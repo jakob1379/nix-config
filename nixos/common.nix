@@ -94,7 +94,7 @@ in
     sddm.enable = true;
     sddm.wayland.enable = true;
     sddm.theme = "breeze-variety";
-    defaultSession = "plasma";
+    defaultSession = "niri";
   };
 
   qt.enable = true;

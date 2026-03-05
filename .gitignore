@@ -93,3 +93,4 @@ __pycache__/
 .droid
 dotfiles/noctalia/*.json~
 dotfiles/niri/config.kdl~
+result
