@@ -7,7 +7,7 @@
     ./hardware-configuration.nix
     ../common.nix
   ];
-
+  programs.gpu-screen-recorder.enable = true;
   networking.hostName = "amd";
   programs.fuse.userAllowOther = true;
 

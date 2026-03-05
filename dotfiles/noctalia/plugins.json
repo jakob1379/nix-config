@@ -15,11 +15,11 @@
       "enabled": true,
       "sourceUrl": "https://github.com/noctalia-dev/noctalia-plugins"
     },
-    "polkit-agent": {
+    "privacy-indicator": {
       "enabled": true,
       "sourceUrl": "https://github.com/noctalia-dev/noctalia-plugins"
     },
-    "privacy-indicator": {
+    "screen-recorder": {
       "enabled": true,
       "sourceUrl": "https://github.com/noctalia-dev/noctalia-plugins"
     }
