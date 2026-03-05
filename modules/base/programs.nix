@@ -389,7 +389,7 @@ in
             };
             # kimi-for-coding.options.apiKey = "{env:KIMI_API_KEY}";
           };
-          small_model = "openai/gpt-5-mini";
+          small_model = "openai/gpt-5.3-codex";
           plugin = [
             "oh-my-opencode-slim"
             "@mohak34/opencode-notifier@latest"
