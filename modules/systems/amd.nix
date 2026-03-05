@@ -26,6 +26,7 @@
     extra = with pkgs; [
       clockify
       adw-gtk3
+      teams-for-linux
       kdePackages.qt6ct
       libsForQt5.qt5ct
       nwg-look
