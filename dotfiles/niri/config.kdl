@@ -172,7 +172,7 @@ layout {
     // You can change how the focus ring looks.
     focus-ring {
         // Uncomment this line to disable the focus ring.
-        // off
+        off
 
         // How many logical pixels the ring extends out from the windows.
         width 2
@@ -210,9 +210,7 @@ layout {
     border {
         // The settings are the same as for the focus ring.
         // If you enable the border, you probably want to disable the focus ring.
-        off
-
-        width 4
+        width 2
         active-color "#ffc87f"
         inactive-color "#505050"
 
@@ -278,6 +276,7 @@ layout {
 }
 
 include "/home/jsg/.config/niri/generated/wallust-focus-ring.kdl"
+include "/home/jsg/.config/niri/generated/window-border-rules.kdl"
 
 // Add lines like this to spawn processes at startup.
 // Note that running niri as a session supports xdg-desktop-autostart,
