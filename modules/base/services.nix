@@ -49,84 +49,65 @@ let
     };
 
   varietyWallpaperPointerFile = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
-  niriFocusGradientFile = "${config.xdg.configHome}/niri/generated/wallust-focus-ring.kdl";
+  niriGeneratedFilesDir = "${config.xdg.configHome}/niri/generated";
+  niriFocusGradientFile = "${niriGeneratedFilesDir}/wallust-focus-ring.kdl";
+  niriWindowBorderRulesFile = "${niriGeneratedFilesDir}/window-border-rules.kdl";
 
-  noctaliaWallpaperSyncScript = pkgs.writeShellScript "noctalia-sync-variety-wallpaper" ''
-    set -eu
-
-    if ! ${pkgs.procps}/bin/pgrep -x niri >/dev/null; then
-      exit 0
-    fi
-
-    if [ ! -r '${varietyWallpaperPointerFile}' ]; then
-      exit 0
-    fi
-
-    IFS= read -r wallpaper_path < '${varietyWallpaperPointerFile}' || true
-    if [ -z "''${wallpaper_path:-}" ] || [ ! -r "$wallpaper_path" ]; then
-      exit 0
-    fi
-
-    ${pkgs.noctalia-shell}/bin/noctalia-shell ipc --newest call wallpaper set "$wallpaper_path" all >/dev/null 2>&1 || true
-  '';
+  noctaliaWallpaperSyncScript = pkgs.writeShellApplication {
+    name = "noctalia-sync-variety-wallpaper";
+    runtimeInputs = [
+      pkgs.noctalia-shell
+      pkgs.procps
+    ];
+    text = builtins.readFile ../../dotfiles/niri/scripts/sync-noctalia-variety-wallpaper.sh;
+  };
 
   niriSessionExecCondition = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "${pkgs.coreutils}/bin/printenv XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qi niri"}";
   lockScreenCommand = "${pkgs.noctalia-shell}/bin/noctalia-shell ipc --newest call lockScreen lock";
-  niriFocusGradientSyncScript = pkgs.writeShellScript "sync-niri-focus-gradient" ''
-    set -eu
+  niriFocusGradientSyncScript = pkgs.writeShellApplication {
+    name = "sync-niri-focus-gradient";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.jq
+      pkgs.niri
+      pkgs.procps
+    ];
+    text = builtins.readFile ../../dotfiles/niri/scripts/sync-focus-gradient.sh;
+  };
 
-    wallust_cache_dir="${config.xdg.cacheHome}/wallust"
-    noctalia_colors_file="${config.xdg.configHome}/noctalia/colors.json"
-    target_file="${niriFocusGradientFile}"
+  niriWindowBorderRulesSyncScript = pkgs.writeShellApplication {
+    name = "sync-niri-window-border-rules";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.diffutils
+      pkgs.niri
+      pkgs.procps
+      pkgs.python3
+    ];
+    text = builtins.readFile ../../dotfiles/niri/scripts/sync-window-border-rules.sh;
+  };
 
-    from_color=""
-    to_color=""
-    latest_dir=""
+  niriWindowBorderRulesWatchScript = pkgs.writeShellApplication {
+    name = "watch-niri-window-border-rules";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.jq
+      pkgs.niri
+      pkgs.procps
+    ];
+    text = builtins.readFile ../../dotfiles/niri/scripts/watch-window-border-rules.sh;
+  };
 
-    if [ -d "$wallust_cache_dir" ]; then
-      for dir in "$wallust_cache_dir"/*_1.7; do
-        [ -d "$dir" ] || continue
-        if [ -z "$latest_dir" ] || [ "$dir" -nt "$latest_dir" ]; then
-          latest_dir="$dir"
-        fi
-      done
-
-      if [ -n "$latest_dir" ]; then
-        for candidate in "$latest_dir"/*; do
-          [ -f "$candidate" ] || continue
-          if ${pkgs.jq}/bin/jq -e '.color12 and .color10' "$candidate" >/dev/null 2>&1; then
-            from_color="$(${pkgs.jq}/bin/jq -r '.color12 // empty' "$candidate")"
-            to_color="$(${pkgs.jq}/bin/jq -r '.color10 // empty' "$candidate")"
-            break
-          fi
-        done
-      fi
-    fi
-
-    if [ -z "$from_color" ] || [ -z "$to_color" ]; then
-      if [ -r "$noctalia_colors_file" ]; then
-        from_color="$(${pkgs.jq}/bin/jq -r '.mPrimary // empty' "$noctalia_colors_file")"
-        to_color="$(${pkgs.jq}/bin/jq -r '.mHover // empty' "$noctalia_colors_file")"
-      fi
-    fi
-
-    [ -n "$from_color" ] || exit 0
-    [ -n "$to_color" ] || exit 0
-
-    ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target_file")"
-    tmp_file="$target_file.tmp"
-    ${pkgs.coreutils}/bin/printf '%s\n' \
-      'layout {' \
-      '    focus-ring {' \
-      "        active-gradient from=\"$from_color\" to=\"$to_color\" angle=45" \
-      '    }' \
-      '}' > "$tmp_file"
-    ${pkgs.coreutils}/bin/mv "$tmp_file" "$target_file"
-
-    if ${pkgs.procps}/bin/pgrep -x niri >/dev/null 2>&1; then
-      ${pkgs.niri}/bin/niri msg action load-config-file >/dev/null 2>&1 || true
-    fi
-  '';
+  noctaliaWallpaperSyncCommand = "${noctaliaWallpaperSyncScript}/bin/noctalia-sync-variety-wallpaper ${lib.escapeShellArg varietyWallpaperPointerFile}";
+  niriFocusGradientSyncCommand =
+    "${niriFocusGradientSyncScript}/bin/sync-niri-focus-gradient "
+    + "${lib.escapeShellArg "${config.xdg.cacheHome}/wallust"} "
+    + "${lib.escapeShellArg "${config.xdg.configHome}/noctalia/colors.json"} "
+    + "${lib.escapeShellArg niriFocusGradientFile}";
+  niriWindowBorderRulesWatchCommand =
+    "${niriWindowBorderRulesWatchScript}/bin/watch-niri-window-border-rules "
+    + "${lib.escapeShellArg "${niriWindowBorderRulesSyncScript}/bin/sync-niri-window-border-rules"} "
+    + "${lib.escapeShellArg niriWindowBorderRulesFile}";
 
 in
 {
@@ -192,7 +173,7 @@ in
                 ExecStart = ''
                   ${pkgs.bash}/bin/bash -c '${pkgs.wallust}/bin/wallust run -k \"$(<${lib.escapeShellArg "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt"})\"'
                 '';
-                ExecStartPost = "${niriFocusGradientSyncScript}";
+                ExecStartPost = niriFocusGradientSyncCommand;
                 Type = "oneshot";
               };
               Install = {
@@ -239,7 +220,7 @@ in
                 StartLimitIntervalSec = 0;
               };
               Service = {
-                ExecStart = "${noctaliaWallpaperSyncScript}";
+                ExecStart = noctaliaWallpaperSyncCommand;
                 Type = "oneshot";
               };
               Install = {
@@ -266,6 +247,28 @@ in
         description = "Systemd service and path to sync Variety wallpaper into Noctalia.";
       };
 
+      niriWindowBorders = lib.mkOption {
+        type = lib.types.attrs;
+        default = {
+          niri-window-border-rules = {
+            Unit = {
+              Description = "Sync per-window hashed border rules for Niri";
+              After = [ "graphical-session.target" ];
+            };
+            Install = {
+              WantedBy = [ "graphical-session.target" ];
+            };
+            Service = {
+              ExecCondition = niriSessionExecCondition;
+              ExecStart = niriWindowBorderRulesWatchCommand;
+              Restart = "always";
+              RestartSec = 2;
+            };
+          };
+        };
+        description = "Systemd service for dynamic per-window Niri border colors.";
+      };
+
     };
   };
 
@@ -283,6 +286,14 @@ in
       fi
     '';
 
+    home.activation.ensureNiriWindowBorderRulesFile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      target_file="${niriWindowBorderRulesFile}"
+      ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target_file")"
+      if [ ! -f "$target_file" ]; then
+        ${pkgs.coreutils}/bin/touch "$target_file"
+      fi
+    '';
+
     systemd = {
       user = {
         startServices = true;
@@ -292,6 +303,7 @@ in
           config.customServices.variety
           config.customServices.wallust.service
           config.customServices.noctaliaWallpaper.service
+          config.customServices.niriWindowBorders
           (lib.mkIf config.services.swayidle.enable {
             swayidle.Service.ExecCondition = niriSessionExecCondition;
           })
