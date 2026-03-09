@@ -2,15 +2,18 @@
 
 set -euo pipefail
 
-# Validate dependencies exist
-for cmd in secret-tool keepassxc nc ssh-add; do
+# SSH ProxyCommand preflight that waits for KeePassXC-backed keys to reach the
+# active SSH agent, then hands the TCP connection to netcat.
+
+# Validate dependencies exist.
+for cmd in keepassxc nc ssh-add; do
   if ! command -v "$cmd" &> /dev/null; then
     echo "Error: $cmd not found in PATH" >&2
     exit 1
   fi
 done
 
-# Validate arguments
+# Validate arguments.
 if [[ $# -lt 2 ]]; then
   echo "Usage: $0 <host> <port>" >&2
   exit 1
@@ -19,33 +22,59 @@ fi
 MAX_RETRIES=${MAX_RETRIES:-30}
 RETRY_COUNT=0
 KEEPASSXC_LAUNCHED=false
+WAIT_MESSAGE_SHOWN=false
 
-until ssh-add -l &> /dev/null
-do
+launch_keepassxc() {
+  # Launch KeePassXC once and let the retry loop wait for it to unlock and
+  # populate the agent.
+  if [[ "$KEEPASSXC_LAUNCHED" == true ]]; then
+    return
+  fi
+
+  echo "SSH agent has no identities. Launching KeePassXC..." >&2
+  keepassxc >/dev/null 2>&1 < /dev/null &
+  KEEPASSXC_LAUNCHED=true
+}
+
+while true; do
+  if ssh-add -l &> /dev/null; then
+    status=0
+  else
+    status=$?
+  fi
+
+  # ssh-add -l returns 0 when keys are available, 1 when the agent is reachable
+  # but empty, and 2 when the agent cannot be contacted.
+  if [[ $status -eq 0 ]]; then
+    break
+  fi
+
+  case "$status" in
+    1)
+      launch_keepassxc
+
+      if [[ "$WAIT_MESSAGE_SHOWN" == false ]]; then
+        echo "Waiting for KeePassXC to unlock and load SSH keys..." >&2
+        WAIT_MESSAGE_SHOWN=true
+      fi
+      ;;
+    2)
+      echo "Error: Unable to contact SSH agent. Check SSH_AUTH_SOCK." >&2
+      exit 1
+      ;;
+    *)
+      echo "Error: ssh-add -l failed with status ${status}" >&2
+      exit 1
+      ;;
+  esac
+
   if [[ $RETRY_COUNT -ge $MAX_RETRIES ]]; then
-    echo "Error: Timed out waiting for SSH agent after ${MAX_RETRIES} attempts" >&2
+    echo "Error: Timed out waiting for KeePassXC to load SSH keys after ${MAX_RETRIES} attempts" >&2
     exit 1
   fi
 
-  echo "Waiting for agent. Please unlock the database."
-
-  # Check if secret-tool can access the keyring
-  if ! secret-tool search -a . . &> /dev/null; then
-    if [[ "$KEEPASSXC_LAUNCHED" == false ]]; then
-      echo "Keyring not accessible. Launching KeePassXC..."
-
-      if ! keepassxc &> /dev/null; then
-        echo "Error: Failed to launch KeePassXC" >&2
-        exit 1
-      fi
-
-      KEEPASSXC_LAUNCHED=true
-      echo "KeePassXC launched, waiting for database unlock..."
-    fi
-  fi
-
-  ((RETRY_COUNT++))
+  RETRY_COUNT=$((RETRY_COUNT + 1))
   sleep 1
 done
 
-nc "$1" "$2"
+exec nc "$1" "$2"
