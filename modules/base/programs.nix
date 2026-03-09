@@ -388,11 +388,33 @@ in
               };
             };
             # kimi-for-coding.options.apiKey = "{env:KIMI_API_KEY}";
+            openai = {
+              models = {
+                "gpt-5.4" = {
+                  options = {
+                    reasoningEffort = "high";
+                  };
+                  variants = {
+                    low = {
+                      reasoningEffort = "low";
+                    };
+                    high = {
+                      reasoningEffort = "high";
+                    };
+                    xhigh = {
+                      reasoningEffort = "xhigh";
+                    };
+                  };
+                };
+              };
+            };
           };
+          model = "openai/gpt-5.4";
           small_model = "openai/gpt-5.3-codex";
           plugin = [
             "oh-my-opencode-slim"
             "@mohak34/opencode-notifier@latest"
+            "@franlol/opencode-md-table-formatter@latest"
           ];
           keybinds = {
             app_exit = "ctrl+shift+q";

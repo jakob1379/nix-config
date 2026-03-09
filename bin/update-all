@@ -5,12 +5,13 @@ flakePath="${XDG_CONFIG_HOME:-$HOME/.config}/home-manager"
 
 # Parallel updates
 nix flake update --flake "${flakePath}" &
+wait
+# Home Manager switch with output monitor
+home-manager switch --flake "${flakePath}" "$@" |& nom
+
 uv tool upgrade --all &
 opencode models --refresh &
 wait
-
-# Home Manager switch with output monitor
-home-manager switch --flake "${flakePath}" "$@" |& nom
 
 # NixOS switch with output monitor
 sudo -v
