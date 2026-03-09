@@ -12,6 +12,7 @@ let
       rocmSupport = true;
       cudaSupport = true;
     })
+    git-filter-repo
     busybox
     dconf
     duf
