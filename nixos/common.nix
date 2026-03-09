@@ -4,33 +4,6 @@
   lib,
   ...
 }:
-
-let
-  sddmWallpaperSourceFile = "/home/jsg/.config/variety/wallpaper/wallpaper.jpg.txt";
-  sddmWallpaperTargetFile = "/var/lib/sddm/backgrounds/current.jpg";
-
-  sddmWallpaperSyncScript = pkgs.writeShellScript "sddm-wallpaper-sync" ''
-    set -eu
-
-    if [ ! -r '${sddmWallpaperSourceFile}' ]; then
-      exit 0
-    fi
-
-    IFS= read -r wallpaper_path < '${sddmWallpaperSourceFile}' || true
-    if [ -z "''${wallpaper_path:-}" ] || [ ! -r "$wallpaper_path" ]; then
-      exit 0
-    fi
-
-    ${pkgs.coreutils}/bin/install -d -m 0755 -o sddm -g sddm /var/lib/sddm/backgrounds
-    ${pkgs.coreutils}/bin/install -m 0644 -o sddm -g sddm "$wallpaper_path" '${sddmWallpaperTargetFile}'
-  '';
-
-  sddmBreezeVarietyTheme = pkgs.runCommandLocal "sddm-breeze-variety-theme" { } ''
-    mkdir -p "$out/share/sddm/themes/breeze-variety"
-    cp -r ${pkgs.kdePackages.plasma-desktop}/share/sddm/themes/breeze/. "$out/share/sddm/themes/breeze-variety"
-    ${pkgs.coreutils}/bin/printf '%s\n' '[General]' 'background=${sddmWallpaperTargetFile}' > "$out/share/sddm/themes/breeze-variety/theme.conf.user"
-  '';
-in
 {
   # Disable screenreader
   services.orca.enable = false;
@@ -93,7 +66,7 @@ in
   services.displayManager = {
     sddm.enable = true;
     sddm.wayland.enable = true;
-    sddm.theme = "breeze-variety";
+    sddm.theme = "breeze";
     defaultSession = "niri";
   };
 
@@ -193,27 +166,7 @@ in
   environment.systemPackages = with pkgs; [
     git
     bat
-    sddmBreezeVarietyTheme
   ];
-
-  systemd.paths.sddm-wallpaper-sync = {
-    description = "Watch Variety wallpaper pointer for SDDM updates";
-    wantedBy = [ "multi-user.target" ];
-    pathConfig = {
-      PathExists = sddmWallpaperSourceFile;
-      PathModified = sddmWallpaperSourceFile;
-      Unit = "sddm-wallpaper-sync.service";
-    };
-  };
-
-  systemd.services.sddm-wallpaper-sync = {
-    description = "Sync Variety wallpaper into SDDM background";
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = sddmWallpaperSyncScript;
-    };
-  };
 
   # Common displaylink service and video drivers
   services.xserver.videoDrivers = [
