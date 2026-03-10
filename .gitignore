@@ -91,7 +91,5 @@ __pycache__/
 .aider.*
 /.droid
 .droid
-dotfiles/noctalia/*.json~
-dotfiles/niri/config.kdl~
 result
 /dotfiles/noctalia/colors.json
