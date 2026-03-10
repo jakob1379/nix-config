@@ -52,6 +52,9 @@ let
   niriGeneratedFilesDir = "${config.xdg.configHome}/niri/generated";
   niriFocusGradientFile = "${niriGeneratedFilesDir}/wallust-focus-ring.kdl";
   niriWindowBorderRulesFile = "${niriGeneratedFilesDir}/window-border-rules.kdl";
+  vicinaeThemesDir = "${config.xdg.dataHome}/vicinae/themes";
+  vicinaeWallustDarkThemeFile = "${vicinaeThemesDir}/wallust-dark.toml";
+  vicinaeWallustLightThemeFile = "${vicinaeThemesDir}/wallust-light.toml";
 
   noctaliaWallpaperSyncScript = pkgs.writeShellApplication {
     name = "noctalia-sync-variety-wallpaper";
@@ -98,12 +101,26 @@ let
     text = builtins.readFile ../../dotfiles/niri/scripts/watch-window-border-rules.sh;
   };
 
+  vicinaeThemeSyncScript = pkgs.writeShellApplication {
+    name = "sync-vicinae-theme";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.jq
+    ];
+    text = builtins.readFile ../../dotfiles/niri/scripts/sync-vicinae-theme.sh;
+  };
+
   noctaliaWallpaperSyncCommand = "${noctaliaWallpaperSyncScript}/bin/noctalia-sync-variety-wallpaper ${lib.escapeShellArg varietyWallpaperPointerFile}";
   niriFocusGradientSyncCommand =
     "${niriFocusGradientSyncScript}/bin/sync-niri-focus-gradient "
     + "${lib.escapeShellArg "${config.xdg.cacheHome}/wallust"} "
     + "${lib.escapeShellArg "${config.xdg.configHome}/noctalia/colors.json"} "
     + "${lib.escapeShellArg niriFocusGradientFile}";
+  vicinaeThemeSyncCommand =
+    "${vicinaeThemeSyncScript}/bin/sync-vicinae-theme "
+    + "${lib.escapeShellArg "${config.xdg.cacheHome}/wallust"} "
+    + "${lib.escapeShellArg vicinaeWallustDarkThemeFile} "
+    + "${lib.escapeShellArg vicinaeWallustLightThemeFile}";
   niriWindowBorderRulesWatchCommand =
     "${niriWindowBorderRulesWatchScript}/bin/watch-niri-window-border-rules "
     + "${lib.escapeShellArg "${niriWindowBorderRulesSyncScript}/bin/sync-niri-window-border-rules"} "
@@ -173,7 +190,7 @@ in
                 ExecStart = ''
                   ${pkgs.bash}/bin/bash -c '${pkgs.wallust}/bin/wallust run -k \"$(<${lib.escapeShellArg "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt"})\"'
                 '';
-                ExecStartPost = niriFocusGradientSyncCommand;
+                ExecStartPost = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "${niriFocusGradientSyncCommand}; ${vicinaeThemeSyncCommand}"}";
                 Type = "oneshot";
               };
               Install = {

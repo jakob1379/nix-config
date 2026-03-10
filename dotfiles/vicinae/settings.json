@@ -1,0 +1,13 @@
+{
+  "$schema": "https://vicinae.com/schemas/config.json",
+  "theme": {
+    "light": {
+      "name": "wallust-light",
+      "icon_theme": "default"
+    },
+    "dark": {
+      "name": "wallust-dark",
+      "icon_theme": "default"
+    }
+  }
+}

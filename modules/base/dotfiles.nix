@@ -83,6 +83,9 @@
             ".config/noctalia/plugins.json".source = config.lib.file.mkOutOfStoreSymlink (
               config.home.homeDirectory + "/.config/home-manager/dotfiles/noctalia/plugins.json"
             );
+            ".config/vicinae/settings.json".source = config.lib.file.mkOutOfStoreSymlink (
+              config.home.homeDirectory + "/.config/home-manager/dotfiles/vicinae/settings.json"
+            );
           }
         ];
 
