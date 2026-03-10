@@ -10,7 +10,9 @@ wait
 home-manager switch --flake "${flakePath}" "$@" |& nom
 
 uv tool upgrade --all &
+rm -rf ~/.cache/opencode
 opencode models --refresh &
+
 wait
 
 # NixOS switch with output monitor

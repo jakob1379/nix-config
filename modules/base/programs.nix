@@ -415,6 +415,8 @@ in
             "oh-my-opencode-slim"
             "@mohak34/opencode-notifier@latest"
             "@franlol/opencode-md-table-formatter@latest"
+            "@inkdust2021/opencode-vibeguard@latest"
+            "opencode-devcontainers"
           ];
           keybinds = {
             app_exit = "ctrl+shift+q";
