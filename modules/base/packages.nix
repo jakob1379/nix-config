@@ -285,15 +285,6 @@ let
       ];
       text = builtins.readFile ../../bin/display-mode-picker;
     })
-    (pkgs.writeShellApplication {
-      name = "vicinae-window-switcher";
-      runtimeInputs = with pkgs; [
-        jq
-        niri
-        vicinae
-      ];
-      text = builtins.readFile ../../bin/vicinae-window-switcher;
-    })
   ];
 in
 {

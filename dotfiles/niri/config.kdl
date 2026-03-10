@@ -392,7 +392,7 @@ binds {
     Mod+D hotkey-overlay-title="Run an Application: Vicinae" { spawn "vicinae" "vicinae://toggle"; }
     Mod+Shift+D hotkey-overlay-title="Open Launcher Root: Vicinae" { spawn "vicinae" "vicinae://open?popToRoot=true"; }
     Mod+Shift+V hotkey-overlay-title="Open Clipboard History: Vicinae" { spawn "vicinae" "vicinae://extensions/vicinae/clipboard/history"; }
-    Mod+Shift+W hotkey-overlay-title="Open Window Switcher: Vicinae" { spawn "vicinae-window-switcher"; }
+    Mod+Shift+W hotkey-overlay-title="Open Window Switcher: Vicinae" { spawn "vicinae" "vicinae://extensions/vicinae/wm/switch-windows"; }
     Mod+Period hotkey-overlay-title="Open Emoji Picker: Vicinae" { spawn "vicinae" "vicinae://extensions/vicinae/core/search-emojis"; }
     Mod+B hotkey-overlay-title="Cycle Power Profile" { spawn "/home/jsg/.nix-profile/bin/noctalia-shell" "ipc" "call" "powerProfile" "cycle"; }
     Super+P hotkey-overlay-title="Display Mode" { spawn "display-mode-picker" "cycle"; }
