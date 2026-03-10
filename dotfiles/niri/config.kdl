@@ -285,6 +285,7 @@ include "/home/jsg/.config/niri/generated/window-border-rules.kdl"
 
 // This line starts waybar, a commonly used bar for Wayland compositors.
 // spawn-at-startup "waybar"
+spawn-at-startup "vicinae" "server"
 spawn-at-startup "noctalia-shell" "--no-duplicate"
 spawn-sh-at-startup "city=$(curl -fsSL --max-time 3 https://ipinfo.io/city | tr -d '\\r\\n'); [ -n \"$city\" ] && /home/jsg/.nix-profile/bin/noctalia-shell ipc call location set \"$city\" || true"
 
@@ -388,10 +389,11 @@ binds {
     // Suggested binds for running programs: terminal, app launcher, screen locker.
     Mod+Return hotkey-overlay-title="Open a Terminal: (xdg default )" { spawn "xdg-terminal-exec"; }
     Mod+Shift+Return hotkey-overlay-title="Open Terminal Below" { spawn-sh "before=\"$(niri msg -j windows)\"; niri msg action spawn -- xdg-terminal-exec; i=0; while [ \"$i\" -lt 40 ]; do new_id=\"$(niri msg -j windows | jq -r --argjson b \"$before\" '([.[].id] - ($b | map(.id))) | .[0] // empty')\"; [ -n \"$new_id\" ] && { niri msg action consume-or-expel-window-left --id \"$new_id\"; break; }; i=$((i + 1)); sleep 0.05; done"; }
-    Mod+D hotkey-overlay-title="Run an Application: Noctalia" { spawn "/home/jsg/.nix-profile/bin/noctalia-shell" "ipc" "--newest" "call" "launcher" "toggle"; }
-    Mod+Shift+D hotkey-overlay-title="Cycle Launcher Mode" { spawn "/home/jsg/.nix-profile/bin/noctalia-shell" "ipc" "--newest" "call" "plugin:launcher-cycle" "next"; }
-    Mod+Shift+V hotkey-overlay-title="Open Clipboard History: Noctalia" { spawn "noctalia-shell" "ipc" "--newest" "call" "launcher" "clipboard"; }
-    Mod+Period hotkey-overlay-title="Open Emoji Picker: Noctalia" { spawn "noctalia-shell" "ipc" "--newest" "call" "launcher" "emoji"; }
+    Mod+D hotkey-overlay-title="Run an Application: Vicinae" { spawn "vicinae" "vicinae://toggle"; }
+    Mod+Shift+D hotkey-overlay-title="Open Launcher Root: Vicinae" { spawn "vicinae" "vicinae://open?popToRoot=true"; }
+    Mod+Shift+V hotkey-overlay-title="Open Clipboard History: Vicinae" { spawn "vicinae" "vicinae://extensions/vicinae/clipboard/history"; }
+    Mod+Shift+W hotkey-overlay-title="Open Window Switcher: Vicinae" { spawn "vicinae-window-switcher"; }
+    Mod+Period hotkey-overlay-title="Open Emoji Picker: Vicinae" { spawn "vicinae" "vicinae://extensions/vicinae/core/search-emojis"; }
     Mod+B hotkey-overlay-title="Cycle Power Profile" { spawn "/home/jsg/.nix-profile/bin/noctalia-shell" "ipc" "call" "powerProfile" "cycle"; }
     Super+P hotkey-overlay-title="Display Mode" { spawn "display-mode-picker" "cycle"; }
     XF86Display hotkey-overlay-title="Display Mode" { spawn "display-mode-picker" "cycle"; }
