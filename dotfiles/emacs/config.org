@@ -385,7 +385,7 @@ Corfu is a fast, minimal completion UI using Emacs' native completion-at-point-f
   ;; Quit if no match
   (corfu-quit-no-match 'separator)
   ;; Max number of candidates to show
-  (corfu-count 10)
+  (corfu-count 8)
   ;; Max width of popup
   (corfu-max-width 80)
   ;; Minimum width of popup
@@ -413,7 +413,6 @@ Shows LSP documentation, docstrings, and type info similar to company-lsp.
 (use-package corfu-popupinfo
   :straight nil  ; Included with corfu
   :after corfu
-  :hook (corfu-mode . corfu-popupinfo-mode)
   :custom
   ;; Delay: (INITIAL-DELAY . SUBSEQUENT-DELAY)
   ;; Initial delay before showing docs, faster when navigating candidates
@@ -436,7 +435,6 @@ Shows docs in the echo area at the bottom of the screen.
 (use-package corfu-echo
   :straight nil  ; Included with corfu
   :after corfu
-  :hook (corfu-mode . corfu-echo-mode)
   :custom
   (corfu-echo-delay 0.4))
 #+END_SRC
@@ -446,10 +444,12 @@ Cape provides additional completion backends and utilities for corfu.
 (use-package cape
   :defer t
   :init
+  (defalias 'me/cape-dabbrev-min-3
+    (cape-capf-prefix-length #'cape-dabbrev 3))
   ;; Add to the global default value of `completion-at-point-functions'
-  (add-hook 'completion-at-point-functions #'cape-file)
-  (add-hook 'completion-at-point-functions #'cape-dabbrev)
-  (add-hook 'completion-at-point-functions #'cape-keyword)
+  (add-hook 'completion-at-point-functions #'cape-file t)
+  (add-hook 'completion-at-point-functions #'cape-keyword t)
+  (add-hook 'completion-at-point-functions #'me/cape-dabbrev-min-3 t)
   :bind
   ("C-c p p" . completion-at-point)     ; Complete at point
   ("C-c p t" . complete-tag)            ; Complete etags
@@ -487,7 +487,7 @@ Associate various files with conf-mode.
   :mode
   ("\\.cfg\\'"        . conf-mode)
   ("\\.conf\\'"       . conf-mode)
-  ("\\.env.*\\'"      . conf-mode)  ; Matches .env, .env-*, .env.* etc.
+  ("\\.env.*\\'"      . conf-toml-mode)  ; Matches .env, .env-*, .env.* etc.
   ("\\.gitignore\\'"  . conf-mode)
   ("\\.txt\\'"        . conf-mode)
   )
@@ -1036,7 +1036,6 @@ helm is awesome
    (lsp-mode . lsp-enable-which-key-integration)
    (markdown-mode . lsp-deferred)
    (nix-mode . lsp-deferred)
-   (prog-mode . lsp-deferred)
    (rst-mode . lsp-deferred)
    (sh-mode . lsp-deferred)
    (toml-mode . lsp-deferred)
@@ -1180,7 +1179,7 @@ helm is awesome
   (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
   (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
   :custom
-  (lsp-ui-doc-enable t)
+  (lsp-ui-doc-enable nil)
   (lsp-ui-doc-position 'at-point)
   (lsp-ui-doc-use-childframe nil)
   (lsp-ui-doc-alignment 'frame)
@@ -1189,10 +1188,10 @@ helm is awesome
 
   ;; Sideline
   (lsp-ui-sideline-delay 0.05)
-  (lsp-ui-sideline-enable t)
+  (lsp-ui-sideline-enable nil)
   (lsp-ui-sideline-ignore-duplicates t)
-  (lsp-ui-sideline-show-code-actions t)
-  (lsp-ui-sideline-show-hover t)
+  (lsp-ui-sideline-show-code-actions nil)
+  (lsp-ui-sideline-show-hover nil)
 
   ;; Imenu
   (lsp-ui-imenu-auto-refresh t)
