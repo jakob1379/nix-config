@@ -1,0 +1,275 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+export PATH="@runtimePath@"
+
+readonly REAL_SHIKANECTL="@realShikanectl@"
+readonly CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/shikane"
+readonly CONFIG_FILE="$CONFIG_DIR/config.toml"
+
+cleanup() {
+  rm -f "${tmp_before:-}" "${tmp_export:-}" "${tmp_export_yaml:-}" "${tmp_config_yaml:-}" "${tmp_result:-}"
+}
+
+trap cleanup EXIT
+
+display_root_help() {
+  local help_line
+  local inserted=false
+
+  while IFS= read -r help_line; do
+    printf '%s\n' "$help_line"
+    if [[ "$help_line" == "Commands:" ]]; then
+      printf '  list    List saved profiles in %s\n' "$CONFIG_FILE"
+      printf '  save    Save the current display setup to %s\n' "$CONFIG_FILE"
+      printf '  delete  Delete a saved profile from %s\n' "$CONFIG_FILE"
+      inserted=true
+    fi
+  done < <("$REAL_SHIKANECTL" --help)
+
+  if [[ "$inserted" == false ]]; then
+    printf '\nCommands:\n'
+    printf '  list    List saved profiles in %s\n' "$CONFIG_FILE"
+    printf '  save    Save the current display setup to %s\n' "$CONFIG_FILE"
+    printf '  delete  Delete a saved profile from %s\n' "$CONFIG_FILE"
+  fi
+}
+
+display_list_help() {
+  cat <<__LIST_HELP__
+Usage: shikanectl list
+
+Lists saved profile names from $CONFIG_FILE.
+__LIST_HELP__
+}
+
+display_save_help() {
+  cat <<__SAVE_HELP__
+Usage: shikanectl save <profile-name> [export args...]
+
+Saves the current display layout into $CONFIG_FILE.
+Existing profiles with the same name are replaced.
+
+All other commands are passed through to shikanectl unchanged.
+__SAVE_HELP__
+}
+
+display_delete_help() {
+  cat <<__DELETE_HELP__
+Usage: shikanectl delete <profile-name>
+
+Deletes the named profile from $CONFIG_FILE.
+__DELETE_HELP__
+}
+
+convert_toml_to_yaml() {
+  local input_file="$1"
+  local output_file="$2"
+
+  yq eval -p=toml -o=yaml '.' "$input_file" > "$output_file"
+}
+
+snapshot_existing_config() {
+  tmp_before=$(mktemp)
+
+  if [[ -f "$CONFIG_FILE" ]]; then
+    cp "$CONFIG_FILE" "$tmp_before"
+  else
+    : > "$tmp_before"
+  fi
+}
+
+load_existing_config() {
+  tmp_config_yaml=$(mktemp)
+
+  if [[ -s "$CONFIG_FILE" ]]; then
+    convert_toml_to_yaml "$CONFIG_FILE" "$tmp_config_yaml"
+  else
+    printf '{}\n' > "$tmp_config_yaml"
+  fi
+}
+
+apply_result() {
+  local profile_name="$1"
+  local action_word="$2"
+  local show_diff="$3"
+
+  if cmp -s "$tmp_before" "$tmp_result"; then
+    printf "Profile '%s' is already up to date in %s\n" "$profile_name" "$CONFIG_FILE"
+    return 0
+  fi
+
+  mv "$tmp_result" "$CONFIG_FILE"
+  printf "%s profile '%s' in %s\n" "$action_word" "$profile_name" "$CONFIG_FILE"
+  if [[ "$show_diff" == true ]]; then
+    difft "$tmp_before" "$CONFIG_FILE" || :
+  fi
+}
+
+save_profile() {
+  local profile_name="$1"
+  local yq_expr
+  shift
+
+  mkdir -p "$CONFIG_DIR"
+
+  snapshot_existing_config
+  load_existing_config
+
+  tmp_export=$(mktemp)
+  tmp_export_yaml=$(mktemp)
+  tmp_result=$(mktemp)
+
+  "$REAL_SHIKANECTL" export "$@" "$profile_name" > "$tmp_export"
+  convert_toml_to_yaml "$tmp_export" "$tmp_export_yaml"
+
+  PROFILE_NAME="$profile_name" yq eval -e '(.profile | length) == 1 and .profile[0].name == strenv(PROFILE_NAME)' "$tmp_export_yaml" > /dev/null
+
+  yq_expr=$(cat <<'__YQ_EXPR__'
+load(strenv(CONFIG_YAML)) as $config |
+load(strenv(EXPORT_YAML)) as $export |
+$config |
+.profile = (($config.profile // []) | map(select(.name != strenv(PROFILE_NAME))) + ($export.profile // []))
+__YQ_EXPR__
+  )
+
+  CONFIG_YAML="$tmp_config_yaml" \
+    EXPORT_YAML="$tmp_export_yaml" \
+    PROFILE_NAME="$profile_name" \
+    yq eval --null-input -o=toml --expression "$yq_expr" > "$tmp_result"
+
+  apply_result "$profile_name" "Saved" true
+}
+
+delete_profile() {
+  local profile_name="$1"
+  local yq_expr
+
+  if [[ ! -f "$CONFIG_FILE" ]]; then
+    printf "Config file not found: %s\n" "$CONFIG_FILE" >&2
+    return 1
+  fi
+
+  snapshot_existing_config
+  load_existing_config
+  tmp_result=$(mktemp)
+
+  PROFILE_NAME="$profile_name" yq eval -e '((.profile // []) | map(select(.name == strenv(PROFILE_NAME))) | length) > 0' "$tmp_config_yaml" > /dev/null
+
+  yq_expr=$(cat <<'__YQ_DELETE_EXPR__'
+load(strenv(CONFIG_YAML)) as $config |
+$config |
+.profile = (($config.profile // []) | map(select(.name != strenv(PROFILE_NAME)))) |
+del(.profile | select(length == 0))
+__YQ_DELETE_EXPR__
+  )
+
+  CONFIG_YAML="$tmp_config_yaml" \
+    PROFILE_NAME="$profile_name" \
+    yq eval --null-input -o=toml --expression "$yq_expr" > "$tmp_result"
+
+  apply_result "$profile_name" "Deleted" false
+}
+
+list_profiles() {
+  if [[ ! -s "$CONFIG_FILE" ]]; then
+    printf "No saved profiles in %s\n" "$CONFIG_FILE"
+    return 0
+  fi
+
+  if ! yq eval -e -p=toml '.profile | length > 0' "$CONFIG_FILE" > /dev/null 2>&1; then
+    printf "No saved profiles in %s\n" "$CONFIG_FILE"
+    return 0
+  fi
+
+  yq eval -p=toml -o=yaml -r '.profile[]?.name' "$CONFIG_FILE"
+}
+
+main() {
+  local subcommand="${1:-}"
+
+  if [[ $# -eq 0 ]]; then
+    exec "$REAL_SHIKANECTL"
+  fi
+
+  case "$subcommand" in
+    -h|--help)
+      display_root_help
+      return 0
+      ;;
+    help)
+      if [[ $# -eq 1 ]]; then
+        display_root_help
+        return 0
+      fi
+
+      if [[ "$2" == "save" ]]; then
+        display_save_help
+        return 0
+      fi
+
+      if [[ "$2" == "list" ]]; then
+        display_list_help
+        return 0
+      fi
+
+      if [[ "$2" == "delete" ]]; then
+        display_delete_help
+        return 0
+      fi
+
+      exec "$REAL_SHIKANECTL" "$@"
+      ;;
+    save)
+      shift
+
+      if [[ $# -eq 0 ]]; then
+        display_save_help >&2
+        return 2
+      fi
+
+      if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+        display_save_help
+        return 0
+      fi
+
+      save_profile "$1" "${@:2}"
+      ;;
+    list)
+      shift
+
+      if [[ $# -gt 0 ]]; then
+        if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+          display_list_help
+          return 0
+        fi
+
+        printf "Usage: shikanectl list\n" >&2
+        return 2
+      fi
+
+      list_profiles
+      ;;
+    delete)
+      shift
+
+      if [[ $# -eq 0 ]]; then
+        display_delete_help >&2
+        return 2
+      fi
+
+      if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+        display_delete_help
+        return 0
+      fi
+
+      delete_profile "$1"
+      ;;
+    *)
+      exec "$REAL_SHIKANECTL" "$@"
+      ;;
+  esac
+}
+
+main "$@"
