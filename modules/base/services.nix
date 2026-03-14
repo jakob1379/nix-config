@@ -362,6 +362,10 @@ in
         timeout = 5;
       };
 
+      shikane = {
+        enable = true;
+      };
+
       ssh-agent = {
         enable = true;
         enableBashIntegration = true;
