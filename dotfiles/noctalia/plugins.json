@@ -7,10 +7,6 @@
     }
   ],
   "states": {
-    "file-search": {
-      "enabled": true,
-      "sourceUrl": "https://github.com/noctalia-dev/noctalia-plugins"
-    },
     "keybind-cheatsheet": {
       "enabled": true,
       "sourceUrl": "https://github.com/noctalia-dev/noctalia-plugins"
