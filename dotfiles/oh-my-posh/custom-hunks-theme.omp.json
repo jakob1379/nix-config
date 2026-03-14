@@ -33,6 +33,14 @@
           }
         },
         {
+          "type": "text",
+          "style": "powerline",
+          "powerline_symbol": "\ue0b0",
+          "foreground": "#ffffff",
+          "background": "#C2DDEF",
+          "template": "{{ if .Env.OMP_NIX_SHELL }} \uf313 Nix {{ end }}"
+        },
+        {
           "type": "nix-shell",
           "style": "powerline",
           "powerline_symbol": "\ue0b0",
