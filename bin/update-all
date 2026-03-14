@@ -4,7 +4,10 @@ flakePath="${XDG_CONFIG_HOME:-$HOME/.config}/home-manager"
 
 
 # Parallel updates
+sudo -v
+sudo nix-channel --update &
 nix flake update --flake "${flakePath}" &
+nix-channel --update &
 wait
 # Home Manager switch with output monitor
 home-manager switch --flake "${flakePath}" "$@" |& nom
