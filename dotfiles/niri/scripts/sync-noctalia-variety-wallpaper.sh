@@ -11,7 +11,7 @@ if [ ! -r "$variety_pointer_file" ]; then
   exit 0
 fi
 
-IFS= read -r wallpaper_path < "$variety_pointer_file" || true
+IFS= read -r wallpaper_path < <(variety --get) || true
 if [ -z "${wallpaper_path:-}" ] || [ ! -r "$wallpaper_path" ]; then
   exit 0
 fi
