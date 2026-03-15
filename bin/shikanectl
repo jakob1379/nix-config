@@ -93,7 +93,6 @@ load_existing_config() {
 apply_result() {
   local profile_name="$1"
   local action_word="$2"
-  local show_diff="$3"
 
   if cmp -s "$tmp_before" "$tmp_result"; then
     printf "Profile '%s' is already up to date in %s\n" "$profile_name" "$CONFIG_FILE"
@@ -101,10 +100,7 @@ apply_result() {
   fi
 
   mv "$tmp_result" "$CONFIG_FILE"
-  printf "%s profile '%s' in %s\n" "$action_word" "$profile_name" "$CONFIG_FILE"
-  if [[ "$show_diff" == true ]]; then
-    difft "$tmp_before" "$CONFIG_FILE" || :
-  fi
+  printf "%s %s %s\n" "$profile_name" "$action_word" "$CONFIG_FILE"
 }
 
 save_profile() {
@@ -139,7 +135,7 @@ __YQ_EXPR__
     PROFILE_NAME="$profile_name" \
     yq eval --null-input -o=toml --expression "$yq_expr" > "$tmp_result"
 
-  apply_result "$profile_name" "Saved" true
+  apply_result "$profile_name" "saved to"
 }
 
 delete_profile() {
@@ -169,7 +165,7 @@ __YQ_DELETE_EXPR__
     PROFILE_NAME="$profile_name" \
     yq eval --null-input -o=toml --expression "$yq_expr" > "$tmp_result"
 
-  apply_result "$profile_name" "Deleted" false
+  apply_result "$profile_name" "deleted from"
 }
 
 list_profiles() {

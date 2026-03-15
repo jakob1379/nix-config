@@ -22,7 +22,6 @@ let
             "${
               prev.lib.makeBinPath [
                 prev.coreutils
-                prev.difftastic
                 prev.yq-go
               ]
             }:$PATH"
