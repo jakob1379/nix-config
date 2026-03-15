@@ -1,17 +1,11 @@
 #!/usr/bin/env bash
 set -eu
 
-variety_pointer_file="${1:-$HOME/.config/variety/wallpaper/wallpaper.jpg.txt}"
-
 if ! pgrep -x niri >/dev/null; then
   exit 0
 fi
 
-if [ ! -r "$variety_pointer_file" ]; then
-  exit 0
-fi
-
-IFS= read -r wallpaper_path < <(variety --get) || true
+wallpaper_path=$(variety --get) || true
 if [ -z "${wallpaper_path:-}" ] || [ ! -r "$wallpaper_path" ]; then
   exit 0
 fi
