@@ -49,6 +49,7 @@ let
     };
 
   varietyWallpaperPointerFile = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
+  varietyDropboxMountPath = "${config.home.homeDirectory}/dropbox-private";
   niriGeneratedFilesDir = "${config.xdg.configHome}/niri/generated";
   niriFocusGradientFile = "${niriGeneratedFilesDir}/wallust-focus-ring.kdl";
   niriWindowBorderRulesFile = "${niriGeneratedFilesDir}/window-border-rules.kdl";
@@ -61,8 +62,24 @@ let
     runtimeInputs = [
       pkgs.noctalia-shell
       pkgs.procps
+      pkgs.variety
     ];
     text = builtins.readFile ../../dotfiles/niri/scripts/sync-noctalia-variety-wallpaper.sh;
+  };
+
+  varietyCurrentWallpaperScript = pkgs.writeShellApplication {
+    name = "variety-current-wallpaper";
+    runtimeInputs = [ pkgs.variety ];
+    text = ''
+      set -eu
+
+      wallpaper_path="$(${pkgs.variety}/bin/variety --get 2>/dev/null || true)"
+      if [ -z "''${wallpaper_path:-}" ] || [ ! -r "$wallpaper_path" ]; then
+        exit 1
+      fi
+
+      printf '%s\n' "$wallpaper_path"
+    '';
   };
 
   niriSessionExecCondition = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "${pkgs.coreutils}/bin/printenv XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qi niri"}";
@@ -121,6 +138,25 @@ let
     + "${lib.escapeShellArg "${config.xdg.cacheHome}/wallust"} "
     + "${lib.escapeShellArg vicinaeWallustDarkThemeFile} "
     + "${lib.escapeShellArg vicinaeWallustLightThemeFile}";
+  varietyCurrentWallpaperCommand = "${varietyCurrentWallpaperScript}/bin/variety-current-wallpaper";
+  waitForDropboxMountCommand = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg ''
+    attempts=0
+    while [ "$attempts" -lt 30 ]; do
+      if ${pkgs.util-linux}/bin/mountpoint -q ${lib.escapeShellArg varietyDropboxMountPath}; then
+        exit 0
+      fi
+      attempts=$((attempts + 1))
+      ${pkgs.coreutils}/bin/sleep 1
+    done
+    exit 1
+  ''}";
+  varietyWallpaperChangedCommand = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg ''
+    wallpaper_path="$(${varietyCurrentWallpaperCommand})"
+    ${pkgs.wallust}/bin/wallust run -k "$wallpaper_path"
+    ${noctaliaWallpaperSyncCommand}
+    ${niriFocusGradientSyncCommand}
+    ${vicinaeThemeSyncCommand}
+  ''}";
   niriWindowBorderRulesWatchCommand =
     "${niriWindowBorderRulesWatchScript}/bin/watch-niri-window-border-rules "
     + "${lib.escapeShellArg "${niriWindowBorderRulesSyncScript}/bin/sync-niri-window-border-rules"} "
@@ -164,6 +200,7 @@ in
               WantedBy = [ "graphical-session.target" ];
             };
             Service = {
+              ExecStartPre = waitForDropboxMountCommand;
               ExecStart = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "if ${pkgs.coreutils}/bin/printenv XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qi niri; then export XDG_CURRENT_DESKTOP=sway; fi; exec ${pkgs.variety}/bin/variety"}";
               Restart = "on-failure";
               RestartSec = 10;
@@ -173,97 +210,6 @@ in
         description = "Systemd service for Variety wallpaper changer.";
       };
 
-      wallust = lib.mkOption {
-        type = lib.types.attrs;
-        default = {
-          service = {
-            "wallust-apply-variety" = {
-              Unit = {
-                # Unit definition for the service
-                Description = "Apply wallpaper colors with Wallust";
-                After = [ "rclone-mount-dropbox-private.service" ];
-                Wants = [ "rclone-mount-dropbox-private.service" ];
-                Requires = [ "rclone-mount-dropbox-private.service" ];
-              };
-              Service = {
-                # Service-specific configuration
-                ExecStart = ''
-                  ${pkgs.bash}/bin/bash -c '${pkgs.variety}/bin/variety --get | ${pkgs.findutils}/bin/xargs -d "\\n" -I{} ${pkgs.wallust}/bin/wallust run -k "{}"'
-                '';
-                ExecStartPost = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "${niriFocusGradientSyncCommand}; ${vicinaeThemeSyncCommand}"}";
-                Type = "oneshot";
-              };
-              Install = {
-                # Install-specific configuration
-                WantedBy = [ "graphical-session.target" ];
-              };
-            };
-          };
-
-          path = {
-            "wallust-apply-variety" = {
-              Unit = {
-                # Unit definition for the path
-                Description = "Monitor wallpaper file for changes for Wallust";
-                After = [ "rclone-mount-dropbox-private.service" ];
-                Wants = [
-                  "wallust-apply-variety.service" # Reference the full service unit name here
-                  "rclone-mount-dropbox-private.service"
-                ];
-                Requires = [ "rclone-mount-dropbox-private.service" ];
-              };
-              Install = {
-                # Install-specific configuration
-                WantedBy = [ "graphical-session.target" ];
-              };
-              Path = {
-                # Path-specific configuration
-                PathModified = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
-              };
-            };
-          };
-        };
-        description = "Systemd service and path for wallust to apply colors based on wallpaper changes.";
-      };
-
-      noctaliaWallpaper = lib.mkOption {
-        type = lib.types.attrs;
-        default = {
-          service = {
-            "noctalia-sync-variety-wallpaper" = {
-              Unit = {
-                Description = "Sync Variety wallpaper to Noctalia";
-                After = [ "graphical-session.target" ];
-                StartLimitIntervalSec = 0;
-              };
-              Service = {
-                ExecStart = noctaliaWallpaperSyncCommand;
-                Type = "oneshot";
-              };
-              Install = {
-                WantedBy = [ "graphical-session.target" ];
-              };
-            };
-          };
-
-          path = {
-            "noctalia-sync-variety-wallpaper" = {
-              Unit = {
-                Description = "Monitor Variety wallpaper changes for Noctalia";
-                Wants = [ "noctalia-sync-variety-wallpaper.service" ];
-              };
-              Install = {
-                WantedBy = [ "graphical-session.target" ];
-              };
-              Path = {
-                PathModified = varietyWallpaperPointerFile;
-              };
-            };
-          };
-        };
-        description = "Systemd service and path to sync Variety wallpaper into Noctalia.";
-      };
-
       varietyWallpaperChanged = lib.mkOption {
         type = lib.types.attrs;
         default = {
@@ -271,17 +217,22 @@ in
             "variety-wallpaper-changed" = {
               Unit = {
                 Description = "Handle Variety wallpaper change";
-                After = [ "rclone-mount-dropbox-private.service" ];
-                Wants = [ "rclone-mount-dropbox-private.service" ];
-                Requires = [ "rclone-mount-dropbox-private.service" ];
+                After = [
+                  "rclone-mount-dropbox-private.service"
+                  "variety.service"
+                ];
+                Wants = [
+                  "rclone-mount-dropbox-private.service"
+                  "variety.service"
+                ];
+                Requires = [
+                  "rclone-mount-dropbox-private.service"
+                  "variety.service"
+                ];
+                PartOf = [ "variety.service" ];
               };
               Service = {
-                ExecStart = [
-                  "${pkgs.bash}/bin/bash"
-                  "-c"
-                  "wallpaper_path=$(${pkgs.variety}/bin/variety --get) && ${pkgs.findutils}/bin/xargs -d '\\n' -I{} ${pkgs.wallust}/bin/wallust run -k '{}' <<< \"$wallpaper_path\""
-                ];
-                ExecStartPost = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "${noctaliaWallpaperSyncCommand}; ${niriFocusGradientSyncCommand}; ${vicinaeThemeSyncCommand}"}";
+                ExecStart = varietyWallpaperChangedCommand;
                 Type = "oneshot";
               };
               Install = {
@@ -294,12 +245,19 @@ in
             "variety-wallpaper-changed" = {
               Unit = {
                 Description = "Monitor Variety wallpaper file for changes";
-                After = [ "rclone-mount-dropbox-private.service" ];
+                After = [
+                  "rclone-mount-dropbox-private.service"
+                  "variety.service"
+                ];
                 Wants = [
                   "variety-wallpaper-changed.service"
                   "rclone-mount-dropbox-private.service"
+                  "variety.service"
                 ];
-                Requires = [ "rclone-mount-dropbox-private.service" ];
+                Requires = [
+                  "rclone-mount-dropbox-private.service"
+                  "variety.service"
+                ];
               };
               Install = {
                 WantedBy = [ "graphical-session.target" ];
