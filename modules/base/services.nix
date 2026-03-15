@@ -188,7 +188,7 @@ in
               Service = {
                 # Service-specific configuration
                 ExecStart = ''
-                  ${pkgs.bash}/bin/bash -c '${pkgs.wallust}/bin/wallust run -k \"$(<${lib.escapeShellArg "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt"})\"'
+                  ${pkgs.bash}/bin/bash -c '${pkgs.variety}/bin/variety --get | ${pkgs.coreutils}/bin/xargs -I{} ${pkgs.wallust}/bin/wallust run -k "{}"'
                 '';
                 ExecStartPost = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "${niriFocusGradientSyncCommand}; ${vicinaeThemeSyncCommand}"}";
                 Type = "oneshot";
