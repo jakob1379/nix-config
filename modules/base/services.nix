@@ -188,7 +188,7 @@ in
               Service = {
                 # Service-specific configuration
                 ExecStart = ''
-                  ${pkgs.bash}/bin/bash -c '${pkgs.variety}/bin/variety --get | ${pkgs.coreutils}/bin/xargs -I{} ${pkgs.wallust}/bin/wallust run -k "{}"'
+                  ${pkgs.bash}/bin/bash -c '${pkgs.variety}/bin/variety --get | ${pkgs.findutils}/bin/xargs -d "\\n" -I{} ${pkgs.wallust}/bin/wallust run -k "{}"'
                 '';
                 ExecStartPost = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "${niriFocusGradientSyncCommand}; ${vicinaeThemeSyncCommand}"}";
                 Type = "oneshot";
