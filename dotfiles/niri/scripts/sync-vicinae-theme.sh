@@ -1,33 +1,15 @@
 #!/usr/bin/env bash
 set -eu
 
-wallust_cache_dir="${1:-$HOME/.cache/wallust}"
+palette_file="${1:-$HOME/.local/state/wallpaper/wallust-palette.json}"
 dark_theme_file="${2:-$HOME/.local/share/vicinae/themes/wallust-dark.toml}"
 light_theme_file="${3:-$HOME/.local/share/vicinae/themes/wallust-light.toml}"
 
-latest_dir=""
-palette_file=""
+[ -r "$palette_file" ] || exit 0
 
-if [ -d "$wallust_cache_dir" ]; then
-  for dir in "$wallust_cache_dir"/*_1.7; do
-    [ -d "$dir" ] || continue
-    if [ -z "$latest_dir" ] || [ "$dir" -nt "$latest_dir" ]; then
-      latest_dir="$dir"
-    fi
-  done
-
-  if [ -n "$latest_dir" ]; then
-    for candidate in "$latest_dir"/*; do
-      [ -f "$candidate" ] || continue
-      if jq -e '.background and .foreground and .color0 and .color7 and .color8 and .color9 and .color10 and .color11 and .color12 and .color13 and .color14' "$candidate" >/dev/null 2>&1; then
-        palette_file="$candidate"
-        break
-      fi
-    done
-  fi
+if ! jq -e '.background and .foreground and .color0 and .color7 and .color8 and .color9 and .color10 and .color11 and .color12 and .color13 and .color14' "$palette_file" >/dev/null 2>&1; then
+  exit 0
 fi
-
-[ -n "$palette_file" ] || exit 0
 
 background="$(jq -r '.background // empty' "$palette_file")"
 foreground="$(jq -r '.foreground // empty' "$palette_file")"

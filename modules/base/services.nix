@@ -50,6 +50,9 @@ let
 
   varietyWallpaperPointerFile = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
   varietyDropboxMountPath = "${config.home.homeDirectory}/dropbox-private";
+  wallpaperStateDir = "${config.xdg.stateHome}/wallpaper";
+  currentWallpaperStateFile = "${wallpaperStateDir}/current-wallpaper";
+  wallustPaletteStateFile = "${wallpaperStateDir}/wallust-palette.json";
   niriGeneratedFilesDir = "${config.xdg.configHome}/niri/generated";
   niriFocusGradientFile = "${niriGeneratedFilesDir}/wallust-focus-ring.kdl";
   niriWindowBorderRulesFile = "${niriGeneratedFilesDir}/window-border-rules.kdl";
@@ -58,27 +61,85 @@ let
   vicinaeWallustLightThemeFile = "${vicinaeThemesDir}/wallust-light.toml";
 
   noctaliaWallpaperSyncScript = pkgs.writeShellApplication {
-    name = "noctalia-sync-variety-wallpaper";
+    name = "sync-noctalia-wallpaper";
     runtimeInputs = [
       pkgs.noctalia-shell
       pkgs.procps
-      pkgs.variety
+      pkgs.coreutils
     ];
-    text = builtins.readFile ../../dotfiles/niri/scripts/sync-noctalia-variety-wallpaper.sh;
+    text = builtins.readFile ../../dotfiles/niri/scripts/sync-noctalia-wallpaper.sh;
   };
 
-  varietyCurrentWallpaperScript = pkgs.writeShellApplication {
-    name = "variety-current-wallpaper";
-    runtimeInputs = [ pkgs.variety ];
+  currentWallpaperStateSyncScript = pkgs.writeShellApplication {
+    name = "update-current-wallpaper-state";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.variety
+    ];
     text = ''
       set -eu
 
-      wallpaper_path="$(${pkgs.variety}/bin/variety --get 2>/dev/null || true)"
-      if [ -z "''${wallpaper_path:-}" ] || [ ! -r "$wallpaper_path" ]; then
-        exit 1
+      target_file="$1"
+      attempts=0
+
+      while [ "$attempts" -lt 30 ]; do
+        wallpaper_path="$(${pkgs.variety}/bin/variety --get 2>/dev/null || true)"
+
+        if [ -n "''${wallpaper_path:-}" ] && [ -r "$wallpaper_path" ]; then
+          ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target_file")"
+          tmp_file="$target_file.tmp"
+          ${pkgs.coreutils}/bin/printf '%s\n' "$wallpaper_path" > "$tmp_file"
+          ${pkgs.coreutils}/bin/mv "$tmp_file" "$target_file"
+          exit 0
+        fi
+
+        attempts=$((attempts + 1))
+        ${pkgs.coreutils}/bin/sleep 1
+      done
+
+      exit 1
+    '';
+  };
+
+  wallustPaletteStateSyncScript = pkgs.writeShellApplication {
+    name = "update-wallust-palette-state";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.jq
+    ];
+    text = ''
+      set -eu
+
+      wallust_cache_dir="$1"
+      target_file="$2"
+      latest_dir=""
+      palette_file=""
+
+      if [ -d "$wallust_cache_dir" ]; then
+        for dir in "$wallust_cache_dir"/*_1.7; do
+          [ -d "$dir" ] || continue
+          if [ -z "$latest_dir" ] || [ "$dir" -nt "$latest_dir" ]; then
+            latest_dir="$dir"
+          fi
+        done
       fi
 
-      printf '%s\n' "$wallpaper_path"
+      if [ -n "$latest_dir" ]; then
+        for candidate in "$latest_dir"/*; do
+          [ -f "$candidate" ] || continue
+          if ${pkgs.jq}/bin/jq -e '.background and .foreground and .color0 and .color7 and .color8 and .color9 and .color10 and .color11 and .color12 and .color13 and .color14' "$candidate" >/dev/null 2>&1; then
+            palette_file="$candidate"
+            break
+          fi
+        done
+      fi
+
+      [ -n "$palette_file" ] || exit 1
+
+      ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target_file")"
+      tmp_file="$target_file.tmp"
+      ${pkgs.coreutils}/bin/cp "$palette_file" "$tmp_file"
+      ${pkgs.coreutils}/bin/mv "$tmp_file" "$target_file"
     '';
   };
 
@@ -127,18 +188,26 @@ let
     text = builtins.readFile ../../dotfiles/niri/scripts/sync-vicinae-theme.sh;
   };
 
-  noctaliaWallpaperSyncCommand = "${noctaliaWallpaperSyncScript}/bin/noctalia-sync-variety-wallpaper";
+  noctaliaWallpaperSyncCommand =
+    "${noctaliaWallpaperSyncScript}/bin/sync-noctalia-wallpaper "
+    + lib.escapeShellArg currentWallpaperStateFile;
   niriFocusGradientSyncCommand =
     "${niriFocusGradientSyncScript}/bin/sync-niri-focus-gradient "
-    + "${lib.escapeShellArg "${config.xdg.cacheHome}/wallust"} "
+    + "${lib.escapeShellArg wallustPaletteStateFile} "
     + "${lib.escapeShellArg "${config.xdg.configHome}/noctalia/colors.json"} "
     + "${lib.escapeShellArg niriFocusGradientFile}";
   vicinaeThemeSyncCommand =
     "${vicinaeThemeSyncScript}/bin/sync-vicinae-theme "
-    + "${lib.escapeShellArg "${config.xdg.cacheHome}/wallust"} "
+    + "${lib.escapeShellArg wallustPaletteStateFile} "
     + "${lib.escapeShellArg vicinaeWallustDarkThemeFile} "
     + "${lib.escapeShellArg vicinaeWallustLightThemeFile}";
-  varietyCurrentWallpaperCommand = "${varietyCurrentWallpaperScript}/bin/variety-current-wallpaper";
+  currentWallpaperStateSyncCommand =
+    "${currentWallpaperStateSyncScript}/bin/update-current-wallpaper-state "
+    + lib.escapeShellArg currentWallpaperStateFile;
+  wallustPaletteStateSyncCommand =
+    "${wallustPaletteStateSyncScript}/bin/update-wallust-palette-state "
+    + "${lib.escapeShellArg "${config.xdg.cacheHome}/wallust"} "
+    + lib.escapeShellArg wallustPaletteStateFile;
   waitForDropboxMountCommand = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg ''
     attempts=0
     while [ "$attempts" -lt 30 ]; do
@@ -150,12 +219,18 @@ let
     done
     exit 1
   ''}";
-  varietyWallpaperChangedCommand = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg ''
-    wallpaper_path="$(${varietyCurrentWallpaperCommand})"
+  wallustCommand = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg ''
+    if [ ! -r ${lib.escapeShellArg currentWallpaperStateFile} ]; then
+      exit 0
+    fi
+
+    IFS= read -r wallpaper_path < ${lib.escapeShellArg currentWallpaperStateFile} || exit 0
+    if [ -z "$wallpaper_path" ] || [ ! -r "$wallpaper_path" ]; then
+      exit 0
+    fi
+
     ${pkgs.wallust}/bin/wallust run -k "$wallpaper_path"
-    ${noctaliaWallpaperSyncCommand}
-    ${niriFocusGradientSyncCommand}
-    ${vicinaeThemeSyncCommand}
+    ${wallustPaletteStateSyncCommand}
   ''}";
   niriWindowBorderRulesWatchCommand =
     "${niriWindowBorderRulesWatchScript}/bin/watch-niri-window-border-rules "
@@ -210,13 +285,13 @@ in
         description = "Systemd service for Variety wallpaper changer.";
       };
 
-      varietyWallpaperChanged = lib.mkOption {
+      varietyWallpaper = lib.mkOption {
         type = lib.types.attrs;
         default = {
           service = {
-            "variety-wallpaper-changed" = {
+            "variety-wallpaper-updated" = {
               Unit = {
-                Description = "Handle Variety wallpaper change";
+                Description = "Resolve current wallpaper from Variety";
                 After = [
                   "rclone-mount-dropbox-private.service"
                   "variety.service"
@@ -232,7 +307,7 @@ in
                 PartOf = [ "variety.service" ];
               };
               Service = {
-                ExecStart = varietyWallpaperChangedCommand;
+                ExecStart = currentWallpaperStateSyncCommand;
                 Type = "oneshot";
               };
               Install = {
@@ -242,15 +317,15 @@ in
           };
 
           path = {
-            "variety-wallpaper-changed" = {
+            "variety-wallpaper-updated" = {
               Unit = {
-                Description = "Monitor Variety wallpaper file for changes";
+                Description = "Watch Variety wallpaper pointer";
                 After = [
                   "rclone-mount-dropbox-private.service"
                   "variety.service"
                 ];
                 Wants = [
-                  "variety-wallpaper-changed.service"
+                  "variety-wallpaper-updated.service"
                   "rclone-mount-dropbox-private.service"
                   "variety.service"
                 ];
@@ -268,7 +343,159 @@ in
             };
           };
         };
-        description = "Systemd service and path to handle Variety wallpaper changes.";
+        description = "Systemd service and path to resolve the current wallpaper from Variety.";
+      };
+
+      wallust = lib.mkOption {
+        type = lib.types.attrs;
+        default = {
+          service = {
+            wallust = {
+              Unit = {
+                Description = "Generate Wallust palette from current wallpaper";
+                After = [ "variety-wallpaper-updated.service" ];
+                Wants = [ "variety-wallpaper-updated.service" ];
+              };
+              Service = {
+                ExecStart = wallustCommand;
+                Type = "oneshot";
+              };
+              Install = {
+                WantedBy = [ "graphical-session.target" ];
+              };
+            };
+          };
+
+          path = {
+            wallust = {
+              Unit = {
+                Description = "Watch canonical wallpaper state for Wallust";
+                Wants = [ "wallust.service" ];
+              };
+              Install = {
+                WantedBy = [ "graphical-session.target" ];
+              };
+              Path = {
+                PathModified = currentWallpaperStateFile;
+              };
+            };
+          };
+        };
+        description = "Systemd service and path to generate the Wallust palette.";
+      };
+
+      noctaliaWallpaper = lib.mkOption {
+        type = lib.types.attrs;
+        default = {
+          service = {
+            "noctalia-wallpaper" = {
+              Unit = {
+                Description = "Sync current wallpaper to Noctalia";
+                After = [ "variety-wallpaper-updated.service" ];
+                Wants = [ "variety-wallpaper-updated.service" ];
+              };
+              Service = {
+                ExecStart = noctaliaWallpaperSyncCommand;
+                Type = "oneshot";
+              };
+              Install = {
+                WantedBy = [ "graphical-session.target" ];
+              };
+            };
+          };
+
+          path = {
+            "noctalia-wallpaper" = {
+              Unit = {
+                Description = "Watch canonical wallpaper state for Noctalia";
+                Wants = [ "noctalia-wallpaper.service" ];
+              };
+              Install = {
+                WantedBy = [ "graphical-session.target" ];
+              };
+              Path = {
+                PathModified = currentWallpaperStateFile;
+              };
+            };
+          };
+        };
+        description = "Systemd service and path to sync the current wallpaper into Noctalia.";
+      };
+
+      niriFocusGradient = lib.mkOption {
+        type = lib.types.attrs;
+        default = {
+          service = {
+            "niri-focus-gradient" = {
+              Unit = {
+                Description = "Sync Niri focus gradient from Wallust palette";
+                After = [ "wallust.service" ];
+                Wants = [ "wallust.service" ];
+              };
+              Service = {
+                ExecStart = niriFocusGradientSyncCommand;
+                Type = "oneshot";
+              };
+              Install = {
+                WantedBy = [ "graphical-session.target" ];
+              };
+            };
+          };
+
+          path = {
+            "niri-focus-gradient" = {
+              Unit = {
+                Description = "Watch Wallust palette for Niri focus gradient sync";
+                Wants = [ "niri-focus-gradient.service" ];
+              };
+              Install = {
+                WantedBy = [ "graphical-session.target" ];
+              };
+              Path = {
+                PathModified = wallustPaletteStateFile;
+              };
+            };
+          };
+        };
+        description = "Systemd service and path to sync Niri focus colors from Wallust.";
+      };
+
+      vicinaeTheme = lib.mkOption {
+        type = lib.types.attrs;
+        default = {
+          service = {
+            "vicinae-theme" = {
+              Unit = {
+                Description = "Sync Vicinae themes from Wallust palette";
+                After = [ "wallust.service" ];
+                Wants = [ "wallust.service" ];
+              };
+              Service = {
+                ExecStart = vicinaeThemeSyncCommand;
+                Type = "oneshot";
+              };
+              Install = {
+                WantedBy = [ "graphical-session.target" ];
+              };
+            };
+          };
+
+          path = {
+            "vicinae-theme" = {
+              Unit = {
+                Description = "Watch Wallust palette for Vicinae theme sync";
+                Wants = [ "vicinae-theme.service" ];
+              };
+              Install = {
+                WantedBy = [ "graphical-session.target" ];
+              };
+              Path = {
+                PathModified = wallustPaletteStateFile;
+              };
+            };
+          };
+        };
+        description = "Systemd service and path to sync Vicinae themes from Wallust.";
       };
 
       niriWindowBorders = lib.mkOption {
@@ -325,7 +552,11 @@ in
         services = lib.mkMerge [
           config.customServices.rclone
           config.customServices.variety
-          config.customServices.varietyWallpaperChanged.service
+          (config.customServices.varietyWallpaper.service or { })
+          (config.customServices.wallust.service or { })
+          (config.customServices.noctaliaWallpaper.service or { })
+          (config.customServices.niriFocusGradient.service or { })
+          (config.customServices.vicinaeTheme.service or { })
           config.customServices.niriWindowBorders
           (lib.mkIf config.services.swayidle.enable {
             swayidle.Service.ExecCondition = niriSessionExecCondition;
@@ -333,7 +564,11 @@ in
         ];
 
         paths = lib.mkMerge [
-          config.customServices.varietyWallpaperChanged.path
+          (config.customServices.varietyWallpaper.path or { })
+          (config.customServices.wallust.path or { })
+          (config.customServices.noctaliaWallpaper.path or { })
+          (config.customServices.niriFocusGradient.path or { })
+          (config.customServices.vicinaeTheme.path or { })
         ];
       };
     };
