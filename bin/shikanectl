@@ -7,6 +7,7 @@ export PATH="@runtimePath@"
 readonly REAL_SHIKANECTL="@realShikanectl@"
 readonly CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/shikane"
 readonly CONFIG_FILE="$CONFIG_DIR/config.toml"
+readonly HASHED_PROFILE_REGEX='^[0-9a-f]{64}(-.*)?$'
 
 cleanup() {
   rm -f "${tmp_before:-}" "${tmp_export:-}" "${tmp_export_yaml:-}" "${tmp_config_yaml:-}" "${tmp_result:-}"
@@ -38,18 +39,22 @@ display_root_help() {
 
 display_list_help() {
   cat <<__LIST_HELP__
-Usage: shikanectl list
+Usage: shikanectl list [--all]
 
 Lists saved profile names from $CONFIG_FILE.
+By default, only profiles matching the current output hash are shown.
+Use --all to show every saved profile.
 __LIST_HELP__
 }
 
 display_save_help() {
   cat <<__SAVE_HELP__
-Usage: shikanectl save <profile-name> [export args...]
+Usage: shikanectl save [profile-name] [export args...]
 
 Saves the current display layout into $CONFIG_FILE.
 Existing profiles with the same name are replaced.
+Profile names are prefixed with the current output hash unless already hash-prefixed.
+If profile-name is omitted, the current output hash is used as the profile name.
 
 All other commands are passed through to shikanectl unchanged.
 __SAVE_HELP__
@@ -60,7 +65,49 @@ display_delete_help() {
 Usage: shikanectl delete <profile-name>
 
 Deletes the named profile from $CONFIG_FILE.
+Profile names are prefixed with the current output hash unless already hash-prefixed.
 __DELETE_HELP__
+}
+
+current_output_hash() {
+  local output_hash
+
+  if ! output_hash=$(
+    niri msg --json outputs \
+      | yq eval -p=json -o=json -I=0 '[.[] | {"name": .name, "serial": .serial}] | sort_by(.name)' - \
+      | sha256sum \
+      | cut -d' ' -f1
+  ); then
+    printf 'Failed to compute the current output hash from niri outputs\n' >&2
+    return 1
+  fi
+
+  printf '%s\n' "$output_hash"
+}
+
+normalized_profile_name() {
+  local profile_name="${1:-}"
+  local output_hash="${2:-}"
+
+  if [[ -z "$profile_name" ]]; then
+    printf '%s\n' "$output_hash"
+    return 0
+  fi
+
+  if [[ "$profile_name" =~ $HASHED_PROFILE_REGEX ]]; then
+    printf '%s\n' "$profile_name"
+    return 0
+  fi
+
+  printf '%s-%s\n' "$output_hash" "$profile_name"
+}
+
+resolve_profile_name() {
+  local profile_name="${1:-}"
+  local output_hash
+
+  output_hash="$(current_output_hash)"
+  normalized_profile_name "$profile_name" "$output_hash"
 }
 
 convert_toml_to_yaml() {
@@ -169,6 +216,10 @@ __YQ_DELETE_EXPR__
 }
 
 list_profiles() {
+  local show_all="${1:-false}"
+  local output_hash
+  local matching_profiles
+
   if [[ ! -s "$CONFIG_FILE" ]]; then
     printf "No saved profiles in %s\n" "$CONFIG_FILE"
     return 0
@@ -179,7 +230,23 @@ list_profiles() {
     return 0
   fi
 
-  yq eval -p=toml -o=yaml -r '.profile[]?.name' "$CONFIG_FILE"
+  if [[ "$show_all" == true ]]; then
+    yq eval -p=toml -o=yaml -r '.profile[]?.name' "$CONFIG_FILE"
+    return 0
+  fi
+
+  output_hash="$(current_output_hash)"
+  matching_profiles=$(
+    OUTPUT_HASH="$output_hash" \
+      yq eval -p=toml -o=yaml -r '.profile[]?.name | select(. == strenv(OUTPUT_HASH) or test("^" + strenv(OUTPUT_HASH) + "-"))' "$CONFIG_FILE"
+  )
+
+  if [[ -z "$matching_profiles" ]]; then
+    printf "No saved profiles for current output hash (%s) in %s\n" "$output_hash" "$CONFIG_FILE"
+    return 0
+  fi
+
+  printf '%s\n' "$matching_profiles"
 }
 
 main() {
@@ -219,36 +286,50 @@ main() {
       ;;
     save)
       shift
+      local resolved_profile_name
 
-      if [[ $# -eq 0 ]]; then
-        display_save_help >&2
-        return 2
-      fi
-
-      if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+      if [[ $# -gt 0 && ("$1" == "-h" || "$1" == "--help") ]]; then
         display_save_help
         return 0
       fi
 
-      save_profile "$1" "${@:2}"
+      if [[ $# -eq 0 ]]; then
+        resolved_profile_name="$(resolve_profile_name)"
+        save_profile "$resolved_profile_name"
+        return 0
+      fi
+
+      resolved_profile_name="$(resolve_profile_name "$1")"
+      save_profile "$resolved_profile_name" "${@:2}"
       ;;
     list)
       shift
+      local list_all=false
 
-      if [[ $# -gt 0 ]]; then
-        if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-          display_list_help
-          return 0
-        fi
-
-        printf "Usage: shikanectl list\n" >&2
+      if [[ $# -eq 1 ]]; then
+        case "$1" in
+          -h|--help)
+            display_list_help
+            return 0
+            ;;
+          --all)
+            list_all=true
+            ;;
+          *)
+            printf "Usage: shikanectl list [--all]\n" >&2
+            return 2
+            ;;
+        esac
+      elif [[ $# -gt 1 ]]; then
+        printf "Usage: shikanectl list [--all]\n" >&2
         return 2
       fi
 
-      list_profiles
+      list_profiles "$list_all"
       ;;
     delete)
       shift
+      local resolved_profile_name
 
       if [[ $# -eq 0 ]]; then
         display_delete_help >&2
@@ -260,7 +341,8 @@ main() {
         return 0
       fi
 
-      delete_profile "$1"
+      resolved_profile_name="$(resolve_profile_name "$1")"
+      delete_profile "$resolved_profile_name"
       ;;
     *)
       exec "$REAL_SHIKANECTL" "$@"
