@@ -7,6 +7,7 @@ export PATH="@runtimePath@"
 readonly REAL_SHIKANECTL="@realShikanectl@"
 readonly CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/shikane"
 readonly CONFIG_FILE="$CONFIG_DIR/config.toml"
+readonly DEFAULT_PROFILE_NAME="default"
 readonly HASHED_PROFILE_REGEX='^[0-9a-f]{64}(-.*)?$'
 
 cleanup() {
@@ -42,7 +43,8 @@ display_list_help() {
 Usage: shikanectl list [--all]
 
 Lists saved profile names from $CONFIG_FILE.
-By default, only profiles matching the current output hash are shown.
+By default, only profiles matching the current output hash are shown and the
+hash prefix is omitted.
 Use --all to show every saved profile.
 __LIST_HELP__
 }
@@ -53,10 +55,12 @@ Usage: shikanectl save [profile-name] [export args...]
 
 Saves the current display layout into $CONFIG_FILE.
 Existing profiles with the same name are replaced.
+The shikane daemon is reloaded after the command runs.
 Profile names are prefixed with the current output hash unless already hash-prefixed.
-If profile-name is omitted, the current output hash is used as the profile name.
+If profile-name is omitted, $DEFAULT_PROFILE_NAME is used, so the saved profile
+can be selected later with 'shikanectl switch $DEFAULT_PROFILE_NAME'.
 
-All other commands are passed through to shikanectl unchanged.
+Any remaining arguments are passed through to 'shikanectl export' unchanged.
 __SAVE_HELP__
 }
 
@@ -65,8 +69,19 @@ display_delete_help() {
 Usage: shikanectl delete <profile-name>
 
 Deletes the named profile from $CONFIG_FILE.
+The shikane daemon is reloaded after the command runs.
 Profile names are prefixed with the current output hash unless already hash-prefixed.
 __DELETE_HELP__
+}
+
+display_switch_help() {
+  cat <<__SWITCH_HELP__
+Usage: shikanectl switch <profile-name>
+
+Reloads $CONFIG_FILE and switches to the named profile temporarily.
+Profile names are prefixed with the current output hash unless already hash-prefixed.
+Use $DEFAULT_PROFILE_NAME to switch to the default profile for the current output hash.
+__SWITCH_HELP__
 }
 
 current_output_hash() {
@@ -86,13 +101,8 @@ current_output_hash() {
 }
 
 normalized_profile_name() {
-  local profile_name="${1:-}"
+  local profile_name="${1:-$DEFAULT_PROFILE_NAME}"
   local output_hash="${2:-}"
-
-  if [[ -z "$profile_name" ]]; then
-    printf '%s\n' "$output_hash"
-    return 0
-  fi
 
   if [[ "$profile_name" =~ $HASHED_PROFILE_REGEX ]]; then
     printf '%s\n' "$profile_name"
@@ -100,6 +110,23 @@ normalized_profile_name() {
   fi
 
   printf '%s-%s\n' "$output_hash" "$profile_name"
+}
+
+display_profile_name() {
+  local profile_name="$1"
+  local output_hash="$2"
+
+  if [[ "$profile_name" == "$output_hash" ]]; then
+    printf '%s\n' "$DEFAULT_PROFILE_NAME"
+    return 0
+  fi
+
+  if [[ "$profile_name" == "$output_hash-"* ]]; then
+    printf '%s\n' "${profile_name#"$output_hash-"}"
+    return 0
+  fi
+
+  printf '%s\n' "$profile_name"
 }
 
 resolve_profile_name() {
@@ -138,16 +165,29 @@ load_existing_config() {
 }
 
 apply_result() {
-  local profile_name="$1"
-  local action_word="$2"
-
   if cmp -s "$tmp_before" "$tmp_result"; then
-    printf "Profile '%s' is already up to date in %s\n" "$profile_name" "$CONFIG_FILE"
+    apply_result_changed=false
     return 0
   fi
 
   mv "$tmp_result" "$CONFIG_FILE"
-  printf "%s %s %s\n" "$profile_name" "$action_word" "$CONFIG_FILE"
+  apply_result_changed=true
+}
+
+reload_config() {
+  "$REAL_SHIKANECTL" reload
+}
+
+report_apply_result() {
+  local profile_name="$1"
+  local action_word="$2"
+
+  if [[ "$apply_result_changed" == true ]]; then
+    printf "%s %s %s\n" "$profile_name" "$action_word" "$CONFIG_FILE"
+    return 0
+  fi
+
+  printf "Profile '%s' is already up to date in %s\n" "$profile_name" "$CONFIG_FILE"
 }
 
 save_profile() {
@@ -182,7 +222,10 @@ __YQ_EXPR__
     PROFILE_NAME="$profile_name" \
     yq eval --null-input -o=toml --expression "$yq_expr" > "$tmp_result"
 
+  apply_result_changed=false
   apply_result "$profile_name" "saved to"
+  reload_config
+  report_apply_result "$profile_name" "saved to"
 }
 
 delete_profile() {
@@ -212,13 +255,17 @@ __YQ_DELETE_EXPR__
     PROFILE_NAME="$profile_name" \
     yq eval --null-input -o=toml --expression "$yq_expr" > "$tmp_result"
 
+  apply_result_changed=false
   apply_result "$profile_name" "deleted from"
+  reload_config
+  report_apply_result "$profile_name" "deleted from"
 }
 
 list_profiles() {
   local show_all="${1:-false}"
   local output_hash
   local matching_profiles
+  local profile_name
 
   if [[ ! -s "$CONFIG_FILE" ]]; then
     printf "No saved profiles in %s\n" "$CONFIG_FILE"
@@ -246,7 +293,9 @@ list_profiles() {
     return 0
   fi
 
-  printf '%s\n' "$matching_profiles"
+  while IFS= read -r profile_name; do
+    display_profile_name "$profile_name" "$output_hash"
+  done <<< "$matching_profiles"
 }
 
 main() {
@@ -279,6 +328,11 @@ main() {
 
       if [[ "$2" == "delete" ]]; then
         display_delete_help
+        return 0
+      fi
+
+      if [[ "$2" == "switch" ]]; then
+        display_switch_help
         return 0
       fi
 
@@ -343,6 +397,29 @@ main() {
 
       resolved_profile_name="$(resolve_profile_name "$1")"
       delete_profile "$resolved_profile_name"
+      ;;
+    switch)
+      shift
+      local resolved_profile_name
+
+      if [[ $# -eq 0 ]]; then
+        display_switch_help >&2
+        return 2
+      fi
+
+      if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+        display_switch_help
+        return 0
+      fi
+
+      if [[ $# -ne 1 ]]; then
+        display_switch_help >&2
+        return 2
+      fi
+
+      resolved_profile_name="$(resolve_profile_name "$1")"
+      "$REAL_SHIKANECTL" reload
+      exec "$REAL_SHIKANECTL" switch "$resolved_profile_name"
       ;;
     *)
       exec "$REAL_SHIKANECTL" "$@"
