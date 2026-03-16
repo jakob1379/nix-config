@@ -27,7 +27,7 @@
       clockify
       adw-gtk3
       glab
-      teams-for-linux
+      # teams-for-linux
       kdePackages.qt6ct
       libsForQt5.qt5ct
       nwg-look
