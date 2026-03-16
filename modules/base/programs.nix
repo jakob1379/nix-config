@@ -363,20 +363,55 @@ in
         settings = {
           lsp = {
             nixd = {
-              extensios = [ ".nix" ];
-              command = [ "nix run nixpkgs#nixd --" ];
+              extensions = [ ".nix" ];
+              command = [
+                "nix"
+                "run"
+                "nixpkgs#nixd"
+                "--"
+              ];
             };
+
+            gopls = {
+              extensions = [ ".go" ];
+              command = [
+                "nix"
+                "run"
+                "nixpkgs#gopls"
+                "--"
+              ];
+            };
+
+            rust = {
+              extensions = [ ".rs" ];
+              command = [
+                "nix"
+                "run"
+                "nixpkgs#rust-analyzer"
+                "--"
+              ];
+            };
+
             pyright = {
               disabled = true;
             };
+
             ty = {
-              command = [ "uv run --with ty ty server || uvx ty server" ];
+              command = [
+                "uv"
+                "run"
+                "--with"
+                "ty"
+                "ty"
+                "server"
+              ];
               extensions = [
                 ".py"
                 ".pyi"
               ];
             };
           };
+
           mcp = {
             context7 = {
               type = "remote";
@@ -384,6 +419,7 @@ in
               enabled = true;
             };
           };
+
           provider = {
             deepseek = {
               options = {
@@ -391,7 +427,7 @@ in
                 baseURL = "https://api.deepseek.com/v1";
               };
             };
-            # kimi-for-coding.options.apiKey = "{env:KIMI_API_KEY}";
+
             openai = {
               models = {
                 "gpt-5.4" = {
@@ -413,8 +449,10 @@ in
               };
             };
           };
+
           model = "openai/gpt-5.4";
           small_model = "openai/gpt-5.3-codex";
+
           plugin = [
             "oh-my-opencode-slim"
             "@mohak34/opencode-notifier@latest"
@@ -422,10 +460,12 @@ in
             "@inkdust2021/opencode-vibeguard@latest"
             "opencode-devcontainers"
           ];
+
           keybinds = {
             app_exit = "ctrl+shift+q";
             input_clear = "ctrl+c";
           };
+
           agent = {
             explore = {
               disable = true;
