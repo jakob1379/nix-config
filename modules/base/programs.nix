@@ -362,6 +362,10 @@ in
         enable = true;
         settings = {
           lsp = {
+            nixd = {
+              extensios = [ ".nix" ];
+              command = [ "nix run nixpkgs#nixd --" ];
+            };
             pyright = {
               disabled = true;
             };
