@@ -16,7 +16,7 @@
     "ignoreMouseInput": false,
     "overviewLayer": false,
     "pinnedApps": [],
-    "position": "center",
+    "position": "top_center",
     "screenshotAnnotationTool": "",
     "showCategories": true,
     "showIconBackground": false,
@@ -194,39 +194,10 @@
           "textColor": "none"
         },
         {
-          "colorizeDistroLogo": false,
-          "colorizeSystemIcon": "none",
-          "customIconPath": "",
-          "enableColorization": false,
-          "icon": "noctalia",
-          "id": "ControlCenter",
-          "useDistroLogo": false
-        },
-        {
-          "defaultSettings": {
-            "activeColor": "primary",
-            "enableToast": true,
-            "hideInactive": false,
-            "iconSpacing": 4,
-            "inactiveColor": "none",
-            "micFilterRegex": "",
-            "removeMargins": false
-          },
-          "id": "plugin:privacy-indicator"
-        },
-        {
-          "defaultSettings": {
-            "autoHeight": true,
-            "cheatsheetData": [],
-            "columnCount": 3,
-            "detectedCompositor": "",
-            "hyprlandConfigPath": "~/.config/hypr/hyprland.conf",
-            "modKeyVariable": "$mod",
-            "niriConfigPath": "~/.config/niri/config.kdl",
-            "windowHeight": 0,
-            "windowWidth": 1400
-          },
-          "id": "plugin:keybind-cheatsheet"
+          "displayMode": "onhover",
+          "iconColor": "none",
+          "id": "Bluetooth",
+          "textColor": "none"
         },
         {
           "defaultSettings": {
@@ -246,13 +217,48 @@
             "videoSource": "portal"
           },
           "id": "plugin:screen-recorder"
+        },
+        {
+          "defaultSettings": {
+            "autoHeight": true,
+            "cheatsheetData": [],
+            "columnCount": 3,
+            "detectedCompositor": "",
+            "hyprlandConfigPath": "~/.config/hypr/hyprland.conf",
+            "modKeyVariable": "$mod",
+            "niriConfigPath": "~/.config/niri/config.kdl",
+            "windowHeight": 0,
+            "windowWidth": 1400
+          },
+          "id": "plugin:keybind-cheatsheet"
+        },
+        {
+          "defaultSettings": {
+            "activeColor": "primary",
+            "enableToast": true,
+            "hideInactive": false,
+            "iconSpacing": 4,
+            "inactiveColor": "none",
+            "micFilterRegex": "",
+            "removeMargins": false
+          },
+          "id": "plugin:privacy-indicator"
+        },
+        {
+          "colorizeDistroLogo": false,
+          "colorizeSystemIcon": "none",
+          "customIconPath": "",
+          "enableColorization": false,
+          "icon": "noctalia",
+          "id": "ControlCenter",
+          "useDistroLogo": false
         }
       ]
     }
   },
   "brightness": {
     "brightnessStep": 5,
-    "enableDdcSupport": false,
+    "enableDdcSupport": true,
     "enforceMinimum": true
   },
   "calendar": {
@@ -272,7 +278,7 @@
     ]
   },
   "colorSchemes": {
-    "darkMode": true,
+    "darkMode": false,
     "generationMethod": "tonal-spot",
     "manualSunrise": "06:30",
     "manualSunset": "18:30",
@@ -353,7 +359,7 @@
     "deadOpacity": 0.6,
     "displayMode": "auto_hide",
     "dockType": "floating",
-    "enabled": true,
+    "enabled": false,
     "floatingRatio": 1,
     "inactiveIndicators": false,
     "monitors": [],
@@ -408,7 +414,7 @@
     "showHibernateOnLockScreen": false,
     "showScreenCorners": false,
     "showSessionButtonsOnLockScreen": false,
-    "telemetryEnabled": true
+    "telemetryEnabled": false
   },
   "hooks": {
     "darkModeChange": "",
