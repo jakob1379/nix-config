@@ -44,7 +44,9 @@ Usage: shikanectl list [--all]
 
 Lists saved profile names from $CONFIG_FILE.
 By default, only profiles matching the current output hash are shown and the
-hash prefix is omitted.
+hash prefix is omitted. '*' marks the active setup, '(default)' marks the
+saved default alias when it matches a named profile, and legacy hash-only
+profiles are shown as 'default (legacy)'.
 Use --all to show every saved profile.
 __LIST_HELP__
 }
@@ -57,8 +59,9 @@ Saves the current display layout into $CONFIG_FILE.
 Existing profiles with the same name are replaced.
 The shikane daemon is reloaded after the command runs.
 Profile names are prefixed with the current output hash unless already hash-prefixed.
-If profile-name is omitted, $DEFAULT_PROFILE_NAME is used, so the saved profile
-can be selected later with 'shikanectl switch $DEFAULT_PROFILE_NAME'.
+If profile-name is omitted or set to $DEFAULT_PROFILE_NAME, a
+'<current-output-hash>-$DEFAULT_PROFILE_NAME' profile is replaced and later
+selected with 'shikanectl switch $DEFAULT_PROFILE_NAME'.
 
 Any remaining arguments are passed through to 'shikanectl export' unchanged.
 __SAVE_HELP__
@@ -80,7 +83,7 @@ Usage: shikanectl switch <profile-name>
 
 Reloads $CONFIG_FILE and switches to the named profile temporarily.
 Profile names are prefixed with the current output hash unless already hash-prefixed.
-Use $DEFAULT_PROFILE_NAME to switch to the default profile for the current output hash.
+Use $DEFAULT_PROFILE_NAME to switch to the named default profile for the current output hash.
 __SWITCH_HELP__
 }
 
@@ -100,6 +103,18 @@ current_output_hash() {
   printf '%s\n' "$output_hash"
 }
 
+default_profile_name() {
+  local output_hash="$1"
+
+  printf '%s-%s\n' "$output_hash" "$DEFAULT_PROFILE_NAME"
+}
+
+legacy_default_profile_name() {
+  local output_hash="$1"
+
+  printf '%s\n' "$output_hash"
+}
+
 normalized_profile_name() {
   local profile_name="${1:-$DEFAULT_PROFILE_NAME}"
   local output_hash="${2:-}"
@@ -109,7 +124,112 @@ normalized_profile_name() {
     return 0
   fi
 
+  if [[ "$profile_name" == "$DEFAULT_PROFILE_NAME" ]]; then
+    default_profile_name "$output_hash"
+    return 0
+  fi
+
   printf '%s-%s\n' "$output_hash" "$profile_name"
+}
+
+is_default_profile_name() {
+  local profile_name="$1"
+  local output_hash="$2"
+
+  [[ "$profile_name" == "$(default_profile_name "$output_hash")" ]]
+}
+
+is_legacy_default_profile_name() {
+  local profile_name="$1"
+  local output_hash="$2"
+
+  [[ "$profile_name" == "$(legacy_default_profile_name "$output_hash")" ]]
+}
+
+profile_exists() {
+  local profile_name="$1"
+
+  [[ -f "$CONFIG_FILE" ]] || return 1
+
+  PROFILE_NAME="$profile_name" \
+    yq eval -e '((.profile // []) | map(select(.name == strenv(PROFILE_NAME))) | length) > 0' "$CONFIG_FILE" > /dev/null 2>&1
+}
+
+profile_body_json() {
+  local profile_name="$1"
+
+  PROFILE_NAME="$profile_name" \
+    yq eval -p=toml -o=json -I=0 '.profile[] | select(.name == strenv(PROFILE_NAME)) | del(.name)' "$CONFIG_FILE"
+}
+
+current_profile_body_json() {
+  local tmp_export
+
+  tmp_export=$(mktemp)
+  "$REAL_SHIKANECTL" export __CURRENT__ > "$tmp_export"
+  yq eval -p=toml -o=json -I=0 '.profile[0] | del(.name)' "$tmp_export"
+  rm -f "$tmp_export"
+}
+
+stored_default_profile_name() {
+  local output_hash="$1"
+  local named_default_profile
+  local legacy_default_profile
+
+  named_default_profile="$(default_profile_name "$output_hash")"
+  if profile_exists "$named_default_profile"; then
+    printf '%s\n' "$named_default_profile"
+    return 0
+  fi
+
+  legacy_default_profile="$(legacy_default_profile_name "$output_hash")"
+  if profile_exists "$legacy_default_profile"; then
+    printf '%s\n' "$legacy_default_profile"
+    return 0
+  fi
+
+  return 1
+}
+
+named_profile_matching_default() {
+  local output_hash="$1"
+  local candidate_profiles="$2"
+  local stored_default_name
+  local default_body_json
+
+  if ! stored_default_name="$(stored_default_profile_name "$output_hash")"; then
+    return 1
+  fi
+
+  if ! is_default_profile_name "$stored_default_name" "$output_hash"; then
+    return 1
+  fi
+
+  default_body_json="$(profile_body_json "$stored_default_name")"
+
+  named_profile_matching_body "$output_hash" "$candidate_profiles" "$default_body_json"
+}
+
+named_profile_matching_body() {
+  local output_hash="$1"
+  local candidate_profiles="$2"
+  local target_body_json="$3"
+  local profile_name
+  local profile_body
+
+  while IFS= read -r profile_name; do
+    [[ -n "$profile_name" ]] || continue
+    is_default_profile_name "$profile_name" "$output_hash" && continue
+    is_legacy_default_profile_name "$profile_name" "$output_hash" && continue
+
+    profile_body="$(profile_body_json "$profile_name")"
+    if [[ "$profile_body" == "$target_body_json" ]]; then
+      printf '%s\n' "$profile_name"
+      return 0
+    fi
+  done <<< "$candidate_profiles"
+
+  return 1
 }
 
 display_profile_name() {
@@ -129,11 +249,61 @@ display_profile_name() {
   printf '%s\n' "$profile_name"
 }
 
+display_profile_alias_name() {
+  local profile_name="$1"
+  local output_hash="$2"
+
+  if is_legacy_default_profile_name "$profile_name" "$output_hash"; then
+    printf '%s (legacy)\n' "$DEFAULT_PROFILE_NAME"
+    return 0
+  fi
+
+  display_profile_name "$profile_name" "$output_hash"
+}
+
+display_profile_label() {
+  local profile_name="$1"
+  local output_hash="$2"
+  local active_profile_name="${3:-}"
+  local matching_default_profile_name="${4:-}"
+  local display_name
+
+  display_name="$(display_profile_alias_name "$profile_name" "$output_hash")"
+
+  if [[ -n "$matching_default_profile_name" && "$profile_name" == "$matching_default_profile_name" ]]; then
+    display_name="$display_name (default)"
+  fi
+
+  if [[ -n "$active_profile_name" && "$profile_name" == "$active_profile_name" ]]; then
+    printf '* %s\n' "$display_name"
+    return 0
+  fi
+
+  printf '%s\n' "$display_name"
+}
+
 resolve_profile_name() {
   local profile_name="${1:-}"
   local output_hash
 
   output_hash="$(current_output_hash)"
+  normalized_profile_name "$profile_name" "$output_hash"
+}
+
+resolve_existing_profile_name() {
+  local profile_name="${1:-}"
+  local output_hash
+  local stored_profile_name
+
+  output_hash="$(current_output_hash)"
+
+  if [[ "$profile_name" == "$DEFAULT_PROFILE_NAME" ]]; then
+    if stored_profile_name="$(stored_default_profile_name "$output_hash")"; then
+      printf '%s\n' "$stored_profile_name"
+      return 0
+    fi
+  fi
+
   normalized_profile_name "$profile_name" "$output_hash"
 }
 
@@ -176,18 +346,36 @@ apply_result() {
 
 reload_config() {
   "$REAL_SHIKANECTL" reload
+  maybe_switch_default_profile
+}
+
+maybe_switch_default_profile() {
+  local output_hash
+  local profile_name
+
+  output_hash="$(current_output_hash)"
+  if ! profile_name="$(stored_default_profile_name "$output_hash")"; then
+    return 0
+  fi
+
+  "$REAL_SHIKANECTL" switch "$profile_name"
 }
 
 report_apply_result() {
   local profile_name="$1"
   local action_word="$2"
+  local output_hash
+  local display_name
+
+  output_hash="$(current_output_hash)"
+  display_name="$(display_profile_alias_name "$profile_name" "$output_hash")"
 
   if [[ "$apply_result_changed" == true ]]; then
-    printf "%s %s %s\n" "$profile_name" "$action_word" "$CONFIG_FILE"
+    printf "%s %s %s\n" "$display_name" "$action_word" "$CONFIG_FILE"
     return 0
   fi
 
-  printf "Profile '%s' is already up to date in %s\n" "$profile_name" "$CONFIG_FILE"
+  printf "Profile '%s' is already up to date in %s\n" "$display_name" "$CONFIG_FILE"
 }
 
 save_profile() {
@@ -265,6 +453,9 @@ list_profiles() {
   local show_all="${1:-false}"
   local output_hash
   local matching_profiles
+  local active_profile_body_json=""
+  local active_profile_name=""
+  local matching_default_profile_name=""
   local profile_name
 
   if [[ ! -s "$CONFIG_FILE" ]]; then
@@ -278,7 +469,13 @@ list_profiles() {
   fi
 
   if [[ "$show_all" == true ]]; then
-    yq eval -p=toml -o=yaml -r '.profile[]?.name' "$CONFIG_FILE"
+    while IFS= read -r profile_name; do
+      if [[ "$profile_name" =~ ^[0-9a-f]{64}-$DEFAULT_PROFILE_NAME$ ]]; then
+        printf '* %s\n' "$profile_name"
+      else
+        printf '%s\n' "$profile_name"
+      fi
+    done < <(yq eval -p=toml -o=yaml -r '.profile[]?.name' "$CONFIG_FILE")
     return 0
   fi
 
@@ -293,8 +490,22 @@ list_profiles() {
     return 0
   fi
 
+  local stored_default_name=""
+  stored_default_name="$(stored_default_profile_name "$output_hash" || true)"
+  active_profile_body_json="$(current_profile_body_json)"
+  active_profile_name="$(named_profile_matching_body "$output_hash" "$matching_profiles" "$active_profile_body_json" || true)"
+  matching_default_profile_name="$(named_profile_matching_default "$output_hash" "$matching_profiles" || true)"
+
   while IFS= read -r profile_name; do
-    display_profile_name "$profile_name" "$output_hash"
+    if [[ -n "$matching_default_profile_name" ]] && is_default_profile_name "$profile_name" "$output_hash"; then
+      continue
+    fi
+
+    if [[ -n "$stored_default_name" && "$stored_default_name" != "$output_hash" && "$profile_name" == "$output_hash" ]]; then
+      continue
+    fi
+
+    display_profile_label "$profile_name" "$output_hash" "$active_profile_name" "$matching_default_profile_name"
   done <<< "$matching_profiles"
 }
 
@@ -395,7 +606,7 @@ main() {
         return 0
       fi
 
-      resolved_profile_name="$(resolve_profile_name "$1")"
+      resolved_profile_name="$(resolve_existing_profile_name "$1")"
       delete_profile "$resolved_profile_name"
       ;;
     switch)
@@ -417,9 +628,27 @@ main() {
         return 2
       fi
 
-      resolved_profile_name="$(resolve_profile_name "$1")"
+      resolved_profile_name="$(resolve_existing_profile_name "$1")"
       "$REAL_SHIKANECTL" reload
       exec "$REAL_SHIKANECTL" switch "$resolved_profile_name"
+      ;;
+    reload)
+      shift
+
+      if [[ $# -eq 0 ]]; then
+        reload_config
+        return 0
+      fi
+
+      exec "$REAL_SHIKANECTL" "$subcommand" "$@"
+      ;;
+    __current-output-hash)
+      current_output_hash
+      return 0
+      ;;
+    __maybe-switch-default)
+      maybe_switch_default_profile
+      return 0
       ;;
     *)
       exec "$REAL_SHIKANECTL" "$@"

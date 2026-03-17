@@ -22,6 +22,7 @@ let
             "${
               prev.lib.makeBinPath [
                 prev.coreutils
+                prev.niri
                 prev.yq-go
               ]
             }:$PATH"

@@ -204,34 +204,82 @@ let
   currentWallpaperStateSyncCommand =
     "${currentWallpaperStateSyncScript}/bin/update-current-wallpaper-state "
     + lib.escapeShellArg currentWallpaperStateFile;
-  wallustPaletteStateSyncCommand =
-    "${wallustPaletteStateSyncScript}/bin/update-wallust-palette-state "
-    + "${lib.escapeShellArg "${config.xdg.cacheHome}/wallust"} "
-    + lib.escapeShellArg wallustPaletteStateFile;
-  waitForDropboxMountCommand = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg ''
-    attempts=0
-    while [ "$attempts" -lt 30 ]; do
-      if ${pkgs.util-linux}/bin/mountpoint -q ${lib.escapeShellArg varietyDropboxMountPath}; then
+  waitForDropboxMountScript = pkgs.writeShellApplication {
+    name = "wait-for-dropbox-mount";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.util-linux
+    ];
+    text = ''
+      set -eu
+
+      attempts=0
+      while [ "$attempts" -lt 30 ]; do
+        if mountpoint -q ${lib.escapeShellArg varietyDropboxMountPath}; then
+          exit 0
+        fi
+        attempts=$((attempts + 1))
+        sleep 1
+      done
+
+      exit 1
+    '';
+  };
+  wallustScript = pkgs.writeShellApplication {
+    name = "run-wallust-from-current-wallpaper";
+    runtimeInputs = [
+      pkgs.wallust
+      wallustPaletteStateSyncScript
+    ];
+    text = ''
+      set -eu
+
+      if [ ! -r ${lib.escapeShellArg currentWallpaperStateFile} ]; then
         exit 0
       fi
-      attempts=$((attempts + 1))
-      ${pkgs.coreutils}/bin/sleep 1
-    done
-    exit 1
-  ''}";
-  wallustCommand = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg ''
-    if [ ! -r ${lib.escapeShellArg currentWallpaperStateFile} ]; then
-      exit 0
-    fi
 
-    IFS= read -r wallpaper_path < ${lib.escapeShellArg currentWallpaperStateFile} || exit 0
-    if [ -z "$wallpaper_path" ] || [ ! -r "$wallpaper_path" ]; then
-      exit 0
-    fi
+      IFS= read -r wallpaper_path < ${lib.escapeShellArg currentWallpaperStateFile} || exit 0
+      if [ -z "$wallpaper_path" ] || [ ! -r "$wallpaper_path" ]; then
+        exit 0
+      fi
 
-    ${pkgs.wallust}/bin/wallust run -k "$wallpaper_path"
-    ${wallustPaletteStateSyncCommand}
-  ''}";
+      wallust run -k "$wallpaper_path"
+      update-wallust-palette-state \
+        ${lib.escapeShellArg "${config.xdg.cacheHome}/wallust"} \
+        ${lib.escapeShellArg wallustPaletteStateFile}
+    '';
+  };
+  shikaneDefaultWatchScript = pkgs.writeShellApplication {
+    name = "watch-shikane-default";
+    runtimeInputs = [
+      pkgs.jq
+      pkgs.niri
+      pkgs.shikane
+    ];
+    text = ''
+      set -eu
+
+      last_output_hash="$(shikanectl __current-output-hash 2>/dev/null || true)"
+      shikanectl __maybe-switch-default >/dev/null 2>&1 || true
+
+      niri msg --json event-stream | while IFS= read -r event_line; do
+        [ -n "$event_line" ] || continue
+
+        if ! printf '%s\n' "$event_line" | jq -e 'has("WorkspacesChanged")' >/dev/null 2>&1; then
+          continue
+        fi
+
+        current_output_hash="$(shikanectl __current-output-hash 2>/dev/null || true)"
+        if [ -z "$current_output_hash" ] || [ "$current_output_hash" = "$last_output_hash" ]; then
+          continue
+        fi
+
+        last_output_hash="$current_output_hash"
+        shikanectl __maybe-switch-default >/dev/null 2>&1 || true
+      done
+    '';
+  };
+  shikaneDefaultWatchCommand = "${shikaneDefaultWatchScript}/bin/watch-shikane-default";
   niriWindowBorderRulesWatchCommand =
     "${niriWindowBorderRulesWatchScript}/bin/watch-niri-window-border-rules "
     + "${lib.escapeShellArg "${niriWindowBorderRulesSyncScript}/bin/sync-niri-window-border-rules"} "
@@ -245,11 +293,6 @@ in
         type = lib.types.attrs;
         default = {
           rclone-mount-dropbox-private = createRcloneMountService { name = "dropbox-private"; };
-          rclone-mount-onedrive-ku-crypt = createRcloneMountService {
-            name = "onedrive-ku-crypt";
-            cacheMode = "off";
-          };
-          rclone-mount-onedrive-ku = createRcloneMountService { name = "onedrive-ku"; };
         };
         description = "Systemd services for rclone mounts.";
       };
@@ -275,7 +318,7 @@ in
               WantedBy = [ "graphical-session.target" ];
             };
             Service = {
-              ExecStartPre = waitForDropboxMountCommand;
+              ExecStartPre = "${waitForDropboxMountScript}/bin/wait-for-dropbox-mount";
               ExecStart = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "if ${pkgs.coreutils}/bin/printenv XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qi niri; then export XDG_CURRENT_DESKTOP=sway; fi; exec ${pkgs.variety}/bin/variety"}";
               Restart = "on-failure";
               RestartSec = 10;
@@ -357,7 +400,7 @@ in
                 Wants = [ "variety-wallpaper-updated.service" ];
               };
               Service = {
-                ExecStart = wallustCommand;
+                ExecStart = "${wallustScript}/bin/run-wallust-from-current-wallpaper";
                 Type = "oneshot";
               };
               Install = {
@@ -520,6 +563,32 @@ in
         description = "Systemd service for dynamic per-window Niri border colors.";
       };
 
+      shikaneDefault = lib.mkOption {
+        type = lib.types.attrs;
+        default = {
+          shikanectl-default-watcher = {
+            Unit = {
+              Description = "Reapply shikanectl default profiles for current outputs";
+              After = [
+                "graphical-session.target"
+                "shikane.service"
+              ];
+              Wants = [ "shikane.service" ];
+            };
+            Install = {
+              WantedBy = [ "graphical-session.target" ];
+            };
+            Service = {
+              ExecCondition = niriSessionExecCondition;
+              ExecStart = shikaneDefaultWatchCommand;
+              Restart = "always";
+              RestartSec = 2;
+            };
+          };
+        };
+        description = "Systemd service to reapply saved shikanectl defaults when outputs change.";
+      };
+
     };
   };
 
@@ -558,6 +627,7 @@ in
           (config.customServices.niriFocusGradient.service or { })
           (config.customServices.vicinaeTheme.service or { })
           config.customServices.niriWindowBorders
+          (lib.mkIf config.services.shikane.enable config.customServices.shikaneDefault)
           (lib.mkIf config.services.swayidle.enable {
             swayidle.Service.ExecCondition = niriSessionExecCondition;
           })
