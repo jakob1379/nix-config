@@ -70,6 +70,10 @@ version() {
     echo "$SCRIPT_NAME version $VERSION"
 }
 
+status() {
+    printf '%s\n' "$*" >&2
+}
+
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -127,6 +131,7 @@ done
 command -v docker >/dev/null 2>&1 || { echo "Error: docker is required" >&2; exit 1; }
 command -v jq >/dev/null 2>&1 || { echo "Error: jq is required" >&2; exit 1; }
 command -v mmdc >/dev/null 2>&1 || { echo "Error: mermaid-cli (mmdc) is required" >&2; exit 1; }
+command -v sha256sum >/dev/null 2>&1 || { echo "Error: sha256sum is required" >&2; exit 1; }
 if [[ "$OPEN_OUTPUT" == true ]]; then
     command -v xdg-open >/dev/null 2>&1 || { echo "Error: xdg-open is required for --open" >&2; exit 1; }
 fi
@@ -136,22 +141,15 @@ if [[ "$OPEN_OUTPUT" != true && -z "${KITTY_PID:-}" && -z "${KITTY_WINDOW_ID:-}"
     echo "Warning: Not running in kitty terminal. Image display may not work." >&2
 fi
 
-# Create temp files
+# Create temp and cache files
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/docker-compose-deps"
+mkdir -p "$CACHE_DIR"
 MERMAID_FILE=$(mktemp --suffix=.mmd)
-if [[ "$OPEN_OUTPUT" == true ]]; then
-    OUTPUT_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/docker-compose-deps"
-    mkdir -p "$OUTPUT_DIR"
-    OUTPUT_FILE=$(mktemp --tmpdir="$OUTPUT_DIR" docker-compose-deps-XXXXXX.png)
-else
-    OUTPUT_FILE=$(mktemp --suffix=.png)
-fi
+RENDER_OUTPUT_FILE=$(mktemp --tmpdir="$CACHE_DIR" docker-compose-deps-XXXXXX.png)
 
 cleanup() {
     rm -f "$MERMAID_FILE"
-
-    if [[ "$OPEN_OUTPUT" != true ]]; then
-        rm -f "$OUTPUT_FILE"
-    fi
+    rm -f "$RENDER_OUTPUT_FILE"
 }
 
 trap cleanup EXIT
@@ -159,41 +157,49 @@ trap cleanup EXIT
 # Get docker compose config and project name
 CONFIG_JSON=$(docker compose "${DOCKER_COMPOSE_OPTS[@]}" config --format json)
 PROJECT_NAME=$(echo "$CONFIG_JSON" | jq -r '.name // "unknown"')
+CONFIG_HASH=$(printf '%s' "$CONFIG_JSON" | sha256sum | cut -d' ' -f1)
+OUTPUT_FILE="$CACHE_DIR/$CONFIG_HASH.png"
 
 # Generate mermaid graph from docker-compose config
 # Handles both array and object formats for depends_on
-echo "$CONFIG_JSON" | jq -r --arg name "$PROJECT_NAME" '
-  .services as $services |
-  ["---", "title: " + $name + " - Dependency Graph", "---", "graph TD"] +
-  ($services |
-   to_entries |
-   map(
-     .key as $service |
-     (.value.depends_on // {}) |
-     if type == "array" then
-       map($service + " --> " + .)
-     else
-       keys | map($service + " --> " + .)
-     end
-   ) |
-   flatten |
-   map("  " + .)) +
-  ($services |
-   to_entries |
-   map(select(.value.depends_on == null or (.value.depends_on | length == 0)) |
-       "  " + .key
-   )
-  ) |
-  .[]
-' > "$MERMAID_FILE"
+if [[ ! -f "$OUTPUT_FILE" ]]; then
+    status "Rendering image: $OUTPUT_FILE"
+    echo "$CONFIG_JSON" | jq -r --arg name "$PROJECT_NAME" '
+      .services as $services |
+      ["---", "title: " + $name + " - Dependency Graph", "---", "graph TD"] +
+      ($services |
+       to_entries |
+       map(
+          .key as $service |
+          (.value.depends_on // {}) |
+          if type == "array" then
+            map($service + " --> " + .)
+          else
+            keys | map($service + " --> " + .)
+          end
+        ) |
+        flatten |
+        map("  " + .)) +
+       ($services |
+        to_entries |
+        map(select(.value.depends_on == null or (.value.depends_on | length == 0)) |
+            "  " + .key
+        )
+       ) |
+       .[]
+    ' > "$MERMAID_FILE"
 
-# Render with mermaid-cli (white background for visibility on dark terminals)
-mmdc --input "$MERMAID_FILE" --output "$OUTPUT_FILE" --backgroundColor white
+    # Render with mermaid-cli (white background for visibility on dark terminals)
+    mmdc --input "$MERMAID_FILE" --output "$RENDER_OUTPUT_FILE" --backgroundColor white
+    mv "$RENDER_OUTPUT_FILE" "$OUTPUT_FILE"
+else
+    status "Using cached image: $OUTPUT_FILE"
+fi
 
 # Display with kitty or open in default viewer
 if [[ "$OPEN_OUTPUT" == true ]]; then
     xdg-open "$OUTPUT_FILE"
-    printf 'Opened %s\n' "$OUTPUT_FILE" >&2
+    status "Opened $OUTPUT_FILE"
 else
     kitty +kitten icat "$OUTPUT_FILE"
 fi
