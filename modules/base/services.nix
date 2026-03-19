@@ -49,7 +49,6 @@ let
     };
 
   varietyWallpaperPointerFile = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
-  varietyDropboxMountPath = "${config.home.homeDirectory}/dropbox-private";
   wallpaperStateDir = "${config.xdg.stateHome}/wallpaper";
   currentWallpaperStateFile = "${wallpaperStateDir}/current-wallpaper";
   wallustPaletteStateFile = "${wallpaperStateDir}/wallust-palette.json";
@@ -204,27 +203,6 @@ let
   currentWallpaperStateSyncCommand =
     "${currentWallpaperStateSyncScript}/bin/update-current-wallpaper-state "
     + lib.escapeShellArg currentWallpaperStateFile;
-  waitForDropboxMountScript = pkgs.writeShellApplication {
-    name = "wait-for-dropbox-mount";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.util-linux
-    ];
-    text = ''
-      set -eu
-
-      attempts=0
-      while [ "$attempts" -lt 30 ]; do
-        if mountpoint -q ${lib.escapeShellArg varietyDropboxMountPath}; then
-          exit 0
-        fi
-        attempts=$((attempts + 1))
-        sleep 1
-      done
-
-      exit 1
-    '';
-  };
   wallustScript = pkgs.writeShellApplication {
     name = "run-wallust-from-current-wallpaper";
     runtimeInputs = [
@@ -297,37 +275,6 @@ in
         description = "Systemd services for rclone mounts.";
       };
 
-      variety = lib.mkOption {
-        type = lib.types.attrs;
-        default = {
-          variety = {
-            Unit = {
-              Description = "Launch Variety wallpaper changer";
-              After = [
-                "graphical-session.target"
-                "network-online.target"
-                "rclone-mount-dropbox-private.service"
-              ];
-              Wants = [
-                "network-online.target"
-                "rclone-mount-dropbox-private.service"
-              ];
-              Requires = [ "rclone-mount-dropbox-private.service" ];
-            };
-            Install = {
-              WantedBy = [ "graphical-session.target" ];
-            };
-            Service = {
-              ExecStartPre = "${waitForDropboxMountScript}/bin/wait-for-dropbox-mount";
-              ExecStart = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "if ${pkgs.coreutils}/bin/printenv XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qi niri; then export XDG_CURRENT_DESKTOP=sway; fi; exec ${pkgs.variety}/bin/variety"}";
-              Restart = "on-failure";
-              RestartSec = 10;
-            };
-          };
-        };
-        description = "Systemd service for Variety wallpaper changer.";
-      };
-
       varietyWallpaper = lib.mkOption {
         type = lib.types.attrs;
         default = {
@@ -337,17 +284,13 @@ in
                 Description = "Resolve current wallpaper from Variety";
                 After = [
                   "rclone-mount-dropbox-private.service"
-                  "variety.service"
                 ];
                 Wants = [
                   "rclone-mount-dropbox-private.service"
-                  "variety.service"
                 ];
                 Requires = [
                   "rclone-mount-dropbox-private.service"
-                  "variety.service"
                 ];
-                PartOf = [ "variety.service" ];
               };
               Service = {
                 ExecStart = currentWallpaperStateSyncCommand;
@@ -365,16 +308,13 @@ in
                 Description = "Watch Variety wallpaper pointer";
                 After = [
                   "rclone-mount-dropbox-private.service"
-                  "variety.service"
                 ];
                 Wants = [
                   "variety-wallpaper-updated.service"
                   "rclone-mount-dropbox-private.service"
-                  "variety.service"
                 ];
                 Requires = [
                   "rclone-mount-dropbox-private.service"
-                  "variety.service"
                 ];
               };
               Install = {
@@ -620,7 +560,6 @@ in
 
         services = lib.mkMerge [
           config.customServices.rclone
-          config.customServices.variety
           (config.customServices.varietyWallpaper.service or { })
           (config.customServices.wallust.service or { })
           (config.customServices.noctaliaWallpaper.service or { })
