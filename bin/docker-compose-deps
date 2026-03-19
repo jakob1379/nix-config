@@ -4,19 +4,22 @@
 #
 # Usage: docker-compose-deps [OPTIONS]
 #
-# Renders a dependency graph of services defined in docker-compose.yml directly
-# in the terminal using kitty's image display capabilities.
+# Renders a dependency graph of services defined in docker-compose.yml either
+# in the terminal using kitty's image display capabilities or in the default
+# image viewer via xdg-open.
 #
 # Dependencies:
 #   - docker compose (config export)
 #   - jq (JSON parsing)
 #   - mermaid-cli (mmdc) (graph rendering)
 #   - kitty +kitten icat (terminal image display)
+#   - xdg-open (open rendered image in default viewer)
 #
 # Examples:
 #   docker-compose-deps                      # Render graph for docker-compose.yml
 #   docker-compose-deps -f docker-compose.yml -f docker-compose.override.yml
 #   docker-compose-deps -e .env -e .env.local
+#   docker-compose-deps -o                   # Open image in default viewer
 #   docker-compose-deps --help               # Show this help message
 #
 # Author: Generated for home-manager
@@ -31,30 +34,33 @@ readonly VERSION="1.0.0"
 # Arrays to collect docker compose options
 declare -a COMPOSE_FILES=()
 declare -a ENV_FILES=()
+OPEN_OUTPUT=false
 
 # Display usage information
 usage() {
     cat <<EOF
 Usage: $SCRIPT_NAME [OPTIONS]
 
-Visualize docker-compose service dependencies as a Mermaid graph in the terminal.
+Visualize docker-compose service dependencies as a Mermaid graph.
 
 Options:
     -f, --file FILE         Specify compose configuration file (can be used multiple times)
     -e, --env-file FILE     Specify environment file (can be used multiple times)
+    -o, --open              Open rendered image in the default viewer
     -h, --help              Show this help message and exit
     -v, --version           Show version information and exit
 
 Description:
     Parses the docker-compose.yml, extracts service dependencies,
-    generates a Mermaid flowchart, renders it to PNG, and displays it in
-    the terminal using kitty's image protocol.
+    generates a Mermaid flowchart, renders it to PNG, and either displays it
+    in the terminal using kitty's image protocol or opens it with xdg-open.
 
 Examples:
     $SCRIPT_NAME                           # Default docker-compose.yml
     $SCRIPT_NAME -f prod.yml               # Use specific file
     $SCRIPT_NAME -f base.yml -f local.yml  # Multiple files
     $SCRIPT_NAME -e .env -e .env.local     # With env files
+    $SCRIPT_NAME -o                        # Open in default image viewer
 
 EOF
 }
@@ -82,6 +88,10 @@ while [[ $# -gt 0 ]]; do
             fi
             ENV_FILES+=("$2")
             shift 2
+            ;;
+        -o|--open)
+            OPEN_OUTPUT=true
+            shift
             ;;
         -h|--help)
             usage
@@ -117,17 +127,34 @@ done
 command -v docker >/dev/null 2>&1 || { echo "Error: docker is required" >&2; exit 1; }
 command -v jq >/dev/null 2>&1 || { echo "Error: jq is required" >&2; exit 1; }
 command -v mmdc >/dev/null 2>&1 || { echo "Error: mermaid-cli (mmdc) is required" >&2; exit 1; }
+if [[ "$OPEN_OUTPUT" == true ]]; then
+    command -v xdg-open >/dev/null 2>&1 || { echo "Error: xdg-open is required for --open" >&2; exit 1; }
+fi
 
 # Check if running in kitty
-if [[ -z "${KITTY_PID:-}" && -z "${KITTY_WINDOW_ID:-}" ]]; then
+if [[ "$OPEN_OUTPUT" != true && -z "${KITTY_PID:-}" && -z "${KITTY_WINDOW_ID:-}" ]]; then
     echo "Warning: Not running in kitty terminal. Image display may not work." >&2
 fi
 
 # Create temp files
 MERMAID_FILE=$(mktemp --suffix=.mmd)
-OUTPUT_FILE=$(mktemp --suffix=.png)
+if [[ "$OPEN_OUTPUT" == true ]]; then
+    OUTPUT_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/docker-compose-deps"
+    mkdir -p "$OUTPUT_DIR"
+    OUTPUT_FILE=$(mktemp --tmpdir="$OUTPUT_DIR" docker-compose-deps-XXXXXX.png)
+else
+    OUTPUT_FILE=$(mktemp --suffix=.png)
+fi
 
-trap 'rm -f "$MERMAID_FILE" "$OUTPUT_FILE"' EXIT
+cleanup() {
+    rm -f "$MERMAID_FILE"
+
+    if [[ "$OPEN_OUTPUT" != true ]]; then
+        rm -f "$OUTPUT_FILE"
+    fi
+}
+
+trap cleanup EXIT
 
 # Get docker compose config and project name
 CONFIG_JSON=$(docker compose "${DOCKER_COMPOSE_OPTS[@]}" config --format json)
@@ -163,5 +190,10 @@ echo "$CONFIG_JSON" | jq -r --arg name "$PROJECT_NAME" '
 # Render with mermaid-cli (white background for visibility on dark terminals)
 mmdc --input "$MERMAID_FILE" --output "$OUTPUT_FILE" --backgroundColor white
 
-# Display with kitty
-kitty +kitten icat "$OUTPUT_FILE"
+# Display with kitty or open in default viewer
+if [[ "$OPEN_OUTPUT" == true ]]; then
+    xdg-open "$OUTPUT_FILE"
+    printf 'Opened %s\n' "$OUTPUT_FILE" >&2
+else
+    kitty +kitten icat "$OUTPUT_FILE"
+fi
