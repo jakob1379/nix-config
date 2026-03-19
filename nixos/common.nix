@@ -80,6 +80,7 @@
   # Common services
   services.fwupd.enable = true;
   services.udisks2.enable = true;
+  services.tailscale.enable = true;
   services.netbird = {
     ui.enable = true;
     enable = true;

@@ -31,8 +31,11 @@
       kdePackages.qt6ct
       libsForQt5.qt5ct
       nwg-look
+      codex
     ];
   };
+
+  services.tailscale-systray.enable = true;
 
   # Enable media control dotfiles for this system.
   customDotfiles = {
