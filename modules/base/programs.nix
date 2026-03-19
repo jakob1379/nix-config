@@ -396,6 +396,20 @@ in
               disabled = true;
             };
 
+            ruff = {
+              command = [
+                "uv"
+                "run"
+                "--with"
+                "ruff"
+                "server"
+              ];
+              extensions = [
+                ".py"
+                ".pyi"
+              ];
+            };
+
             ty = {
               command = [
                 "uv"
@@ -514,8 +528,8 @@ in
       plasma-restart = "systemctl restart --user plasma-plasmashell";
       dcup = "docker compose up --remove-orphans";
       dcview = "docker compose config | bat -l yml";
-      dk = "dragon --keep";
-      dx = "dragon --and-exit";
+      dk = "dragon-drop --keep";
+      dx = "dragon-drop --and-exit";
       ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
       grep = "grep --color=auto";
       q = "qalc";
