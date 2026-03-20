@@ -25,15 +25,6 @@
       description = "Factory droid configs";
     };
 
-    enableSsh = lib.mkEnableOption "SSH dotfiles";
-    ssh = lib.mkOption {
-      type = lib.types.attrs;
-      default = {
-        ".ssh/keepassxc-prompt".source = ../../bin/keepassxc-prompt;
-      };
-      description = "SSH dotfiles.";
-    };
-
     enableEmacs = lib.mkEnableOption "Emacs dotfiles";
     emacs = lib.mkOption {
       type = lib.types.attrs;
@@ -80,7 +71,6 @@
     {
       home = {
         file = lib.mkMerge [
-          (lib.mkIf cfg.enableSsh cfg.ssh)
           (lib.mkIf cfg.enableEmacs cfg.emacs)
           (lib.mkIf cfg.enableDroid cfg.droid)
           (lib.mkIf cfg.enableMediaControl cfg.mediaControl)

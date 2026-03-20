@@ -3,6 +3,14 @@ let
   inherit (lib) mkHomeConfig;
 in
 {
+  "jsg@DESKTOP-IQEP2ED" = mkHomeConfig {
+    system = "x86_64-linux";
+    username = "jsg";
+    homeDirectory = "/home/jsg";
+    extraModules = [ ../modules/systems/seeq.nix ];
+    inherit lib;
+  };
+
   "pi@raspberrypi" = mkHomeConfig {
     system = "aarch64-linux";
     username = "pi";
