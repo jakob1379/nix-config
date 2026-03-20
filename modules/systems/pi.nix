@@ -3,16 +3,11 @@
   ...
 }:
 
-let
-  # Packages to exclude on the Raspberry Pi to save space/resources
-  packagesToExclude = with pkgs; [
-  ];
-in
 {
   # System-specific overrides for Raspberry Pi
   customPackages = {
     enableGui = false;
-    exclude = packagesToExclude;
+    usePlainBtop = true;
   };
 
   programs.firefox.enable = pkgs.lib.mkForce false;
