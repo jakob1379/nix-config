@@ -8,10 +8,15 @@
 
 let
   corePackages = with pkgs; [
-    (btop.override {
-      rocmSupport = true;
-      cudaSupport = true;
-    })
+    (
+      if system == "aarch64-linux" then
+        btop
+      else
+        btop.override {
+          rocmSupport = true;
+          cudaSupport = true;
+        }
+    )
     git-filter-repo
     busybox
     dconf
