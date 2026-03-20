@@ -33,575 +33,610 @@ in
         description = "Default Git user email.";
       };
     };
+
+    customSsh = {
+      enableKeepassxc = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Enable KeepassXC integration for SSH connections.";
+      };
+    };
   };
 
-  config = {
-    programs = {
-      bash = {
-        enable = true;
-        profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
-        initExtra = ''
-          bind '"\C-w": "nix-find\n"'
-          bind '"\C-q": "ag-fuzzy\n"'
+  config =
+    let
+      sshSocketDir = config.home.homeDirectory + "/.ssh/sockets";
+    in
+    {
+      home = {
+        activation.ensureSshSocketsDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          ${pkgs.coreutils}/bin/mkdir -p "${sshSocketDir}"
+          ${pkgs.coreutils}/bin/chmod 700 "${config.home.homeDirectory}/.ssh"
+          ${pkgs.coreutils}/bin/chmod 700 "${sshSocketDir}"
         '';
-        shellOptions = [ "cdspell" ];
-        historyControl = [ "ignoreboth" ];
-        bashrcExtra = ''
-          if [[ $TERM = dumb ]]; then
-              return
-          fi
 
-          if [[ -z "$SSH_CONNECTION" ]]; then
-              ${pkgs.coreutils}/bin/cat ${config.xdg.cacheHome}/wal/sequences
-          fi
-          ${builtins.readFile ../../bin/secret-export}
-
-          eval "$(batman --export-env)"
-          eval "$(command up --init bash)"
-        '';
-      };
-
-      distrobox = {
-        enable = true;
-        containers = {
-          ubuntu25 = {
-            image = "ubuntu:24.04"; # Specify your desired image here
-            init_hooks = "curl -LsSf https://astral.sh/uv/install.sh | sh";
-            additional_packages = "curl"; # Additional packages needed for init_hooks
-            entry = true; # Make this container enterable by default (optional)
-          };
+        file = lib.optionalAttrs config.customSsh.enableKeepassxc {
+          ".ssh/keepassxc-prompt".source = ../../bin/keepassxc-prompt;
         };
       };
 
-      direnv = {
-        enable = true;
-        enableBashIntegration = true;
-        nix-direnv.enable = true;
-      };
+      programs = {
+        bash = {
+          enable = true;
+          profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
+          initExtra = ''
+            bind '"\C-w": "nix-find\n"'
+            bind '"\C-q": "ag-fuzzy\n"'
+          '';
+          shellOptions = [ "cdspell" ];
+          historyControl = [ "ignoreboth" ];
+          bashrcExtra = ''
+            if [[ $TERM = dumb ]]; then
+                return
+            fi
 
-      emacs = {
-        enable = true;
-        package = pkgs.emacs-pgtk;
-      };
+            if [[ -z "$SSH_CONNECTION" ]]; then
+                ${pkgs.coreutils}/bin/cat ${config.xdg.cacheHome}/wal/sequences
+            fi
+            ${builtins.readFile ../../bin/secret-export}
 
-      fastfetch = {
-        enable = true;
-      };
+            eval "$(batman --export-env)"
+            eval "$(command up --init bash)"
+          '';
+        };
 
-      fd.enable = true;
+        distrobox = {
+          enable = true;
+          containers = {
+            ubuntu25 = {
+              image = "ubuntu:24.04"; # Specify your desired image here
+              init_hooks = "curl -LsSf https://astral.sh/uv/install.sh | sh";
+              additional_packages = "curl"; # Additional packages needed for init_hooks
+              entry = true; # Make this container enterable by default (optional)
+            };
+          };
+        };
 
-      firefox = {
-        enable = true;
-        package = inputs."zen-browser".packages.${system}.zen-browser;
-        profiles.myuser = {
-          isDefault = true;
-          id = 0;
+        direnv = {
+          enable = true;
+          enableBashIntegration = true;
+          nix-direnv.enable = true;
+        };
+
+        emacs = {
+          enable = true;
+          package = pkgs.emacs-pgtk;
+        };
+
+        fastfetch = {
+          enable = true;
+        };
+
+        fd.enable = true;
+
+        firefox = {
+          enable = true;
+          package = inputs."zen-browser".packages.${system}.zen-browser;
+          profiles.myuser = {
+            isDefault = true;
+            id = 0;
+            settings = {
+              "gfx.webrender.all" = true;
+              "webgl.force-enabled" = true;
+              "webgl.msaa-force" = true;
+              "browser.backspace_action" = 0;
+              "browser.download.alwaysOpenPanel" = false;
+              "services.sync.prefs.sync.browser.uiCustomization.state" = true;
+              "browser.sessionstore.restore_pinned_tabs_on_demand" = true;
+              "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
+            };
+            userChrome = builtins.readFile ../../dotfiles/firefox/firefox_userchrome.css;
+          };
+        };
+        difftastic = {
+          enable = true;
+          git.enable = true;
+        };
+        git = {
+          enable = true;
+          signing = {
+            key = "98BD7E80842C97BA";
+            signByDefault = false;
+          };
           settings = {
-            "gfx.webrender.all" = true;
-            "webgl.force-enabled" = true;
-            "webgl.msaa-force" = true;
-            "browser.backspace_action" = 0;
-            "browser.download.alwaysOpenPanel" = false;
-            "services.sync.prefs.sync.browser.uiCustomization.state" = true;
-            "browser.sessionstore.restore_pinned_tabs_on_demand" = true;
-            "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
-          };
-          userChrome = builtins.readFile ../../dotfiles/firefox/firefox_userchrome.css;
-        };
-      };
-      difftastic = {
-        enable = true;
-        git.enable = true;
-      };
-      git = {
-        enable = true;
-        signing = {
-          key = "98BD7E80842C97BA";
-          signByDefault = false;
-        };
-        settings = {
-          user = {
-            name = config.customGit.userName;
-            email = config.customGit.userEmail;
-          };
-          checkout.defaultRemote = "origin";
-          color = {
-            diff = "auto";
-            ui = true;
-          };
-          init.defaultBranch = "main";
-          pull.rebase = false;
-          push.autoSetupRemote = true;
-          credential.helper = "libsecret";
-          alias = {
-            adog = "log --all --decorate --oneline --graph";
-            plog = "log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
-            ignore-change = "update-index --assume-unchanged";
-            prune-deep = ''
-                            !f() {
-              	        git fetch --prune;
-              	        current=$(git symbolic-ref --short HEAD 2>/dev/null || echo "");
-              	        # Branches whose upstream is gone are marked [gone] by -vv
-              	        branches=$(git branch -vv | awk '/\[gone\]/{print $1}');
-              	        # Optionally protect some branches
-              	        protect="main master develop $current";
-              	        filtered="";
-              	        for b in $branches; do
-              	          skip=0;
-              	          for p in $protect; do [ "$b" = "$p" ] && skip=1 && break; done;
-              	          [ $skip -eq 0 ] && filtered="$filtered $b";
-              	        done;
-              	        filtered=$(echo $filtered);
-              	        if [ -z "$filtered" ]; then
-              	          echo "No local branches with gone upstreams.";
-              	          exit 0;
-              	        fi;
-              	        echo "Branches with gone upstreams:";
-              	        for b in $filtered; do echo "  $b"; done;
-              	        printf "Delete these branches? (y/N): ";
-              	        read confirm;
-              	        if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
-              	          # Use -d to be safe; change to -D if you want force
-              	          for b in $filtered; do git branch -d "$b" || true; done;
-              	        else
-              	          echo "No branches were deleted.";
-              	        fi;
-              	            }; f'';
-            unstage = "restore --staged";
+            user = {
+              name = config.customGit.userName;
+              email = config.customGit.userEmail;
+            };
+            checkout.defaultRemote = "origin";
+            color = {
+              diff = "auto";
+              ui = true;
+            };
+            init.defaultBranch = "main";
+            pull.rebase = false;
+            push.autoSetupRemote = true;
+            credential.helper = "libsecret";
+            alias = {
+              adog = "log --all --decorate --oneline --graph";
+              plog = "log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
+              ignore-change = "update-index --assume-unchanged";
+              prune-deep = ''
+                              !f() {
+                	        git fetch --prune;
+                	        current=$(git symbolic-ref --short HEAD 2>/dev/null || echo "");
+                	        # Branches whose upstream is gone are marked [gone] by -vv
+                	        branches=$(git branch -vv | awk '/\[gone\]/{print $1}');
+                	        # Optionally protect some branches
+                	        protect="main master develop $current";
+                	        filtered="";
+                	        for b in $branches; do
+                	          skip=0;
+                	          for p in $protect; do [ "$b" = "$p" ] && skip=1 && break; done;
+                	          [ $skip -eq 0 ] && filtered="$filtered $b";
+                	        done;
+                	        filtered=$(echo $filtered);
+                	        if [ -z "$filtered" ]; then
+                	          echo "No local branches with gone upstreams.";
+                	          exit 0;
+                	        fi;
+                	        echo "Branches with gone upstreams:";
+                	        for b in $filtered; do echo "  $b"; done;
+                	        printf "Delete these branches? (y/N): ";
+                	        read confirm;
+                	        if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+                	          # Use -d to be safe; change to -D if you want force
+                	          for b in $filtered; do git branch -d "$b" || true; done;
+                	        else
+                	          echo "No branches were deleted.";
+                	        fi;
+                	            }; f'';
+              unstage = "restore --staged";
+            };
           };
         };
-      };
-      gh = {
-        enable = true;
-        extensions = [ pkgs.gh-dash ];
-        gitCredentialHelper.enable = true;
-        settings.aliases = {
-          web = "repo view --web";
+        gh = {
+          enable = true;
+          extensions = [ pkgs.gh-dash ];
+          gitCredentialHelper.enable = true;
+          settings.aliases = {
+            web = "repo view --web";
+          };
         };
-      };
 
-      gpg.enable = true;
+        gpg.enable = true;
 
-      ghostty = {
-        enable = true;
-        settings = {
-          background-opacity = 0.85;
-          bold-is-bright = true;
-          clipboard-paste-protection = false;
-          confirm-close-surface = false;
-          copy-on-select = "clipboard";
-          cursor-style = "block";
-          cursor-style-blink = false;
-          shell-integration-features = "no-cursor";
-          term = "kitty";
-          unfocused-split-opacity = 1.0;
-          window-decoration = false;
-          # scrollbar = "system";
+        ghostty = {
+          enable = true;
+          settings = {
+            background-opacity = 0.85;
+            bold-is-bright = true;
+            clipboard-paste-protection = false;
+            confirm-close-surface = false;
+            copy-on-select = "clipboard";
+            cursor-style = "block";
+            cursor-style-blink = false;
+            shell-integration-features = "no-cursor";
+            term = "kitty";
+            unfocused-split-opacity = 1.0;
+            window-decoration = false;
+            # scrollbar = "system";
+          };
         };
-      };
 
-      hwatch.enable = true;
+        hwatch.enable = true;
 
-      jq = {
-        enable = true;
-      };
-
-      jqp.enable = true;
-
-      nix-init.enable = true;
-
-      # niriswitcher = {
-      #   enable = true;
-      #   package = pkgs.niriswitcher;
-      #   settings = {
-      #     keys = {
-      #       modifier = "Super";
-      #       switch = {
-      #         next = "Tab";
-      #         prev = "Shift+Tab";
-      #       };
-      #       window = {
-      #         abort = "Escape";
-      #       };
-      #     };
-      #     center_on_focus = true;
-      #   };
-      # };
-
-      rclone = {
-        enable = true;
-      };
-
-      tmux = {
-        enable = true;
-        newSession = true;
-        clock24 = true;
-        baseIndex = 1;
-        escapeTime = 1;
-        terminal = "xterm-256color";
-        focusEvents = true;
-        extraConfig = builtins.readFile ../../dotfiles/tmux/tmux.conf;
-        plugins = [ tmuxPing ];
-      };
-
-      zoxide = {
-        enable = true;
-        enableBashIntegration = true;
-        options = [ "--cmd cd" ];
-      };
-
-      eza = {
-        enable = true;
-        enableBashIntegration = true;
-        icons = "auto";
-        git = true;
-        extraOptions = [
-          "--group-directories-first"
-          "--smart-group"
-        ];
-      };
-
-      oh-my-posh = {
-        enable = true;
-        enableBashIntegration = true;
-        settings = builtins.fromJSON (
-          builtins.readFile ../../dotfiles/oh-my-posh/custom-hunks-theme.omp.json
-        );
-      };
-
-      keepassxc = {
-        enable = true;
-        autostart = false;
-        package = pkgs.keepassxc;
-      };
-
-      ranger = {
-        enable = true;
-        extraPackages = with pkgs; [
-          python3Packages.pillow
-        ];
-        settings = {
-          preview_images = true;
-          preview_images_method = "kitty";
+        jq = {
+          enable = true;
         };
-      };
 
-      fzf = {
-        enable = true;
-        enableBashIntegration = true;
-        changeDirWidgetOptions = [
-          "--preview '${pkgs.eza}/bin/eza --tree --color=always \"{}\" | head -200'"
-        ];
-        changeDirWidgetCommand = "fd --type d";
-        fileWidgetCommand = "fd --type file --hidden --no-ignore-vcs";
-        fileWidgetOptions = [
-          "--preview '${pkgs.bat}/bin/bat \"{}\" --style=changes,header-filename,numbers,snip,rule --paging always --force-colorization'"
-        ];
-      };
+        jqp.enable = true;
 
-      bat = {
-        enable = true;
-        extraPackages = with pkgs.bat-extras; [ batman ];
-        config = {
-          map-syntax = [
-            "_.conf:TOML"
-            "_.gdextension:TOML"
-            "*.kdl:java"
-            ".env.*:toml"
-            ".envrc:bash"
-            "justfile:make"
-            "u2f_keys:CSV"
+        nix-init.enable = true;
+
+        # niriswitcher = {
+        #   enable = true;
+        #   package = pkgs.niriswitcher;
+        #   settings = {
+        #     keys = {
+        #       modifier = "Super";
+        #       switch = {
+        #         next = "Tab";
+        #         prev = "Shift+Tab";
+        #       };
+        #       window = {
+        #         abort = "Escape";
+        #       };
+        #     };
+        #     center_on_focus = true;
+        #   };
+        # };
+
+        rclone = {
+          enable = true;
+        };
+
+        tmux = {
+          enable = true;
+          newSession = true;
+          clock24 = true;
+          baseIndex = 1;
+          escapeTime = 1;
+          terminal = "xterm-256color";
+          focusEvents = true;
+          extraConfig = builtins.readFile ../../dotfiles/tmux/tmux.conf;
+          plugins = [ tmuxPing ];
+        };
+
+        zoxide = {
+          enable = true;
+          enableBashIntegration = true;
+          options = [ "--cmd cd" ];
+        };
+
+        eza = {
+          enable = true;
+          enableBashIntegration = true;
+          icons = "auto";
+          git = true;
+          extraOptions = [
+            "--group-directories-first"
+            "--smart-group"
           ];
         };
-      };
 
-      readline = {
-        enable = true;
-        extraConfig = ''
-          $include /etc/inputrc
-        '';
-        variables = {
-          completion-ignore-case = true;
-          completion-prefix-display-length = 3;
-          mark-symlinked-directories = true;
-          show-all-if-ambiguous = true;
-          show-all-if-unmodified = true;
+        oh-my-posh = {
+          enable = true;
+          enableBashIntegration = true;
+          settings = builtins.fromJSON (
+            builtins.readFile ../../dotfiles/oh-my-posh/custom-hunks-theme.omp.json
+          );
         };
-      };
 
-      ssh = {
-        enable = true;
-        enableDefaultConfig = false;
-        includes = [ "~/.ssh/local_config" ];
-        extraOptionOverrides = {
-          ProxyCommand = "$HOME/.ssh/keepassxc-prompt %h %p";
+        keepassxc = {
+          enable = true;
+          autostart = false;
+          package = pkgs.keepassxc;
         };
-        matchBlocks = {
-          "*" = {
-            forwardAgent = true;
-            addKeysToAgent = "yes";
-            controlMaster = "auto";
-            controlPath = "~/.ssh/sockets/%r@%h-%p";
-            controlPersist = "yes";
-            serverAliveInterval = 30;
-            serverAliveCountMax = 3;
+
+        ranger = {
+          enable = true;
+          extraPackages = with pkgs; [
+            python3Packages.pillow
+          ];
+          settings = {
+            preview_images = true;
+            preview_images_method = "kitty";
           };
         };
-      };
 
-      navi = {
-        enable = true;
-        enableBashIntegration = true;
-      };
+        fzf = {
+          enable = true;
+          enableBashIntegration = true;
+          changeDirWidgetOptions = [
+            "--preview '${pkgs.eza}/bin/eza --tree --color=always \"{}\" | head -200'"
+          ];
+          changeDirWidgetCommand = "fd --type d";
+          fileWidgetCommand = "fd --type file --hidden --no-ignore-vcs";
+          fileWidgetOptions = [
+            "--preview '${pkgs.bat}/bin/bat \"{}\" --style=changes,header-filename,numbers,snip,rule --paging always --force-colorization'"
+          ];
+        };
 
-      wallust = {
-        enable = true;
-      };
+        bat = {
+          enable = true;
+          extraPackages = with pkgs.bat-extras; [ batman ];
+          config = {
+            map-syntax = [
+              "_.conf:TOML"
+              "_.gdextension:TOML"
+              "*.kdl:java"
+              ".env.*:toml"
+              ".envrc:bash"
+              "justfile:make"
+              "u2f_keys:CSV"
+            ];
+          };
+        };
 
-      opencode = {
-        enable = true;
-        settings = {
-          lsp = {
-            nixd = {
-              extensions = [ ".nix" ];
-              command = [
-                "nix"
-                "run"
-                "nixpkgs#nixd"
-                "--"
-              ];
-            };
+        readline = {
+          enable = true;
+          extraConfig = ''
+            $include /etc/inputrc
+          '';
+          variables = {
+            completion-ignore-case = true;
+            completion-prefix-display-length = 3;
+            mark-symlinked-directories = true;
+            show-all-if-ambiguous = true;
+            show-all-if-unmodified = true;
+          };
+        };
 
-            gopls = {
-              extensions = [ ".go" ];
-              command = [
-                "nix"
-                "run"
-                "nixpkgs#gopls"
-                "--"
-              ];
-            };
-
-            rust = {
-              extensions = [ ".rs" ];
-              command = [
-                "nix"
-                "run"
-                "nixpkgs#rust-analyzer"
-                "--"
-              ];
-            };
-
-            pyright = {
-              disabled = true;
-            };
-
-            ruff = {
-              command = [
-                "uv"
-                "run"
-                "--with"
-                "ruff"
-                "server"
-              ];
-              extensions = [
-                ".py"
-                ".pyi"
-              ];
-            };
-
-            ty = {
-              command = [
-                "uv"
-                "run"
-                "--with"
-                "ty"
-                "ty"
-                "server"
-              ];
-              extensions = [
-                ".py"
-                ".pyi"
-              ];
+        ssh = {
+          enable = true;
+          enableDefaultConfig = false;
+          includes = [ "~/.ssh/local_config" ];
+          extraOptionOverrides = lib.optionalAttrs config.customSsh.enableKeepassxc {
+            ProxyCommand = "$HOME/.ssh/keepassxc-prompt %h %p";
+          };
+          matchBlocks = {
+            "*" = {
+              forwardAgent = true;
+              addKeysToAgent = "yes";
+              controlMaster = "auto";
+              controlPath = "~/.ssh/sockets/%r@%h-%p";
+              controlPersist = "yes";
+              serverAliveInterval = 30;
+              serverAliveCountMax = 3;
             };
           };
+        };
 
-          mcp = {
-            context7 = {
-              type = "remote";
-              url = "https://mcp.context7.com/mcp";
-              enabled = true;
-            };
-          };
+        navi = {
+          enable = true;
+          enableBashIntegration = true;
+        };
 
-          provider = {
-            deepseek = {
-              options = {
-                apiKey = "{env:DEEPSEEK_API_KEY}";
-                baseURL = "https://api.deepseek.com/v1";
+        wallust = {
+          enable = true;
+        };
+
+        opencode = {
+          enable = true;
+          settings = {
+            lsp = {
+              markdown = {
+                extensions = [ ".md" ];
+                command = [
+                  "nix"
+                  "run"
+                  "nixpkgs#marksman"
+                  "--"
+                  "server"
+                ];
+              };
+
+              nixd = {
+                extensions = [ ".nix" ];
+                command = [
+                  "nix"
+                  "run"
+                  "nixpkgs#nixd"
+                  "--"
+                ];
+              };
+
+              gopls = {
+                extensions = [ ".go" ];
+                command = [
+                  "nix"
+                  "run"
+                  "nixpkgs#gopls"
+                  "--"
+                ];
+              };
+
+              rust = {
+                extensions = [ ".rs" ];
+                command = [
+                  "nix"
+                  "run"
+                  "nixpkgs#rust-analyzer"
+                  "--"
+                ];
+              };
+
+              pyright = {
+                disabled = true;
+              };
+
+              ruff = {
+                command = [
+                  "uv"
+                  "run"
+                  "--with"
+                  "ruff"
+                  "server"
+                ];
+                extensions = [
+                  ".py"
+                  ".pyi"
+                ];
+              };
+
+              ty = {
+                command = [
+                  "uv"
+                  "run"
+                  "--with"
+                  "ty"
+                  "ty"
+                  "server"
+                ];
+                extensions = [
+                  ".py"
+                  ".pyi"
+                ];
               };
             };
 
-            openai = {
-              models = {
-                "gpt-5.4" = {
-                  options = {
-                    reasoningEffort = "high";
-                  };
-                  variants = {
-                    low = {
-                      reasoningEffort = "low";
-                    };
-                    high = {
+            mcp = {
+              context7 = {
+                type = "remote";
+                url = "https://mcp.context7.com/mcp";
+                enabled = true;
+              };
+            };
+
+            provider = {
+              deepseek = {
+                options = {
+                  apiKey = "{env:DEEPSEEK_API_KEY}";
+                  baseURL = "https://api.deepseek.com/v1";
+                };
+              };
+
+              openai = {
+                models = {
+                  "gpt-5.4" = {
+                    options = {
                       reasoningEffort = "high";
                     };
-                    xhigh = {
-                      reasoningEffort = "xhigh";
+                    variants = {
+                      low = {
+                        reasoningEffort = "low";
+                      };
+                      high = {
+                        reasoningEffort = "high";
+                      };
+                      xhigh = {
+                        reasoningEffort = "xhigh";
+                      };
                     };
                   };
                 };
               };
             };
+
+            model = "openai/gpt-5.4";
+            small_model = "openai/gpt-5.3-codex";
+
+            plugin = [
+              "oh-my-opencode-slim"
+              "@mohak34/opencode-notifier@latest"
+              "@franlol/opencode-md-table-formatter@latest"
+              "@inkdust2021/opencode-vibeguard@latest"
+              "opencode-devcontainers"
+            ];
+
+            keybinds = {
+              app_exit = "ctrl+shift+q";
+              input_clear = "ctrl+c";
+            };
+
+            agent = {
+              explore = {
+                disable = true;
+              };
+              general = {
+                disable = true;
+              };
+            };
           };
+        };
 
-          model = "openai/gpt-5.4";
-          small_model = "openai/gpt-5.3-codex";
+        nix-index = {
+          enable = true;
+          enableBashIntegration = true;
+        };
 
-          plugin = [
-            "oh-my-opencode-slim"
-            "@mohak34/opencode-notifier@latest"
-            "@franlol/opencode-md-table-formatter@latest"
-            "@inkdust2021/opencode-vibeguard@latest"
-            "opencode-devcontainers"
+        nix-search-tv = {
+          enable = true;
+          settings = {
+            update_interval = "12h";
+          };
+        };
+
+        uv = {
+          enable = true;
+          settings = {
+            python-preference = "managed";
+          };
+        };
+      };
+
+      # Home shell aliases
+      home.shellAliases = {
+        onefetch = "onefetch -E --nerd-fonts --no-color-palette";
+        cat = "bat";
+        watch = "hwatch";
+        cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
+        fm = "frogmouth";
+        db = "distrobox";
+        df = "duf --hide special";
+        open = "xdg-open";
+        nshell = ''f(){ [ $# -gt 0 ] || { echo "usage: nshell <package> [nix args...]" >&2; return 1; }; nix shell --set-env-var OMP_NIX_SHELL 1 "nixpkgs#$1" "''${@:2}"; }; f'';
+        nproc-1 = "$(( $(nproc) - 1))";
+        venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
+        rsync = "rsync --info=progress2";
+        plasma-restart = "systemctl restart --user plasma-plasmashell";
+        dcup = "docker compose up --remove-orphans";
+        dcview = "docker compose config | bat -l yml";
+        dk = "dragon-drop --keep";
+        dx = "dragon-drop --and-exit";
+        ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
+        grep = "grep --color=auto";
+        q = "qalc";
+        tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
+      };
+
+      nix = {
+        package = pkgs.nix;
+        settings = {
+          substituters = [ "https://cache.nixos.org/" ];
+          max-jobs = 1;
+          experimental-features = [
+            "nix-command"
+            "flakes"
           ];
-
-          keybinds = {
-            app_exit = "ctrl+shift+q";
-            input_clear = "ctrl+c";
-          };
-
-          agent = {
-            explore = {
-              disable = true;
-            };
-            general = {
-              disable = true;
-            };
-          };
+        };
+        gc = {
+          automatic = true;
+          dates = "weekly";
+          options = "--delete-older-than 2w";
         };
       };
 
-      nix-index = {
-        enable = true;
-        enableBashIntegration = true;
-      };
+      qt.enable = true;
 
-      nix-search-tv = {
-        enable = true;
-        settings = {
-          update_interval = "12h";
+      xdg = {
+        configFile = {
+          "opencode/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink (
+            config.home.homeDirectory + "/.config/home-manager/dotfiles/droid/AGENTS.md"
+          );
+          "autostart/org.keepassxc.KeePassXC.desktop".text = ''
+            [Desktop Entry]
+            Name=KeePassXC
+            Exec=keepassxc
+            TryExec=keepassxc
+            Icon=keepassxc
+            StartupNotify=false
+            Terminal=false
+            Type=Application
+            Version=1.5
+            X-GNOME-Autostart-enabled=true
+          '';
+        };
+        dataFile = {
+          "applications/org.keepassxc.KeePassXC.desktop".text = ''
+            [Desktop Entry]
+            Name=KeePassXC
+            GenericName=Password Manager
+            Comment=Community-driven port of KeePass Password Safe
+            Exec=keepassxc %f
+            TryExec=keepassxc
+            Icon=keepassxc
+            StartupWMClass=keepassxc
+            StartupNotify=false
+            Terminal=false
+            Type=Application
+            Version=1.5
+            Categories=Utility;Security;Qt;
+            MimeType=application/x-keepass2;
+            SingleMainWindow=true
+            X-GNOME-SingleWindow=true
+            Keywords=security;privacy;password-manager;yubikey;password;keepass;
+          '';
+        };
+        terminal-exec = {
+          enable = true;
+          settings.default = [ "com.mitchellh.ghostty.desktop" ];
+        };
+        autostart = {
+          enable = true;
+          entries = [ "${pkgs.netbird-ui}/share/applications/netbird.desktop" ];
         };
       };
-
-      uv = {
-        enable = true;
-        settings = {
-          python-preference = "managed";
-        };
-      };
     };
-
-    # Home shell aliases
-    home.shellAliases = {
-      onefetch = "onefetch -E --nerd-fonts --no-color-palette";
-      cat = "bat";
-      watch = "hwatch";
-      cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
-      fm = "frogmouth";
-      db = "distrobox";
-      df = "duf --hide special";
-      open = "xdg-open";
-      nshell = ''f(){ [ $# -gt 0 ] || { echo "usage: nshell <package> [nix args...]" >&2; return 1; }; nix shell --set-env-var OMP_NIX_SHELL 1 "nixpkgs#$1" "''${@:2}"; }; f'';
-      nproc-1 = "$(( $(nproc) - 1))";
-      venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
-      rsync = "rsync --info=progress2";
-      plasma-restart = "systemctl restart --user plasma-plasmashell";
-      dcup = "docker compose up --remove-orphans";
-      dcview = "docker compose config | bat -l yml";
-      dk = "dragon-drop --keep";
-      dx = "dragon-drop --and-exit";
-      ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
-      grep = "grep --color=auto";
-      q = "qalc";
-      tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
-    };
-
-    nix = {
-      package = pkgs.nix;
-      settings = {
-        substituters = [ "https://cache.nixos.org/" ];
-        max-jobs = 1;
-        experimental-features = [
-          "nix-command"
-          "flakes"
-        ];
-      };
-      gc = {
-        automatic = true;
-        dates = "weekly";
-        options = "--delete-older-than 2w";
-      };
-    };
-
-    qt.enable = true;
-
-    xdg = {
-      configFile = {
-        "opencode/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink (
-          config.home.homeDirectory + "/.config/home-manager/dotfiles/droid/AGENTS.md"
-        );
-        "autostart/org.keepassxc.KeePassXC.desktop".text = ''
-          [Desktop Entry]
-          Name=KeePassXC
-          Exec=keepassxc
-          TryExec=keepassxc
-          Icon=keepassxc
-          StartupNotify=false
-          Terminal=false
-          Type=Application
-          Version=1.5
-          X-GNOME-Autostart-enabled=true
-        '';
-      };
-      dataFile = {
-        "applications/org.keepassxc.KeePassXC.desktop".text = ''
-          [Desktop Entry]
-          Name=KeePassXC
-          GenericName=Password Manager
-          Comment=Community-driven port of KeePass Password Safe
-          Exec=keepassxc %f
-          TryExec=keepassxc
-          Icon=keepassxc
-          StartupWMClass=keepassxc
-          StartupNotify=false
-          Terminal=false
-          Type=Application
-          Version=1.5
-          Categories=Utility;Security;Qt;
-          MimeType=application/x-keepass2;
-          SingleMainWindow=true
-          X-GNOME-SingleWindow=true
-          Keywords=security;privacy;password-manager;yubikey;password;keepass;
-        '';
-      };
-      terminal-exec = {
-        enable = true;
-        settings.default = [ "com.mitchellh.ghostty.desktop" ];
-      };
-      autostart = {
-        enable = true;
-        entries = [ "${pkgs.netbird-ui}/share/applications/netbird.desktop" ];
-      };
-    };
-  };
 }
