@@ -9,7 +9,7 @@
 let
   corePackages = with pkgs; [
     (
-      if system == "aarch64-linux" then
+      if config.customPackages.usePlainBtop then
         btop
       else
         btop.override {
@@ -299,6 +299,7 @@ in
     enableDev = lib.mkEnableOption "development packages";
     enableEmacs = lib.mkEnableOption "Emacs packages";
     enableScripts = lib.mkEnableOption "custom scripts";
+    usePlainBtop = lib.mkEnableOption "plain btop without GPU overrides";
 
     extra = lib.mkOption {
       type = lib.types.listOf lib.types.package;
