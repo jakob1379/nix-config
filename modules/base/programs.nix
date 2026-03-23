@@ -140,6 +140,7 @@ in
         git = {
           enable = true;
           signing = {
+            format = "openpgp";
             key = "98BD7E80842C97BA";
             signByDefault = false;
           };
