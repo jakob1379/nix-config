@@ -22,8 +22,12 @@
   # System-specific overrides for UCPH machine
   customPackages = {
     enableGui = lib.mkForce true; # Enable GUI packages for this desktop system
+    exclude = with pkgs; [ btop ];
     # Add remmina package specifically for this system
     extra = with pkgs; [
+      (btop.override {
+        rocmSupport = true;
+      })
       clockify
       adw-gtk3
       glab

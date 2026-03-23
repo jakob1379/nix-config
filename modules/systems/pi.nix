@@ -7,7 +7,6 @@
   # System-specific overrides for Raspberry Pi
   customPackages = {
     enableGui = false;
-    usePlainBtop = true;
   };
 
   programs.firefox.enable = pkgs.lib.mkForce false;
