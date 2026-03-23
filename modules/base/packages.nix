@@ -8,15 +8,7 @@
 
 let
   corePackages = with pkgs; [
-    (
-      if config.customPackages.usePlainBtop then
-        btop
-      else
-        btop.override {
-          rocmSupport = true;
-          cudaSupport = true;
-        }
-    )
+    btop
     git-filter-repo
     busybox
     dconf
@@ -299,7 +291,6 @@ in
     enableDev = lib.mkEnableOption "development packages";
     enableEmacs = lib.mkEnableOption "Emacs packages";
     enableScripts = lib.mkEnableOption "custom scripts";
-    usePlainBtop = lib.mkEnableOption "plain btop without GPU overrides";
 
     extra = lib.mkOption {
       type = lib.types.listOf lib.types.package;
