@@ -71,20 +71,34 @@ let
 
   currentWallpaperStateSyncScript = pkgs.writeShellApplication {
     name = "update-current-wallpaper-state";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.variety
-    ];
+    runtimeInputs = [ pkgs.coreutils ];
     text = ''
       set -eu
 
-      target_file="$1"
+      pointer_file="$1"
+      target_file="$2"
       attempts=0
 
-      while [ "$attempts" -lt 30 ]; do
-        wallpaper_path="$(${pkgs.variety}/bin/variety --get 2>/dev/null || true)"
+      ${pkgs.coreutils}/bin/sleep 3
+
+      while [ "$attempts" -lt 5 ]; do
+        wallpaper_path=""
+
+        if [ -r "$pointer_file" ]; then
+          wallpaper_path="$(${pkgs.coreutils}/bin/cat "$pointer_file" 2>/dev/null || true)"
+        fi
 
         if [ -n "''${wallpaper_path:-}" ] && [ -r "$wallpaper_path" ]; then
+          current_wallpaper=""
+
+          if [ -r "$target_file" ]; then
+            current_wallpaper="$(${pkgs.coreutils}/bin/cat "$target_file" 2>/dev/null || true)"
+          fi
+
+          if [ "$current_wallpaper" = "$wallpaper_path" ]; then
+            exit 0
+          fi
+
           ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target_file")"
           tmp_file="$target_file.tmp"
           ${pkgs.coreutils}/bin/printf '%s\n' "$wallpaper_path" > "$tmp_file"
@@ -202,6 +216,7 @@ let
     + "${lib.escapeShellArg vicinaeWallustLightThemeFile}";
   currentWallpaperStateSyncCommand =
     "${currentWallpaperStateSyncScript}/bin/update-current-wallpaper-state "
+    + "${lib.escapeShellArg varietyWallpaperPointerFile} "
     + lib.escapeShellArg currentWallpaperStateFile;
   wallustScript = pkgs.writeShellApplication {
     name = "run-wallust-from-current-wallpaper";
@@ -282,6 +297,7 @@ in
             "variety-wallpaper-updated" = {
               Unit = {
                 Description = "Resolve current wallpaper from Variety";
+                StartLimitIntervalSec = 0;
                 After = [
                   "rclone-mount-dropbox-private.service"
                 ];
@@ -321,7 +337,7 @@ in
                 WantedBy = [ "graphical-session.target" ];
               };
               Path = {
-                PathModified = varietyWallpaperPointerFile;
+                PathChanged = varietyWallpaperPointerFile;
               };
             };
           };
