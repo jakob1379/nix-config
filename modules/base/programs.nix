@@ -263,7 +263,7 @@ in
           clock24 = true;
           baseIndex = 1;
           escapeTime = 1;
-          terminal = "xterm-256color";
+          terminal = "tmux-256color";
           focusEvents = true;
           extraConfig = builtins.readFile ../../dotfiles/tmux/tmux.conf;
           plugins = [ tmuxPing ];
