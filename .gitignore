@@ -90,3 +90,5 @@ __pycache__/
 .droid
 result
 /dotfiles/noctalia/colors.json
+.desloppify/
+.ooc
