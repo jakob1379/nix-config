@@ -4,6 +4,44 @@
   lib,
   ...
 }:
+let
+  mkGraphicsProfile =
+    {
+      desktopTag,
+      onTheGo ? false,
+    }:
+    {
+      system.nixos.tags = [
+        desktopTag
+      ]
+      ++ lib.optional onTheGo "on-the-go"
+      ++ lib.optional (!onTheGo) "docked";
+      hardware.nvidia.prime = {
+        offload = {
+          enable = lib.mkForce onTheGo;
+          enableOffloadCmd = lib.mkForce onTheGo;
+        };
+        sync.enable = lib.mkForce (!onTheGo);
+      };
+    };
+
+  mkDesktopSpecialisation =
+    {
+      name,
+      session,
+      onTheGo ? false,
+    }:
+    {
+      inherit name;
+      value.configuration = {
+        services.displayManager.defaultSession = lib.mkForce session;
+      }
+      // mkGraphicsProfile {
+        desktopTag = session;
+        inherit onTheGo;
+      };
+    };
+in
 {
   imports = [
     ./hardware-configuration.nix
@@ -33,6 +71,27 @@
   };
 
   hardware.nvidia-container-toolkit.enable = true;
+
+  specialisation = builtins.listToAttrs [
+    (mkDesktopSpecialisation {
+      name = "niri-docked";
+      session = "niri";
+    })
+    (mkDesktopSpecialisation {
+      name = "niri-on-the-go";
+      session = "niri";
+      onTheGo = true;
+    })
+    (mkDesktopSpecialisation {
+      name = "plasma-docked";
+      session = "plasma";
+    })
+    (mkDesktopSpecialisation {
+      name = "plasma-on-the-go";
+      session = "plasma";
+      onTheGo = true;
+    })
+  ];
 
   services.xserver.videoDrivers = lib.mkAfter [ "nvidia" ];
   boot.kernelModules = [ "kvm-intel" ];
