@@ -603,7 +603,7 @@ in
 
       udiskie = {
         enable = true;
-        tray = "never";
+        tray = if config.customPackages.enableGui then "auto" else "never";
       };
 
       unclutter = {
