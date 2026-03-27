@@ -85,14 +85,14 @@ let
         wallpaper_path=""
 
         if [ -r "$pointer_file" ]; then
-          wallpaper_path="$(${pkgs.coreutils}/bin/cat "$pointer_file" 2>/dev/null || true)"
+          wallpaper_path="$(< "$pointer_file")"
         fi
 
         if [ -n "''${wallpaper_path:-}" ] && [ -r "$wallpaper_path" ]; then
           current_wallpaper=""
 
           if [ -r "$target_file" ]; then
-            current_wallpaper="$(${pkgs.coreutils}/bin/cat "$target_file" 2>/dev/null || true)"
+            current_wallpaper="$(< "$target_file")"
           fi
 
           if [ "$current_wallpaper" = "$wallpaper_path" ]; then
