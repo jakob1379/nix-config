@@ -20,4 +20,4 @@ wait
 
 # NixOS switch with output monitor
 sudo -v
-sudo -E nixos-rebuild switch --flake "${flakePath}" |& nom
+nixos-rebuild switch --sudo --flake "${flakePath}" |& nom
