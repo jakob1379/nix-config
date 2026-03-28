@@ -2,6 +2,54 @@
   lib,
   ...
 }:
+let
+  desktopSessions = [
+    "niri"
+    "plasma"
+  ];
+
+  mobilityProfiles = [
+    {
+      suffix = "docked";
+      onTheGo = false;
+    }
+    {
+      suffix = "on-the-go";
+      onTheGo = true;
+    }
+  ];
+
+  mkDesktopProfile =
+    {
+      desktopTag,
+      onTheGo ? false,
+    }:
+    {
+      system.nixos.tags = [
+        desktopTag
+      ]
+      ++ lib.optional onTheGo "on-the-go"
+      ++ lib.optional (!onTheGo) "docked";
+    };
+
+  mkDesktopSpecialisations =
+    profileConfig:
+    builtins.listToAttrs (
+      lib.concatMap (
+        session:
+        map (profile: {
+          name = "${session}-${profile.suffix}";
+          value.configuration = {
+            services.displayManager.defaultSession = lib.mkForce session;
+          }
+          // profileConfig {
+            desktopTag = session;
+            inherit (profile) onTheGo;
+          };
+        }) mobilityProfiles
+      ) desktopSessions
+    );
+in
 {
   imports = [
     ./hardware-configuration.nix
@@ -37,6 +85,8 @@
   # amd graphics
   boot.initrd.kernelModules = lib.mkAfter [ "amdgpu" ];
   services.xserver.videoDrivers = lib.mkAfter [ "amdgpu" ];
+
+  specialisation = mkDesktopSpecialisations mkDesktopProfile;
 
   # fingerprint
   services.fprintd.enable = true;

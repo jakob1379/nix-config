@@ -5,6 +5,22 @@
   ...
 }:
 let
+  desktopSessions = [
+    "niri"
+    "plasma"
+  ];
+
+  mobilityProfiles = [
+    {
+      suffix = "docked";
+      onTheGo = false;
+    }
+    {
+      suffix = "on-the-go";
+      onTheGo = true;
+    }
+  ];
+
   mkGraphicsProfile =
     {
       desktopTag,
@@ -25,22 +41,23 @@ let
       };
     };
 
-  mkDesktopSpecialisation =
-    {
-      name,
-      session,
-      onTheGo ? false,
-    }:
-    {
-      inherit name;
-      value.configuration = {
-        services.displayManager.defaultSession = lib.mkForce session;
-      }
-      // mkGraphicsProfile {
-        desktopTag = session;
-        inherit onTheGo;
-      };
-    };
+  mkDesktopSpecialisations =
+    profileConfig:
+    builtins.listToAttrs (
+      lib.concatMap (
+        session:
+        map (profile: {
+          name = "${session}-${profile.suffix}";
+          value.configuration = {
+            services.displayManager.defaultSession = lib.mkForce session;
+          }
+          // profileConfig {
+            desktopTag = session;
+            inherit (profile) onTheGo;
+          };
+        }) mobilityProfiles
+      ) desktopSessions
+    );
 in
 {
   imports = [
@@ -72,26 +89,7 @@ in
 
   hardware.nvidia-container-toolkit.enable = true;
 
-  specialisation = builtins.listToAttrs [
-    (mkDesktopSpecialisation {
-      name = "niri-docked";
-      session = "niri";
-    })
-    (mkDesktopSpecialisation {
-      name = "niri-on-the-go";
-      session = "niri";
-      onTheGo = true;
-    })
-    (mkDesktopSpecialisation {
-      name = "plasma-docked";
-      session = "plasma";
-    })
-    (mkDesktopSpecialisation {
-      name = "plasma-on-the-go";
-      session = "plasma";
-      onTheGo = true;
-    })
-  ];
+  specialisation = mkDesktopSpecialisations mkGraphicsProfile;
 
   services.xserver.videoDrivers = lib.mkAfter [ "nvidia" ];
   boot.kernelModules = [ "kvm-intel" ];
