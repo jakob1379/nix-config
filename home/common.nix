@@ -4,8 +4,7 @@
 }:
 
 {
-  # Common configuration for all systems
-  imports = [ ../base ];
+  imports = [ ./modules ];
 
   nixpkgs.config.allowUnfree = true;
   programs.home-manager.enable = true;

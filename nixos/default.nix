@@ -8,7 +8,7 @@
     system = "x86_64-linux";
     specialArgs = { inherit inputs; };
     modules = [
-      ../nixos/yoga/configuration.nix
+      ./hosts/yoga
       { nixpkgs.config.allowUnfreePredicate = lib.allowUnfreePredicate; }
     ];
   };
@@ -17,7 +17,16 @@
     system = "x86_64-linux";
     specialArgs = { inherit inputs; };
     modules = [
-      ../nixos/amd/configuration.nix
+      ./hosts/amd
+      { nixpkgs.config.allowUnfreePredicate = lib.allowUnfreePredicate; }
+    ];
+  };
+
+  ku = nixpkgs.lib.nixosSystem {
+    system = "x86_64-linux";
+    specialArgs = { inherit inputs; };
+    modules = [
+      ./hosts/ku
       { nixpkgs.config.allowUnfreePredicate = lib.allowUnfreePredicate; }
     ];
   };
