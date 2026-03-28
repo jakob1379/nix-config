@@ -16,7 +16,6 @@
       options = "--delete-older-than 7d";
     };
     settings = {
-      trusted-users = [ "jsg" ];
       auto-optimise-store = true;
       experimental-features = [
         "nix-command"
@@ -150,19 +149,6 @@
 
   console.keyMap = "dk-latin1";
 
-  # Basic user
-  users.users.jsg = {
-    isNormalUser = true;
-    description = "Jakob Stender Guldberg";
-    extraGroups = [
-      "networkmanager"
-      "wheel"
-      "docker"
-      "libvirtd"
-    ];
-    packages = with pkgs; [ libsecret ];
-  };
-
   # Common system packages
   environment.systemPackages = with pkgs; [
     git
@@ -213,27 +199,6 @@
   # Firewall default
   networking.firewall = {
     enable = true;
-  };
-
-  # Keep U2F/Yubico PAM settings for this host
-  security.pam = {
-    u2f = {
-      enable = true;
-      settings.cue = true;
-    };
-    yubico = {
-      enable = true;
-      control = "sufficient";
-      mode = "challenge-response";
-      id = [
-        "22313001"
-        "22313027"
-      ];
-    };
-    services = {
-      login.u2fAuth = true;
-      sudo.u2fAuth = true;
-    };
   };
 
   system.stateVersion = "24.05";

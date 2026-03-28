@@ -8,6 +8,7 @@ development environments.
 **Table of Contents**
 
 - [Nix Config](#nix-config)
+  - [Layout](#layout)
   - [Installation](#installation)
   - [Usage](#usage)
   - [Makefile](#makefile)
@@ -17,6 +18,15 @@ development environments.
   - [License](#license)
 
 <!-- markdown-toc end -->
+
+## Layout
+
+- `home/`: Home Manager entrypoints, shared modules, and user-space system
+  profiles.
+- `nixos/hosts/`: machine-specific NixOS configurations.
+- `nixos/users/`: user-specific NixOS modules that hosts can opt into.
+- `lib/`: flake helpers and shared constructors.
+- `devshells/`: development shells exported by the flake.
 
 ## Installation
 
