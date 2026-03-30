@@ -5,18 +5,22 @@
 }:
 
 {
-  imports = [ ../base/default.nix ];
-
   customGit = {
     userName = "Jakob Stender Guldberg";
     userEmail = "jakob1379@gmail.com";
   };
 
-  customSsh.enableKeepassxc = lib.mkForce false;
-
   customPackages = {
+    enableGui = lib.mkForce true;
+    exclude = with pkgs; [ btop ];
     extra = with pkgs; [
-      glab
+      (btop.override {
+        cudaSupport = true;
+      })
     ];
+  };
+
+  customDotfiles = {
+    enableMediaControl = true;
   };
 }

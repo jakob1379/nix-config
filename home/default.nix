@@ -7,7 +7,7 @@ in
     system = "x86_64-linux";
     username = "jsg";
     homeDirectory = "/home/jsg";
-    extraModules = [ ../modules/systems/seeq.nix ];
+    extraModules = [ ./systems/seeq.nix ];
     inherit lib;
   };
 
@@ -15,7 +15,7 @@ in
     system = "aarch64-linux";
     username = "pi";
     homeDirectory = "/home/pi";
-    extraModules = [ ../modules/systems/pi.nix ];
+    extraModules = [ ./systems/pi.nix ];
     inherit lib;
   };
 
@@ -23,7 +23,7 @@ in
     system = "x86_64-linux";
     username = "jga";
     homeDirectory = "/home/jga";
-    extraModules = [ ../modules/systems/yoga.nix ];
+    extraModules = [ ./systems/yoga.nix ];
     inherit lib;
   };
 
@@ -31,7 +31,7 @@ in
     system = "x86_64-linux";
     username = "jsg";
     homeDirectory = "/home/jsg";
-    extraModules = [ ../modules/systems/amd.nix ];
+    extraModules = [ ./systems/amd.nix ];
     inherit lib;
   };
 

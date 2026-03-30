@@ -11,5 +11,15 @@
     zen-browser.url = "github:youwen5/zen-browser-flake";
   };
 
-  outputs = inputs: (import ./nix/outputs.nix) inputs;
+  outputs =
+    inputs@{ nixpkgs, ... }:
+    let
+      lib = import ./lib { inherit nixpkgs inputs; };
+      inherit (lib) forAllSystems;
+    in
+    {
+      homeConfigurations = import ./home { inherit lib; };
+      nixosConfigurations = import ./nixos { inherit nixpkgs inputs lib; };
+      devShells = forAllSystems (pkgs: import ./devshells { inherit lib pkgs; });
+    };
 }

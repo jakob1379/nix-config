@@ -52,16 +52,12 @@ inputs.home-manager.lib.homeManagerConfiguration {
     overlays = [ shikaneOverlay ];
   };
   modules = [
-    # All systems import the common base configuration
-    ../modules/systems/common.nix
-
-    # Set user and home from arguments
+    ../home/common.nix
     {
       home.username = username;
       home.homeDirectory = homeDirectory;
     }
   ]
-  # And add their system-specific modules
   ++ extraModules;
   extraSpecialArgs = { inherit inputs system; };
 }

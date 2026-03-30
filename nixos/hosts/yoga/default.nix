@@ -7,7 +7,8 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../common.nix
+    ../../common.nix
+    ../../users/jsg.nix
   ];
 
   networking.hostName = "yoga";

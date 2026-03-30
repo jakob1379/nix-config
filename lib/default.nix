@@ -1,6 +1,6 @@
 { nixpkgs, inputs }:
 let
-  mkHomeConfig = import ../lib/mkHomeConfig.nix { inherit inputs; };
+  mkHomeConfig = import ./mkHomeConfig.nix { inherit inputs; };
   forAllSystems =
     function:
     nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-linux" ] (

@@ -1,10 +1,10 @@
-# Minimal host-specific configuration for ku; common settings are in ../common.nix
 { config, lib, ... }:
 
 {
   imports = [
     ./hardware-configuration.nix
-    ../common.nix
+    ../../common.nix
+    ../../users/jsg.nix
   ];
 
   # Only machine-specific overrides should remain here.
@@ -23,6 +23,7 @@
 
   # Enable the nvidia container toolkit only on this host
   hardware.nvidia-container-toolkit.enable = true;
+  services.xserver.videoDrivers = lib.mkAfter [ "nvidia" ];
 
   # Specialisation (shared)
   specialisation = {
