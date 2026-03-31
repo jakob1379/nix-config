@@ -9,10 +9,10 @@
   nixpkgs.config.allowUnfree = true;
   programs.home-manager.enable = true;
 
-  # The base modules already include core packages by default.
-  # System-specific modules can override package sets if needed, for example:
+  # The base modules already include core package groups by default.
+  # System-specific modules can override group sets if needed, for example:
   #
-  # customPackages.enableGui = false;
+  # customPackages.gui.enable = false;
   #
   # Or disable a program like this:
   #
@@ -20,11 +20,11 @@
 
   # Enable package groups by default. Systems can override these settings.
   customPackages = {
-    enableCore = lib.mkDefault true;
-    enableDev = lib.mkDefault true;
-    enableEmacs = lib.mkDefault true;
-    enableScripts = lib.mkDefault true;
-    enableGui = lib.mkDefault false; # GUI is opt-in per system
+    core.enable = lib.mkDefault true;
+    dev.enable = lib.mkDefault true;
+    emacs.enable = lib.mkDefault true;
+    scripts.enable = lib.mkDefault true;
+    gui.enable = lib.mkDefault false; # GUI is opt-in per system
   };
 
   # Enable dotfile groups by default. Systems can override these.
