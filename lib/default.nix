@@ -16,7 +16,7 @@ let
     pkgs: with pkgs; [
       prek
       yamllint
-      nixos-generators
+      marksman
       nixfmt
       statix
       deadnix
