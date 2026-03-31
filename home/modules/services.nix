@@ -66,13 +66,13 @@ let
       pkgs.procps
       pkgs.coreutils
     ];
-    text = builtins.readFile ../../dotfiles/niri/scripts/sync-noctalia-wallpaper.sh;
+    text = builtins.readFile ../../scripts/wallpaper/sync-noctalia-wallpaper.sh;
   };
 
   currentWallpaperStateSyncScript = pkgs.writeShellApplication {
     name = "update-current-wallpaper-state";
     runtimeInputs = [ pkgs.coreutils ];
-    text = builtins.readFile ../../dotfiles/wallpaper/scripts/update-current-wallpaper-state.sh;
+    text = builtins.readFile ../../scripts/wallpaper/update-current-wallpaper-state.sh;
   };
 
   wallustPaletteStateSyncScript = pkgs.writeShellApplication {
@@ -81,7 +81,7 @@ let
       pkgs.coreutils
       pkgs.jq
     ];
-    text = builtins.readFile ../../dotfiles/wallpaper/scripts/update-wallust-palette-state.sh;
+    text = builtins.readFile ../../scripts/wallpaper/update-wallust-palette-state.sh;
   };
 
   niriSessionExecCondition = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "${pkgs.coreutils}/bin/printenv XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qi niri"}";
@@ -95,7 +95,7 @@ let
       pkgs.niri
       pkgs.procps
     ];
-    text = builtins.readFile ../../dotfiles/niri/scripts/sync-focus-gradient.sh;
+    text = builtins.readFile ../../scripts/niri/sync-focus-gradient.sh;
   };
 
   niriWindowBorderRulesSyncScript = pkgs.writeShellApplication {
@@ -107,7 +107,7 @@ let
       pkgs.procps
       pkgs.python3
     ];
-    text = builtins.readFile ../../dotfiles/niri/scripts/sync-window-border-rules.sh;
+    text = builtins.readFile ../../scripts/niri/sync-window-border-rules.sh;
   };
 
   niriWindowBorderRulesWatchScript = pkgs.writeShellApplication {
@@ -118,7 +118,7 @@ let
       pkgs.niri
       pkgs.procps
     ];
-    text = builtins.readFile ../../dotfiles/niri/scripts/watch-window-border-rules.sh;
+    text = builtins.readFile ../../scripts/niri/watch-window-border-rules.sh;
   };
 
   vicinaeThemeSyncScript = pkgs.writeShellApplication {
@@ -127,7 +127,7 @@ let
       pkgs.coreutils
       pkgs.jq
     ];
-    text = builtins.readFile ../../dotfiles/wallpaper/scripts/sync-vicinae-theme.sh;
+    text = builtins.readFile ../../scripts/wallpaper/sync-vicinae-theme.sh;
   };
 
   noctaliaWallpaperSyncCommand =
@@ -153,7 +153,7 @@ let
       pkgs.wallust
       wallustPaletteStateSyncScript
     ];
-    text = builtins.readFile ../../dotfiles/wallpaper/scripts/run-wallust-from-current-wallpaper.sh;
+    text = builtins.readFile ../../scripts/wallpaper/run-wallust-from-current-wallpaper.sh;
   };
   runWallustFromCurrentWallpaperCommand =
     "${runWallustFromCurrentWallpaperScript}/bin/run-wallust-from-current-wallpaper "

@@ -7,7 +7,6 @@
 
 {
   options.customDotfiles = {
-
     enableDroid = lib.mkEnableOption "media control dotfiles";
     droid = lib.mkOption {
       type = lib.types.attrs;
@@ -31,7 +30,8 @@
       default = {
         ".emacs.d/config.org".source = ../../dotfiles/emacs/config.org;
         ".emacs.d/init.el".source = ../../dotfiles/emacs/init.el;
-        ".local/share/bash-completion/completions/emacs".source = ../../dotfiles/emacs/emacs-completions.sh;
+        ".local/share/bash-completion/completions/emacs".source =
+          ../../scripts/completions/emacs-completions.sh;
       };
       description = "Emacs dotfiles.";
     };
@@ -71,12 +71,12 @@
     {
       home = {
         file = lib.mkMerge [
-          (lib.mkIf cfg.enableEmacs cfg.emacs)
           (lib.mkIf cfg.enableDroid cfg.droid)
+          (lib.mkIf cfg.enableEmacs cfg.emacs)
           (lib.mkIf cfg.enableMediaControl cfg.mediaControl)
           {
             ".local/share/bash-completion/completions/noctalia-shell".source =
-              ../../dotfiles/bash/noctalia-shell-completions.sh;
+              ../../scripts/completions/noctalia-shell-completions.sh;
             ".config/niri/config.kdl".source = ../../dotfiles/niri/config.kdl;
             ".config/autostart/variety.desktop".source = varietyAutostartDesktop;
             ".config/noctalia/settings.json".source = config.lib.file.mkOutOfStoreSymlink (
