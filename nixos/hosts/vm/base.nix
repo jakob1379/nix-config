@@ -33,11 +33,7 @@
     fsType = "ext4";
   };
 
-  services.openssh = {
-    enable = lib.mkDefault true;
-    settings.PasswordAuthentication = lib.mkDefault false;
-    settings.KbdInteractiveAuthentication = lib.mkDefault false;
+  services.netbird = {
+    enable = true;
   };
-
-  programs.ssh.startAgent = lib.mkDefault true;
 }
