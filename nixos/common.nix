@@ -178,8 +178,10 @@
 
   # Programs commonly used
   programs.niri.enable = true;
-  services.clamav.daemon.enable = true;
-  services.clamav.updater.enable = true;
+  services.clamav = {
+    daemon.enable = true;
+    updater.enable = true;
+  };
   # Boot & kernel defaults (shared)
   boot = {
     extraModulePackages = [ config.boot.kernelPackages.evdi ];
