@@ -594,7 +594,7 @@ in
       xdg = {
         configFile = {
           "opencode/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink (
-            config.home.homeDirectory + "/.config/home-manager/dotfiles/droid/AGENTS.md"
+            config.home.homeDirectory + "/.config/home-manager/dotfiles/AGENTS.md"
           );
           "autostart/org.keepassxc.KeePassXC.desktop".text = ''
             [Desktop Entry]

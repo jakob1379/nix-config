@@ -7,23 +7,6 @@
 
 {
   options.customDotfiles = {
-    enableDroid = lib.mkEnableOption "media control dotfiles";
-    droid = lib.mkOption {
-      type = lib.types.attrs;
-      default =
-        let
-          droidDir = config.home.homeDirectory + "/.config/home-manager/dotfiles/droid";
-          mkSymlink = name: {
-            name = ".factory/${name}";
-            value = {
-              source = config.lib.file.mkOutOfStoreSymlink (droidDir + "/${name}");
-            };
-          };
-        in
-        lib.mapAttrs' (name: _: mkSymlink name) (builtins.readDir (../../dotfiles/droid));
-      description = "Factory droid configs";
-    };
-
     enableEmacs = lib.mkEnableOption "Emacs dotfiles";
     emacs = lib.mkOption {
       type = lib.types.attrs;
@@ -71,7 +54,6 @@
     {
       home = {
         file = lib.mkMerge [
-          (lib.mkIf cfg.enableDroid cfg.droid)
           (lib.mkIf cfg.enableEmacs cfg.emacs)
           (lib.mkIf cfg.enableMediaControl cfg.mediaControl)
           {
