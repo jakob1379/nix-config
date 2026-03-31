@@ -56,7 +56,7 @@ in
         '';
 
         file = lib.optionalAttrs config.customSsh.enableKeepassxc {
-          ".ssh/keepassxc-prompt".source = ../../bin/keepassxc-prompt;
+          ".ssh/keepassxc-prompt".source = ../../scripts/ssh/keepassxc-prompt.sh;
         };
       };
 
@@ -78,7 +78,7 @@ in
             if [[ -z "$SSH_CONNECTION" ]]; then
                 ${pkgs.coreutils}/bin/cat ${config.xdg.cacheHome}/wal/sequences
             fi
-            ${builtins.readFile ../../bin/secret-export}
+            ${builtins.readFile ../../scripts/shell/secret-export.sh}
 
             eval "$(batman --export-env)"
             eval "$(command up --init bash)"

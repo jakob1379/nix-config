@@ -1,3 +1,5 @@
+# shellcheck shell=bash
+
 secret-tool-export() {
     if [ "$#" -lt 3 ] || [ $(( $# % 2 )) -ne 1 ]; then
         echo "Usage: secret_export <env_var_name> <attribute1> <value1> [<attribute2> <value2> ...]"
