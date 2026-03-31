@@ -39,7 +39,6 @@
     brave
     tana
     noctalia-shell
-    vicinae
     xwayland-satellite
     wdisplays
     wifi-qr

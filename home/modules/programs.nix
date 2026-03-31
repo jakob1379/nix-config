@@ -257,6 +257,11 @@ in
           enable = true;
         };
 
+        vicinae = {
+          inherit (config.customPackages.gui) enable;
+          package = pkgs.vicinae;
+        };
+
         tmux = {
           enable = true;
           newSession = true;
@@ -629,6 +634,19 @@ in
             X-GNOME-SingleWindow=true
             Keywords=security;privacy;password-manager;yubikey;password;keepass;
           '';
+        }
+        // lib.optionalAttrs config.customPackages.gui.enable {
+          "vicinae/scripts/display-mode-picker" = {
+            executable = true;
+            text = ''
+              #!/usr/bin/env bash
+              # @vicinae.schemaVersion 1
+              # @vicinae.title Display Mode Picker
+              # @vicinae.mode compact
+              # @vicinae.keywords ["display", "monitor", "screen", "layout"]
+              exec display-mode-picker "$@"
+            '';
+          };
         };
         terminal-exec = {
           enable = true;
@@ -639,5 +657,6 @@ in
           entries = [ "${pkgs.netbird-ui}/share/applications/netbird.desktop" ];
         };
       };
+
     };
 }
