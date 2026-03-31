@@ -72,46 +72,7 @@ let
   currentWallpaperStateSyncScript = pkgs.writeShellApplication {
     name = "update-current-wallpaper-state";
     runtimeInputs = [ pkgs.coreutils ];
-    text = ''
-      set -eu
-
-      pointer_file="$1"
-      target_file="$2"
-      attempts=0
-
-      ${pkgs.coreutils}/bin/sleep 3
-
-      while [ "$attempts" -lt 5 ]; do
-        wallpaper_path=""
-
-        if [ -r "$pointer_file" ]; then
-          wallpaper_path="$(< "$pointer_file")"
-        fi
-
-        if [ -n "''${wallpaper_path:-}" ] && [ -r "$wallpaper_path" ]; then
-          current_wallpaper=""
-
-          if [ -r "$target_file" ]; then
-            current_wallpaper="$(< "$target_file")"
-          fi
-
-          if [ "$current_wallpaper" = "$wallpaper_path" ]; then
-            exit 0
-          fi
-
-          ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target_file")"
-          tmp_file="$target_file.tmp"
-          ${pkgs.coreutils}/bin/printf '%s\n' "$wallpaper_path" > "$tmp_file"
-          ${pkgs.coreutils}/bin/mv "$tmp_file" "$target_file"
-          exit 0
-        fi
-
-        attempts=$((attempts + 1))
-        ${pkgs.coreutils}/bin/sleep 1
-      done
-
-      exit 1
-    '';
+    text = builtins.readFile ../../dotfiles/wallpaper/scripts/update-current-wallpaper-state.sh;
   };
 
   wallustPaletteStateSyncScript = pkgs.writeShellApplication {
@@ -120,40 +81,7 @@ let
       pkgs.coreutils
       pkgs.jq
     ];
-    text = ''
-      set -eu
-
-      wallust_cache_dir="$1"
-      target_file="$2"
-      latest_dir=""
-      palette_file=""
-
-      if [ -d "$wallust_cache_dir" ]; then
-        for dir in "$wallust_cache_dir"/*_1.7; do
-          [ -d "$dir" ] || continue
-          if [ -z "$latest_dir" ] || [ "$dir" -nt "$latest_dir" ]; then
-            latest_dir="$dir"
-          fi
-        done
-      fi
-
-      if [ -n "$latest_dir" ]; then
-        for candidate in "$latest_dir"/*; do
-          [ -f "$candidate" ] || continue
-          if ${pkgs.jq}/bin/jq -e '.background and .foreground and .color0 and .color7 and .color8 and .color9 and .color10 and .color11 and .color12 and .color13 and .color14' "$candidate" >/dev/null 2>&1; then
-            palette_file="$candidate"
-            break
-          fi
-        done
-      fi
-
-      [ -n "$palette_file" ] || exit 1
-
-      ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target_file")"
-      tmp_file="$target_file.tmp"
-      ${pkgs.coreutils}/bin/cp "$palette_file" "$tmp_file"
-      ${pkgs.coreutils}/bin/mv "$tmp_file" "$target_file"
-    '';
+    text = builtins.readFile ../../dotfiles/wallpaper/scripts/update-wallust-palette-state.sh;
   };
 
   niriSessionExecCondition = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "${pkgs.coreutils}/bin/printenv XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qi niri"}";
@@ -199,7 +127,7 @@ let
       pkgs.coreutils
       pkgs.jq
     ];
-    text = builtins.readFile ../../dotfiles/niri/scripts/sync-vicinae-theme.sh;
+    text = builtins.readFile ../../dotfiles/wallpaper/scripts/sync-vicinae-theme.sh;
   };
 
   noctaliaWallpaperSyncCommand =
@@ -219,61 +147,19 @@ let
     "${currentWallpaperStateSyncScript}/bin/update-current-wallpaper-state "
     + "${lib.escapeShellArg varietyWallpaperPointerFile} "
     + lib.escapeShellArg currentWallpaperStateFile;
-  wallustScript = pkgs.writeShellApplication {
+  runWallustFromCurrentWallpaperScript = pkgs.writeShellApplication {
     name = "run-wallust-from-current-wallpaper";
     runtimeInputs = [
       pkgs.wallust
       wallustPaletteStateSyncScript
     ];
-    text = ''
-      set -eu
-
-      if [ ! -r ${lib.escapeShellArg currentWallpaperStateFile} ]; then
-        exit 0
-      fi
-
-      IFS= read -r wallpaper_path < ${lib.escapeShellArg currentWallpaperStateFile} || exit 0
-      if [ -z "$wallpaper_path" ] || [ ! -r "$wallpaper_path" ]; then
-        exit 0
-      fi
-
-      wallust run -k "$wallpaper_path"
-      update-wallust-palette-state \
-        ${lib.escapeShellArg "${config.xdg.cacheHome}/wallust"} \
-        ${lib.escapeShellArg wallustPaletteStateFile}
-    '';
+    text = builtins.readFile ../../dotfiles/wallpaper/scripts/run-wallust-from-current-wallpaper.sh;
   };
-  shikaneDefaultWatchScript = pkgs.writeShellApplication {
-    name = "watch-shikane-default";
-    runtimeInputs = [
-      pkgs.jq
-      pkgs.niri
-      pkgs.shikane
-    ];
-    text = ''
-      set -eu
-
-      last_output_hash="$(shikanectl __current-output-hash 2>/dev/null || true)"
-      shikanectl __maybe-switch-default >/dev/null 2>&1 || true
-
-      niri msg --json event-stream | while IFS= read -r event_line; do
-        [ -n "$event_line" ] || continue
-
-        if ! printf '%s\n' "$event_line" | jq -e 'has("WorkspacesChanged")' >/dev/null 2>&1; then
-          continue
-        fi
-
-        current_output_hash="$(shikanectl __current-output-hash 2>/dev/null || true)"
-        if [ -z "$current_output_hash" ] || [ "$current_output_hash" = "$last_output_hash" ]; then
-          continue
-        fi
-
-        last_output_hash="$current_output_hash"
-        shikanectl __maybe-switch-default >/dev/null 2>&1 || true
-      done
-    '';
-  };
-  shikaneDefaultWatchCommand = "${shikaneDefaultWatchScript}/bin/watch-shikane-default";
+  runWallustFromCurrentWallpaperCommand =
+    "${runWallustFromCurrentWallpaperScript}/bin/run-wallust-from-current-wallpaper "
+    + "${lib.escapeShellArg currentWallpaperStateFile} "
+    + "${lib.escapeShellArg "${config.xdg.cacheHome}/wallust"} "
+    + lib.escapeShellArg wallustPaletteStateFile;
   niriWindowBorderRulesWatchCommand =
     "${niriWindowBorderRulesWatchScript}/bin/watch-niri-window-border-rules "
     + "${lib.escapeShellArg "${niriWindowBorderRulesSyncScript}/bin/sync-niri-window-border-rules"} "
@@ -348,7 +234,7 @@ in
                   Wants = [ "variety-wallpaper-updated.service" ];
                 };
                 Service = {
-                  ExecStart = "${wallustScript}/bin/run-wallust-from-current-wallpaper";
+                  ExecStart = runWallustFromCurrentWallpaperCommand;
                   Type = "oneshot";
                 };
                 Install = {
@@ -498,28 +384,6 @@ in
               };
             };
           };
-
-          shikaneDefault = {
-            shikanectl-default-watcher = {
-              Unit = {
-                Description = "Reapply shikanectl default profiles for current outputs";
-                After = [
-                  "graphical-session.target"
-                  "shikane.service"
-                ];
-                Wants = [ "shikane.service" ];
-              };
-              Install = {
-                WantedBy = [ "graphical-session.target" ];
-              };
-              Service = {
-                ExecCondition = niriSessionExecCondition;
-                ExecStart = shikaneDefaultWatchCommand;
-                Restart = "always";
-                RestartSec = 2;
-              };
-            };
-          };
         };
         description = "Systemd services for desktop integration.";
       };
@@ -628,9 +492,6 @@ in
             (lib.mkIf config.customPackages.gui.enable (cfg.desktop.niriFocusGradient.service or { }))
             (lib.mkIf config.customPackages.gui.enable (cfg.desktop.vicinaeTheme.service or { }))
             (lib.mkIf config.customPackages.gui.enable cfg.desktop.niriWindowBorders)
-            (lib.mkIf (
-              config.customPackages.gui.enable && config.services.shikane.enable
-            ) cfg.desktop.shikaneDefault)
             (lib.mkIf config.services.swayidle.enable {
               swayidle.Service.ExecCondition = niriSessionExecCondition;
             })
