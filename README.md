@@ -11,7 +11,7 @@ development environments.
   - [Layout](#layout)
   - [Installation](#installation)
   - [Usage](#usage)
-  - [Makefile](#makefile)
+  - [Install Script](#install-script)
   - [Development Shell (devShell)](#development-shell-devshell)
   - [Features](#features)
   - [Contributing](#contributing)
@@ -42,12 +42,13 @@ cd nix-config
 Apply the configurations by running the provided scripts or commands. Review
 individual configuration files for details.
 
-## Makefile
+## Install Script
 
-The `Makefile` includes targets to install Nix and Home Manager:
+The `install.sh` script installs Nix if needed and enables the required flake
+configuration:
 
-- **`make install`**: Installs Nix and Home Manager, and sets up necessary
-  configurations.
+- **`./install.sh`**: Installs Nix when missing and ensures
+  `~/.config/nix/nix.conf` enables flakes.
 
 ## Development Shell (devShell)
 
