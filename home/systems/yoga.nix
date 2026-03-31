@@ -1,9 +1,13 @@
 {
   pkgs,
   lib,
+  system,
   ...
 }:
 
+let
+  packageSets = import ../modules/package-sets.nix { inherit pkgs lib system; };
+in
 {
   customGit = {
     userName = "Jakob Stender Guldberg";
@@ -12,14 +16,16 @@
 
   customPackages = {
     gui.enable = lib.mkForce true;
-    exclude = with pkgs; [ btop ];
-    extra = lib.mkAfter (
-      with pkgs;
-      [
-        (btop.override {
-          cudaSupport = true;
-        })
-      ]
+    core.packages = lib.mkForce (
+      builtins.map (
+        p:
+        if p == pkgs.btop then
+          pkgs.btop.override {
+            cudaSupport = true;
+          }
+        else
+          p
+      ) packageSets.core
     );
   };
 

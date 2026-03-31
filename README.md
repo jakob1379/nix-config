@@ -3,21 +3,21 @@
 This repository contains Nix configuration files for setting up and managing
 development environments.
 
-<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
-
 **Table of Contents**
 
-- [Nix Config](#nix-config)
-  - [Layout](#layout)
-  - [Installation](#installation)
-  - [Usage](#usage)
-  - [Install Script](#install-script)
-  - [Development Shell (devShell)](#development-shell-devshell)
-  - [Features](#features)
-  - [Contributing](#contributing)
-  - [License](#license)
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-<!-- markdown-toc end -->
+- [Layout](#layout)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Install Script](#install-script)
+- [Development Shell (devShell)](#development-shell-devshell)
+- [Features](#features)
+- [Contributing](#contributing)
+- [License](#license)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Layout
 
