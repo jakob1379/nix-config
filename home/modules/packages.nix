@@ -50,7 +50,7 @@ let
     swaybg
     netpeek
     libnotify
-    nodePackages.prettier
+    prettier
     onlyoffice-desktopeditors
     pika-backup
     signal-desktop
@@ -67,7 +67,6 @@ let
   devPackages =
     with pkgs;
     [
-      android-tools
       graphviz
       meslo-lgs-nf
       nerd-fonts.fira-code
@@ -137,16 +136,6 @@ let
       text = builtins.readFile ../../bin/docker-volume-copy;
     })
     (pkgs.writeShellApplication {
-      name = "ddroid";
-      runtimeInputs = [
-        pkgs.bash
-        pkgs.coreutils
-        pkgs.gnugrep
-        pkgs.gnused
-      ];
-      text = builtins.readFile ../../bin/ddroid;
-    })
-    (pkgs.writeShellApplication {
       name = "ooc";
       runtimeInputs = [
         pkgs.bash
@@ -163,7 +152,7 @@ let
       runtimeInputs = with pkgs; [
         docker-compose
         jq
-        nodePackages.mermaid-cli
+        mermaid-cli
         kitty
       ];
       text = builtins.readFile ../../bin/docker-compose-deps;
@@ -286,17 +275,57 @@ let
 in
 {
   options.customPackages = {
-    enableCore = lib.mkEnableOption "core packages";
-    enableGui = lib.mkEnableOption "GUI packages";
-    enableDev = lib.mkEnableOption "development packages";
-    enableEmacs = lib.mkEnableOption "Emacs packages";
-    enableScripts = lib.mkEnableOption "custom scripts";
+    core = {
+      enable = lib.mkEnableOption "core packages";
+      packages = lib.mkOption {
+        type = lib.types.listOf lib.types.package;
+        default = corePackages;
+        description = "Core packages.";
+      };
+    };
+
+    gui = {
+      enable = lib.mkEnableOption "GUI packages";
+      packages = lib.mkOption {
+        type = lib.types.listOf lib.types.package;
+        default = guiPackages;
+        description = "GUI packages.";
+      };
+    };
+
+    dev = {
+      enable = lib.mkEnableOption "development packages";
+      packages = lib.mkOption {
+        type = lib.types.listOf lib.types.package;
+        default = devPackages;
+        description = "Development packages.";
+      };
+    };
+
+    emacs = {
+      enable = lib.mkEnableOption "Emacs packages";
+      packages = lib.mkOption {
+        type = lib.types.listOf lib.types.package;
+        default = emacsPackages;
+        description = "Emacs packages.";
+      };
+    };
+
+    scripts = {
+      enable = lib.mkEnableOption "custom scripts";
+      packages = lib.mkOption {
+        type = lib.types.listOf lib.types.package;
+        default = customScripts;
+        description = "Custom script packages.";
+      };
+    };
 
     extra = lib.mkOption {
       type = lib.types.listOf lib.types.package;
       default = [ ];
       description = "Extra packages for a specific system.";
     };
+
     exclude = lib.mkOption {
       type = lib.types.listOf lib.types.package;
       default = [ ];
@@ -308,11 +337,11 @@ in
     let
       cfg = config.customPackages;
       allPackages =
-        (lib.optionals cfg.enableCore corePackages)
-        ++ (lib.optionals cfg.enableGui guiPackages)
-        ++ (lib.optionals cfg.enableDev devPackages)
-        ++ (lib.optionals cfg.enableEmacs emacsPackages)
-        ++ (lib.optionals cfg.enableScripts customScripts)
+        (lib.optionals cfg.core.enable cfg.core.packages)
+        ++ (lib.optionals cfg.gui.enable cfg.gui.packages)
+        ++ (lib.optionals cfg.dev.enable cfg.dev.packages)
+        ++ (lib.optionals cfg.emacs.enable cfg.emacs.packages)
+        ++ (lib.optionals cfg.scripts.enable cfg.scripts.packages)
         ++ cfg.extra;
     in
     {

@@ -6,7 +6,6 @@
 }:
 
 let
-  # Create a function for rclone mount services
   createRcloneMountService =
     {
       name,
@@ -43,6 +42,7 @@ let
         Restart = "on-failure";
         RestartSec = "10s";
       };
+
       Install = {
         WantedBy = [ "default.target" ];
       };
@@ -158,6 +158,7 @@ let
 
   niriSessionExecCondition = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "${pkgs.coreutils}/bin/printenv XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qi niri"}";
   lockScreenCommand = "${pkgs.noctalia-shell}/bin/noctalia-shell ipc --newest call lockScreen lock";
+
   niriFocusGradientSyncScript = pkgs.writeShellApplication {
     name = "sync-niri-focus-gradient";
     runtimeInputs = [
@@ -282,383 +283,369 @@ in
 {
   options = {
     customServices = {
-      rclone = lib.mkOption {
+      storage = lib.mkOption {
         type = lib.types.attrs;
         default = {
-          rclone-mount-dropbox-private = createRcloneMountService { name = "dropbox-private"; };
+          rclone = {
+            service = {
+              rclone-mount-dropbox-private = createRcloneMountService { name = "dropbox-private"; };
+            };
+          };
         };
-        description = "Systemd services for rclone mounts.";
+        description = "Systemd services for storage mounts.";
       };
 
-      varietyWallpaper = lib.mkOption {
+      wallpaper = lib.mkOption {
         type = lib.types.attrs;
         default = {
-          service = {
-            "variety-wallpaper-updated" = {
+          varietyWallpaper = {
+            service = {
+              "variety-wallpaper-updated" = {
+                Unit = {
+                  Description = "Resolve current wallpaper from Variety";
+                  StartLimitIntervalSec = 0;
+                  After = [ "rclone-mount-dropbox-private.service" ];
+                  Wants = [ "rclone-mount-dropbox-private.service" ];
+                  Requires = [ "rclone-mount-dropbox-private.service" ];
+                };
+                Service = {
+                  ExecStart = currentWallpaperStateSyncCommand;
+                  Type = "oneshot";
+                };
+                Install = {
+                  WantedBy = [ "graphical-session.target" ];
+                };
+              };
+            };
+
+            path = {
+              "variety-wallpaper-updated" = {
+                Unit = {
+                  Description = "Watch Variety wallpaper pointer";
+                  After = [ "rclone-mount-dropbox-private.service" ];
+                  Wants = [
+                    "variety-wallpaper-updated.service"
+                    "rclone-mount-dropbox-private.service"
+                  ];
+                  Requires = [ "rclone-mount-dropbox-private.service" ];
+                };
+                Install = {
+                  WantedBy = [ "graphical-session.target" ];
+                };
+                Path = {
+                  PathChanged = varietyWallpaperPointerFile;
+                };
+              };
+            };
+          };
+
+          wallust = {
+            service = {
+              wallust = {
+                Unit = {
+                  Description = "Generate Wallust palette from current wallpaper";
+                  After = [ "variety-wallpaper-updated.service" ];
+                  Wants = [ "variety-wallpaper-updated.service" ];
+                };
+                Service = {
+                  ExecStart = "${wallustScript}/bin/run-wallust-from-current-wallpaper";
+                  Type = "oneshot";
+                };
+                Install = {
+                  WantedBy = [ "graphical-session.target" ];
+                };
+              };
+            };
+
+            path = {
+              wallust = {
+                Unit = {
+                  Description = "Watch canonical wallpaper state for Wallust";
+                  Wants = [ "wallust.service" ];
+                };
+                Install = {
+                  WantedBy = [ "graphical-session.target" ];
+                };
+                Path = {
+                  PathModified = currentWallpaperStateFile;
+                };
+              };
+            };
+          };
+
+          noctaliaWallpaper = {
+            service = {
+              "noctalia-wallpaper" = {
+                Unit = {
+                  Description = "Sync current wallpaper to Noctalia";
+                  After = [ "variety-wallpaper-updated.service" ];
+                  Wants = [ "variety-wallpaper-updated.service" ];
+                };
+                Service = {
+                  ExecStart = noctaliaWallpaperSyncCommand;
+                  Type = "oneshot";
+                };
+                Install = {
+                  WantedBy = [ "graphical-session.target" ];
+                };
+              };
+            };
+
+            path = {
+              "noctalia-wallpaper" = {
+                Unit = {
+                  Description = "Watch canonical wallpaper state for Noctalia";
+                  Wants = [ "noctalia-wallpaper.service" ];
+                };
+                Install = {
+                  WantedBy = [ "graphical-session.target" ];
+                };
+                Path = {
+                  PathModified = currentWallpaperStateFile;
+                };
+              };
+            };
+          };
+        };
+        description = "Systemd services for wallpaper state.";
+      };
+
+      desktop = lib.mkOption {
+        type = lib.types.attrs;
+        default = {
+          niriFocusGradient = {
+            service = {
+              "niri-focus-gradient" = {
+                Unit = {
+                  Description = "Sync Niri focus gradient from Wallust palette";
+                  After = [ "wallust.service" ];
+                  Wants = [ "wallust.service" ];
+                };
+                Service = {
+                  ExecStart = niriFocusGradientSyncCommand;
+                  Type = "oneshot";
+                };
+                Install = {
+                  WantedBy = [ "graphical-session.target" ];
+                };
+              };
+            };
+
+            path = {
+              "niri-focus-gradient" = {
+                Unit = {
+                  Description = "Watch Wallust palette for Niri focus gradient sync";
+                  Wants = [ "niri-focus-gradient.service" ];
+                };
+                Install = {
+                  WantedBy = [ "graphical-session.target" ];
+                };
+                Path = {
+                  PathModified = wallustPaletteStateFile;
+                };
+              };
+            };
+          };
+
+          vicinaeTheme = {
+            service = {
+              "vicinae-theme" = {
+                Unit = {
+                  Description = "Sync Vicinae themes from Wallust palette";
+                  After = [ "wallust.service" ];
+                  Wants = [ "wallust.service" ];
+                };
+                Service = {
+                  ExecStart = vicinaeThemeSyncCommand;
+                  Type = "oneshot";
+                };
+                Install = {
+                  WantedBy = [ "graphical-session.target" ];
+                };
+              };
+            };
+
+            path = {
+              "vicinae-theme" = {
+                Unit = {
+                  Description = "Watch Wallust palette for Vicinae theme sync";
+                  Wants = [ "vicinae-theme.service" ];
+                };
+                Install = {
+                  WantedBy = [ "graphical-session.target" ];
+                };
+                Path = {
+                  PathModified = wallustPaletteStateFile;
+                };
+              };
+            };
+          };
+
+          niriWindowBorders = {
+            "niri-window-border-rules" = {
               Unit = {
-                Description = "Resolve current wallpaper from Variety";
-                StartLimitIntervalSec = 0;
+                Description = "Sync per-window hashed border rules for Niri";
+                After = [ "graphical-session.target" ];
+              };
+              Install = {
+                WantedBy = [ "graphical-session.target" ];
+              };
+              Service = {
+                ExecCondition = niriSessionExecCondition;
+                ExecStart = niriWindowBorderRulesWatchCommand;
+                Restart = "always";
+                RestartSec = 2;
+              };
+            };
+          };
+
+          shikaneDefault = {
+            shikanectl-default-watcher = {
+              Unit = {
+                Description = "Reapply shikanectl default profiles for current outputs";
                 After = [
-                  "rclone-mount-dropbox-private.service"
+                  "graphical-session.target"
+                  "shikane.service"
                 ];
-                Wants = [
-                  "rclone-mount-dropbox-private.service"
-                ];
-                Requires = [
-                  "rclone-mount-dropbox-private.service"
-                ];
+                Wants = [ "shikane.service" ];
+              };
+              Install = {
+                WantedBy = [ "graphical-session.target" ];
               };
               Service = {
-                ExecStart = currentWallpaperStateSyncCommand;
-                Type = "oneshot";
-              };
-              Install = {
-                WantedBy = [ "graphical-session.target" ];
-              };
-            };
-          };
-
-          path = {
-            "variety-wallpaper-updated" = {
-              Unit = {
-                Description = "Watch Variety wallpaper pointer";
-                After = [
-                  "rclone-mount-dropbox-private.service"
-                ];
-                Wants = [
-                  "variety-wallpaper-updated.service"
-                  "rclone-mount-dropbox-private.service"
-                ];
-                Requires = [
-                  "rclone-mount-dropbox-private.service"
-                ];
-              };
-              Install = {
-                WantedBy = [ "graphical-session.target" ];
-              };
-              Path = {
-                PathChanged = varietyWallpaperPointerFile;
+                ExecCondition = niriSessionExecCondition;
+                ExecStart = shikaneDefaultWatchCommand;
+                Restart = "always";
+                RestartSec = 2;
               };
             };
           };
         };
-        description = "Systemd service and path to resolve the current wallpaper from Variety.";
+        description = "Systemd services for desktop integration.";
       };
-
-      wallust = lib.mkOption {
-        type = lib.types.attrs;
-        default = {
-          service = {
-            wallust = {
-              Unit = {
-                Description = "Generate Wallust palette from current wallpaper";
-                After = [ "variety-wallpaper-updated.service" ];
-                Wants = [ "variety-wallpaper-updated.service" ];
-              };
-              Service = {
-                ExecStart = "${wallustScript}/bin/run-wallust-from-current-wallpaper";
-                Type = "oneshot";
-              };
-              Install = {
-                WantedBy = [ "graphical-session.target" ];
-              };
-            };
-          };
-
-          path = {
-            wallust = {
-              Unit = {
-                Description = "Watch canonical wallpaper state for Wallust";
-                Wants = [ "wallust.service" ];
-              };
-              Install = {
-                WantedBy = [ "graphical-session.target" ];
-              };
-              Path = {
-                PathModified = currentWallpaperStateFile;
-              };
-            };
-          };
-        };
-        description = "Systemd service and path to generate the Wallust palette.";
-      };
-
-      noctaliaWallpaper = lib.mkOption {
-        type = lib.types.attrs;
-        default = {
-          service = {
-            "noctalia-wallpaper" = {
-              Unit = {
-                Description = "Sync current wallpaper to Noctalia";
-                After = [ "variety-wallpaper-updated.service" ];
-                Wants = [ "variety-wallpaper-updated.service" ];
-              };
-              Service = {
-                ExecStart = noctaliaWallpaperSyncCommand;
-                Type = "oneshot";
-              };
-              Install = {
-                WantedBy = [ "graphical-session.target" ];
-              };
-            };
-          };
-
-          path = {
-            "noctalia-wallpaper" = {
-              Unit = {
-                Description = "Watch canonical wallpaper state for Noctalia";
-                Wants = [ "noctalia-wallpaper.service" ];
-              };
-              Install = {
-                WantedBy = [ "graphical-session.target" ];
-              };
-              Path = {
-                PathModified = currentWallpaperStateFile;
-              };
-            };
-          };
-        };
-        description = "Systemd service and path to sync the current wallpaper into Noctalia.";
-      };
-
-      niriFocusGradient = lib.mkOption {
-        type = lib.types.attrs;
-        default = {
-          service = {
-            "niri-focus-gradient" = {
-              Unit = {
-                Description = "Sync Niri focus gradient from Wallust palette";
-                After = [ "wallust.service" ];
-                Wants = [ "wallust.service" ];
-              };
-              Service = {
-                ExecStart = niriFocusGradientSyncCommand;
-                Type = "oneshot";
-              };
-              Install = {
-                WantedBy = [ "graphical-session.target" ];
-              };
-            };
-          };
-
-          path = {
-            "niri-focus-gradient" = {
-              Unit = {
-                Description = "Watch Wallust palette for Niri focus gradient sync";
-                Wants = [ "niri-focus-gradient.service" ];
-              };
-              Install = {
-                WantedBy = [ "graphical-session.target" ];
-              };
-              Path = {
-                PathModified = wallustPaletteStateFile;
-              };
-            };
-          };
-        };
-        description = "Systemd service and path to sync Niri focus colors from Wallust.";
-      };
-
-      vicinaeTheme = lib.mkOption {
-        type = lib.types.attrs;
-        default = {
-          service = {
-            "vicinae-theme" = {
-              Unit = {
-                Description = "Sync Vicinae themes from Wallust palette";
-                After = [ "wallust.service" ];
-                Wants = [ "wallust.service" ];
-              };
-              Service = {
-                ExecStart = vicinaeThemeSyncCommand;
-                Type = "oneshot";
-              };
-              Install = {
-                WantedBy = [ "graphical-session.target" ];
-              };
-            };
-          };
-
-          path = {
-            "vicinae-theme" = {
-              Unit = {
-                Description = "Watch Wallust palette for Vicinae theme sync";
-                Wants = [ "vicinae-theme.service" ];
-              };
-              Install = {
-                WantedBy = [ "graphical-session.target" ];
-              };
-              Path = {
-                PathModified = wallustPaletteStateFile;
-              };
-            };
-          };
-        };
-        description = "Systemd service and path to sync Vicinae themes from Wallust.";
-      };
-
-      niriWindowBorders = lib.mkOption {
-        type = lib.types.attrs;
-        default = {
-          niri-window-border-rules = {
-            Unit = {
-              Description = "Sync per-window hashed border rules for Niri";
-              After = [ "graphical-session.target" ];
-            };
-            Install = {
-              WantedBy = [ "graphical-session.target" ];
-            };
-            Service = {
-              ExecCondition = niriSessionExecCondition;
-              ExecStart = niriWindowBorderRulesWatchCommand;
-              Restart = "always";
-              RestartSec = 2;
-            };
-          };
-        };
-        description = "Systemd service for dynamic per-window Niri border colors.";
-      };
-
-      shikaneDefault = lib.mkOption {
-        type = lib.types.attrs;
-        default = {
-          shikanectl-default-watcher = {
-            Unit = {
-              Description = "Reapply shikanectl default profiles for current outputs";
-              After = [
-                "graphical-session.target"
-                "shikane.service"
-              ];
-              Wants = [ "shikane.service" ];
-            };
-            Install = {
-              WantedBy = [ "graphical-session.target" ];
-            };
-            Service = {
-              ExecCondition = niriSessionExecCondition;
-              ExecStart = shikaneDefaultWatchCommand;
-              Restart = "always";
-              RestartSec = 2;
-            };
-          };
-        };
-        description = "Systemd service to reapply saved shikanectl defaults when outputs change.";
-      };
-
     };
   };
 
-  config = {
-    home.activation.ensureNiriFocusGradientFile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      target_file="${niriFocusGradientFile}"
-      ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target_file")"
-      if [ ! -f "$target_file" ]; then
-        ${pkgs.coreutils}/bin/printf '%s\n' \
-          'layout {' \
-          '    focus-ring {' \
-          '        active-gradient from="#80c8ff" to="#c7ff7f" angle=45' \
-          '    }' \
-          '}' > "$target_file"
-      fi
-    '';
+  config =
+    let
+      cfg = config.customServices;
+      coreServices = {
+        emacs = {
+          package = pkgs.emacs-pgtk;
+          startWithUserSession = "graphical";
+          enable = true;
+          defaultEditor = true;
+          client.arguments = [
+            "--alternative-editor ''"
+            "--reuse-frame"
+            "--no-wait"
+          ];
+        };
 
-    home.activation.ensureNiriWindowBorderRulesFile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      target_file="${niriWindowBorderRulesFile}"
-      ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target_file")"
-      if [ ! -f "$target_file" ]; then
-        ${pkgs.coreutils}/bin/touch "$target_file"
-      fi
-    '';
+        gpg-agent = {
+          enable = true;
+          pinentry.package = pkgs.pinentry-gtk2;
+          pinentry.program = "pinentry-gtk-2";
+        };
 
-    systemd = {
-      user = {
-        startServices = true;
+        ssh-agent = {
+          enable = true;
+          enableBashIntegration = true;
+        };
 
-        services = lib.mkMerge [
-          config.customServices.rclone
-          (config.customServices.varietyWallpaper.service or { })
-          (config.customServices.wallust.service or { })
-          (config.customServices.noctaliaWallpaper.service or { })
-          (config.customServices.niriFocusGradient.service or { })
-          (config.customServices.vicinaeTheme.service or { })
-          config.customServices.niriWindowBorders
-          (lib.mkIf config.services.shikane.enable config.customServices.shikaneDefault)
-          (lib.mkIf config.services.swayidle.enable {
-            swayidle.Service.ExecCondition = niriSessionExecCondition;
-          })
-        ];
-
-        paths = lib.mkMerge [
-          (config.customServices.varietyWallpaper.path or { })
-          (config.customServices.wallust.path or { })
-          (config.customServices.noctaliaWallpaper.path or { })
-          (config.customServices.niriFocusGradient.path or { })
-          (config.customServices.vicinaeTheme.path or { })
-        ];
-      };
-    };
-
-    services = {
-      emacs = {
-        package = pkgs.emacs-pgtk;
-        startWithUserSession = "graphical";
-        enable = true;
-        defaultEditor = true;
-        client.arguments = [
-          "--alternative-editor ''"
-          "--reuse-frame"
-          "--no-wait"
-        ];
+        home-manager.autoExpire.enable = true;
       };
 
-      gpg-agent = {
-        enable = true;
-        pinentry.package = pkgs.pinentry-gtk2;
-        pinentry.program = "pinentry-gtk-2";
-      };
+      guiServices = {
+        udiskie = {
+          enable = true;
+          tray = "auto";
+        };
 
-      udiskie = {
-        enable = true;
-        tray = if config.customPackages.enableGui then "auto" else "never";
-      };
+        unclutter = {
+          enable = true;
+          timeout = 5;
+        };
 
-      unclutter = {
-        enable = true;
-        timeout = 5;
-      };
+        swayidle = {
+          inherit (config.customPackages.gui) enable;
+          package = pkgs.swayidle;
+          systemdTargets = [ "graphical-session.target" ];
+          extraArgs = [ "-w" ];
+          timeouts = [
+            {
+              timeout = 300;
+              command = lockScreenCommand;
+            }
+            {
+              timeout = 900;
+              command = "${pkgs.systemd}/bin/systemctl suspend";
+            }
+          ];
+          events = {
+            unlock = null;
+            lock = lockScreenCommand;
+            before-sleep = lockScreenCommand;
+            after-resume = null;
+          };
+        };
 
-      ssh-agent = {
-        enable = true;
-        enableBashIntegration = true;
+        easyeffects.enable = true;
+        mpris-proxy.enable = true;
       };
+    in
+    {
+      home.activation.ensureNiriFocusGradientFile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        target_file="${niriFocusGradientFile}"
+        ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target_file")"
+        if [ ! -f "$target_file" ]; then
+          ${pkgs.coreutils}/bin/printf '%s\n' \
+            'layout {' \
+            '    focus-ring {' \
+            '        active-gradient from="#80c8ff" to="#c7ff7f" angle=45' \
+            '    }' \
+            '}' > "$target_file"
+        fi
+      '';
 
-      swayidle = {
-        enable = config.customPackages.enableGui;
-        package = pkgs.swayidle;
-        systemdTarget = "graphical-session.target";
-        extraArgs = [ "-w" ];
-        timeouts = [
-          {
-            timeout = 300;
-            command = lockScreenCommand;
-          }
-          {
-            timeout = 900;
-            command = "${pkgs.systemd}/bin/systemctl suspend";
-          }
-        ];
-        events = {
-          unlock = null;
-          lock = lockScreenCommand;
-          before-sleep = lockScreenCommand;
-          after-resume = null;
+      home.activation.ensureNiriWindowBorderRulesFile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        target_file="${niriWindowBorderRulesFile}"
+        ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target_file")"
+        if [ ! -f "$target_file" ]; then
+          ${pkgs.coreutils}/bin/touch "$target_file"
+        fi
+      '';
+
+      systemd = {
+        user = {
+          startServices = true;
+
+          services = lib.mkMerge [
+            (lib.mkIf config.customPackages.gui.enable (cfg.storage.rclone.service or { }))
+            (lib.mkIf config.customPackages.gui.enable (cfg.wallpaper.varietyWallpaper.service or { }))
+            (lib.mkIf config.customPackages.gui.enable (cfg.wallpaper.wallust.service or { }))
+            (lib.mkIf config.customPackages.gui.enable (cfg.wallpaper.noctaliaWallpaper.service or { }))
+            (lib.mkIf config.customPackages.gui.enable (cfg.desktop.niriFocusGradient.service or { }))
+            (lib.mkIf config.customPackages.gui.enable (cfg.desktop.vicinaeTheme.service or { }))
+            (lib.mkIf config.customPackages.gui.enable cfg.desktop.niriWindowBorders)
+            (lib.mkIf (
+              config.customPackages.gui.enable && config.services.shikane.enable
+            ) cfg.desktop.shikaneDefault)
+            (lib.mkIf config.services.swayidle.enable {
+              swayidle.Service.ExecCondition = niriSessionExecCondition;
+            })
+          ];
+
+          paths = lib.mkMerge [
+            (lib.mkIf config.customPackages.gui.enable (cfg.wallpaper.varietyWallpaper.path or { }))
+            (lib.mkIf config.customPackages.gui.enable (cfg.wallpaper.wallust.path or { }))
+            (lib.mkIf config.customPackages.gui.enable (cfg.wallpaper.noctaliaWallpaper.path or { }))
+            (lib.mkIf config.customPackages.gui.enable (cfg.desktop.niriFocusGradient.path or { }))
+            (lib.mkIf config.customPackages.gui.enable (cfg.desktop.vicinaeTheme.path or { }))
+          ];
         };
       };
 
-      easyeffects.enable = true;
-      mpris-proxy.enable = true;
-      home-manager.autoExpire.enable = true;
+      services = coreServices // lib.optionalAttrs config.customPackages.gui.enable guiServices;
     };
-
-  };
 }
