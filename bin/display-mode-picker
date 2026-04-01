@@ -15,6 +15,26 @@ mode_cycle=(
   external-only
 )
 
+usage() {
+  printf '%s\n' "Usage: display-mode-picker [MODE|cycle|--help|-h]"
+  printf '%s\n' ""
+  printf '%s\n' "Modes:"
+  printf '%s\n' "  internal-only  Enable only the internal display"
+  printf '%s\n' "  mirror         Mirror the internal display to external outputs"
+  printf '%s\n' "  extend         Enable internal and external displays"
+  printf '%s\n' "  external-only  Enable only external displays"
+  printf '%s\n' "  cycle          Switch to the next display mode"
+  printf '%s\n' ""
+  printf '%s\n' "Without an argument, opens a Vicinae picker."
+}
+
+case "${1:-}" in
+  -h|--help)
+    usage
+    exit 0
+    ;;
+esac
+
 mkdir -p "$state_dir"
 
 acquire_lock() {
