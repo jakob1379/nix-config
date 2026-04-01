@@ -118,7 +118,27 @@ notify_mode() {
   notify-send -i "$(mode_icon_name "$mode")" -t 3000 "${CURRENT_LAYOUT}" "${NEXT_LAYOUT}" >/dev/null 2>&1 || true
 }
 
-pick_mode_with_fuzzel() {
+mode_from_label() {
+  case "$1" in
+    "Laptop"|"Laptop [Current]")
+      printf '%s\n' "internal-only"
+      ;;
+    "Mirror"|"Mirror [Current]")
+      printf '%s\n' "mirror"
+      ;;
+    "Extend"|"Extend [Current]")
+      printf '%s\n' "extend"
+      ;;
+    "External"|"External [Current]")
+      printf '%s\n' "external-only"
+      ;;
+    *)
+      printf '%s\n' ""
+      ;;
+  esac
+}
+
+pick_mode_with_vicinae() {
   local current mode label selected
 
   current="$(normalize_mode "$(detect_current_mode)")"
@@ -130,30 +150,21 @@ pick_mode_with_fuzzel() {
           label+=" [Current]"
         fi
 
-        printf '%s\t%s\0icon\x1f%s\n' "$mode" "$label" "$(mode_icon_name "$mode")"
+        printf '%s\n' "$label"
       done
-    } | fuzzel --dmenu \
-      --prompt="Display > " \
-      --lines="${#mode_cycle[@]}" \
-      --width=32 \
-      --background=1f2430ff \
-      --text-color=d8dee9ff \
-      --selection-color=3b4252ff \
-      --selection-text-color=88c0d0ff \
-      --prompt-color=81a1c1ff \
-      --border-width=2 \
-      --border-radius=8 \
-      --with-nth=2 \
-      --accept-nth=1 \
-      --nth-delimiter=$'\t' \
-      --no-run-if-empty
+    } | vicinae dmenu \
+      --navigation-title "Display Mode" \
+      --section-title "Layouts" \
+      --placeholder "Display > " \
+      --no-metadata \
+      --no-quick-look
   )" || return 1
 
   if [[ -z "$selected" ]]; then
     return 1
   fi
 
-  normalize_mode "$selected"
+  normalize_mode "$(mode_from_label "$selected")"
 }
 
 normalize_mode() {
@@ -326,7 +337,7 @@ fi
 
 mode="${1:-}"
 if [[ -z "$mode" ]]; then
-  mode="$(pick_mode_with_fuzzel || true)"
+  mode="$(pick_mode_with_vicinae || true)"
   if [[ -z "$mode" ]]; then
     exit 0
   fi
