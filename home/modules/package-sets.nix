@@ -259,10 +259,10 @@
       name = "display-mode-picker";
       runtimeInputs = with pkgs; [
         coreutils
-        fuzzel
         jq
         libnotify
         niri
+        vicinae
         wl-mirror
       ];
       text = builtins.readFile ../../bin/display-mode-picker;
