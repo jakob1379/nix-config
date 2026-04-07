@@ -10,6 +10,10 @@
 
 {
   "$schema": "https://vicinae.com/schemas/config.json",
+  "font": {
+    "rendering": "native",
+    "normal": {}
+  },
   "theme": {
     "light": {
       "name": "wallust-light",
@@ -18,6 +22,11 @@
     "dark": {
       "name": "wallust-dark",
       "icon_theme": "default"
+    }
+  },
+  "providers": {
+    "clipboard": {
+      "enabled": true
     }
   }
 }
