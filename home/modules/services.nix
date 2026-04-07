@@ -406,6 +406,10 @@ in
           ];
         };
 
+        cachix-agent = {
+
+        };
+
         gpg-agent = {
           enable = true;
           pinentry.package = pkgs.pinentry-gtk2;
@@ -414,7 +418,6 @@ in
 
         ssh-agent = {
           enable = true;
-          enableBashIntegration = true;
         };
 
         home-manager.autoExpire.enable = true;

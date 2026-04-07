@@ -66,7 +66,8 @@ in
           profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
           initExtra = ''
             bind '"\C-w": "nix-find\n"'
-            bind '"\C-q": "ag-fuzzy\n"'
+            bind '"\ea": "ag-fuzzy\n"'
+            bind -x '"\eu":"up"'
           '';
           shellOptions = [ "cdspell" ];
           historyControl = [ "ignoreboth" ];
@@ -363,9 +364,9 @@ in
           enable = true;
           enableDefaultConfig = false;
           includes = [ "~/.ssh/local_config" ];
-          extraOptionOverrides = lib.optionalAttrs config.customSsh.enableKeepassxc {
-            ProxyCommand = "$HOME/.ssh/keepassxc-prompt %h %p";
-          };
+          # extraOptionOverrides = lib.optionalAttrs config.customSsh.enableKeepassxc {
+          #   ProxyCommand = "$HOME/.ssh/keepassxc-prompt %h %p";
+          # };
           matchBlocks = {
             "*" = {
               forwardAgent = true;
@@ -443,6 +444,7 @@ in
                   "run"
                   "--with"
                   "ruff"
+                  "ruff"
                   "server"
                 ];
                 extensions = [
@@ -516,11 +518,6 @@ in
               "opencode-devcontainers"
             ];
 
-            keybinds = {
-              app_exit = "ctrl+shift+q";
-              input_clear = "ctrl+c";
-            };
-
             agent = {
               explore = {
                 disable = true;
@@ -528,6 +525,13 @@ in
               general = {
                 disable = true;
               };
+            };
+          };
+
+          tui = {
+            keybinds = {
+              app_exit = "ctrl+shift+q";
+              input_clear = "ctrl+c";
             };
           };
         };
@@ -580,7 +584,14 @@ in
       nix = {
         package = pkgs.nix;
         settings = {
-          substituters = [ "https://cache.nixos.org/" ];
+          substituters = [
+            "https://cache.nixos.org/"
+            "https://jgalabs-homelab.cachix.org"
+          ];
+          trusted-public-keys = [
+            "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+            "jgalabs-homelab.cachix.org-1:STDTFhtj7rW1eWuCT75Ns0UDZqYu0BUTYsXeYHlbhwE="
+          ];
           max-jobs = 1;
           experimental-features = [
             "nix-command"

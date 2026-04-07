@@ -12,8 +12,8 @@ jobs:
         config: [pi@raspberrypi, jga@yoga, jsg@amd]
     steps:
       - uses: actions/checkout@v4
-      - uses: DeterminateSystems/magic-nix-cache-action@v2
-      - uses: cachix/cachix-action@v12
+      - uses: cachix/install-nix-action@v25
+      - uses: cachix/cachix-action@v14
         with:
           name: jgalabs-homelab
           authToken: ${{ secrets.CACHIX_TOKEN }}
