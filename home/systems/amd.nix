@@ -39,9 +39,14 @@ in
       kdePackages.qt6ct
       libsForQt5.qt5ct
       nwg-look
-      codex
     ]
   );
+
+  programs = {
+    codex = {
+      enable = true;
+    };
+  };
 
   services.tailscale-systray.enable = true;
 
