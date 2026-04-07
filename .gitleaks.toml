@@ -1,0 +1,13 @@
+[[allowlists]]
+description = "Allow the checked-in VM password hash"
+condition = "AND"
+regexTarget = "line"
+paths = [
+  '''nixos/hosts/vm/base\.nix'''
+]
+regexes = [
+  '''initialHashedPassword = lib\.mkDefault "\$y\$j9T\$VJd3I/BqxcnLrCv0HnRx1\.\$IhfmwBjIiqWz0seqIJ19ujfowZRV6718lzsFZ4cdrp5";'''
+]
+
+[extend]
+useDefault = true
