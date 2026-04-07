@@ -35,7 +35,7 @@
     system = "x86_64-linux";
     specialArgs = { inherit inputs; };
     modules = [
-      ./hosts/vm/docker-main
+      ./hosts/vm/base.nix
       { nixpkgs.config.allowUnfreePredicate = lib.allowUnfreePredicate; }
     ];
   };

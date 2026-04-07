@@ -1,28 +1,10 @@
 # VM hosts
 
-`base.nix` holds the shared defaults for VM-style NixOS hosts in this tree.
+`base.nix` is the actual config for the only VM host in this tree:
+`vm-docker-main`.
 
-## Create a new VM host
-
-1. Create a new directory under `nixos/hosts/vm/`, for example
-   `nixos/hosts/vm/my-host/`.
-2. Add a `default.nix` that imports `../base.nix`.
-3. Register the host in `nixos/default.nix` under `nixosConfigurations`.
-
-Minimal example:
-
-```nix
-{ ... }:
-{
-  imports = [
-    ../base.nix
-  ];
-
-  networking.hostName = "my-host";
-
-  system.stateVersion = "25.05";
-}
-```
+If a second VM ever appears, then split shared defaults back out. Until then,
+the extra host wrapper is just noise.
 
 ## Build a Proxmox image
 
@@ -42,8 +24,8 @@ nix run nixpkgs#nixos-rebuild -- \
   --image-variant proxmox
 ```
 
-That builds the Proxmox VMA image from `nixosConfigurations.vm-docker-main` and
-leaves a `result` symlink in the current directory.
+That builds the Proxmox VMA image from `nixosConfigurations.vm-docker-main`
+defined in `base.nix` and leaves a `result` symlink in the current directory.
 
 To see available image variants for a host:
 
