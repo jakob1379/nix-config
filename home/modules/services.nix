@@ -457,6 +457,10 @@ in
           };
         };
 
+        waytorandr = {
+          enable = true;
+        };
+
         easyeffects.enable = true;
         mpris-proxy.enable = true;
       };

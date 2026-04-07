@@ -8,6 +8,10 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    waytorandr = {
+      url = "github:jakob1379/waytorandr";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     zen-browser.url = "github:youwen5/zen-browser-flake";
   };
 
