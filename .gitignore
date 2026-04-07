@@ -86,6 +86,7 @@ __pycache__/
 /flake.lock
 .aider*
 .aider.*
+.codex
 /.droid
 .droid
 result
