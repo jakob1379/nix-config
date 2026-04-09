@@ -85,7 +85,6 @@ let
   };
 
   niriSessionExecCondition = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "${pkgs.coreutils}/bin/printenv XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qi niri"}";
-  lockScreenCommand = "${pkgs.noctalia-shell}/bin/noctalia-shell ipc --newest call lockScreen lock";
 
   niriFocusGradientSyncScript = pkgs.writeShellApplication {
     name = "sync-niri-focus-gradient";
@@ -432,29 +431,6 @@ in
         unclutter = {
           enable = true;
           timeout = 5;
-        };
-
-        swayidle = {
-          inherit (config.customPackages.gui) enable;
-          package = pkgs.swayidle;
-          systemdTargets = [ "graphical-session.target" ];
-          extraArgs = [ "-w" ];
-          timeouts = [
-            {
-              timeout = 300;
-              command = lockScreenCommand;
-            }
-            {
-              timeout = 900;
-              command = "${pkgs.systemd}/bin/systemctl suspend";
-            }
-          ];
-          events = {
-            unlock = null;
-            lock = lockScreenCommand;
-            before-sleep = lockScreenCommand;
-            after-resume = null;
-          };
         };
 
         waytorandr = {

@@ -44,7 +44,6 @@
     wifi-qr
     feh
     swaybg
-    netpeek
     libnotify
     prettier
     onlyoffice-desktopeditors
