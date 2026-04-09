@@ -61,6 +61,11 @@ in
       };
 
       programs = {
+        atuin = {
+          enable = true;
+          # daemon.enable = true;
+        };
+
         bash = {
           enable = true;
           profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
@@ -576,6 +581,7 @@ in
         dk = "dragon-drop --keep";
         dx = "dragon-drop --and-exit";
         ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
+        cx = "codex resume";
         grep = "grep --color=auto";
         q = "qalc";
         tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
