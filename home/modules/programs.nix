@@ -61,11 +61,6 @@ in
       };
 
       programs = {
-        atuin = {
-          enable = true;
-          # daemon.enable = true;
-        };
-
         bash = {
           enable = true;
           profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
@@ -516,7 +511,7 @@ in
             small_model = "openai/gpt-5.3-codex";
 
             plugin = [
-              "oh-my-opencode-slim"
+              "file://${config.home.homeDirectory}/.config/opencode/node_modules/oh-my-opencode-slim/dist/index.js"
               "@mohak34/opencode-notifier@latest"
               "@franlol/opencode-md-table-formatter@latest"
               "@inkdust2021/opencode-vibeguard@latest"
@@ -617,6 +612,9 @@ in
         configFile = {
           "opencode/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink (
             config.home.homeDirectory + "/.config/home-manager/dotfiles/AGENTS.md"
+          );
+          "opencode/oh-my-opencode-slim.json".source = config.lib.file.mkOutOfStoreSymlink (
+            config.home.homeDirectory + "/.config/home-manager/dotfiles/opencode/oh-my-opencode-slim.json"
           );
           "autostart/org.keepassxc.KeePassXC.desktop".text = ''
             [Desktop Entry]
