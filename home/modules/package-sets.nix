@@ -59,11 +59,14 @@
       dragon-drop
       xkill
     ])
-    ++ lib.optionals (system == "x86_64-linux") [ pkgs.t3code-desktop ];
+    ++ lib.optionals (system == "x86_64-linux" && builtins.hasAttr "t3code-desktop" pkgs) [
+      pkgs.t3code-desktop
+    ];
 
   dev =
     with pkgs;
     [
+      bun
       graphviz
       meslo-lgs-nf
       nerd-fonts.fira-code
