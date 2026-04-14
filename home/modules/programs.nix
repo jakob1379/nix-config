@@ -558,6 +558,7 @@ in
 
       # Home shell aliases
       home.shellAliases = {
+        noctalia-restart = ''"noctalia-shell list --all --json | jq .[].pid | xargs kill || echo "No instances to kill, starting new" && noctalia-shell -d"'';
         onefetch = "onefetch -E --nerd-fonts --no-color-palette";
         cat = "bat";
         watch = "hwatch";
