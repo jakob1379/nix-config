@@ -580,7 +580,11 @@ We want modes for docker compose and Dockerfiles
 *** Doom Modeline
 #+BEGIN_SRC emacs-lisp
 (use-package doom-modeline
-  :hook (after-init . doom-modeline-mode))
+  :straight t
+  :defer t
+  :hook (after-init . (lambda ()
+                        (when (display-graphic-p)
+                          (doom-modeline-mode 1)))))
 #+END_SRC
 *** Editorconfig
 read and understand ~.editorconfig~ files
@@ -1380,6 +1384,12 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
     (load custom-file)))
 #+END_SRC
 *** Org Mode
+**** org mermaid integration
+#+BEGIN_SRC emacs-lisp
+(use-package ob-mermaid
+  :defer t)
+#+END_SRC
+
 **** The org package
 #+BEGIN_SRC emacs-lisp
 (use-package org
@@ -1410,18 +1420,15 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
    )
   (org-export-backends '(ascii html icalendar pandoc))     ;; Set export backends
   :config
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((shell . t)
-     (python . t)
-     (mermaid . t)
-     (C . t))
-   )
+  (let ((org-babel-languages '((shell . t)
+                               (python . t)
+                               (C . t))))
+    (when (require 'ob-mermaid nil t)
+      (push '(mermaid . t) org-babel-languages))
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     org-babel-languages))
   )
-#+END_SRC
-**** org mermaid integration
-#+BEGIN_SRC emacs-lisp
-(use-package ob-mermaid)
 #+END_SRC
 
 **** Org modern ui theme
@@ -1639,8 +1646,10 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
 *** Highlight indentation
 #+BEGIN_SRC emacs-lisp
 (use-package highlight-indent-guides
-  :hook (after-change-major-mode-hook . highlight-indent-guides-mode)
-  :config (highlight-indent-guides-responsive "stack"))
+  :hook (prog-mode . highlight-indent-guides-mode)
+  :custom
+  (highlight-indent-guides-responsive 'stack))
+#+END_SRC
 *** Restart Emacs function
 #+BEGIN_SRC emacs-lisp
 (use-package restart-emacs
@@ -1692,9 +1701,9 @@ necessarily superseded by the ssh config.
   (tramp-chunksize 500)
   (tramp-use-connection-share nil)
   :config
-  (let ((ssh-configs (append (list "~/.ssh/config")
-                             (directory-files-recursively "~/.ssh/conf.d/" "\\.config$")
-                             )))
+  (let ((ssh-configs (append (seq-filter #'file-exists-p (list "~/.ssh/config"))
+                             (when (file-directory-p "~/.ssh/conf.d/")
+                               (directory-files-recursively "~/.ssh/conf.d/" "\\.config$")))))
     ;; Log the detected SSH config files to the *tramp-info* buffer
     (with-current-buffer (get-buffer-create "*tramp-info*")
       (insert (format "Found SSH config files: %s\n" ssh-configs)))
