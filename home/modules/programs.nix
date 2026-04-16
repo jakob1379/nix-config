@@ -45,6 +45,57 @@ in
 
   config =
     let
+      opencodeMainModel = "openai/gpt-5.4";
+      opencodeSmallModel = "openai/gpt-5.3-codex";
+      opencodeSlimSettings = {
+        "$schema" = "https://unpkg.com/oh-my-opencode-slim@latest/oh-my-opencode-slim.schema.json";
+        preset = "openai";
+        presets = {
+          openai = {
+            orchestrator = {
+              model = opencodeMainModel;
+              variant = "high";
+              skills = [ "*" ];
+              mcps = [ "context7" ];
+            };
+            oracle = {
+              model = opencodeMainModel;
+              variant = "high";
+              skills = [ ];
+              mcps = [ ];
+            };
+            librarian = {
+              model = opencodeSmallModel;
+              variant = "low";
+              skills = [ ];
+              mcps = [ "context7" ];
+            };
+            explorer = {
+              model = opencodeSmallModel;
+              variant = "low";
+              skills = [ ];
+              mcps = [ ];
+            };
+            designer = {
+              model = opencodeSmallModel;
+              variant = "medium";
+              skills = [ ];
+              mcps = [ ];
+            };
+            fixer = {
+              model = opencodeSmallModel;
+              variant = "low";
+              skills = [ ];
+              mcps = [ ];
+            };
+          };
+        };
+        tmux = {
+          enabled = true;
+          layout = "main-vertical";
+          main_pane_size = 60;
+        };
+      };
       sshSocketDir = config.home.homeDirectory + "/.ssh/sockets";
     in
     {
@@ -507,11 +558,11 @@ in
               };
             };
 
-            model = "openai/gpt-5.4";
-            small_model = "openai/gpt-5.3-codex";
+            model = opencodeMainModel;
+            small_model = opencodeSmallModel;
 
             plugin = [
-              "oh-my-opencode-slim"
+              "oh-my-opencode-slim@0.9.14"
               "@mohak34/opencode-notifier@latest"
               "@franlol/opencode-md-table-formatter@latest"
               "@inkdust2021/opencode-vibeguard@latest"
@@ -612,6 +663,7 @@ in
           "opencode/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink (
             config.home.homeDirectory + "/.config/home-manager/dotfiles/AGENTS.md"
           );
+          "opencode/oh-my-opencode-slim.json".text = builtins.toJSON opencodeSlimSettings;
           "autostart/org.keepassxc.KeePassXC.desktop".text = ''
             [Desktop Entry]
             Name=KeePassXC
