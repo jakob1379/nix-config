@@ -250,7 +250,11 @@ in
         };
         gh = {
           enable = true;
-          extensions = [ pkgs.gh-dash ];
+          extensions = [
+            pkgs.gh-dash
+            pkgs.gh-poi
+            pkgs.gh-stack
+          ];
           gitCredentialHelper.enable = true;
           settings.aliases = {
             web = "repo view --web";
@@ -609,6 +613,7 @@ in
 
       # Home shell aliases
       home.shellAliases = {
+        noctalia-restart = "noctalia-shell list --all --json | jq .[].pid | xargs -r kill; noctalia-shell -d";
         onefetch = "onefetch -E --nerd-fonts --no-color-palette";
         cat = "bat";
         watch = "hwatch";
@@ -627,6 +632,7 @@ in
         dk = "dragon-drop --keep";
         dx = "dragon-drop --and-exit";
         ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
+        cx = "codex resume";
         grep = "grep --color=auto";
         q = "qalc";
         tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';

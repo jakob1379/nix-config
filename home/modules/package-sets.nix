@@ -2,6 +2,8 @@
   pkgs,
   lib,
   system,
+  inputs,
+  ...
 }:
 
 {
@@ -35,34 +37,38 @@
     yq-go
   ];
 
-  gui = with pkgs; [
-    brave
-    tana
-    noctalia-shell
-    xwayland-satellite
-    wdisplays
-    wifi-qr
-    feh
-    swaybg
-    netpeek
-    libnotify
-    prettier
-    onlyoffice-desktopeditors
-    pika-backup
-    signal-desktop
-    spotify
-    stretchly
-    udiskie
-    variety
-    virt-manager
-    vlc
-    dragon-drop
-    xkill
-  ];
+  gui =
+    (with pkgs; [
+      brave
+      tana
+      noctalia-shell
+      xwayland-satellite
+      wdisplays
+      wifi-qr
+      feh
+      swaybg
+      libnotify
+      prettier
+      onlyoffice-desktopeditors
+      pika-backup
+      signal-desktop
+      spotify
+      stretchly
+      udiskie
+      variety
+      virt-manager
+      vlc
+      dragon-drop
+      xkill
+    ])
+    ++ lib.optionals (system == "x86_64-linux" && builtins.hasAttr "t3code-desktop" pkgs) [
+      pkgs.t3code-desktop
+    ];
 
   dev =
     with pkgs;
     [
+      inputs."hermes-agent".packages.${system}.default
       bun
       graphviz
       meslo-lgs-nf
@@ -70,6 +76,7 @@
       nodejs
       pandoc
       poppler-utils
+      t3code
       dive
       frogmouth
       wakatime-cli
