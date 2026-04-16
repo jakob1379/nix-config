@@ -3,11 +3,19 @@
   lib,
   config,
   system,
+  inputs,
   ...
 }:
 
 let
-  packageSets = import ./package-sets.nix { inherit pkgs lib system; };
+  packageSets = import ./package-sets.nix {
+    inherit
+      pkgs
+      lib
+      system
+      inputs
+      ;
+  };
 in
 {
   options.customPackages = {

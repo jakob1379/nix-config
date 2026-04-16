@@ -2,11 +2,19 @@
   pkgs,
   lib,
   system,
+  inputs,
   ...
 }:
 
 let
-  packageSets = import ../modules/package-sets.nix { inherit pkgs lib system; };
+  packageSets = import ../modules/package-sets.nix {
+    inherit
+      pkgs
+      lib
+      system
+      inputs
+      ;
+  };
 in
 {
   customGit = {

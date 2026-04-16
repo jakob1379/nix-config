@@ -2,6 +2,8 @@
   pkgs,
   lib,
   system,
+  inputs,
+  ...
 }:
 
 {
@@ -66,6 +68,7 @@
   dev =
     with pkgs;
     [
+      inputs."hermes-agent".packages.${system}.default
       bun
       graphviz
       meslo-lgs-nf
