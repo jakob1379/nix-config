@@ -199,7 +199,11 @@ in
         };
         gh = {
           enable = true;
-          extensions = [ pkgs.gh-dash ];
+          extensions = [
+            pkgs.gh-dash
+            pkgs.gh-poi
+            pkgs.gh-stack
+          ];
           gitCredentialHelper.enable = true;
           settings.aliases = {
             web = "repo view --web";
