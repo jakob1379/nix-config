@@ -20,6 +20,10 @@ let
   };
 in
 {
+  imports = [
+    inputs.nix-index-database.homeModules.default
+  ];
+
   options = {
     customGit = {
       userName = lib.mkOption {
@@ -111,6 +115,7 @@ in
         };
       };
 
+      shell.enableBashIntegration = true;
       programs = {
         bash = {
           enable = true;
@@ -591,10 +596,8 @@ in
           };
         };
 
-        nix-index = {
-          enable = true;
-          enableBashIntegration = true;
-        };
+        nix-index-database.comma.enable = true;
+        nix-index.enable = true;
 
         nix-search-tv = {
           enable = true;
