@@ -445,6 +445,10 @@ in
         };
 
         opencode = {
+          commands = {
+            desloppify = builtins.readFile ../../dotfiles/opencode/commands/desloppify.md;
+          };
+
           enable = true;
           settings = {
             lsp = {
@@ -569,7 +573,6 @@ in
               "oh-my-opencode-slim@0.9.14"
               "@mohak34/opencode-notifier@latest"
               "@franlol/opencode-md-table-formatter@latest"
-              "@inkdust2021/opencode-vibeguard@latest"
               "opencode-devcontainers"
             ];
 
@@ -613,7 +616,7 @@ in
 
       # Home shell aliases
       home.shellAliases = {
-        noctalia-restart = "noctalia-shell list --all --json | jq .[].pid | xargs -r kill; noctalia-shell -d";
+        noctalia-restart = "noctalia-shell list --all --json | jq -Rsc '(fromjson? // [])[]?.pid' | xargs -r kill; noctalia-shell -d";
         onefetch = "onefetch -E --nerd-fonts --no-color-palette";
         cat = "bat";
         watch = "hwatch";

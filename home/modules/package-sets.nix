@@ -15,7 +15,7 @@
     duf
     entr
     gdu
-    gitleaks
+    betterleaks
     glib
     gnumake
     unixtools.ping
@@ -68,7 +68,6 @@
   dev =
     with pkgs;
     [
-      inputs."hermes-agent".packages.${system}.default
       bun
       graphviz
       meslo-lgs-nf
