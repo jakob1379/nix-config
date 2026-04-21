@@ -2,7 +2,6 @@
   pkgs,
   lib,
   system,
-  inputs,
   ...
 }:
 
@@ -252,15 +251,6 @@
         pkgs.silver-searcher
       ];
       text = builtins.readFile ../../bin/noqa-stats;
-    })
-    (pkgs.writeShellApplication {
-      name = "nix-index-with-temp-swap";
-      runtimeInputs = with pkgs; [
-        nix-index
-        coreutils
-        util-linux
-      ];
-      text = builtins.readFile ../../bin/nix-index-swap;
     })
     (pkgs.writeShellApplication {
       name = "display-mode-picker";
