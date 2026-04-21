@@ -42,7 +42,9 @@
     "hermes-agent": {
       "inputs": {
         "flake-parts": "flake-parts",
-        "nixpkgs": "nixpkgs",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
         "pyproject-build-systems": "pyproject-build-systems",
         "pyproject-nix": "pyproject-nix_2",
         "uv2nix": "uv2nix_2"
@@ -81,23 +83,27 @@
         "type": "github"
       }
     },
-    "nixpkgs": {
+    "nix-index-database": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
       "locked": {
-        "lastModified": 1775036866,
-        "narHash": "sha256-ZojAnPuCdy657PbTq5V0Y+AHKhZAIwSIT2cb8UgAz/U=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "6201e203d09599479a3b3450ed24fa81537ebc4e",
+        "lastModified": 1776575850,
+        "narHash": "sha256-28Gqz0GDpGsBv8GtAn2dywEQRr+CtTDsD5J7VD6icBE=",
+        "owner": "nix-community",
+        "repo": "nix-index-database",
+        "rev": "3b9653a107c736222b5ae0d4036dd3b885219065",
         "type": "github"
       },
       "original": {
-        "owner": "NixOS",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
+        "owner": "nix-community",
+        "repo": "nix-index-database",
         "type": "github"
       }
     },
-    "nixpkgs_2": {
+    "nixpkgs": {
       "locked": {
         "lastModified": 1776268487,
         "narHash": "sha256-oGUKCRR4qQGTgicxkiAHDd7w2YWCLtG9n8IWtNZPxo4=",
@@ -109,22 +115,6 @@
       "original": {
         "owner": "nixos",
         "ref": "nixos-unstable-small",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_3": {
-      "locked": {
-        "lastModified": 1775423009,
-        "narHash": "sha256-vPKLpjhIVWdDrfiUM8atW6YkIggCEKdSAlJPzzhkQlw=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "68d8aa3d661f0e6bd5862291b5bb263b2a6595c9",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-unstable",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -222,7 +212,8 @@
         "flake-utils": "flake-utils",
         "hermes-agent": "hermes-agent",
         "home-manager": "home-manager",
-        "nixpkgs": "nixpkgs_2",
+        "nix-index-database": "nix-index-database",
+        "nixpkgs": "nixpkgs",
         "t3code-flake": "t3code-flake",
         "waytorandr": "waytorandr",
         "zen-browser": "zen-browser"
@@ -390,7 +381,9 @@
     },
     "zen-browser": {
       "inputs": {
-        "nixpkgs": "nixpkgs_3"
+        "nixpkgs": [
+          "nixpkgs"
+        ]
       },
       "locked": {
         "lastModified": 1775710180,
