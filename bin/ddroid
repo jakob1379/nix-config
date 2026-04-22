@@ -20,7 +20,17 @@ if ! declare -F session_wrapper_find_file >/dev/null ||
     CDPATH='' cd -P -- "$(dirname -- "$session_wrapper_script_path")" && pwd -P
   )
   # shellcheck disable=SC1091
-  . "$session_wrapper_script_dir/lib/session-wrapper-common.sh"
+  if ! . "$session_wrapper_script_dir/lib/session-wrapper-common.sh"; then
+    echo "Failed to source session wrapper helpers from '$session_wrapper_script_dir/lib/session-wrapper-common.sh'" >&2
+    exit 1
+  fi
+  if ! declare -F session_wrapper_find_file >/dev/null ||
+    ! declare -F session_wrapper_default_file >/dev/null ||
+    ! declare -F session_wrapper_load_id >/dev/null ||
+    ! declare -F session_wrapper_save_id >/dev/null; then
+    echo "Missing required session wrapper helper(s) after sourcing common library" >&2
+    exit 1
+  fi
   unset session_wrapper_script_path
   unset session_wrapper_script_dir
 fi
