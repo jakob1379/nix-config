@@ -64,6 +64,11 @@ session_wrapper_save_id() {
   local session_base
   local tmp_file
 
+  # Validate session_id before creating or writing any files
+  [[ -n "$session_id" ]] || return 1
+  [[ "$session_id" != *$'\n'* ]] || return 1
+  [[ "$session_id" != *$'\0'* ]] || return 1
+
   session_dir=$(dirname -- "$session_file")
   session_base=$(basename -- "$session_file")
   tmp_file=$(mktemp "${session_dir}/.${session_base}.tmp.XXXXXX") || return 1
