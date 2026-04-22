@@ -1,7 +1,10 @@
 ---
-version: 2
 updates:
   - package-ecosystem: nix
     directory: /
     schedule:
       interval: weekly
+    labels: [dependencies, nix]
+    commit-message:
+      prefix: deps
+    open-pull-requests-limit: 3
