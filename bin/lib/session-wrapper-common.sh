@@ -105,5 +105,10 @@ session_wrapper_load_id() {
     return 1
   fi
 
+  if [[ "$session_id" == *$'\n'* ]]; then
+    rm -f "$session_file"
+    return 1
+  fi
+
   printf '%s\n' "$session_id"
 }
