@@ -145,6 +145,38 @@
         "type": "github"
       }
     },
+    "navi-cheats-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1682557612,
+        "narHash": "sha256-wPsAazAGKPhu0MZfZbZ0POUBEMg95frClAQERTDFXUg=",
+        "owner": "denisidoro",
+        "repo": "cheats",
+        "rev": "1339965e9615ce00174cc308a41279d9c59aa75f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "denisidoro",
+        "repo": "cheats",
+        "type": "github"
+      }
+    },
+    "navi-tldr-pages-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1734829223,
+        "narHash": "sha256-lsJsHnu7v33lg6Jacy5mf6cdDFy4Y1VYnHlnK46gLG8=",
+        "owner": "denisidoro",
+        "repo": "navi-tldr-pages",
+        "rev": "636c02e165683986f5e15bb14b66b8bc0df478a1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "denisidoro",
+        "repo": "navi-tldr-pages",
+        "type": "github"
+      }
+    },
     "nix-index-database": {
       "inputs": {
         "nixpkgs": [
@@ -295,9 +327,12 @@
         "flake-utils": "flake-utils",
         "hermes-agent": "hermes-agent",
         "home-manager": "home-manager",
+        "navi-cheats-src": "navi-cheats-src",
+        "navi-tldr-pages-src": "navi-tldr-pages-src",
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs",
         "t3code-flake": "t3code-flake",
+        "tmux-ping-src": "tmux-ping-src",
         "waytorandr": "waytorandr",
         "zen-browser": "zen-browser"
       }
@@ -370,6 +405,22 @@
       "original": {
         "owner": "jakob1379",
         "repo": "t3code-flake",
+        "type": "github"
+      }
+    },
+    "tmux-ping-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1722517456,
+        "narHash": "sha256-Sr+UfJIhuMdapuiLCqRnC0QcyG2vbjuyhkG0z6Sz1G0=",
+        "owner": "ayzenquwe",
+        "repo": "tmux-ping",
+        "rev": "853175737b5af4b6d00ba5d18e3e059c9a7e3973",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ayzenquwe",
+        "repo": "tmux-ping",
         "type": "github"
       }
     },
