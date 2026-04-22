@@ -24,6 +24,18 @@
       url = "github:NousResearch/hermes-agent";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    navi-cheats-src = {
+      url = "github:denisidoro/cheats";
+      flake = false;
+    };
+    navi-tldr-pages-src = {
+      url = "github:denisidoro/navi-tldr-pages";
+      flake = false;
+    };
+    tmux-ping-src = {
+      url = "github:ayzenquwe/tmux-ping";
+      flake = false;
+    };
     zen-browser = {
       url = "github:youwen5/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
