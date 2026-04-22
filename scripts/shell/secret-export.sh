@@ -21,6 +21,7 @@ secret_export() {
   export "${env_var_name?}"
 
   echo "view with: echo \"\$$env_var_name\""
+  return 0
 }
 
 secret-tool-export() {
