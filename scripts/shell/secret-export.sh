@@ -26,4 +26,5 @@ secret_export() {
 
 secret-tool-export() {
   secret_export "$@"
+  return $?
 }
