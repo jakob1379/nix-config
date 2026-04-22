@@ -1,10 +1,22 @@
 # shellcheck shell=bash
 
+session_wrapper_validate_file_name() {
+  local session_file_name="$1"
+
+  [[ -n "$session_file_name" ]] || return 1
+  [[ "$session_file_name" != */* ]] || return 1
+  [[ "$session_file_name" != *..* ]] || return 1
+
+  return 0
+}
+
 session_wrapper_find_file() {
   local session_file_name="$1"
   local current_dir="${2:-$PWD}"
   local git_root
   local parent_dir
+
+  session_wrapper_validate_file_name "$session_file_name" || return 1
 
   current_dir="$(cd "$current_dir" 2>/dev/null && pwd -P)" || return 1
 
@@ -35,6 +47,8 @@ session_wrapper_find_file() {
 session_wrapper_default_file() {
   local session_file_name="$1"
   local git_root
+
+  session_wrapper_validate_file_name "$session_file_name" || return 1
 
   if git_root=$(git rev-parse --show-toplevel 2>/dev/null); then
     printf '%s\n' "$git_root/$session_file_name"
