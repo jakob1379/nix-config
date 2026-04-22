@@ -9,13 +9,8 @@
 let
   tmuxPing = pkgs.tmuxPlugins.mkTmuxPlugin {
     pluginName = "tmux-ping";
-    version = "unstable-2024-08-01";
-    src = pkgs.fetchFromGitHub {
-      owner = "ayzenquwe";
-      repo = "tmux-ping";
-      rev = "853175737b5af4b6d00ba5d18e3e059c9a7e3973";
-      sha256 = "0vflnfjczd21hsr3nvmgdp41qi0bcyj0m2z8lrdcgf11j9y99gsa";
-    };
+    version = "unstable";
+    src = inputs.tmux-ping-src;
     rtpFilePath = "ping.tmux";
   };
 in
@@ -104,6 +99,7 @@ in
     in
     {
       home = {
+        shell.enableBashIntegration = true;
         activation.ensureSshSocketsDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
           ${pkgs.coreutils}/bin/mkdir -p "${sshSocketDir}"
           ${pkgs.coreutils}/bin/chmod 700 "${config.home.homeDirectory}/.ssh"
@@ -115,7 +111,7 @@ in
         };
       };
 
-      shell.enableBashIntegration = true;
+
       programs = {
         bash = {
           enable = true;
@@ -443,6 +439,10 @@ in
         navi = {
           enable = true;
           enableBashIntegration = true;
+          settings.cheats.paths = [
+            "${inputs.navi-cheats-src}"
+            "${inputs.navi-tldr-pages-src}"
+          ];
         };
 
         wallust = {
@@ -450,6 +450,10 @@ in
         };
 
         opencode = {
+          commands = {
+            desloppify = builtins.readFile ../../dotfiles/opencode/commands/desloppify.md;
+          };
+
           enable = true;
           settings = {
             lsp = {
@@ -574,7 +578,6 @@ in
               "oh-my-opencode-slim@0.9.14"
               "@mohak34/opencode-notifier@latest"
               "@franlol/opencode-md-table-formatter@latest"
-              "@inkdust2021/opencode-vibeguard@latest"
               "opencode-devcontainers"
             ];
 
@@ -616,7 +619,7 @@ in
 
       # Home shell aliases
       home.shellAliases = {
-        noctalia-restart = "noctalia-shell list --all --json | jq .[].pid | xargs -r kill; noctalia-shell -d";
+        noctalia-restart = "noctalia-shell list --all --json | jq -Rsc '(fromjson? // [])[]?.pid' | xargs -r kill; noctalia-shell -d";
         onefetch = "onefetch -E --nerd-fonts --no-color-palette";
         cat = "bat";
         watch = "hwatch";
