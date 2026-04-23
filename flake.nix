@@ -71,6 +71,16 @@
           }
         );
       });
+      formatter = forAllSystems (
+        pkgs:
+        let
+          inherit (self.checks.${pkgs.stdenv.hostPlatform.system}.pre-commit-check) config;
+          inherit (config) configFile package;
+        in
+        pkgs.writeShellScriptBin "prek-fmt" ''
+          ${pkgs.lib.getExe package} run --all-files --config ${configFile}
+        ''
+      );
       packages = nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-linux" ] (
         system:
         let

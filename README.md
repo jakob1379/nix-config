@@ -63,7 +63,7 @@ The `devShell` provides a consistent development environment:
 Run all hooks through Nix with:
 
 ```bash
-nix develop -c prek run --all-files
+nix fmt
 ```
 
 Enter the development shell with:
