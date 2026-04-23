@@ -67,7 +67,6 @@ session_wrapper_save_id() {
   # Validate session_id before creating or writing any files
   [[ -n "$session_id" ]] || return 1
   [[ "$session_id" != *$'\n'* ]] || return 1
-  [[ "$session_id" != *$'\0'* ]] || return 1
 
   session_dir=$(dirname -- "$session_file")
   session_base=$(basename -- "$session_file")

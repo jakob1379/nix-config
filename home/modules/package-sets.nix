@@ -147,7 +147,10 @@
         pkgs.opencode
         pkgs.util-linux
       ];
-      text = builtins.readFile ../../bin/ooc;
+      text = lib.concatStringsSep "\n" [
+        (builtins.readFile ../../bin/lib/session-wrapper-common.sh)
+        (builtins.readFile ../../bin/ooc)
+      ];
     })
     (pkgs.writeShellApplication {
       name = "docker-compose-deps";
