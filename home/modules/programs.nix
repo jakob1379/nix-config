@@ -111,7 +111,6 @@ in
         };
       };
 
-
       programs = {
         bash = {
           enable = true;
