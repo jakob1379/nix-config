@@ -111,7 +111,6 @@ in
         };
       };
 
-
       programs = {
         bash = {
           enable = true;
@@ -575,7 +574,7 @@ in
             small_model = opencodeSmallModel;
 
             plugin = [
-              "oh-my-opencode-slim@0.9.14"
+              "oh-my-opencode-slim@latest"
               "@mohak34/opencode-notifier@latest"
               "@franlol/opencode-md-table-formatter@latest"
               "opencode-devcontainers"
