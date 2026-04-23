@@ -147,7 +147,13 @@ EOF
 
   if new_session_id=$(extract_session_id "$transcript_file"); then
     session_wrapper_save_id "$new_session_id" "$session_file"
-    echo "Session ID saved to $session_file: $new_session_id" >&2
+    local save_exit_code=$?
+    if [[ "$save_exit_code" -eq 0 ]]; then
+      echo "Session ID saved to $session_file: $new_session_id" >&2
+    else
+      echo "Failed to save session ID '$new_session_id' to '$session_file'" >&2
+      return "$save_exit_code"
+    fi
   fi
 
   return "$opencode_exit_code"
