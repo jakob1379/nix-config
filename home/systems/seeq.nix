@@ -14,6 +14,8 @@
     codex = {
       enable = true;
     };
+
+    emacs.package = pkgs.emacs-nox;
   };
 
   home.packages = lib.mkAfter (
