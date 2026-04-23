@@ -4,6 +4,10 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable-small";
     flake-utils.url = "github:numtide/flake-utils";
+    git-hooks = {
+      url = "github:cachix/git-hooks.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -45,6 +49,7 @@
   outputs =
     inputs@{
       self,
+      git-hooks,
       nixpkgs,
       ...
     }:
@@ -58,6 +63,24 @@
 
       homeConfigurations = import ./home { inherit lib; };
       nixosConfigurations = import ./nixos { inherit nixpkgs inputs lib; };
+      checks = forAllSystems (pkgs: {
+        pre-commit-check = git-hooks.lib.${pkgs.stdenv.hostPlatform.system}.run (
+          import ./nix/git-hooks.nix {
+            inherit pkgs;
+            inherit (nixpkgs) lib;
+          }
+        );
+      });
+      formatter = forAllSystems (
+        pkgs:
+        let
+          inherit (self.checks.${pkgs.stdenv.hostPlatform.system}.pre-commit-check) config;
+          inherit (config) configFile package;
+        in
+        pkgs.writeShellScriptBin "prek-fmt" ''
+          ${pkgs.lib.getExe package} run --all-files --config ${configFile}
+        ''
+      );
       packages = nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-linux" ] (
         system:
         let
@@ -93,17 +116,19 @@
         }
       );
       devShells = forAllSystems (pkgs: {
-        default = pkgs.mkShell {
-          packages = generalPackages pkgs;
-          shellHook = ''
-            export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
-            if [ ! -f .git/hooks/pre-commit ]; then
-              echo "Running pre-commit install for the first time..."
-              ${pkgs.prek}/bin/prek install
-            fi
-            export PS1="(dotfiles-shell 🫥) $PS1"
-          '';
-        };
+        default =
+          let
+            inherit (self.checks.${pkgs.stdenv.hostPlatform.system}) pre-commit-check;
+          in
+          pkgs.mkShell {
+            packages = (generalPackages pkgs) ++ pre-commit-check.enabledPackages;
+            shellHook = ''
+              ${pre-commit-check.shellHook}
+
+              export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+              export PS1="(dotfiles-shell 🫥) $PS1"
+            '';
+          };
       });
     };
 }

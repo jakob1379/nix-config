@@ -14,12 +14,8 @@ let
     ];
   generalPackages =
     pkgs: with pkgs; [
-      prek
       yamllint
       marksman
-      nixfmt
-      statix
-      deadnix
       git-crypt
     ];
 in

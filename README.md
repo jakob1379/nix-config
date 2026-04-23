@@ -55,10 +55,16 @@ configuration:
 The `devShell` provides a consistent development environment:
 
 - **Packages**: Uses `generalPackages` for essential tools.
-- **Build Inputs**: Includes `pkgs.prek` for managing prek hooks.
-- **Shell Hook**: Sets the `PATH` for local Node.js binaries and customizes the
-  shell prompt.
-- **Post Build**: Installs and updates prek hooks.
+- **Hook Tooling**: Uses `cachix/git-hooks.nix` to generate and install prek
+  hooks from `nix/git-hooks.nix`.
+- **Shell Hook**: Installs hooks, sets `SSL_CERT_FILE`, and customizes the shell
+  prompt.
+
+Run all hooks through Nix with:
+
+```bash
+nix fmt
+```
 
 Enter the development shell with:
 
