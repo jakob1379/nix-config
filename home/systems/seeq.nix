@@ -15,7 +15,24 @@
       enable = true;
     };
 
-    emacs.package = pkgs.emacs-nox;
+    emacs.package = lib.mkForce pkgs.emacs-nox;
+  };
+
+  services.emacs = {
+    enable = lib.mkForce true;
+    package = lib.mkForce pkgs.emacs-nox;
+    startWithUserSession = lib.mkForce true;
+    socketActivation.enable = lib.mkForce false;
+    defaultEditor = lib.mkForce false;
+    client.enable = lib.mkForce false;
+  };
+
+  home = {
+    shellAliases.ec = ''emacsclient -t --alternate-editor ""'';
+    sessionVariables = {
+      EDITOR = "emacsclient -t";
+      VISUAL = "emacsclient -t";
+    };
   };
 
   home.packages = lib.mkAfter (
