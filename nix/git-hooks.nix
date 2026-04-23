@@ -18,6 +18,7 @@
     check-toml.enable = true;
     check-yaml = {
       enable = true;
+      after = [ "yamlfix" ];
       args = [ "--unsafe" ];
     };
     codespell = {
@@ -77,6 +78,7 @@
     trim-trailing-whitespace.enable = true;
     check-github-workflows = {
       enable = true;
+      after = [ "yamlfix" ];
       name = "check-github-workflows";
       entry = "${lib.getExe pkgs.check-jsonschema} --builtin-schema vendor.github-workflows";
       files = "^\\.github/workflows/.*\\.ya?ml$";
