@@ -8,7 +8,7 @@
     (modulesPath + "/profiles/qemu-guest.nix")
   ];
 
-  networking.hostName = "vm-docker-main";
+  networking.hostName = "homelab";
   networking.networkmanager.enable = true;
 
   time.timeZone = "Europe/Copenhagen";
@@ -20,6 +20,10 @@
   boot.loader.grub.enable = true;
   boot.loader.grub.devices = [ "nodev" ];
   boot.growPartition = true;
+  boot.kernel.sysctl = {
+    "net.ipv4.conf.all.arp_ignore" = 1;
+    "net.ipv4.conf.all.arp_announce" = 2;
+  };
 
   nix = {
     gc = {

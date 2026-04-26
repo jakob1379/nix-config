@@ -1,7 +1,9 @@
 # VM hosts
 
-`base.nix` is the actual config for the only VM host in this tree:
-`vm-docker-main`.
+`base.nix` is the actual config for the only VM host in this tree.
+
+- Flake output: `vm-docker-main`
+- Machine hostname: `homelab`
 
 If a second VM ever appears, then split shared defaults back out. Until then,
 the extra host wrapper is just noise.
@@ -15,7 +17,7 @@ Note: the current upstream Proxmox image path in `nixpkgs` still emits the
 obsolete `proxmox.qemuConf.diskSize` evaluation warning. That warning is
 upstream, not caused by files in `nixos/hosts/vm/`.
 
-Example for the existing `vm-docker-main` host:
+Example for the existing `homelab` machine:
 
 ```bash
 nix run nixpkgs#nixos-rebuild -- \
@@ -25,7 +27,8 @@ nix run nixpkgs#nixos-rebuild -- \
 ```
 
 That builds the Proxmox VMA image from `nixosConfigurations.vm-docker-main`
-defined in `base.nix` and leaves a `result` symlink in the current directory.
+defined in `base.nix` for the machine with hostname `homelab`, and leaves a
+`result` symlink in the current directory.
 
 To see available image variants for a host:
 

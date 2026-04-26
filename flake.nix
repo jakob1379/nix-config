@@ -2,7 +2,7 @@
   description = "Home Manager configuration of jga";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable-small";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     git-hooks = {
       url = "github:cachix/git-hooks.nix";
@@ -56,7 +56,25 @@
     let
       lib = import ./lib { inherit nixpkgs inputs; };
       inherit (lib) forAllSystems generalPackages;
-      overlay = inputs."t3code-flake".overlays.default;
+      enableNoctaliaQsPr35Patch = true;
+      overlay = nixpkgs.lib.composeManyExtensions (
+        [
+          inputs."t3code-flake".overlays.default
+        ]
+        ++ nixpkgs.lib.optional enableNoctaliaQsPr35Patch (
+          _: prev: {
+            noctalia-qs = prev.noctalia-qs.overrideAttrs (_: {
+              patches = [ ];
+              src = prev.fetchFromGitHub {
+                owner = "Mic92";
+                repo = "noctalia-qs";
+                rev = "3f2f20077ede5303cadb82a5b53157f4c80dde3d";
+                hash = "sha256-60Y7T+vSDbnWQFDUEcpPuv79xphCZC7vRuStpNRjUuk=";
+              };
+            });
+          }
+        )
+      );
     in
     {
       overlays.default = overlay;
