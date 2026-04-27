@@ -287,6 +287,7 @@ include "/home/jsg/.config/niri/generated/window-border-rules.kdl"
 // spawn-at-startup "waybar"
 spawn-at-startup "vicinae" "server"
 spawn-at-startup "noctalia-shell" "--no-duplicate"
+spawn-sh-at-startup "systemctl --user import-environment DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE NIRI_SOCKET; dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE NIRI_SOCKET; systemctl --user start emacs.service"
 spawn-sh-at-startup "city=$(curl -fsSL --max-time 3 https://ipinfo.io/city | tr -d '\\r\\n'); [ -n \"$city\" ] && /home/jsg/.nix-profile/bin/noctalia-shell ipc call location set \"$city\" || true"
 
 // To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:
@@ -370,24 +371,23 @@ window-rule {
     draw-border-with-background false
 }
 
-
-# // Enable blur behind the Alacritty terminal.
-# window-rule {
-#     match app-id="^com.mitchellh.ghostty$"
-
-#     background-effect {
-#         blur true
-#     }
-# }
-
-# // Enable blur behind the fuzzel launcher.
-# layer-rule {
-#     match namespace="^launcher$"
-
-#     background-effect {
-#         blur true
-#     }
-# }
+// Enable blur behind the Alacritty terminal.
+// window-rule {
+//     match app-id="^com.mitchellh.ghostty$"
+//
+//     background-effect {
+//         blur true
+//     }
+// }
+//
+// Enable blur behind the fuzzel launcher.
+// layer-rule {
+//     match namespace="^launcher$"
+//
+//     background-effect {
+//         blur true
+//     }
+// }
 
 binds {
     // Keys consist of modifiers separated by + signs, followed by an XKB key name

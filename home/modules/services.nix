@@ -395,7 +395,7 @@ in
       coreServices = {
         emacs = {
           package = pkgs.emacs-pgtk;
-          startWithUserSession = "graphical";
+          startWithUserSession = false;
           enable = true;
           defaultEditor = true;
           client.arguments = [
