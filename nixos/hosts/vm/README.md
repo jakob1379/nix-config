@@ -64,3 +64,6 @@ After restore, review the VM settings in Proxmox before first boot:
 2. check cloud-init settings if this host should get its network or SSH settings
    from Proxmox
 3. start the VM and verify it comes up on the expected hostname and network
+4. log in with the baked initial password and change it immediately; the image
+   now expires that password on first boot, so the first successful login should
+   require setting a new one

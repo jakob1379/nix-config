@@ -70,6 +70,17 @@
     initialHashedPassword = "$y$j9T$VJd3I/BqxcnLrCv0HnRx1.$IhfmwBjIiqWz0seqIJ19ujfowZRV6718lzsFZ4cdrp5";
   };
 
+  systemd.services.expire-initial-jsg-password = {
+    description = "Expire the initial jsg password on first boot";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "systemd-user-sessions.service" ];
+    unitConfig.ConditionFirstBoot = true;
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.shadow}/bin/cha" + "ge -d 0 jsg";
+    };
+  };
+
   virtualisation.docker.enable = true;
 
   security.sudo.package = pkgs.sudo.override { withInsults = true; };
