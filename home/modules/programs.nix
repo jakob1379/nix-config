@@ -291,24 +291,6 @@ in
 
         nix-init.enable = true;
 
-        # niriswitcher = {
-        #   enable = true;
-        #   package = pkgs.niriswitcher;
-        #   settings = {
-        #     keys = {
-        #       modifier = "Super";
-        #       switch = {
-        #         next = "Tab";
-        #         prev = "Shift+Tab";
-        #       };
-        #       window = {
-        #         abort = "Escape";
-        #       };
-        #     };
-        #     center_on_focus = true;
-        #   };
-        # };
-
         rclone = {
           enable = true;
         };

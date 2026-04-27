@@ -43,6 +43,7 @@ in
       clockify
       adw-gtk3
       glab
+      inputs.hermes-agent.packages.${system}.default
       # teams-for-linux
       kdePackages.qt6ct
       libsForQt5.qt5ct
