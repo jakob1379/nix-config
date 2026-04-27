@@ -169,6 +169,7 @@ in
         firefox = {
           enable = true;
           package = inputs."zen-browser".packages.${system}.zen-browser;
+          configPath = ".mozilla/firefox";
           profiles.myuser = {
             isDefault = true;
             id = 0;
