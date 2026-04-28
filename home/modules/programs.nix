@@ -269,7 +269,7 @@ in
             background-opacity = 0.85;
             bold-is-bright = true;
             clipboard-paste-protection = false;
-            confirm-close-surface = false;
+            confirm-close-surface = true;
             copy-on-select = "clipboard";
             cursor-style = "block";
             cursor-style-blink = false;
