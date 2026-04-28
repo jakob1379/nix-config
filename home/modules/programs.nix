@@ -45,9 +45,10 @@ in
   config =
     let
       opencodeMainModel = "openai/gpt-5.4";
-      opencodeSmallModel = "openai/gpt-5.3-codex";
+      opencodeSmallModel = "openai/gpt-5.4";
       opencodeSlimSettings = {
         "$schema" = "https://unpkg.com/oh-my-opencode-slim@latest/oh-my-opencode-slim.schema.json";
+        autoUpdate = true;
         preset = "openai";
         presets = {
           openai = {
