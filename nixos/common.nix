@@ -177,7 +177,12 @@
   };
 
   # Programs commonly used
-  programs.niri.enable = true;
+  services.iio-niri.enable = true;
+  programs.niri = {
+    enable = true;
+    useNautilus = false;
+  };
+
   services.clamav = {
     daemon.enable = true;
     updater.enable = true;
