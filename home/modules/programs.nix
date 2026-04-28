@@ -704,6 +704,14 @@ in
             '';
           };
         };
+        mimeApps = {
+          enable = true;
+          defaultApplications = {
+            "application/x-directory" = [ "org.kde.dolphin.desktop" ];
+            "inode/directory" = [ "org.kde.dolphin.desktop" ];
+            "x-scheme-handler/file" = [ "org.kde.dolphin.desktop" ];
+          };
+        };
         terminal-exec = {
           enable = true;
           settings.default = [ "com.mitchellh.ghostty.desktop" ];

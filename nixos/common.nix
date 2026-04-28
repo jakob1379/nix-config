@@ -177,11 +177,12 @@
   };
 
   # Programs commonly used
+  services.iio-niri.enable = true;
   programs.niri = {
     enable = true;
     useNautilus = false;
   };
-  xdg.portal.config.niri."org.freedesktop.impl.portal.Secret" = lib.mkForce "kwallet";
+
   services.clamav = {
     daemon.enable = true;
     updater.enable = true;
