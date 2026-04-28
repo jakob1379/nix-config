@@ -28,7 +28,6 @@
   };
 
   home = {
-    shellAliases.ec = ''emacsclient -t --alternate-editor ""'';
     sessionVariables = {
       EDITOR = "emacsclient -t";
       VISUAL = "emacsclient -t";
