@@ -67,7 +67,6 @@
   dev =
     with pkgs;
     [
-      bun
       graphviz
       meslo-lgs-nf
       nerd-fonts.fira-code

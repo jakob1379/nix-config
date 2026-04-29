@@ -44,18 +44,27 @@ in
 
   config =
     let
-      opencodeMainModel = "openai/gpt-5.4";
-      opencodeSmallModel = "openai/gpt-5.4";
+      opencodeMainModel = "openai/gpt-5.5";
+      opencodeSmallModel = "openai/gpt-5.5";
+      opencodeSlimPlugin = "oh-my-opencode-slim@1.0.4";
+      opencodePackage = pkgs.symlinkJoin {
+        name = "opencode-with-bun";
+        paths = [ pkgs.opencode ];
+        nativeBuildInputs = [ pkgs.makeWrapper ];
+        postBuild = ''
+          wrapProgram $out/bin/opencode --prefix PATH : ${lib.makeBinPath [ pkgs.bun ]}
+        '';
+      };
       opencodeSlimSettings = {
-        "$schema" = "https://unpkg.com/oh-my-opencode-slim@latest/oh-my-opencode-slim.schema.json";
-        autoUpdate = true;
+        "$schema" = "https://unpkg.com/${opencodeSlimPlugin}/oh-my-opencode-slim.schema.json";
+        autoUpdate = false;
         preset = "openai";
         presets = {
           openai = {
             orchestrator = {
               model = opencodeMainModel;
               variant = "high";
-              skills = [ "*" ];
+              skills = [ ];
               mcps = [ "context7" ];
             };
             oracle = {
@@ -433,6 +442,8 @@ in
         };
 
         opencode = {
+          package = opencodePackage;
+
           commands = {
             desloppify = builtins.readFile ../../dotfiles/opencode/commands/desloppify.md;
           };
@@ -532,33 +543,33 @@ in
                 };
               };
 
-              openai = {
-                models = {
-                  "gpt-5.4" = {
-                    options = {
-                      reasoningEffort = "high";
-                    };
-                    variants = {
-                      low = {
-                        reasoningEffort = "low";
-                      };
-                      high = {
-                        reasoningEffort = "high";
-                      };
-                      xhigh = {
-                        reasoningEffort = "xhigh";
-                      };
-                    };
-                  };
-                };
-              };
+              # openai = {
+              #   models = {
+              #     "gpt-5.5" = {
+              #       options = {
+              #         reasoningEffort = "high";
+              #       };
+              #       variants = {
+              #         low = {
+              #           reasoningEffort = "low";
+              #         };
+              #         high = {
+              #           reasoningEffort = "high";
+              #         };
+              #         xhigh = {
+              #           reasoningEffort = "xhigh";
+              #         };
+              #       };
+              #     };
+              #   };
+              # };
             };
 
             model = opencodeMainModel;
             small_model = opencodeSmallModel;
 
             plugin = [
-              "oh-my-opencode-slim@latest"
+              opencodeSlimPlugin
               "@mohak34/opencode-notifier@latest"
               "@franlol/opencode-md-table-formatter@latest"
               "opencode-devcontainers"
