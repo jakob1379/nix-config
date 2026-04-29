@@ -692,19 +692,6 @@ in
             X-GNOME-SingleWindow=true
             Keywords=security;privacy;password-manager;yubikey;password;keepass;
           '';
-        }
-        // lib.optionalAttrs config.customPackages.gui.enable {
-          "vicinae/scripts/display-mode-picker" = {
-            executable = true;
-            text = ''
-              #!/usr/bin/env bash
-              # @vicinae.schemaVersion 1
-              # @vicinae.title Display Mode Picker
-              # @vicinae.mode compact
-              # @vicinae.keywords ["display", "monitor", "screen", "layout"]
-              exec display-mode-picker "$@"
-            '';
-          };
         };
         mimeApps = {
           enable = true;
