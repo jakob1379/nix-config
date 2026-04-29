@@ -36,33 +36,29 @@
     yq-go
   ];
 
-  gui =
-    (with pkgs; [
-      brave
-      tana
-      noctalia-shell
-      xwayland-satellite
-      wdisplays
-      wifi-qr
-      feh
-      swaybg
-      libnotify
-      prettier
-      onlyoffice-desktopeditors
-      pika-backup
-      signal-desktop
-      spotify
-      stretchly
-      udiskie
-      variety
-      virt-manager
-      vlc
-      dragon-drop
-      xkill
-    ])
-    ++ lib.optionals (system == "x86_64-linux" && builtins.hasAttr "t3code-desktop" pkgs) [
-      pkgs.t3code-desktop
-    ];
+  gui = with pkgs; [
+    brave
+    tana
+    noctalia-shell
+    xwayland-satellite
+    wdisplays
+    wifi-qr
+    feh
+    swaybg
+    libnotify
+    prettier
+    onlyoffice-desktopeditors
+    pika-backup
+    signal-desktop
+    spotify
+    stretchly
+    udiskie
+    variety
+    virt-manager
+    vlc
+    dragon-drop
+    xkill
+  ];
 
   dev =
     with pkgs;

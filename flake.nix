@@ -58,8 +58,6 @@
       inherit (lib) forAllSystems generalPackages;
     in
     {
-      overlays.default = import ./overlays { inherit inputs nixpkgs; };
-
       homeConfigurations = import ./home { inherit lib; };
       nixosConfigurations = import ./nixos { inherit nixpkgs inputs lib; };
       checks = forAllSystems (pkgs: {
@@ -86,20 +84,18 @@
           pkgs = import nixpkgs {
             inherit system;
             config.allowUnfreePredicate = lib.allowUnfreePredicate;
-            overlays = [ self.overlays.default ];
+            overlays = [ inputs.t3code-flake.overlays.default ];
           };
         in
         {
           inherit (pkgs) t3code;
-        }
-        // nixpkgs.lib.optionalAttrs (system == "x86_64-linux" && builtins.hasAttr "t3code-desktop" pkgs) {
-          t3code-desktop = pkgs."t3code-desktop";
         }
       );
       apps = nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-linux" ] (
         system:
         let
           packages = self.packages.${system};
+          t3codeApps = inputs.t3code-flake.apps.${system};
         in
         {
           t3code = {
@@ -107,11 +103,8 @@
             program = "${packages.t3code}/bin/t3code";
           };
         }
-        // nixpkgs.lib.optionalAttrs (builtins.hasAttr "t3code-desktop" packages) {
-          t3code-desktop = {
-            type = "app";
-            program = "${packages."t3code-desktop"}/bin/t3code";
-          };
+        // nixpkgs.lib.optionalAttrs (builtins.hasAttr "t3code-desktop" t3codeApps) {
+          inherit (t3codeApps) t3code-desktop;
         }
       );
       devShells = forAllSystems (pkgs: {

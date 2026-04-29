@@ -11,7 +11,7 @@
       ./hosts/yoga
       {
         nixpkgs.config.allowUnfreePredicate = lib.allowUnfreePredicate;
-        nixpkgs.overlays = [ inputs.self.overlays.default ];
+        nixpkgs.overlays = [ inputs.t3code-flake.overlays.default ];
       }
     ];
   };
@@ -23,7 +23,7 @@
       ./hosts/amd
       {
         nixpkgs.config.allowUnfreePredicate = lib.allowUnfreePredicate;
-        nixpkgs.overlays = [ inputs.self.overlays.default ];
+        nixpkgs.overlays = [ inputs.t3code-flake.overlays.default ];
       }
     ];
   };
@@ -35,7 +35,7 @@
       ./hosts/ku
       {
         nixpkgs.config.allowUnfreePredicate = lib.allowUnfreePredicate;
-        nixpkgs.overlays = [ inputs.self.overlays.default ];
+        nixpkgs.overlays = [ inputs.t3code-flake.overlays.default ];
       }
     ];
   };
@@ -47,7 +47,7 @@
       ./hosts/vm/base.nix
       {
         nixpkgs.config.allowUnfreePredicate = lib.allowUnfreePredicate;
-        nixpkgs.overlays = [ inputs.self.overlays.default ];
+        nixpkgs.overlays = [ inputs.t3code-flake.overlays.default ];
       }
     ];
   };
