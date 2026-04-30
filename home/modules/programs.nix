@@ -697,8 +697,12 @@ in
           enable = true;
           defaultApplications = {
             "application/x-directory" = [ "org.kde.dolphin.desktop" ];
+            "application/xhtml+xml" = [ "zen.desktop" ];
             "inode/directory" = [ "org.kde.dolphin.desktop" ];
+            "text/html" = [ "zen.desktop" ];
             "x-scheme-handler/file" = [ "org.kde.dolphin.desktop" ];
+            "x-scheme-handler/http" = [ "zen.desktop" ];
+            "x-scheme-handler/https" = [ "zen.desktop" ];
           };
         };
         terminal-exec = {
