@@ -48,6 +48,8 @@ let
       };
     };
 
+  rcloneDropboxPrivateService = "rclone-mount-dropbox-private.service";
+  dropboxPrivateMountPath = "${config.home.homeDirectory}/dropbox-private";
   varietyWallpaperPointerFile = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
   wallpaperStateDir = "${config.xdg.stateHome}/wallpaper";
   currentWallpaperStateFile = "${wallpaperStateDir}/current-wallpaper";
@@ -185,13 +187,31 @@ in
         default = {
           varietyWallpaper = {
             service = {
+              variety = {
+                Unit = {
+                  Description = "Variety wallpaper changer";
+                  After = [ rcloneDropboxPrivateService ];
+                  Wants = [ rcloneDropboxPrivateService ];
+                  Requires = [ rcloneDropboxPrivateService ];
+                };
+                Service = {
+                  ExecStartPre = "${pkgs.util-linux}/bin/mountpoint -q ${lib.escapeShellArg dropboxPrivateMountPath}";
+                  ExecStart = "${pkgs.variety}/bin/variety";
+                  Restart = "on-failure";
+                  RestartSec = 5;
+                };
+                Install = {
+                  WantedBy = [ "graphical-session.target" ];
+                };
+              };
+
               "variety-wallpaper-updated" = {
                 Unit = {
                   Description = "Resolve current wallpaper from Variety";
                   StartLimitIntervalSec = 0;
-                  After = [ "rclone-mount-dropbox-private.service" ];
-                  Wants = [ "rclone-mount-dropbox-private.service" ];
-                  Requires = [ "rclone-mount-dropbox-private.service" ];
+                  After = [ rcloneDropboxPrivateService ];
+                  Wants = [ rcloneDropboxPrivateService ];
+                  Requires = [ rcloneDropboxPrivateService ];
                 };
                 Service = {
                   ExecStart = currentWallpaperStateSyncCommand;
@@ -207,12 +227,12 @@ in
               "variety-wallpaper-updated" = {
                 Unit = {
                   Description = "Watch Variety wallpaper pointer";
-                  After = [ "rclone-mount-dropbox-private.service" ];
+                  After = [ rcloneDropboxPrivateService ];
                   Wants = [
                     "variety-wallpaper-updated.service"
-                    "rclone-mount-dropbox-private.service"
+                    rcloneDropboxPrivateService
                   ];
-                  Requires = [ "rclone-mount-dropbox-private.service" ];
+                  Requires = [ rcloneDropboxPrivateService ];
                 };
                 Install = {
                   WantedBy = [ "graphical-session.target" ];

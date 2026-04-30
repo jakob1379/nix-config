@@ -36,20 +36,6 @@
   config =
     let
       cfg = config.customDotfiles;
-      varietyAutostartDesktop = pkgs.writeText "variety.desktop" (
-        builtins.replaceStrings
-          [
-            "@bash@"
-            "@variety@"
-            "@home@"
-          ]
-          [
-            "${pkgs.bash}/bin/bash"
-            "${pkgs.variety}/bin/variety"
-            config.home.homeDirectory
-          ]
-          (builtins.readFile ../../dotfiles/autostart/variety.desktop)
-      );
     in
     {
       home = {
@@ -60,7 +46,6 @@
             ".local/share/bash-completion/completions/noctalia-shell".source =
               ../../scripts/completions/noctalia-shell-completions.sh;
             ".config/niri/config.kdl".source = ../../dotfiles/niri/config.kdl;
-            ".config/autostart/variety.desktop".source = varietyAutostartDesktop;
             ".config/noctalia/settings.json".source = config.lib.file.mkOutOfStoreSymlink (
               config.home.homeDirectory + "/.config/home-manager/dotfiles/noctalia/settings.json"
             );
