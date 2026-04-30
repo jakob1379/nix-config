@@ -376,6 +376,7 @@ window-rule {
     match app-id="^com.mitchellh.ghostty$"
 
     background-effect {
+        xray false
         blur true
     }
 }
@@ -669,3 +670,8 @@ binds {
     // moving the mouse or pressing any other key.
     Mod+Shift+P { power-off-monitors; }
 }
+
+
+// Local Variables:
+// mode: java
+// End:
