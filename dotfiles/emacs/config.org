@@ -537,13 +537,13 @@ read and understand ~.editorconfig~ files
 (use-package envrc
   :hook (after-init . envrc-global-mode)
   :mode ("\\.envrc\\'" . conf-toml-mode)
+  :bind ("C-c e r" . 'envrc-reload)
   )
 #+END_SRC
 *** Expand region
 #+BEGIN_SRC emacs-lisp
 (use-package expand-region
   :defer t
-
   :bind ("C-=" . er/expand-region))
 #+END_SRC
 *** Fast Scrolling

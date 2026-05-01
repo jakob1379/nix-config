@@ -64,17 +64,18 @@
     with pkgs;
     [
       bun
+      dive
+      frogmouth
       graphviz
+      mermaid-cli
       meslo-lgs-nf
       nerd-fonts.fira-code
       nodejs
+      nurl
       pandoc
       poppler-utils
       t3code
-      dive
-      frogmouth
       wakatime-cli
-      mermaid-cli
     ]
     ++ lib.optionals (system != "aarch64-linux") [ jdk ];
 
