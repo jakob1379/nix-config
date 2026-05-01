@@ -374,8 +374,8 @@ in
           extraPackages = with pkgs.bat-extras; [ batman ];
           config = {
             map-syntax = [
-              "_.conf:TOML"
-              "_.gdextension:TOML"
+              "*.conf:TOML"
+              "*.gdextension:TOML"
               "*.kdl:java"
               ".env.*:toml"
               ".envrc:bash"
