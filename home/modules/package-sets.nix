@@ -99,6 +99,9 @@
     silver-searcher
     taplo
     texlab
+    tinymist
+    vscode-langservers-extracted
+    vtsls
     wl-clipboard-rs
     yaml-language-server
   ];

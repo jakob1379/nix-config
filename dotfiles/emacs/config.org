@@ -364,121 +364,53 @@ Don't lose your cursor.
                      (what-cursor-position)))
   :config (beacon-mode 1))
 #+END_SRC
-*** Corfu - Completion Overlay Region FUnction
-Corfu is a fast, minimal completion UI using Emacs' native completion-at-point-functions (CAPF). Unlike company-mode, it uses text properties/overlays instead of childframes, providing better performance and lower latency.
-**** Corfu package
+*** Corfu - Completion Overlay Region Function
+Corfu is a small CAPF UI. Eglot publishes LSP completions through CAPF, so the efficient path is Eglot -> CAPF -> Corfu, with Cape only for a few explicit fallback completions.
 #+BEGIN_SRC emacs-lisp
+(use-package emacs
+  :straight nil
+  :custom
+  ;; Let TAB indent first and complete when point is already indented.
+  (tab-always-indent 'complete)
+  ;; Emacs 30+: avoid adding Ispell as a noisy text-mode CAPF.
+  (text-mode-ispell-word-completion nil)
+  ;; Hide mode-inapplicable commands from M-x.
+  (read-extended-command-predicate #'command-completion-default-include-p))
+
 (use-package corfu
   :custom
-  ;; Enable auto-completion
   (corfu-auto t)
-  ;; Delay before auto-completion starts (balance responsiveness vs noise)
-  (corfu-auto-delay 0.1)
-  ;; Minimum prefix length to trigger completion
+  (corfu-auto-delay 0.2)
   (corfu-auto-prefix 2)
-  ;; Enable cycling through candidates
   (corfu-cycle t)
-  ;; Preselect first candidate
   (corfu-preselect 'prompt)
-  ;; Enable echo area documentation
-  (corfu-echo-documentation nil)
-  ;; Quit if no match
   (corfu-quit-no-match 'separator)
-  ;; Max number of candidates to show
   (corfu-count 8)
-  ;; Max width of popup
-  (corfu-max-width 80)
-  ;; Minimum width of popup
-  (corfu-min-width 20)
-
+  (corfu-popupinfo-delay '(0.4 . 0.2))
+  (corfu-popupinfo-max-height 20)
+  :bind (:map corfu-map
+              ("C-n" . corfu-next)
+              ("C-p" . corfu-previous)
+              ("C-g" . corfu-quit)
+              ("M-g" . corfu-info-location)
+              ("M-h" . corfu-info-documentation)
+              ("M-d" . corfu-popupinfo-toggle)
+              ("M-p" . corfu-popupinfo-scroll-down)
+              ("M-n" . corfu-popupinfo-scroll-up))
   :init
   (global-corfu-mode)
+  :config
+  (require 'corfu-popupinfo)
+  (corfu-popupinfo-mode 1)
+  (corfu-history-mode 1))
 
-  :bind
-  (:map corfu-map
-        ("TAB" . corfu-next)
-        ([tab] . corfu-next)
-        ("S-TAB" . corfu-previous)
-        ([backtab] . corfu-previous)
-        ("C-n" . corfu-next)
-        ("C-p" . corfu-previous)
-        ("C-g" . corfu-quit)
-        ("M-g" . corfu-info-location)
-        ("M-h" . corfu-info-documentation)))
-#+END_SRC
-**** Corfu popup info - documentation popup
-Display documentation for completion candidates (functions, methods, variables).
-Shows LSP documentation, docstrings, and type info similar to company-lsp.
-#+BEGIN_SRC emacs-lisp
-(use-package corfu-popupinfo
-  :straight nil  ; Included with corfu
-  :after corfu
-  :custom
-  ;; Delay: (INITIAL-DELAY . SUBSEQUENT-DELAY)
-  ;; Initial delay before showing docs, faster when navigating candidates
-  (corfu-popupinfo-delay '(0.4 . 0.2))
-  ;; Maximum height of documentation popup
-  (corfu-popupinfo-max-height 20)
-  ;; Don't hide popup when scrolling through candidates
-  (corfu-popupinfo-hide nil)
-
-  :bind (:map corfu-map
-              ("M-d" . corfu-popupinfo-toggle)      ; Toggle docs manually
-              ("M-p" . corfu-popupinfo-scroll-down) ; Scroll docs up
-              ("M-n" . corfu-popupinfo-scroll-up)   ; Scroll docs down
-              ("M-h" . lsp-ui-doc-show)))           ; Show detailed LSP docs
-#+END_SRC
-**** Corfu echo - fallback documentation in echo area
-Alternative documentation display for terminal or minimal setup.
-Shows docs in the echo area at the bottom of the screen.
-#+BEGIN_SRC emacs-lisp
-(use-package corfu-echo
-  :straight nil  ; Included with corfu
-  :after corfu
-  :custom
-  (corfu-echo-delay 0.4))
-#+END_SRC
-**** Cape - Completion At Point Extensions
-Cape provides additional completion backends and utilities for corfu.
-#+BEGIN_SRC emacs-lisp
 (use-package cape
   :defer t
+  :bind ("C-c p" . cape-prefix-map)
   :init
-  (defalias 'me/cape-dabbrev-min-3
-    (cape-capf-prefix-length #'cape-dabbrev 3))
-  ;; Add to the global default value of `completion-at-point-functions'
-  (add-hook 'completion-at-point-functions #'cape-file t)
-  (add-hook 'completion-at-point-functions #'cape-keyword t)
-  (add-hook 'completion-at-point-functions #'me/cape-dabbrev-min-3 t)
-  :bind
-  ("C-c p p" . completion-at-point)     ; Complete at point
-  ("C-c p t" . complete-tag)            ; Complete etags
-  ("C-c p d" . cape-dabbrev)            ; Complete dabbrev
-  ("C-c p f" . cape-file)               ; Complete file name
-  ("C-c p k" . cape-keyword))           ; Complete keyword
-#+END_SRC
-**** Kind-icon - icons for corfu
-Provides icons in corfu completion popup similar to company-box.
-#+BEGIN_SRC emacs-lisp
-(use-package kind-icon
-  :after corfu
-  :custom
-  (kind-icon-default-face 'corfu-default)
-  :config
-  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
-#+END_SRC
-**** Prescient
-Teaches completion to sort better based on usage history.
-#+BEGIN_SRC emacs-lisp
-(use-package prescient
-  :defer t
-  :config
-  (prescient-persist-mode 1))
-
-(use-package corfu-prescient
-  :after (corfu prescient)
-  :config
-  (corfu-prescient-mode 1))
+  ;; Keep global fallback CAPFs cheap. Eglot's buffer-local CAPF wins in
+  ;; programming buffers; Cape remains available explicitly under C-c p.
+  (add-hook 'completion-at-point-functions #'cape-file t))
 #+END_SRC
 *** Conf-mode
 Associate various files with conf-mode.
@@ -628,11 +560,16 @@ Always redraw immediately when scrolling, making it more responsive and preventi
   :config
   (ultra-scroll-mode 1))
 #+END_SRC
-*** Flycheck
+*** Flymake
 #+BEGIN_SRC emacs-lisp
-(use-package flycheck
-  :config
-  (global-flycheck-mode))
+(use-package flymake
+  :straight (:type built-in)
+  :defer t
+  :bind (:map flymake-mode-map
+              ("M-n" . flymake-goto-next-error)
+              ("M-p" . flymake-goto-prev-error)
+              ("C-c ! l" . flymake-show-buffer-diagnostics)
+              ("C-c ! p" . flymake-show-project-diagnostics)))
 #+END_SRC
 *** Flyspell
 
@@ -984,224 +921,60 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
   (reftex-cite-prompt-optional-args t)) ; Prompt for empty optional arguments in cite
 
 #+END_SRC
-*** LSP
-**** DAP
-Following [[https://emacs-lsp.github.io/dap-mode/page/python-poetry-pyenv/][this guide]] we need a little tweaking to play nicely with poetry environments
+*** Eglot
+Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Corfu, Xref for definitions/references, Eldoc for hover/signatures, Imenu for symbols, and Flymake for diagnostics.
 #+BEGIN_SRC emacs-lisp
-(use-package dap-mode
-  :after lsp-mode
-  :defer t
-  :commands dap-debug
-  :hook ((python-mode . dap-ui-mode)
-         (python-mode . dap-mode))
-  :config
-  (require 'dap-python)
-  (setq dap-python-debugger 'debugpy)
-
-  ;; Temporal fix (REVISED)
-  (defun dap-python--pyenv-executable-find (command)
-    (let ((venv-path (expand-file-name ".venv" default-directory)))
-      (if (file-directory-p venv-path)
-          (expand-file-name "bin/python" venv-path)
-        (executable-find "python"))))
-
-  (dap-register-debug-template
-   "Python :: Buffer (File)"
-   (list :type "python"
-         :request "launch"
-         :name "Python :: Run File (Buffer)"
-         :program "${file}"
-         :cwd "${workspaceFolder}"))
-
-  :bind (:map dap-mode-map
-            ("C-c <C-right>" . dap-next)
-            ("C-c <C-down>" . dap-step-in)
-            ("C-c <C-up>" . dap-step-out)
-            ("C-c <M-right>" . dap-continue)
-            ("C-c b" . dap-breakpoint-toggle))
-
-  )
-#+END_SRC
-**** Helm LSP
-helm is awesome
-#+begin_src emacs-lisp
-(use-package helm-lsp)
-#+end_src
-**** LSP mode
-#+BEGIN_SRC emacs-lisp
-(use-package lsp-mode
-  :commands lsp
+(use-package eglot
+  :straight (:type built-in)
+  :commands (eglot eglot-ensure)
   :hook
-  (
-   (conf-toml-mode . lsp-deferred)
-   (conf-toml . lsp-deferred)
-   (css-mode . lsp-deferred)
-   (latex-mode . lsp-deferred)
-   (lsp-mode . lsp-enable-which-key-integration)
-   (markdown-mode . lsp-deferred)
-   (nix-mode . lsp-deferred)
-   (rst-mode . lsp-deferred)
-   (sh-mode . lsp-deferred)
-   (toml-mode . lsp-deferred)
-   (typst-mode . lsp-deferred)
-   (typescript-mode . lsp-deferred)
-   (yaml-mode . lsp-deferred)
-   )
-
-  :init
-  (setq lsp-keymap-prefix "C-c l")
-
-
-  :config
-  ;; toml
-  (add-to-list 'lsp-language-id-configuration '(conf-toml-mode . "toml"))
-  ;; makefile
-  (add-to-list 'lsp-language-id-configuration '(makefile-mode . "makefile"))
-  ;; typst
-  (add-to-list 'lsp-language-id-configuration '(typst-mode . "typst"))
-  (add-to-list 'lsp-language-id-configuration '(typst--markup-mode . "typst"))
-  (add-to-list 'lsp-language-id-configuration '(typst--code-mode . "typst"))
-  (lsp-register-client (make-lsp-client
-                        :new-connection (lsp-stdio-connection "tinymist")
-                        :activation-fn (lsp-activate-on "typst")
-                        :major-modes '(typst-mode
-                                       typst--markup-mode
-                                       typst--code-mode
-                                       )
-                        :server-id 'tinymist))
-  ;; justfile
-  (add-to-list 'lsp-language-id-configuration '(just-mode . "just"))
-  (lsp-register-client
-   (make-lsp-client
-    :new-connection (lsp-stdio-connection "just-lsp")
-    :activation-fn (lsp-activate-on "just")
-    :major-modes '(just-mode)
-    :server-id 'just-ls))
-
-   ;; bash
-   (add-to-list 'lsp-language-id-configuration '(sh-mode . "shellscript"))
-   (lsp-register-client
-    (make-lsp-client
-     :new-connection (lsp-stdio-connection '("bash-language-server" "start"))
-     :activation-fn (lsp-activate-on "shellscript")
-     :major-modes '(sh-mode)
-     :server-id 'bash-ls))
-
-   ;; typescript/tsx - vtsls
-   (add-to-list 'lsp-language-id-configuration '(typescript-mode . "typescript"))
-   (lsp-register-client
-     (make-lsp-client
-      :new-connection (lsp-stdio-connection "vtsls")
-      :activation-fn (lsp-activate-on "typescript")
-      :major-modes '(typescript-mode)
-      :server-id 'vtsls))
-
-   ;; Python - Ty language server with uv
-   (add-to-list 'lsp-language-id-configuration '(python-mode . "python"))
-   (lsp-register-client
-    (make-lsp-client
-     :new-connection (lsp-stdio-connection
-                      (lambda () (list "sh" "-c" "uv run --with ty ty server || uvx ty server")))
-     :activation-fn (lsp-activate-on "python")
-     :major-modes '(python-mode)
-     :server-id 'ty))
-
-   (lsp-register-custom-settings
-   '(("pylsp.plugins.mypy.enabled" t t)
-     ("pylsp.plugins.mypy.live_mode" nil t)
-     ("pylsp.plugins.black.enabled" t t)
-     ("pylsp.plugins.isort.enabled" t t)
-     ("pylsp.plugins.pycodestyle.enabled" nil t)
-     ("pylsp.plugins.mccabe.enabled" nil t)
-     ("pylsp.plugins.pyflakes.enabled" nil t)
-     ("pylsp.plugins.flake8.enabled" t t)))
-
-  :custom
-  (lsp-auto-execute-action nil)
-  (lsp-auto-guess-root t)
-  (lsp-before-save-edits nil)
-  (lsp-completion-provider :capf)  ; Use CAPF for completion (corfu-compatible)
-  (lsp-enable-links t)
-  (lsp-enable-on-type-formatting t)
-  (lsp-enable-snippet t)
-  (lsp-file-watch-threshold 5000)
-  (lsp-headerline-breadcrumb-enable t)
-  (lsp-idle-delay 0.5)  ; Better performance balance
-  (lsp-keep-workspace-alive nil)
-  (lsp-modeline-diagnostics-enable t)
-  (lsp-remote-tramp-connection t)
-  (lsp-signature-auto-activate t)
-  (lsp-signature-render-documentation t)
-  (lsp-eldoc-enable-hover nil)
-
-  ;; Ensure LSP completions work well with corfu
-  ;; lsp-completion-provider :capf registers lsp-completion-at-point
-  ;; which corfu will use automatically via completion-at-point-functions
-  (lsp-completion-enable t)
-  (lsp-completion-use-last-result t)
-  ;; Show detailed documentation with completions (for corfu-popupinfo)
-  (lsp-completion-show-detail t)
-  (lsp-completion-show-kind t)
-  ;; Enable documentation in completion items
-  (lsp-completion-enable-additional-text-edit t)
-
-  :hook
-  ;; Ensure corfu is enabled when LSP starts
-  (lsp-mode . (lambda ()
-                ;; Ensure LSP completion is at the front of CAPF list
-                (when (boundp 'lsp-completion-at-point)
-                  (setq-local completion-at-point-functions
-                              (cons #'lsp-completion-at-point
-                                    (remove #'lsp-completion-at-point
-                                            completion-at-point-functions))))))
-
-  :custom-face
-  (lsp-face-highlight-read ((t (:underline t))))
-  (lsp-face-highlight-textual ((t (:underline t))))
-  (lsp-face-highlight-write ((t (:underline t))))
-  )
-
-#+END_SRC
-**** LSP Treemacs
-#+begin_src emacs-lisp :tangle yes
-(use-package lsp-treemacs
-  :defer t
-  :config
-  (lsp-treemacs-sync-mode 1))
-#+end_src
-**** LSP ui
-
-#+BEGIN_SRC emacs-lisp
-(use-package lsp-ui
-  :defer t
-  :init
-  (setq lsp-ui-doc-use-webkit t)
+  ((conf-toml-mode . eglot-ensure)
+   (css-mode . eglot-ensure)
+   (just-mode . eglot-ensure)
+   (latex-mode . eglot-ensure)
+   (markdown-mode . eglot-ensure)
+   (nix-mode . eglot-ensure)
+   (python-mode . eglot-ensure)
+   (sh-mode . eglot-ensure)
+   (toml-mode . eglot-ensure)
+   (typst-mode . eglot-ensure)
+   (typescript-mode . eglot-ensure)
+   (yaml-mode . eglot-ensure))
   :bind
-  ("C-c l i" . lsp-ui-imenu)
-  ("C-c l d" . 'lsp-ui-doc-show)
-  :config
-  (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-  (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
+  (:map eglot-mode-map
+        ("C-c l a" . eglot-code-actions)
+        ("C-c l f" . eglot-format)
+        ("C-c l r" . eglot-rename)
+        ("C-c l d" . eldoc)
+        ("C-c l s" . imenu))
   :custom
-  (lsp-ui-doc-enable nil)
-  (lsp-ui-doc-position 'at-point)
-  (lsp-ui-doc-use-childframe nil)
-  (lsp-ui-doc-alignment 'frame)
-  (lsp-ui-doc-header t)
-  (lsp-ui-doc-include-signature t)
-
-  ;; Sideline
-  (lsp-ui-sideline-delay 0.05)
-  (lsp-ui-sideline-enable nil)
-  (lsp-ui-sideline-ignore-duplicates t)
-  (lsp-ui-sideline-show-code-actions nil)
-  (lsp-ui-sideline-show-hover nil)
-
-  ;; Imenu
-  (lsp-ui-imenu-auto-refresh t)
-
-  :hook (lsp-mode . lsp-ui-mode)
-  )
+  (eglot-autoshutdown t)
+  (eglot-confirm-server-initiated-edits nil)
+  (eglot-events-buffer-config '(:size 0 :format lisp))
+  :config
+  (dolist (server
+           '(((conf-toml-mode toml-mode) . ("taplo" "lsp" "stdio"))
+             ((typst-mode typst--markup-mode typst--code-mode) . ("tinymist"))
+             (just-mode . ("just-lsp"))
+             (sh-mode . ("bash-language-server" "start"))
+             (typescript-mode . ("vtsls" "--stdio"))
+             (nix-mode . ("nixd"))
+             (markdown-mode . ("marksman" "server"))
+             (python-mode . ("sh" "-c" "uv run --with ty ty server || uvx ty server"))))
+    (add-to-list 'eglot-server-programs server))
+  (add-to-list 'eglot-server-programs '(yaml-mode . ("yaml-language-server" "--stdio"))))
+#+END_SRC
+**** Dape
+Dape replaces dap-mode without depending on lsp-mode.
+#+BEGIN_SRC emacs-lisp
+(use-package dape
+  :defer t
+  :bind (("C-c d d" . dape)
+         ("C-c d b" . dape-breakpoint-toggle)
+         ("C-c d c" . dape-continue)
+         ("C-c d n" . dape-next)
+         ("C-c d i" . dape-step-in)
+         ("C-c d o" . dape-step-out)))
 #+END_SRC
 *** Magit
 Magit is an amazing git client that can do 90% of what git can, this covers almost all regular
@@ -1609,7 +1382,6 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
 (use-package elpy
   :defer t
   ;; :hook (python-mode . elpy-enable)
-  ;; :after lsp-mode
   )
 #+END_SRC
 **** Poetry
