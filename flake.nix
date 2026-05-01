@@ -116,7 +116,6 @@
             packages = (generalPackages pkgs) ++ pre-commit-check.enabledPackages;
             shellHook = ''
               ${pre-commit-check.shellHook}
-
               export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
               export PS1="(dotfiles-shell 🫥) $PS1"
             '';

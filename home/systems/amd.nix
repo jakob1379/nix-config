@@ -18,14 +18,7 @@ let
   hermesAgent =
     let
       hermesUpstream = inputs.hermes-agent.packages.${system}.default;
-      hermesTui = hermesUpstream.hermesTui.overrideAttrs (old: {
-        postPatch = (old.postPatch or "") + ''
-          substituteInPlace src/app/slash/commands/ops.ts \
-            --replace-fail \
-              'const params: { session_id: string; confirm?: boolean; always?: boolean } = {' \
-              'const params: { session_id: string | null; confirm?: boolean; always?: boolean } = {'
-        '';
-      });
+      inherit (hermesUpstream) hermesTui;
       bundledSkills = lib.cleanSourceWith {
         src = inputs.hermes-agent.outPath + "/skills";
         filter = path: _type: !(lib.hasInfix "/index-cache/" path);
@@ -34,6 +27,7 @@ let
         src = inputs.hermes-agent.outPath + "/plugins";
         filter = path: _type: !(lib.hasInfix "/__pycache__/" path);
       };
+
       runtimePath = lib.makeBinPath [
         pkgs.nodejs_22
         pkgs.ripgrep
