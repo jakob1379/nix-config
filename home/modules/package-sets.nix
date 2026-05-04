@@ -219,11 +219,6 @@
       text = builtins.readFile ../../bin/ag-fuzzy;
     })
     (pkgs.writeShellApplication {
-      name = "nixos-switch";
-      runtimeInputs = [ pkgs.nix-output-monitor ];
-      text = builtins.readFile ../../bin/nixos-switch;
-    })
-    (pkgs.writeShellApplication {
       name = "update-all";
       runtimeInputs = [
         pkgs.home-manager
