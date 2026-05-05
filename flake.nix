@@ -25,7 +25,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     hermes-agent = {
-      url = "github:NousResearch/hermes-agent";
+      url = "github:NousResearch/hermes-agent/265bd59c1d9f8dea658f243b257d4fae3685af53";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     navi-cheats-src = {
