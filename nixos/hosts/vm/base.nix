@@ -1,4 +1,5 @@
 {
+  config,
   modulesPath,
   pkgs,
   ...
@@ -16,6 +17,8 @@
   services.qemuGuest.enable = true;
   services.resolved.enable = true;
   services.netbird.enable = true;
+
+  systemd.services.${config.services.netbird.clients.default.service.name}.path = [ pkgs.shadow ];
 
   boot.loader.grub.enable = true;
   boot.loader.grub.devices = [ "nodev" ];
@@ -38,6 +41,7 @@
       ];
       trusted-users = [
         "root"
+        "jsg"
         "deploy"
       ];
       auto-optimise-store = true;
