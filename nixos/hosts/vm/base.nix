@@ -18,7 +18,10 @@
   services.resolved.enable = true;
   services.netbird.enable = true;
 
-  systemd.services.${config.services.netbird.clients.default.service.name}.path = [ pkgs.shadow ];
+  systemd.services.${config.services.netbird.clients.default.service.name}.path = [
+    pkgs.shadow
+    pkgs.util-linux
+  ];
 
   boot.loader.grub.enable = true;
   boot.loader.grub.devices = [ "nodev" ];
