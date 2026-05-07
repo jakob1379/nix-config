@@ -56,19 +56,26 @@ in
               model = opencodeMainModel;
               variant = "high";
               skills = [ "*" ];
-              mcps = [ "context7" ];
+              mcps = [
+                "*"
+                "!context7"
+              ];
             };
             oracle = {
               model = opencodeMainModel;
               variant = "high";
-              skills = [ ];
+              skills = [ "simplify" ];
               mcps = [ ];
             };
             librarian = {
               model = opencodeSmallModel;
               variant = "low";
               skills = [ ];
-              mcps = [ "context7" ];
+              mcps = [
+                "websearch"
+                "context7"
+                "grep_app"
+              ];
             };
             explorer = {
               model = opencodeSmallModel;
@@ -79,7 +86,7 @@ in
             designer = {
               model = opencodeSmallModel;
               variant = "medium";
-              skills = [ ];
+              skills = [ "agent-browser" ];
               mcps = [ ];
             };
             fixer = {
@@ -89,17 +96,66 @@ in
               mcps = [ ];
             };
           };
-        };
-        tmux = {
-          enabled = true;
-          layout = "main-vertical";
-          main_pane_size = 60;
+          "opencode-go" = {
+            orchestrator = {
+              model = "opencode-go/glm-5.1";
+              skills = [ "*" ];
+              mcps = [
+                "*"
+                "!context7"
+              ];
+            };
+            oracle = {
+              model = "opencode-go/deepseek-v4-pro";
+              variant = "max";
+              skills = [ "simplify" ];
+              mcps = [ ];
+            };
+            council = {
+              model = "opencode-go/deepseek-v4-pro";
+              variant = "high";
+              skills = [ ];
+              mcps = [ ];
+            };
+            librarian = {
+              model = "opencode-go/minimax-m2.7";
+              skills = [ ];
+              mcps = [
+                "websearch"
+                "context7"
+                "grep_app"
+              ];
+            };
+            explorer = {
+              model = "opencode-go/minimax-m2.7";
+              skills = [ ];
+              mcps = [ ];
+            };
+            designer = {
+              model = "opencode-go/kimi-k2.6";
+              variant = "medium";
+              skills = [ "agent-browser" ];
+              mcps = [ ];
+            };
+            fixer = {
+              model = "opencode-go/deepseek-v4-flash";
+              variant = "high";
+              skills = [ ];
+              mcps = [ ];
+            };
+            observer = {
+              model = "opencode-go/kimi-k2.6";
+              skills = [ ];
+              mcps = [ ];
+            };
+          };
         };
       };
       sshSocketDir = config.home.homeDirectory + "/.ssh/sockets";
     in
     {
       home = {
+        packages = [ pkgs.agent-browser ];
         shell.enableBashIntegration = true;
         activation.ensureSshSocketsDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
           ${pkgs.coreutils}/bin/mkdir -p "${sshSocketDir}"
@@ -553,6 +609,7 @@ in
           };
 
           tui = {
+            plugin = [ "oh-my-opencode-slim@latest" ];
             keybinds = {
               app_exit = "ctrl+shift+q";
               input_clear = "ctrl+c";
@@ -637,6 +694,9 @@ in
             config.home.homeDirectory + "/.config/home-manager/dotfiles/AGENTS.md"
           );
           "opencode/oh-my-opencode-slim.json".text = builtins.toJSON opencodeSlimSettings;
+          "opencode/skills/agent-browser".source = "${inputs.agent-browser-src}/skills/agent-browser";
+          "opencode/skills/codemap".source = "${inputs.oh-my-opencode-slim-src}/src/skills/codemap";
+          "opencode/skills/simplify".source = "${inputs.oh-my-opencode-slim-src}/src/skills/simplify";
           "autostart/org.keepassxc.KeePassXC.desktop".text = ''
             [Desktop Entry]
             Name=KeePassXC

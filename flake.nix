@@ -40,6 +40,14 @@
       url = "github:ayzenquwe/tmux-ping";
       flake = false;
     };
+    oh-my-opencode-slim-src = {
+      url = "github:alvinunreal/oh-my-opencode-slim";
+      flake = false;
+    };
+    agent-browser-src = {
+      url = "github:vercel-labs/agent-browser";
+      flake = false;
+    };
     zen-browser = {
       url = "github:youwen5/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";

@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "agent-browser-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1778082499,
+        "narHash": "sha256-0EXHgpKAG489RIkEfGB16PzIy/83SPOY2ejR4+tWhVg=",
+        "owner": "vercel-labs",
+        "repo": "agent-browser",
+        "rev": "3bb1d43f8bb16444596365496f78395da8f1e6b7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "vercel-labs",
+        "repo": "agent-browser",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -294,6 +310,22 @@
         "type": "github"
       }
     },
+    "oh-my-opencode-slim-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1778136409,
+        "narHash": "sha256-Dwf0UXgQ2KY0wkX3c7Q/SLgWJsUycrSNdlag+fluLp0=",
+        "owner": "alvinunreal",
+        "repo": "oh-my-opencode-slim",
+        "rev": "c74a200d84d2297fe2be9ec3b1f390f165683013",
+        "type": "github"
+      },
+      "original": {
+        "owner": "alvinunreal",
+        "repo": "oh-my-opencode-slim",
+        "type": "github"
+      }
+    },
     "pyproject-build-systems": {
       "inputs": {
         "nixpkgs": [
@@ -384,6 +416,7 @@
     },
     "root": {
       "inputs": {
+        "agent-browser-src": "agent-browser-src",
         "flake-utils": "flake-utils",
         "git-hooks": "git-hooks",
         "hermes-agent": "hermes-agent",
@@ -392,6 +425,7 @@
         "navi-tldr-pages-src": "navi-tldr-pages-src",
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs",
+        "oh-my-opencode-slim-src": "oh-my-opencode-slim-src",
         "t3code-flake": "t3code-flake",
         "tmux-ping-src": "tmux-ping-src",
         "waytorandr": "waytorandr",
