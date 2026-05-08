@@ -353,17 +353,6 @@ in
           package = pkgs.keepassxc;
         };
 
-        ranger = {
-          enable = true;
-          extraPackages = with pkgs; [
-            python3Packages.pillow
-          ];
-          settings = {
-            preview_images = true;
-            preview_images_method = "kitty";
-          };
-        };
-
         fzf = {
           enable = true;
           enableBashIntegration = true;
@@ -599,6 +588,10 @@ in
 
         nix-index-database.comma.enable = true;
         nix-index.enable = true;
+
+        yazi = {
+          enable = true;
+        };
 
         nix-search-tv = {
           enable = true;
