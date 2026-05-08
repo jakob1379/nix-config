@@ -627,7 +627,6 @@ in
         df = "duf --hide special";
         open = "xdg-open";
         nshell = ''f(){ [ $# -gt 0 ] || { echo "usage: nshell <package> [nix args...]" >&2; return 1; }; nix shell --set-env-var OMP_NIX_SHELL 1 "nixpkgs#$1" "''${@:2}"; }; f'';
-        nproc-1 = "$(( $(nproc) - 1))";
         venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
         rsync = "rsync --info=progress2";
         plasma-restart = "systemctl restart --user plasma-plasmashell";
