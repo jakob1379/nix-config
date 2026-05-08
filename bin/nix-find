@@ -72,7 +72,6 @@ fi
 pkgs_str=$(nix_find_extract_pkgs "${selections[@]}")
 IFS=' ' read -ra pkgs <<< "$pkgs_str"
 
-# Print to terminal before exec
-echo "Running: nix-shell -p ${pkgs[*]}"
-
-exec nix-shell -p "${pkgs[@]}"
+printf 'nix-shell -p'
+printf ' %q' "${pkgs[@]}"
+printf '\n'

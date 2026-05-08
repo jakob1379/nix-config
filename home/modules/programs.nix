@@ -116,9 +116,39 @@ in
         bash = {
           enable = true;
           profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
-          initExtra = ''
-            bind '"\C-w": "nix-find\n"'
-            bind '"\ea": "ag-fuzzy\n"'
+          initExtra = lib.mkOrder 2000 ''
+            __nix_find_widget() {
+                local selected
+                selected="$(nix-find)" || return
+
+                [[ -z "$selected" ]] && return
+
+                READLINE_LINE="''${READLINE_LINE:0:READLINE_POINT}$selected''${READLINE_LINE:READLINE_POINT}"
+                READLINE_POINT=$((READLINE_POINT + ''${#selected}))
+            }
+
+            bind -x '"\C-x\C-w":__nix_find_widget'
+            bind -m emacs-standard -x '"\C-x\C-w":__nix_find_widget'
+            bind -m vi-command -x '"\C-x\C-w":__nix_find_widget'
+            bind -m vi-insert -x '"\C-x\C-w":__nix_find_widget'
+            bind '"\C-w": "\C-x\C-w"'
+            bind -m emacs-standard '"\C-w": "\C-x\C-w"'
+            bind -m vi-command '"\C-w": "\C-x\C-w"'
+            bind -m vi-insert '"\C-w": "\C-x\C-w"'
+
+            __ag_fuzzy_widget() {
+                local selected
+                selected="$(ag-fuzzy)" || return
+
+                [[ -z "$selected" ]] && return
+
+                READLINE_LINE="''${READLINE_LINE:0:READLINE_POINT}$selected''${READLINE_LINE:READLINE_POINT}"
+                READLINE_POINT=$((READLINE_POINT + ''${#selected}))
+            }
+
+            bind -m emacs-standard -x '"\ea": __ag_fuzzy_widget'
+            bind -m vi-command -x '"\ea": __ag_fuzzy_widget'
+            bind -m vi-insert -x '"\ea": __ag_fuzzy_widget'
             bind -x '"\eu":"up"'
           '';
           shellOptions = [ "cdspell" ];
