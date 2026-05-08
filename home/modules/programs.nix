@@ -414,6 +414,13 @@ in
           # extraOptionOverrides = lib.optionalAttrs config.customSsh.enableKeepassxc {
           #   ProxyCommand = "$HOME/.ssh/keepassxc-prompt %h %p";
           # };
+
+          extraConfig = ''
+            Match exec "${pkgs.netbird}/bin/netbird ssh detect %h %p"
+            ControlMaster no
+            ControlPath none
+            ControlPersist no
+          '';
           matchBlocks = {
             "*" = {
               forwardAgent = true;
