@@ -11,6 +11,11 @@
 
   networking.hostName = "homelab";
   networking.networkmanager.enable = true;
+  networking.firewall = {
+    enable = true;
+    trustedInterfaces = [ "docker0" ]; # default Docker bridge
+    allowedTCPPorts = [ 8123 ]; # HA port (host-facing)
+  };
 
   time.timeZone = "Europe/Copenhagen";
 
