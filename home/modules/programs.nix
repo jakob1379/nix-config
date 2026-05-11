@@ -320,7 +320,7 @@ in
           focusEvents = true;
           extraConfig = builtins.readFile ../../dotfiles/tmux/tmux.conf;
           plugins = [
-            # tmuxPing
+            tmuxPing
             {
               plugin = pkgs.tmuxPlugins.dotbar;
               extraConfig = ''
