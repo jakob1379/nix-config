@@ -12,6 +12,31 @@ let
     version = "unstable";
     src = inputs.tmux-ping-src;
     rtpFilePath = "ping.tmux";
+    postPatch = ''
+              substituteInPlace scripts/ping_status.sh \
+                --replace-fail 'ping_host_config="@ping_host"' 'ping_host_config="''${1:-@ping_host}"' \
+                --replace-fail 'ping_host_default="8.8.8.8"' 'ping_host_default="''${2-8.8.8.8}"' \
+                --replace-fail 'ping_log_file="/tmp/tmux_ping.log"' 'ping_cache_key="''${3:-default}"
+            ping_log_file="/tmp/tmux_ping_''${ping_cache_key}.log"' \
+                --replace-fail 'ping_result_file="/tmp/tmux_ping_result"' 'ping_result_file="/tmp/tmux_ping_''${ping_cache_key}_result"' \
+                --replace-fail 'ping_pid_file="/tmp/tmux_ping.pid"' 'ping_pid_file="/tmp/tmux_ping_''${ping_cache_key}.pid"' \
+                --replace-fail 'local pid=$(cat $ping_pid_file)' '[ -r "$ping_pid_file" ] || return 0
+            local pid=$(cat "$ping_pid_file")' \
+                --replace-fail '! ps -p $pid > /dev/null' '! kill -0 "$pid" 2> /dev/null' \
+                --replace-fail 'result=$( cut -sd / -f 5 $ping_log_file | cut -d . -f 1 )' '[ -r "$ping_log_file" ] || { echo -1; return; }
+            result=$( cut -sd / -f 5 "$ping_log_file" | cut -d . -f 1 )' \
+                --replace-fail 'ping $number_pings_flag $ping_count $timeout_flag $ping_wait_time $ping_host > $ping_log_file &' '${pkgs.iputils}/bin/ping $number_pings_flag $ping_count $timeout_flag $ping_wait_time $ping_host > $ping_log_file 2> /dev/null &'
+              substituteInPlace ping.tmux \
+                --replace-fail 'ping_status="#($CURRENT_DIR/scripts/ping_status.sh)"
+      ping_interpolation="\#{ping}"' 'ping_public_status="#($CURRENT_DIR/scripts/ping_status.sh @ping_public_host 8.8.8.8 public)"
+            ping_client_status="#($CURRENT_DIR/scripts/ping_status.sh @ping_client_host "" client)"
+            ping_public_interpolation="\#{ping_public}"
+            ping_client_interpolation="\#{ping_client}"
+            ping_interpolation="\#{ping}"' \
+                --replace-fail 'local interpolated="''${string/$ping_interpolation/$ping_status}"' 'local interpolated="''${string/$ping_public_interpolation/$ping_public_status}"
+                interpolated="''${interpolated/$ping_client_interpolation/$ping_client_status}"
+                interpolated="''${interpolated/$ping_interpolation/$ping_public_status}"'
+    '';
   };
 in
 {
@@ -379,8 +404,9 @@ in
             {
               plugin = pkgs.tmuxPlugins.dotbar;
               extraConfig = ''
+                run-shell 'client_ip=''${SSH_CLIENT%% *}; [ -z "$client_ip" ] && client_ip=''${SSH_CONNECTION%% *}; tmux set -g @ping_client_host "$client_ip"; tmux set -g @ping_public_host "8.8.8.8"'
                 set -g @tmux-dotbar-right true
-                set -g @tmux-dotbar-status-right-text " Ping: #{ping} "
+                set -g @tmux-dotbar-status-right-text " SSH: #{ping_client} Net: #{ping_public} "
               '';
             }
             tmuxPing
