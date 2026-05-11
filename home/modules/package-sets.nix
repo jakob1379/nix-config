@@ -193,6 +193,7 @@
     (pkgs.writeShellApplication {
       name = "hsu";
       runtimeInputs = [
+        pkgs.gh
         pkgs.home-manager
         pkgs.nix-output-monitor
       ];
@@ -222,6 +223,7 @@
     (pkgs.writeShellApplication {
       name = "update-all";
       runtimeInputs = [
+        pkgs.gh
         pkgs.home-manager
         pkgs.nix-output-monitor
         pkgs.uv

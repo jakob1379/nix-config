@@ -3,4 +3,11 @@ set -euo pipefail
 
 flakePath="${XDG_CONFIG_HOME:-$HOME/.config}/home-manager"
 
+if command -v gh >/dev/null 2>&1 && [[ "${NIX_CONFIG:-}" != *"access-tokens"* ]]; then
+  githubToken="$(gh auth token -h github.com 2>/dev/null || true)"
+  if [[ -n "$githubToken" ]]; then
+    export NIX_CONFIG="access-tokens = github.com=$githubToken"
+  fi
+fi
+
 nix flake update --flake "$flakePath" && home-manager switch --flake "$flakePath" "$@" 2>&1 | nom
