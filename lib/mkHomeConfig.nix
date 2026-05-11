@@ -12,7 +12,6 @@ inputs.home-manager.lib.homeManagerConfiguration {
   pkgs = import inputs.nixpkgs {
     inherit system;
     config.allowUnfreePredicate = lib.allowUnfreePredicate;
-    overlays = [ inputs.t3code-flake.overlays.default ];
   };
   modules = [
     ../home/common.nix

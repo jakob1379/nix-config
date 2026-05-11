@@ -375,7 +375,15 @@ in
           terminal = "tmux-256color";
           focusEvents = true;
           extraConfig = builtins.readFile ../../dotfiles/tmux/tmux.conf;
-          plugins = [ tmuxPing ];
+          plugins = [
+            tmuxPing
+            {
+              plugin = pkgs.tmuxPlugins.dotbar;
+              extraConfig = ''
+                set -g @tmux-dotbar-right true
+              '';
+            }
+          ];
         };
 
         zoxide = {

@@ -2,7 +2,7 @@
   description = "Home Manager configuration of jga";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable-small";
     flake-utils.url = "github:numtide/flake-utils";
     git-hooks = {
       url = "github:cachix/git-hooks.nix";
@@ -85,35 +85,6 @@
         pkgs.writeShellScriptBin "prek-fmt" ''
           ${pkgs.lib.getExe package} run --all-files --config ${configFile}
         ''
-      );
-      packages = nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-linux" ] (
-        system:
-        let
-          pkgs = import nixpkgs {
-            inherit system;
-            config.allowUnfreePredicate = lib.allowUnfreePredicate;
-            overlays = [ inputs.t3code-flake.overlays.default ];
-          };
-        in
-        {
-          inherit (pkgs) t3code;
-        }
-      );
-      apps = nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-linux" ] (
-        system:
-        let
-          packages = self.packages.${system};
-          t3codeApps = inputs.t3code-flake.apps.${system};
-        in
-        {
-          t3code = {
-            type = "app";
-            program = "${packages.t3code}/bin/t3code";
-          };
-        }
-        // nixpkgs.lib.optionalAttrs (builtins.hasAttr "t3code-desktop" t3codeApps) {
-          inherit (t3codeApps) t3code-desktop;
-        }
       );
       devShells = forAllSystems (pkgs: {
         default =
