@@ -172,9 +172,39 @@ in
         bash = {
           enable = true;
           profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
-          initExtra = ''
-            bind '"\C-w": "nix-find\n"'
-            bind '"\ea": "ag-fuzzy\n"'
+          initExtra = lib.mkOrder 2000 ''
+            __nix_find_widget() {
+                local selected
+                selected="$(nix-find)" || return
+
+                [[ -z "$selected" ]] && return
+
+                READLINE_LINE="''${READLINE_LINE:0:READLINE_POINT}$selected''${READLINE_LINE:READLINE_POINT}"
+                READLINE_POINT=$((READLINE_POINT + ''${#selected}))
+            }
+
+            bind -x '"\C-x\C-w":__nix_find_widget'
+            bind -m emacs-standard -x '"\C-x\C-w":__nix_find_widget'
+            bind -m vi-command -x '"\C-x\C-w":__nix_find_widget'
+            bind -m vi-insert -x '"\C-x\C-w":__nix_find_widget'
+            bind '"\C-w": "\C-x\C-w"'
+            bind -m emacs-standard '"\C-w": "\C-x\C-w"'
+            bind -m vi-command '"\C-w": "\C-x\C-w"'
+            bind -m vi-insert '"\C-w": "\C-x\C-w"'
+
+            __ag_fuzzy_widget() {
+                local selected
+                selected="$(ag-fuzzy)" || return
+
+                [[ -z "$selected" ]] && return
+
+                READLINE_LINE="''${READLINE_LINE:0:READLINE_POINT}$selected''${READLINE_LINE:READLINE_POINT}"
+                READLINE_POINT=$((READLINE_POINT + ''${#selected}))
+            }
+
+            bind -m emacs-standard -x '"\ea": __ag_fuzzy_widget'
+            bind -m vi-command -x '"\ea": __ag_fuzzy_widget'
+            bind -m vi-insert -x '"\ea": __ag_fuzzy_widget'
             bind -x '"\eu":"up"'
           '';
           shellOptions = [ "cdspell" ];
@@ -379,17 +409,6 @@ in
           package = pkgs.keepassxc;
         };
 
-        ranger = {
-          enable = true;
-          extraPackages = with pkgs; [
-            python3Packages.pillow
-          ];
-          settings = {
-            preview_images = true;
-            preview_images_method = "kitty";
-          };
-        };
-
         fzf = {
           enable = true;
           enableBashIntegration = true;
@@ -440,6 +459,13 @@ in
           # extraOptionOverrides = lib.optionalAttrs config.customSsh.enableKeepassxc {
           #   ProxyCommand = "$HOME/.ssh/keepassxc-prompt %h %p";
           # };
+
+          extraConfig = ''
+            Match exec "${pkgs.netbird}/bin/netbird ssh detect %h %p"
+            ControlMaster no
+            ControlPath none
+            ControlPersist no
+          '';
           matchBlocks = {
             "*" = {
               forwardAgent = true;
@@ -620,6 +646,10 @@ in
         nix-index-database.comma.enable = true;
         nix-index.enable = true;
 
+        yazi = {
+          enable = true;
+        };
+
         nix-search-tv = {
           enable = true;
           settings = {
@@ -647,7 +677,6 @@ in
         df = "duf --hide special";
         open = "xdg-open";
         nshell = ''f(){ [ $# -gt 0 ] || { echo "usage: nshell <package> [nix args...]" >&2; return 1; }; nix shell --set-env-var OMP_NIX_SHELL 1 "nixpkgs#$1" "''${@:2}"; }; f'';
-        nproc-1 = "$(( $(nproc) - 1))";
         venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
         rsync = "rsync --info=progress2";
         plasma-restart = "systemctl restart --user plasma-plasmashell";

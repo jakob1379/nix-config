@@ -64,7 +64,7 @@
         sessionPath = [ "$HOME/.local/bin" ];
         sessionVariables = {
           MANPAGER = "${pkgs.bat}/bin/bat -l man -p'";
-          NIX_BUILD_CORES = "$(( $(${pkgs.busybox}/bin/nproc) + 1 ) / 2 )";
+          NIX_BUILD_CORES = "$(${pkgs.busybox}/bin/nproc --ignore=1)";
           PAGER = "${pkgs.bat}/bin/bat -p";
           SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
         };
