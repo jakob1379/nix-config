@@ -320,13 +320,14 @@ in
           focusEvents = true;
           extraConfig = builtins.readFile ../../dotfiles/tmux/tmux.conf;
           plugins = [
-            tmuxPing
             {
               plugin = pkgs.tmuxPlugins.dotbar;
               extraConfig = ''
                 set -g @tmux-dotbar-right true
+                set -g @tmux-dotbar-status-right-text " Ping: #{ping} "
               '';
             }
+            tmuxPing
           ];
         };
 
