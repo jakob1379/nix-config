@@ -345,6 +345,7 @@ in
                 set -ag update-environment " SSH_CLIENT SSH_CONNECTION"
                 run-shell 'client_ip=''${SSH_CLIENT%% *}; [ -z "$client_ip" ] && client_ip=''${SSH_CONNECTION%% *}; tmux set -g @tmux-net-client-host "$client_ip"; tmux set -g @tmux-net-client-port "22"; tmux set -g @tmux-net-timeout "1"'
                 set -g @tmux-dotbar-session-text " #H "
+                set -g @tmux-dotbar-status-left '#[bg=#0B0E14,fg=#565B66]#{?client_prefix,#[fg=#95E6CB], #H }#[bg=#95E6CB,fg=#0B0E14,bold]#{?client_prefix, #H ,}#[bg=#0B0E14,fg=#95E6CB]#{?client_prefix,,}#[fg=#565B66]'
                 set -g @tmux-dotbar-window-status-format " #(${tmuxWindowLabel}/bin/tmux-window-label '#{pane_current_path}' '#{pane_current_command}') "
                 set -g @tmux-dotbar-right true
                 set -g @tmux-dotbar-status-right-text " #(${tmuxNetStatus}/bin/tmux-net-status) "
