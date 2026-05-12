@@ -25,7 +25,7 @@ let
                 --replace-fail '! ps -p $pid > /dev/null' '! kill -0 "$pid" 2> /dev/null' \
                 --replace-fail 'result=$( cut -sd / -f 5 $ping_log_file | cut -d . -f 1 )' '[ -r "$ping_log_file" ] || { echo -1; return; }
             result=$( cut -sd / -f 5 "$ping_log_file" | cut -d . -f 1 )' \
-                --replace-fail 'ping $number_pings_flag $ping_count $timeout_flag $ping_wait_time $ping_host > $ping_log_file &' '${pkgs.iputils}/bin/ping $number_pings_flag $ping_count $timeout_flag $ping_wait_time $ping_host > $ping_log_file 2> /dev/null &'
+                --replace-fail 'ping $number_pings_flag $ping_count $timeout_flag $ping_wait_time $ping_host > $ping_log_file &' '${pkgs.toybox}/bin/toybox ping $number_pings_flag $ping_count $timeout_flag $ping_wait_time $ping_host > $ping_log_file 2> /dev/null &'
               substituteInPlace ping.tmux \
                 --replace-fail 'ping_status="#($CURRENT_DIR/scripts/ping_status.sh)"
       ping_interpolation="\#{ping}"' 'ping_public_status="#($CURRENT_DIR/scripts/ping_status.sh @ping_public_host 8.8.8.8 public)"
