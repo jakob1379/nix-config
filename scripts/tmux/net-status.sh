@@ -4,13 +4,11 @@ set -u
 
 runtime_dir="${XDG_RUNTIME_DIR:-/tmp}"
 state_dir="$runtime_dir/tmux-net-status-$UID"
-cache="$state_dir/status"
-lock="$state_dir/lock"
 timeout="${TMUX_NET_TIMEOUT:-1}"
-public_host="${TMUX_NET_PUBLIC_HOST:-1.1.1.1}"
-public_port="${TMUX_NET_PUBLIC_PORT:-443}"
 client_host="${TMUX_NET_CLIENT_HOST:-}"
 client_port="${TMUX_NET_CLIENT_PORT:-22}"
+client_source_port=""
+ssh_server_port=""
 success_ttl=30
 failure_ttl=10
 
@@ -22,44 +20,115 @@ tmux_option() {
   fi
 }
 
-option_value="$(tmux_option @tmux-net-public-host)"
-[ -n "$option_value" ] && public_host="$option_value"
-option_value="$(tmux_option @tmux-net-public-port)"
-[ -n "$option_value" ] && public_port="$option_value"
+tmux_environment() {
+  local value
+
+  if [ -n "${TMUX:-}" ]; then
+    value="$(tmux show-environment -g "$1" 2>/dev/null || true)"
+    case "$value" in
+      "$1="*) printf '%s\n' "${value#*=}" ;;
+    esac
+  fi
+}
+
+resolve_ssh_client() {
+  local value
+
+  value="$(tmux_environment SSH_CLIENT)"
+  if [ -z "$value" ]; then
+    value="${SSH_CLIENT:-}"
+  fi
+  if [ -n "$value" ]; then
+    read -r client_host client_source_port ssh_server_port _ <<EOF
+$value
+EOF
+    return
+  fi
+
+  value="$(tmux_environment SSH_CONNECTION)"
+  if [ -z "$value" ]; then
+    value="${SSH_CONNECTION:-}"
+  fi
+  if [ -n "$value" ]; then
+    read -r client_host client_source_port _ ssh_server_port _ <<EOF
+$value
+EOF
+  fi
+}
+
 option_value="$(tmux_option @tmux-net-client-host)"
 [ -n "$option_value" ] && client_host="$option_value"
+resolve_ssh_client
 option_value="$(tmux_option @tmux-net-client-port)"
 [ -n "$option_value" ] && client_port="$option_value"
 option_value="$(tmux_option @tmux-net-timeout)"
 [ -n "$option_value" ] && timeout="$option_value"
 
-check_tcp() {
-  toybox nc -z -w "$timeout" "$1" "$2" >/dev/null 2>&1
+cache_key="$(printf '%s-%s\n' "${client_host:-none}" "$client_port" | tr -c 'A-Za-z0-9_.-' '_')"
+cache="$state_dir/status-$cache_key"
+lock="$state_dir/lock-$cache_key"
+
+format_latency_ms() {
+  local latency="$1"
+
+  latency="${latency%%.*}"
+  printf '%sms\n' "$latency"
+}
+
+ssh_connection_latency() {
+  local output
+  local latency
+
+  if [ -z "$client_source_port" ]; then
+    return 1
+  fi
+  if [ -z "$ssh_server_port" ]; then
+    ssh_server_port="$client_port"
+  fi
+
+  output="$(ss -tin state established "( sport = :$ssh_server_port and dport = :$client_source_port )" 2>/dev/null)" || return 1
+  latency="${output#*rtt:}"
+  if [ "$latency" = "$output" ]; then
+    return 1
+  fi
+
+  latency="${latency%%/*}"
+  format_latency_ms "$latency"
+}
+
+ping_latency() {
+  local output
+  local latency
+
+  output="$(ping -n -c 1 -W "$timeout" "$1" 2>/dev/null)" || return 1
+  latency="${output#*time=}"
+  if [ "$latency" = "$output" ]; then
+    return 1
+  fi
+
+  latency="${latency%% *}"
+  format_latency_ms "$latency"
 }
 
 render() {
-  local net_status="down"
-  local client_status="-"
+  local client_status="?"
+  local client_latency
   local ttl="$failure_ttl"
   local now
   now="$(date +%s)"
 
-  if check_tcp "$public_host" "$public_port"; then
-    net_status="up"
-    ttl="$success_ttl"
-  fi
-
   if [ -n "$client_host" ]; then
     client_status="down"
-    if check_tcp "$client_host" "$client_port"; then
-      client_status="up"
+    if client_latency="$(ssh_connection_latency)"; then
+      client_status="$client_latency"
+      ttl="$success_ttl"
+    elif client_latency="$(ping_latency "$client_host")"; then
+      client_status="$client_latency"
+      ttl="$success_ttl"
     fi
-
-    printf '%s\t%s\tSSH: %s Net: %s\n' "$now" "$ttl" "$client_status" "$net_status" > "$cache.tmp"
-  else
-    printf '%s\t%s\tNet: %s\n' "$now" "$ttl" "$net_status" > "$cache.tmp"
   fi
 
+  printf '%s\t%s\tSSH: %s\n' "$now" "$ttl" "$client_status" > "$cache.tmp"
   mv "$cache.tmp" "$cache"
 }
 
@@ -82,9 +151,9 @@ if [ -r "$cache" ]; then
   fi
 
   refresh_background
-  printf '%s\n' "${cache_text:-Net: ?}"
+  printf '%s\n' "${cache_text:-SSH: ?}"
   exit 0
 fi
 
 refresh_background
-printf 'Net: ?\n'
+printf 'SSH: ?\n'

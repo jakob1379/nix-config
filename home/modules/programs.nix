@@ -11,8 +11,9 @@ let
     name = "tmux-net-status";
     runtimeInputs = [
       pkgs.coreutils
+      pkgs.iputils
+      pkgs.iproute2
       pkgs.tmux
-      pkgs.toybox
     ];
     text = builtins.readFile ../../scripts/tmux/net-status.sh;
   };
@@ -341,11 +342,14 @@ in
             {
               plugin = pkgs.tmuxPlugins.dotbar;
               extraConfig = ''
-                run-shell 'client_ip=''${SSH_CLIENT%% *}; [ -z "$client_ip" ] && client_ip=''${SSH_CONNECTION%% *}; tmux set -g @tmux-net-client-host "$client_ip"; tmux set -g @tmux-net-public-host "1.1.1.1"; tmux set -g @tmux-net-public-port "443"; tmux set -g @tmux-net-client-port "22"; tmux set -g @tmux-net-timeout "1"'
+                set -ag update-environment " SSH_CLIENT SSH_CONNECTION"
+                run-shell 'client_ip=''${SSH_CLIENT%% *}; [ -z "$client_ip" ] && client_ip=''${SSH_CONNECTION%% *}; tmux set -g @tmux-net-client-host "$client_ip"; tmux set -g @tmux-net-client-port "22"; tmux set -g @tmux-net-timeout "1"'
                 set -g @tmux-dotbar-session-text " #H "
                 set -g @tmux-dotbar-window-status-format " #(${tmuxWindowLabel}/bin/tmux-window-label '#{pane_current_path}' '#{pane_current_command}') "
                 set -g @tmux-dotbar-right true
                 set -g @tmux-dotbar-status-right-text " #(${tmuxNetStatus}/bin/tmux-net-status) "
+                set -g @tmux-dotbar-ssh-enabled true
+                set -g @tmux-dotbar-ssh-icon-only false
               '';
             }
           ];
