@@ -15,6 +15,19 @@ let
       inputs
       ;
   };
+
+  hermesAgent = inputs.hermes-agent.packages.${system}.default;
+  hermesAgentWithEspeak = pkgs.symlinkJoin {
+    name = "hermes-agent-with-espeak-ng";
+    paths = [ hermesAgent ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      for bin in hermes hermes-agent hermes-acp; do
+        wrapProgram "$out/bin/$bin" \
+          --suffix PATH : ${lib.makeBinPath [ pkgs.espeak-ng ]}
+      done
+    '';
+  };
 in
 {
   customGit = {
@@ -43,7 +56,7 @@ in
       clockify
       adw-gtk3
       glab
-      inputs.hermes-agent.packages.${system}.default
+      hermesAgentWithEspeak
       # teams-for-linux
       kdePackages.qt6ct
       libsForQt5.qt5ct
