@@ -427,7 +427,6 @@
         "nixpkgs": "nixpkgs",
         "oh-my-opencode-slim-src": "oh-my-opencode-slim-src",
         "t3code-flake": "t3code-flake",
-        "tmux-ping-src": "tmux-ping-src",
         "waytorandr": "waytorandr",
         "zen-browser": "zen-browser"
       }
@@ -500,22 +499,6 @@
       "original": {
         "owner": "jakob1379",
         "repo": "t3code-flake",
-        "type": "github"
-      }
-    },
-    "tmux-ping-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1722517456,
-        "narHash": "sha256-Sr+UfJIhuMdapuiLCqRnC0QcyG2vbjuyhkG0z6Sz1G0=",
-        "owner": "ayzenquwe",
-        "repo": "tmux-ping",
-        "rev": "853175737b5af4b6d00ba5d18e3e059c9a7e3973",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ayzenquwe",
-        "repo": "tmux-ping",
         "type": "github"
       }
     },

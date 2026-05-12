@@ -36,10 +36,6 @@
       url = "github:denisidoro/navi-tldr-pages";
       flake = false;
     };
-    tmux-ping-src = {
-      url = "github:ayzenquwe/tmux-ping";
-      flake = false;
-    };
     oh-my-opencode-slim-src = {
       url = "github:alvinunreal/oh-my-opencode-slim";
       flake = false;
