@@ -313,11 +313,11 @@
     "oh-my-opencode-slim-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1778185773,
-        "narHash": "sha256-VJ2hWGmhnzU/iqHjyYR5wYyALAm4KodceBkm+p0llMQ=",
+        "lastModified": 1778585373,
+        "narHash": "sha256-sffU5qJJ5yamK0HNEW6LUw8yosOLwjJ4i+xLXGsRsvA=",
         "owner": "alvinunreal",
         "repo": "oh-my-opencode-slim",
-        "rev": "85de4c65f439ecb2b4d48ed5b1064a48603d6647",
+        "rev": "5c3549085b1b3c2cf01b6598a003b0df85d77b60",
         "type": "github"
       },
       "original": {
@@ -579,11 +579,11 @@
         "utils": "utils"
       },
       "locked": {
-        "lastModified": 1778502135,
-        "narHash": "sha256-HV03djVsx0t2vBxS32hUmf5ZuF90RDIZZOr2WWBn7DM=",
+        "lastModified": 1778566552,
+        "narHash": "sha256-tTmh6cffPYCGs4lD8fXkpHn3fLo3Ws2cWKmjUY4f/4w=",
         "owner": "jakob1379",
         "repo": "waytorandr",
-        "rev": "25c4c26c8e472c6c3cc75d5ee1a338146d66215c",
+        "rev": "ba8280c93388ea23f1f37fe03abd016354b35a96",
         "type": "github"
       },
       "original": {
