@@ -121,59 +121,6 @@ in
               mcps = [ ];
             };
           };
-          "opencode-go" = {
-            orchestrator = {
-              model = "opencode-go/glm-5.1";
-              skills = [ "*" ];
-              mcps = [
-                "*"
-                "!context7"
-              ];
-            };
-            oracle = {
-              model = "opencode-go/deepseek-v4-pro";
-              variant = "max";
-              skills = [ "simplify" ];
-              mcps = [ ];
-            };
-            council = {
-              model = "opencode-go/deepseek-v4-pro";
-              variant = "high";
-              skills = [ ];
-              mcps = [ ];
-            };
-            librarian = {
-              model = "opencode-go/minimax-m2.7";
-              skills = [ ];
-              mcps = [
-                "websearch"
-                "context7"
-                "grep_app"
-              ];
-            };
-            explorer = {
-              model = "opencode-go/minimax-m2.7";
-              skills = [ ];
-              mcps = [ ];
-            };
-            designer = {
-              model = "opencode-go/kimi-k2.6";
-              variant = "medium";
-              skills = [ "agent-browser" ];
-              mcps = [ ];
-            };
-            fixer = {
-              model = "opencode-go/deepseek-v4-flash";
-              variant = "high";
-              skills = [ ];
-              mcps = [ ];
-            };
-            observer = {
-              model = "opencode-go/kimi-k2.6";
-              skills = [ ];
-              mcps = [ ];
-            };
-          };
         };
       };
       sshSocketDir = config.home.homeDirectory + "/.ssh/sockets";
