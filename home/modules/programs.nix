@@ -301,6 +301,10 @@ in
             term = "kitty";
             unfocused-split-opacity = 1.0;
             window-decoration = false;
+            keybind = [
+              "ctrl+shift+,=unbind"
+              "ctrl+alt+shift+,=reload_config"
+            ];
             # scrollbar = "system";
           };
         };
