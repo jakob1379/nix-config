@@ -243,35 +243,47 @@ in
             key = "98BD7E80842C97BA";
             signByDefault = false;
           };
-          settings = {
-            user = {
-              name = config.customGit.userName;
-              email = config.customGit.userEmail;
-            };
-            checkout.defaultRemote = "origin";
-            color = {
-              diff = "auto";
-              ui = true;
-            };
-            init.defaultBranch = "main";
-            pull.rebase = false;
-            push.autoSetupRemote = true;
-            credential = {
-              helper = "libsecret"; # Keep your existing system helper
-              "https://gitlab.com" = {
-                helper = [
-                  ""
-                  "!${pkgs.glab}/bin/glab auth git-credential"
-                ];
+          settings = lib.mkForce [
+            {
+              user = {
+                name = config.customGit.userName;
+                email = config.customGit.userEmail;
               };
-            };
-            alias = {
-              adog = "log --all --decorate --oneline --graph";
-              plog = "log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
-              ignore-change = "update-index --assume-unchanged";
-              unstage = "restore --staged";
-            };
-          };
+              checkout.defaultRemote = "origin";
+              color = {
+                diff = "auto";
+                ui = true;
+              };
+              init.defaultBranch = "main";
+              pull.rebase = false;
+              push.autoSetupRemote = true;
+              credential.helper = "libsecret"; # Keep your existing system helper
+              alias = {
+                adog = "log --all --decorate --oneline --graph";
+                plog = "log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
+                ignore-change = "update-index --assume-unchanged";
+                unstage = "restore --staged";
+              };
+            }
+            {
+              credential."https://github.com".helper = "";
+            }
+            {
+              credential."https://github.com".helper = "!${pkgs.gh}/bin/gh auth git-credential";
+            }
+            {
+              credential."https://gist.github.com".helper = "";
+            }
+            {
+              credential."https://gist.github.com".helper = "!${pkgs.gh}/bin/gh auth git-credential";
+            }
+            {
+              credential."https://gitlab.com".helper = "";
+            }
+            {
+              credential."https://gitlab.com".helper = "!${pkgs.glab}/bin/glab auth git-credential";
+            }
+          ];
         };
         gh = {
           enable = true;
@@ -280,7 +292,7 @@ in
             pkgs.gh-poi
             pkgs.gh-stack
           ];
-          gitCredentialHelper.enable = true;
+          gitCredentialHelper.enable = false;
           settings.aliases = {
             web = "repo view --web";
           };
