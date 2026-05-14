@@ -63,7 +63,7 @@ inputs.home-manager.lib.homeManagerConfiguration {
   pkgs = import inputs.nixpkgs {
     inherit system;
     config.allowUnfreePredicate = lib.allowUnfreePredicate;
-    overlays = [ opencodeWslOverlay ];
+    overlays = [ (import ../overlays/tana.nix) ];
   };
   modules = [
     ../home/common.nix
