@@ -175,7 +175,8 @@
             "systray_3267022",
             "Stretchly - The break time reminder app\n\nNext Long break in about 1 minute",
             "Stretchly - The break time reminder app\n\nNext Long break in about 0 minutes",
-            "NetBird (Connected)"
+            "NetBird (Connected)",
+            "tailscale"
           ]
         },
         {
@@ -266,6 +267,20 @@
           "icon": "noctalia",
           "id": "ControlCenter",
           "useDistroLogo": false
+        },
+        {
+          "defaultSettings": {
+            "autoHeight": true,
+            "cheatsheetData": [],
+            "columnCount": 3,
+            "detectedCompositor": "",
+            "hyprlandConfigPath": "~/.config/hypr/hyprland.conf",
+            "modKeyVariable": "$mod",
+            "niriConfigPath": "~/.config/niri/config.kdl",
+            "windowHeight": 0,
+            "windowWidth": 1400
+          },
+          "id": "plugin:keybind-cheatsheet"
         }
       ]
     }
@@ -367,7 +382,12 @@
     "enabled": false,
     "gridSnap": false,
     "gridSnapScale": false,
-    "monitorWidgets": [],
+    "monitorWidgets": [
+      {
+        "name": "DVI-I-1",
+        "widgets": []
+      }
+    ],
     "overviewEnabled": true
   },
   "dock": {
@@ -525,7 +545,7 @@
     "enableMarkdown": false,
     "enableMediaToast": false,
     "enabled": true,
-    "location": "bottom_right",
+    "location": "top_right",
     "lowUrgencyDuration": 3,
     "monitors": [],
     "normalUrgencyDuration": 8,
@@ -560,7 +580,7 @@
     "notifyUpdates": true
   },
   "sessionMenu": {
-    "countdownDuration": 10000,
+    "countdownDuration": 5000,
     "enableCountdown": true,
     "largeButtonsLayout": "single-row",
     "largeButtonsStyle": true,
