@@ -140,7 +140,7 @@ in
 
                 READLINE_LINE="''${READLINE_LINE:0:READLINE_POINT}$selected''${READLINE_LINE:READLINE_POINT}"
                 READLINE_POINT=$((READLINE_POINT + ''${#selected}))
-            }
+                              }
 
             bind -x '"\C-x\C-w":__nix_find_widget'
             bind -m emacs-standard -x '"\C-x\C-w":__nix_find_widget'
@@ -159,7 +159,7 @@ in
 
                 READLINE_LINE="''${READLINE_LINE:0:READLINE_POINT}$selected''${READLINE_LINE:READLINE_POINT}"
                 READLINE_POINT=$((READLINE_POINT + ''${#selected}))
-            }
+                              }
 
             bind -m emacs-standard -x '"\ea": __ag_fuzzy_widget'
             bind -m vi-command -x '"\ea": __ag_fuzzy_widget'
@@ -257,32 +257,21 @@ in
               init.defaultBranch = "main";
               pull.rebase = false;
               push.autoSetupRemote = true;
-              credential.helper = "libsecret"; # Keep your existing system helper
+              # credential.helper = "libsecret"; # Keep your existing system helper
               alias = {
                 adog = "log --all --decorate --oneline --graph";
                 plog = "log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
                 ignore-change = "update-index --assume-unchanged";
                 unstage = "restore --staged";
               };
+
+              credential = {
+                "https://gitlab.com".helper = "!${pkgs.glab}/bin/glab auth git-credential";
+                "https://github.com".helper = "!${pkgs.gh}/bin/gh auth git-credential";
+                "https://gist.github.com".helper = "!${pkgs.gh}/bin/gh auth git-credential";
+              };
             }
-            {
-              credential."https://github.com".helper = "";
-            }
-            {
-              credential."https://github.com".helper = "!${pkgs.gh}/bin/gh auth git-credential";
-            }
-            {
-              credential."https://gist.github.com".helper = "";
-            }
-            {
-              credential."https://gist.github.com".helper = "!${pkgs.gh}/bin/gh auth git-credential";
-            }
-            {
-              credential."https://gitlab.com".helper = "";
-            }
-            {
-              credential."https://gitlab.com".helper = "!${pkgs.glab}/bin/glab auth git-credential";
-            }
+
           ];
         };
         gh = {
@@ -292,7 +281,6 @@ in
             pkgs.gh-poi
             pkgs.gh-stack
           ];
-          gitCredentialHelper.enable = false;
           settings.aliases = {
             web = "repo view --web";
           };
@@ -639,6 +627,7 @@ in
 
         yazi = {
           enable = true;
+          shellWrapperName = "y";
         };
 
         nix-search-tv = {
