@@ -98,6 +98,7 @@
     nixd
     powershell
     python3
+    rassumfrassum
     silver-searcher
     taplo
     texlab
