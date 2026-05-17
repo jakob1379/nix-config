@@ -3,10 +3,13 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
     git-hooks = {
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
     };
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -57,48 +60,62 @@
   outputs =
     inputs@{
       self,
-      git-hooks,
-      nixpkgs,
+      flake-parts,
       ...
     }:
     let
-      lib = import ./lib { inherit nixpkgs inputs; };
-      inherit (lib) forAllSystems generalPackages;
+      localLib = import ./lib {
+        inherit (inputs) nixpkgs;
+        inherit inputs;
+      };
+      inherit (localLib) generalPackages;
     in
-    {
-      homeConfigurations = import ./home { inherit lib; };
-      nixosConfigurations = import ./nixos { inherit nixpkgs inputs lib; };
-      checks = forAllSystems (pkgs: {
-        pre-commit-check = git-hooks.lib.${pkgs.stdenv.hostPlatform.system}.run (
-          import ./nix/git-hooks.nix {
-            inherit pkgs;
-            inherit (nixpkgs) lib;
-          }
-        );
-      });
-      formatter = forAllSystems (
-        pkgs:
-        let
-          inherit (self.checks.${pkgs.stdenv.hostPlatform.system}.pre-commit-check) config;
-          inherit (config) configFile package;
-        in
-        pkgs.writeShellScriptBin "prek-fmt" ''
-          ${pkgs.lib.getExe package} run --all-files --config ${configFile}
-        ''
-      );
-      devShells = forAllSystems (pkgs: {
-        default =
-          let
-            inherit (self.checks.${pkgs.stdenv.hostPlatform.system}) pre-commit-check;
-          in
-          pkgs.mkShell {
-            packages = (generalPackages pkgs) ++ pre-commit-check.enabledPackages;
-            shellHook = ''
-              ${pre-commit-check.shellHook}
-              export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
-              export PS1="(dotfiles-shell 🫥) $PS1"
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = [
+        inputs.flake-parts.flakeModules.modules
+        ./modules/flake/lib.nix
+        ./modules/flake/home-modules.nix
+        ./modules/flake/nixos-modules.nix
+        ./modules/flake/home-configurations.nix
+        ./modules/flake/nixos-configurations.nix
+      ];
+
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+
+      perSystem =
+        { pkgs, system, ... }:
+        {
+          checks.pre-commit-check = inputs.git-hooks.lib.${system}.run (
+            import ./nix/git-hooks.nix {
+              inherit pkgs;
+              inherit (inputs.nixpkgs) lib;
+            }
+          );
+
+          formatter =
+            let
+              inherit (self.checks.${system}.pre-commit-check) config;
+              inherit (config) configFile package;
+            in
+            pkgs.writeShellScriptBin "prek-fmt" ''
+              ${pkgs.lib.getExe package} run --all-files --config ${configFile}
             '';
-          };
-      });
+
+          devShells.default =
+            let
+              inherit (self.checks.${system}) pre-commit-check;
+            in
+            pkgs.mkShell {
+              packages = (generalPackages pkgs) ++ pre-commit-check.enabledPackages;
+              shellHook = ''
+                ${pre-commit-check.shellHook}
+                export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+                export PS1="(dotfiles-shell 🫥) $PS1"
+              '';
+            };
+        };
     };
 }
