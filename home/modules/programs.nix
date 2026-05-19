@@ -281,6 +281,7 @@ in
             pkgs.gh-poi
             pkgs.gh-stack
           ];
+          gitCredentialHelper.enable = true;
           settings.aliases = {
             web = "repo view --web";
           };
