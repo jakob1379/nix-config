@@ -32,8 +32,9 @@ nix flake show
 ## Layout
 
 - `flake.nix` — flake entrypoint, outputs, checks, dev shell
-- `home/` — Home Manager profiles, shared modules, per-system overrides
-- `nixos/` — NixOS hosts, shared defaults, user modules
+- `home/` — Home Manager profile assembly
+- `modules/` — dendritic Home Manager, NixOS, and flake modules
+- `nixos/` — NixOS host hardware and machine-specific overrides
 - `dotfiles/` — editor, shell, browser, terminal, and desktop configs
 - `bin/` — custom helper commands wrapped into packages
 - `scripts/` — supporting scripts for desktop, wallpaper, SSH, and shell
@@ -47,6 +48,5 @@ nix flake show
 
 - `homeConfigurations` — Home Manager profiles
 - `nixosConfigurations` — NixOS host configs
-- `packages` / `apps` — exported packages and runnable apps
 - `devShells.default` — development environment with hooks
 - `formatter` / `checks` — formatting and validation

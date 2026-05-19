@@ -3,8 +3,6 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../../common.nix
-    ../../users/jsg.nix
   ];
 
   # Only machine-specific overrides should remain here.

@@ -1,38 +1,52 @@
-{ lib }:
+{
+  lib,
+  homeModules,
+}:
 let
   inherit (lib) mkHomeConfig;
+  baseModules = [
+    homeModules.waytorandr
+    homeModules.common
+    homeModules.packages
+    homeModules.dotfiles
+    homeModules.git-ssh
+    homeModules.shell-cli
+    homeModules.dev-ai
+    homeModules.desktop-apps
+    homeModules.home-storage
+    homeModules.home-wallpaper
+    homeModules.home-niri-desktop
+    homeModules.home-session-services
+  ];
+  mkHome = args: mkHomeConfig ({ inherit lib baseModules; } // args);
 in
 {
-  "jsg@DESKTOP-IQEP2ED" = mkHomeConfig {
+  "jsg@DESKTOP-IQEP2ED" = mkHome {
     system = "x86_64-linux";
     username = "jsg";
     homeDirectory = "/home/jsg";
-    extraModules = [ ./systems/seeq.nix ];
-    inherit lib;
+    extraModules = [ homeModules.host-seeq ];
   };
 
-  "pi@raspberrypi" = mkHomeConfig {
+  "pi@raspberrypi" = mkHome {
     system = "aarch64-linux";
     username = "pi";
     homeDirectory = "/home/pi";
-    extraModules = [ ./systems/pi.nix ];
-    inherit lib;
+    extraModules = [ homeModules.host-pi ];
   };
 
-  "jga@yoga" = mkHomeConfig {
+  "jga@yoga" = mkHome {
     system = "x86_64-linux";
     username = "jga";
     homeDirectory = "/home/jga";
-    extraModules = [ ./systems/yoga.nix ];
-    inherit lib;
+    extraModules = [ homeModules.host-yoga ];
   };
 
-  "jsg@amd" = mkHomeConfig {
+  "jsg@amd" = mkHome {
     system = "x86_64-linux";
     username = "jsg";
     homeDirectory = "/home/jsg";
-    extraModules = [ ./systems/amd.nix ];
-    inherit lib;
+    extraModules = [ homeModules.host-amd ];
   };
 
 }
