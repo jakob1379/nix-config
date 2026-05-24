@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 flakePath="${XDG_CONFIG_HOME:-$HOME/.config}/home-manager"
+host="${HOSTNAME:-$(uname -n)}"
+host="${host%%.*}"
+hmTarget="${HM_TARGET:-${USER}@${host}}"
+nixosTarget="${NIXOS_TARGET:-${host}}"
 
 if command -v gh >/dev/null 2>&1 && [[ "${NIX_CONFIG:-}" != *"access-tokens"* ]]; then
   githubToken="$(gh auth token -h github.com 2>/dev/null || true)"
@@ -9,14 +14,39 @@ if command -v gh >/dev/null 2>&1 && [[ "${NIX_CONFIG:-}" != *"access-tokens"* ]]
   fi
 fi
 
+fastBuildJobs() {
+  if [[ -n "${NIX_FAST_BUILD_JOBS:-}" ]]; then
+    printf '%s\n' "$NIX_FAST_BUILD_JOBS"
+    return
+  fi
+
+  cores="$(nproc 2>/dev/null || printf '2')"
+  jobs=$((cores / 2))
+  if ((jobs < 1)); then
+    jobs=1
+  fi
+  printf '%s\n' "$jobs"
+}
+
+fastBuildEnabled() {
+  [[ "${NIX_FAST_BUILD_DISABLE:-}" != 1 ]]
+}
+
 # Parallel updates
 sudo -v
 sudo nix-channel --update &
 nix flake update --flake "${flakePath}" &
 nix-channel --update &
 wait
+
 # Home Manager switch with output monitor
-home-manager switch --flake "${flakePath}" "$@" |& nom
+if fastBuildEnabled; then
+  nix-fast-build \
+    --flake "${flakePath}#homeConfigurations.\"${hmTarget}\".activationPackage" \
+    --no-link \
+    -j "$(fastBuildJobs)"
+fi
+home-manager switch --flake "${flakePath}#${hmTarget}" "$@" |& nom
 
 uv tool upgrade --all &
 rm -rf ~/.cache/opencode
@@ -26,4 +56,16 @@ wait
 
 # NixOS switch with output monitor
 sudo -v
-nixos-rebuild switch --sudo --flake "${flakePath}" |& nom
+if fastBuildEnabled; then
+  tmpdir="$(mktemp -d)"
+  trap 'rm -rf "$tmpdir"' EXIT
+
+  nix-fast-build \
+    --flake "${flakePath}#nixosConfigurations.\"${nixosTarget}\".config.system.build.toplevel" \
+    --out-link "$tmpdir/nixos-system" \
+    -j "$(fastBuildJobs)"
+
+  nixos-rebuild switch --sudo --store-path "$(readlink -f "$tmpdir/nixos-system")" |& nom
+else
+  nixos-rebuild switch --sudo --flake "${flakePath}#${nixosTarget}" |& nom
+fi

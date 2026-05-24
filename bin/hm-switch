@@ -3,5 +3,41 @@ set -euo pipefail
 
 flakePath="${XDG_CONFIG_HOME:-$HOME/.config}/home-manager"
 
-# Run home-manager switch and pipe output to nom (nix-output-monitor)
-home-manager switch --flake "$flakePath" "$@" 2>&1 | nom
+host="${HOSTNAME:-$(uname -n)}"
+host="${host%%.*}"
+hmTarget="${HM_TARGET:-${USER}@${host}}"
+
+fastBuildJobs() {
+  if [[ -n "${NIX_FAST_BUILD_JOBS:-}" ]]; then
+    printf '%s\n' "$NIX_FAST_BUILD_JOBS"
+    return
+  fi
+
+  cores="$(nproc 2>/dev/null || printf '2')"
+  jobs=$((cores / 2))
+  if ((jobs < 1)); then
+    jobs=1
+  fi
+  printf '%s\n' "$jobs"
+}
+
+shouldFastBuild() {
+  [[ "${NIX_FAST_BUILD_DISABLE:-}" != 1 ]] || return 1
+
+  for arg in "$@"; do
+    case "$arg" in
+      --rollback | -n | --help | -h)
+        return 1
+        ;;
+    esac
+  done
+}
+
+if shouldFastBuild "$@"; then
+  nix-fast-build \
+    --flake "${flakePath}#homeConfigurations.\"${hmTarget}\".activationPackage" \
+    --no-link \
+    -j "$(fastBuildJobs)"
+fi
+
+home-manager switch --flake "${flakePath}#${hmTarget}" "$@" 2>&1 | nom

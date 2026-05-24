@@ -186,7 +186,10 @@
     (pkgs.writeShellApplication {
       name = "hs";
       runtimeInputs = [
+        pkgs.coreutils
         pkgs.home-manager
+        pkgs.nix-eval-jobs
+        pkgs.nix-fast-build
         pkgs.nix-output-monitor
       ];
       text = builtins.readFile ../../bin/hm-switch;
@@ -194,8 +197,11 @@
     (pkgs.writeShellApplication {
       name = "hsu";
       runtimeInputs = [
+        pkgs.coreutils
         pkgs.gh
         pkgs.home-manager
+        pkgs.nix-eval-jobs
+        pkgs.nix-fast-build
         pkgs.nix-output-monitor
       ];
       text = builtins.readFile ../../bin/hm-switch-update;
@@ -224,8 +230,11 @@
     (pkgs.writeShellApplication {
       name = "update-all";
       runtimeInputs = [
+        pkgs.coreutils
         pkgs.gh
         pkgs.home-manager
+        pkgs.nix-eval-jobs
+        pkgs.nix-fast-build
         pkgs.nix-output-monitor
         pkgs.uv
       ];

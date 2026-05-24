@@ -27,7 +27,22 @@ Useful commands:
 ```bash
 nix fmt
 nix flake show
+hs
+hsu
+update-all
 ```
+
+`hs` switches the current user's Home Manager profile for the current host.
+`hsu` updates the flake first, then switches the same profile. `update-all`
+updates channels and the flake, switches Home Manager, runs user tool updates,
+and switches the current NixOS host.
+
+The switch helpers use `nix-fast-build` to prebuild exact flake outputs before
+activation. They intentionally avoid broad targets like `.#`, because recursive
+flake traversal can enter non-buildable input functions. Override the inferred
+targets with `HM_TARGET=user@host` or `NIXOS_TARGET=host`, tune parallelism with
+`NIX_FAST_BUILD_JOBS`, or set `NIX_FAST_BUILD_DISABLE=1` to use the direct
+`home-manager` / `nixos-rebuild` paths.
 
 ## Layout
 
