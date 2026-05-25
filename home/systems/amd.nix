@@ -16,6 +16,7 @@ let
       ;
   };
 
+  coderabbit-cli = inputs.numtide-llm-agents.packages.${system}.coderabbit-cli;
   hermesAgent = inputs.hermes-agent.packages.${system}.default;
   hermesAgentWithEspeak = pkgs.symlinkJoin {
     name = "hermes-agent-with-espeak-ng";
@@ -57,6 +58,7 @@ in
       adw-gtk3
       glab
       hermesAgentWithEspeak
+      coderabbit-cli
       # teams-for-linux
       kdePackages.qt6ct
       libsForQt5.qt5ct
