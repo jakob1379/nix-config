@@ -230,14 +230,14 @@ Emacs is very conservative about assuming encoding. Everything is UTF-8 these da
 #+END_SRC
 ** Global hotkeys
 #+BEGIN_SRC emacs-lisp
-(global-set-key (kbd "C-+")      'text-scale-increase)
-(global-set-key (kbd "C--")      'text-scale-decrease)
-(global-set-key [C-S-tab]        'previous-window)
-(global-set-key [C-mouse-4]      'text-scale-increase)
-(global-set-key [C-mouse-5]      'text-scale-decrease)
-(global-set-key [C-tab]          'other-window)
-(global-set-key [f10]            'treemacs)
-
+(global-set-key (kbd "C-+")     'text-scale-increase)
+(global-set-key (kbd "C--")     'text-scale-decrease)
+(global-set-key (kbd "C-c s l") 'sort-lines)
+(global-set-key [C-S-tab]       'previous-window)
+(global-set-key [C-mouse-4]     'text-scale-increase)
+(global-set-key [C-mouse-5]     'text-scale-decrease)
+(global-set-key [C-tab]         'other-window)
+(global-set-key [f10]           'treemacs)
 #+END_SRC
 ** Ansi colors decoding/rendering
 #+BEGIN_SRC emacs-lisp
@@ -270,7 +270,6 @@ If Emacs is not running as a server, start one. It should've been started by sys
 #+BEGIN_SRC emacs-lisp
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 #+END_SRC
-
 ** Aesthetics
 
 #+BEGIN_SRC emacs-lisp
@@ -942,10 +941,13 @@ Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Cor
    (yaml-mode . eglot-ensure))
   :bind
   (:map eglot-mode-map
+        ("C-M-<mouse-2>" . eglot-code-actions-at-mouse)
         ("C-c l a" . eglot-code-actions)
-        ("C-c l f" . eglot-format)
-        ("C-c l r" . eglot-rename)
         ("C-c l d" . eldoc)
+        ("C-c l f" . eglot-format)
+        ("C-c l o" . eglot-code-action-organize-imports)
+        ("C-c l q" . eglot-code-action-quickfix)
+        ("C-c l r" . eglot-rename)
         ("C-c l s" . imenu))
   :custom
   (eglot-autoshutdown t)
