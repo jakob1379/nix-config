@@ -183,18 +183,6 @@ in
           '';
         };
 
-        distrobox = {
-          enable = true;
-          containers = {
-            ubuntu25 = {
-              image = "ubuntu:24.04"; # Specify your desired image here
-              init_hooks = "curl -LsSf https://astral.sh/uv/install.sh | sh";
-              additional_packages = "curl"; # Additional packages needed for init_hooks
-              entry = true; # Make this container enterable by default (optional)
-            };
-          };
-        };
-
         direnv = {
           enable = true;
           enableBashIntegration = true;
@@ -654,7 +642,6 @@ in
         watch = "hwatch";
         cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
         fm = "frogmouth";
-        db = "distrobox";
         df = "duf --hide special";
         open = "xdg-open";
         nshell = ''f(){ [ $# -gt 0 ] || { echo "usage: nshell <package> [nix args...]" >&2; return 1; }; nix shell --set-env-var OMP_NIX_SHELL 1 "nixpkgs#$1" "''${@:2}"; }; f'';
