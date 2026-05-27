@@ -43,5 +43,4 @@
 
   customSsh.enableKeepassxc = lib.mkForce false;
 
-  customPackages.dev.packages = lib.mkAfter (with pkgs; [ glab ]);
 }
