@@ -333,10 +333,12 @@ in
               extraConfig = ''
                 set -ag update-environment " SSH_CLIENT SSH_CONNECTION"
                 run-shell 'client_ip=''${SSH_CLIENT%% *}; [ -z "$client_ip" ] && client_ip=''${SSH_CONNECTION%% *}; tmux set -g @tmux-net-client-host "$client_ip"; tmux set -g @tmux-net-client-port "22"; tmux set -g @tmux-net-timeout "1"'
+                setw -g automatic-rename on
+                setw -g automatic-rename-format "#(${tmuxWindowLabel}/bin/tmux-window-label '#{pane_current_path}' '#{pane_current_command}')"
                 set -g @tmux-dotbar-session-text " #H "
                 set -g status-left-length 80
                 set -g @tmux-dotbar-status-left '#[bg=#0B0E14]#{?client_prefix,#[fg=#95E6CB]#[bg=#95E6CB]#[fg=#0B0E14]#[bold]#H#[nobold]#[bg=#0B0E14]#[fg=#95E6CB],#[fg=#565B66] #H }#[bg=#0B0E14]#[fg=#565B66]'
-                set -g @tmux-dotbar-window-status-format " #(${tmuxWindowLabel}/bin/tmux-window-label '#{pane_current_path}' '#{pane_current_command}') "
+                set -g @tmux-dotbar-window-status-format " #W "
                 set -g @tmux-dotbar-right true
                 set -g @tmux-dotbar-status-right-text " #(${tmuxNetStatus}/bin/tmux-net-status) "
                 set -g @tmux-dotbar-ssh-enabled true
