@@ -28,6 +28,10 @@
       url = "github:NousResearch/hermes-agent/265bd59c1d9f8dea658f243b257d4fae3685af53";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    numtide-llm-agents = {
+      url = "github:numtide/llm-agents.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     navi-cheats-src = {
       url = "github:denisidoro/cheats";
       flake = false;
