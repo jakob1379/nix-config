@@ -238,6 +238,9 @@ main() {
     total_rules=$(echo "${raw_data}" | wc -l)
     total_files=$(echo "${raw_data}" | cut -d: -f1 | sort -u | wc -l)
 
+    local unique_rules
+    unique_rules=$(echo "${raw_data}" | grep -oP '# noqa[: \t]+\K[^#]+' | tr ',' '\n' | tr ' ' '\n' | sed 's/^[ \t]*//;s/[ \t]*$//' | grep -v '^$' | sort -u | wc -l)
+
     gum style \
         --border double \
         --border-foreground 212 \
@@ -249,7 +252,10 @@ main() {
         "$(gum style --foreground 240 "${search_dir}")" \
         "" \
         "$(gum style --foreground 183 --bold "🔍  Found ${total_rules} noqa occurrences")" \
-        "$(gum style --foreground 240 "across ${total_files} files")"
+        "$(gum style --foreground 240 "across ${total_files} files")" \
+        "" \
+        "$(gum style --foreground 240 --italic "${unique_rules} unique rules • ${total_files} files • ${total_rules} total")" \
+        "$(gum style --foreground 238 --italic "$(date '+%H:%M:%S')")"
 
     print_rule_totals "${raw_data}"
 
@@ -259,19 +265,6 @@ main() {
     gum style --foreground 240 --margin "1 0" "  $(printf '─%.0s' $(seq 1 $((term_width - 4))))"
 
     print_file_counts "${search_dir}" "${pattern}"
-
-    # Summary footer with key stats
-    local unique_rules
-    unique_rules=$(echo "${raw_data}" | grep -oP '# noqa[: \t]+\K[^#]+' | tr ',' '\n' | tr ' ' '\n' | sed 's/^[ \t]*//;s/[ \t]*$//' | grep -v '^$' | sort -u | wc -l)
-
-    gum style \
-        --border rounded \
-        --border-foreground 240 \
-        --margin "1 0 0 0" \
-        --padding "0 2" \
-        --align center \
-        "$(gum style --foreground 240 --italic "${unique_rules} unique rules • ${total_files} files • ${total_rules} total")" \
-        "$(gum style --foreground 238 --italic "$(date '+%H:%M:%S')")"
 }
 
 main "$@"
