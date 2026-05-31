@@ -250,6 +250,7 @@
       name = "noqa-stats";
       runtimeInputs = [
         pkgs.gum
+        pkgs.gnugrep
         pkgs.silver-searcher
       ];
       text = builtins.readFile ../../bin/noqa-stats;
