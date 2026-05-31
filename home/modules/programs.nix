@@ -377,10 +377,7 @@ in
 
         oh-my-posh = {
           enable = true;
-          enableBashIntegration = true;
-          settings = builtins.fromJSON (
-            builtins.readFile ../../dotfiles/oh-my-posh/custom-hunks-theme.omp.json
-          );
+          settings = builtins.fromJSON (builtins.readFile ../../dotfiles/oh-my-posh/new-theme.json);
         };
 
         keepassxc = {
