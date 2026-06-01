@@ -9,7 +9,7 @@
 # Dependencies: yq, fzf, bat, paste, stty
 ###############################################################################
 
-# Exit on error, undefined variables, and pipe failures
+# Treat undefined variables and pipeline failures as errors.
 set -uo pipefail
 # Set field separator to only newline and tab
 IFS=$'\n\t'
@@ -17,20 +17,20 @@ IFS=$'\n\t'
 # Function Definitions
 #######################################
 
-function check_dependencies() {
-  local -r required_commands=("yq" "fzf" "bat" "paste" "stty")
+check_dependencies() {
+	local required_commands=("yq" "fzf" "bat" "paste" "stty")
 
-  for cmd in "${required_commands[@]}"; do
-    if ! command -v "$cmd" &> /dev/null; then
-      echo "Error: $cmd is required but not installed." >&2
-      exit 1
-    fi
-  done
+	for cmd in "${required_commands[@]}"; do
+		if ! command -v "$cmd" &>/dev/null; then
+			echo "Error: $cmd is required but not installed." >&2
+			exit 1
+		fi
+	done
 }
 
-function show_usage() {
-  cat <<EOF
-Usage: $(basename "$0") [-qh] <file> [initial_query]
+show_usage() {
+	cat <<EOF
+Usage: ${0##*/} [-qh] <file> [initial_query]
 
 Arguments:
   file          Path to YAML or JSON file to query
@@ -46,51 +46,50 @@ Controls:
 EOF
 }
 
-OUTPUT_QUERY_ONLY=0
+output_query_only=0
 
 while getopts ":hq" opt; do
-  case ${opt} in
-	q)
-      OUTPUT_QUERY_ONLY=1
-	  ;;
-	h)
-	  show_usage
-      exit 1
-	  ;;
-	\?)
-	  echo "Invalid option: $OPTARG" 1>&2
-	  exit 2
-	  ;;
-	:)
-	  echo "Invalid option: $OPTARG requires an argument" 1>&2
-	  exit 2
-	  ;;
-  esac
+	case ${opt} in
+		q)
+			output_query_only=1
+			;;
+		h)
+			show_usage
+			exit 1
+			;;
+		\?)
+			echo "Invalid option: $OPTARG" 1>&2
+			exit 2
+			;;
+		:)
+			echo "Invalid option: $OPTARG requires an argument" 1>&2
+			exit 2
+			;;
+	esac
 done
 
-shift $((OPTIND-1))
+shift $((OPTIND - 1))
 
+detect_file_type() {
+	local file="$1"
+	local ext="${file##*.}"
 
-function detect_file_type() {
-  local -r file="$1"
-  local ext="${file##*.}"
-
-  # If no extension or extension is the entire filename
-  if [[ "$ext" == "$file" ]] || [[ -z "$ext" ]]; then
-    if head -n 1 "$file" | grep -Eq '^\s*\{'; then
-      echo "json"
-    else
-      echo "yaml"
-    fi
-  else
-    echo "$ext"
-  fi
+	# If no extension or extension is the entire filename
+	if [[ "$ext" == "$file" ]] || [[ -z "$ext" ]]; then
+		if head -n 1 "$file" | grep -Eq '^\s*\{'; then
+			echo "json"
+		else
+			echo "yaml"
+		fi
+	else
+		echo "$ext"
+	fi
 }
 
-function cleanup() {
-  # Remove temporary file and restore terminal settings
-  [[ -f "$PREVIEW_FILE" ]] && rm -f "$PREVIEW_FILE" # noqa SC2317
-  stty ixon # noqa SC2317
+cleanup() {
+	# Remove temporary file and restore terminal settings
+	[[ -f "$preview_file" ]] && rm -f "$preview_file" # noqa SC2317
+	stty ixon                                         # noqa SC2317
 }
 
 # Main Script
@@ -101,83 +100,85 @@ check_dependencies
 
 # Check if file is provided
 if [[ $# -lt 1 ]]; then
-  show_usage
+	show_usage
+	exit 1
 fi
 
-FILE="$1"
-INITIAL_QUERY="${2:-.}"  # Default to "." if not provided
+file="$1"
+initial_query="${2:-.}" # Default to "." if not provided
 
 # Check if file exists and is readable
-if [[ ! -r "$FILE" ]]; then
-  echo "Error: File '$FILE' not found or not readable." >&2
-  exit 1
+if [[ ! -r "$file" ]]; then
+	echo "Error: File '$file' not found or not readable." >&2
+	exit 1
 fi
 
 # Detect file format for syntax highlighting
-INPUT_EXT=$(detect_file_type "$FILE")
+input_ext=$(detect_file_type "$file")
 
 # Create temporary file for preview content
-PREVIEW_FILE=$(mktemp "/tmp/yqp_preview.XXXXXX")
+preview_file=$(mktemp "/tmp/yqp_preview.XXXXXX") || exit
 
 # Ensure cleanup on exit
 trap cleanup EXIT HUP INT TERM
 
 # Initialize preview with whole file content.peers|keys[]
-yq -r eval -- "$INITIAL_QUERY" "$FILE" > "$PREVIEW_FILE" 2>&1 || \
-  echo "Error reading initial file content with yq." > "$PREVIEW_FILE"
+yq -r eval -- "$initial_query" "$file" >"$preview_file" 2>&1 \
+	|| echo "Error reading initial file content with yq." >"$preview_file"
 
 # Build the preview command
-PREVIEW_COMMAND=$(cat <<EOF
-    if yq '. | type' "$PREVIEW_FILE" 2>/dev/null | grep -Eq 'map|object|array'; then \
-        completions=\$(yq -r 'keys // map(tostring) | .[]?' "$PREVIEW_FILE" | paste -sd ' '); \
+preview_command=$(
+	cat <<EOF
+    if yq '. | type' "$preview_file" 2>/dev/null | grep -Eq 'map|object|array'; then \
+        completions=\$(yq -r 'keys // map(tostring) | .[]?' "$preview_file" | paste -sd ' '); \
         echo -e "Available keys:"; \
         echo "\$completions" | tr ' ' '\\n' | sort -h | tr '\\n' ' ' | sed 's/ *\$//' | bat --color always -ppl csv; \
     fi; \
     echo -e "\nQuery result:"; \
-    bat --color=always -pp --language '$INPUT_EXT' '$PREVIEW_FILE'
+    bat --color=always -pp --language '$input_ext' '$preview_file'
 EOF
-               )
+)
 # Convert to single line for fzf
-PREVIEW_COMMAND=$(echo "$PREVIEW_COMMAND" | tr -d '\n')
+preview_command=$(tr -d '\n' <<<"$preview_command")
 
 # Disable XOFF flow control before fzf (improves terminal handling)
 stty -ixon
 
 # Run fzf with interactive preview
-FZF_OUTPUT=$(echo '' | fzf \
-                         --query="$INITIAL_QUERY" \
-                         --prompt="yq query > " \
-                         --print-query \
-                         --expect=ctrl-s \
-                         --height=80% \
-                         --header="Enter: Preview query result | Ctrl+S: Accept and output query" \
-                         --preview="$PREVIEW_COMMAND" \
-                         --preview-window=up:90%:wrap \
-                         --bind "ctrl-s:accept,enter:execute(yq -r eval -- {q} '$FILE' > '$PREVIEW_FILE' 2>&1 || echo 'Invalid query or error executing yq' > '$PREVIEW_FILE')+reload($PREVIEW_COMMAND)")
+fzf_output=$(fzf \
+	--query="$initial_query" \
+	--prompt="yq query > " \
+	--print-query \
+	--expect=ctrl-s \
+	--height=80% \
+	--header="Enter: Preview query result | Ctrl+S: Accept and output query" \
+	--preview="$preview_command" \
+	--preview-window=up:90%:wrap \
+	--bind "ctrl-s:accept,enter:execute(yq -r eval -- {q} '$file' > '$preview_file' 2>&1 || echo 'Invalid query or error executing yq' > '$preview_file')+reload($preview_command)" \
+	< <(printf '\n'))
 
 # Parse fzf output
-FINAL_QUERY=$(echo "$FZF_OUTPUT" | sed -n '1p')
-KEY_PRESSED=$(echo "$FZF_OUTPUT" | sed -n '2p')
+final_query=$(sed -n '1p' <<<"$fzf_output")
+key_pressed=$(sed -n '2p' <<<"$fzf_output")
 
 # Process the result
-if [[ "$KEY_PRESSED" == "ctrl-s" ]]; then
-  if [[ -n "$FINAL_QUERY" ]]; then
-    if [[ "$OUTPUT_QUERY_ONLY" == 1 ]]; then
-      # User pressed Ctrl+S and -q is set: output the query string
-      echo "$FINAL_QUERY"
-      exit 0
-    else
-      # User pressed Ctrl+S and -q is NOT set: execute the final query and output result
-      # Use set -euo pipefail to catch errors in this final execution
-      yq -r eval -- "$FINAL_QUERY" "$FILE"
-      cleanup
-      exit 0 # Exit 0 on success
-    fi
-  else
-    echo "Warning: No query entered." >&2
-    exit 1
-  fi
+if [[ "$key_pressed" == "ctrl-s" ]]; then
+	if [[ -n "$final_query" ]]; then
+		if [[ "$output_query_only" == 1 ]]; then
+			# User pressed Ctrl+S and -q is set: output the query string
+			echo "$final_query"
+			exit 0
+		else
+			# User pressed Ctrl+S and -q is NOT set: execute the final query and output result
+			yq -r eval -- "$final_query" "$file"
+			cleanup
+			exit 0 # Exit 0 on success
+		fi
+	else
+		echo "Warning: No query entered." >&2
+		exit 1
+	fi
 else
-  echo "Operation cancelled." >&2
-  exit 1
+	echo "Operation cancelled." >&2
+	exit 1
 fi
