@@ -27,21 +27,21 @@
 # Version: 1.0.0
 #
 
-set -euo pipefail
+set -uo pipefail
 
-readonly SCRIPT_NAME="${0##*/}"
-readonly VERSION="1.0.0"
+script_name="${0##*/}"
+version="1.0.0"
 
 # Arrays to collect docker compose options
-declare -a COMPOSE_FILES=()
-declare -a ENV_FILES=()
-OPEN_OUTPUT=false
-FORMAT="png"
+compose_files=()
+env_files=()
+open_output=false
+format="png"
 
 # Display usage information
 usage() {
-    cat <<EOF
-Usage: $SCRIPT_NAME [OPTIONS]
+	cat <<EOF
+Usage: $script_name [OPTIONS]
 
 Visualize docker-compose service dependencies as a Mermaid graph.
 
@@ -60,134 +60,149 @@ Description:
     xdg-open.
 
 Examples:
-    $SCRIPT_NAME                           # Default docker-compose.yml
-    $SCRIPT_NAME -f prod.yml               # Use specific file
-    $SCRIPT_NAME -f base.yml -f local.yml  # Multiple files
-    $SCRIPT_NAME -e .env -e .env.local     # With env files
-    $SCRIPT_NAME --format svg              # Render as SVG
-    $SCRIPT_NAME -o                        # Open in default image viewer
+    $script_name                           # Default docker-compose.yml
+    $script_name -f prod.yml               # Use specific file
+    $script_name -f base.yml -f local.yml  # Multiple files
+    $script_name -e .env -e .env.local     # With env files
+    $script_name --format svg              # Render as SVG
+    $script_name -o                        # Open in default image viewer
 
 EOF
 }
 
 # Display version
 version() {
-    echo "$SCRIPT_NAME version $VERSION"
+	echo "$script_name version $version"
 }
 
 status() {
-    printf '%s\n' "$*" >&2
+	printf '%s\n' "$*" >&2
 }
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
-    case "$1" in
-        -f|--file)
-            if [[ -z "${2:-}" ]]; then
-                echo "Error: $1 requires an argument" >&2
-                exit 1
-            fi
-            COMPOSE_FILES+=("$2")
-            shift 2
-            ;;
-        -e|--env-file)
-            if [[ -z "${2:-}" ]]; then
-                echo "Error: $1 requires an argument" >&2
-                exit 1
-            fi
-            ENV_FILES+=("$2")
-            shift 2
-            ;;
-        -o|--open)
-            OPEN_OUTPUT=true
-            shift
-            ;;
-        --format)
-            if [[ -z "${2:-}" ]]; then
-                echo "Error: $1 requires an argument" >&2
-                exit 1
-            fi
+	case "$1" in
+		-f | --file)
+			if [[ -z "${2:-}" ]]; then
+				echo "Error: $1 requires an argument" >&2
+				exit 1
+			fi
+			compose_files+=("$2")
+			shift 2
+			;;
+		-e | --env-file)
+			if [[ -z "${2:-}" ]]; then
+				echo "Error: $1 requires an argument" >&2
+				exit 1
+			fi
+			env_files+=("$2")
+			shift 2
+			;;
+		-o | --open)
+			open_output=true
+			shift
+			;;
+		--format)
+			if [[ -z "${2:-}" ]]; then
+				echo "Error: $1 requires an argument" >&2
+				exit 1
+			fi
 
-            case "$2" in
-                png|svg)
-                    FORMAT="$2"
-                    ;;
-                *)
-                    echo "Error: Unsupported format '$2'. Use 'png' or 'svg'." >&2
-                    exit 1
-                    ;;
-            esac
+			case "$2" in
+				png | svg)
+					format="$2"
+					;;
+				*)
+					echo "Error: Unsupported format '$2'. Use 'png' or 'svg'." >&2
+					exit 1
+					;;
+			esac
 
-            shift 2
-            ;;
-        -h|--help)
-            usage
-            exit 0
-            ;;
-        -v|--version)
-            version
-            exit 0
-            ;;
-        -*)
-            echo "Error: Unknown option '$1'" >&2
-            usage >&2
-            exit 1
-            ;;
-        *)
-            echo "Error: Unexpected argument '$1'" >&2
-            usage >&2
-            exit 1
-            ;;
-    esac
+			shift 2
+			;;
+		-h | --help)
+			usage
+			exit 0
+			;;
+		-v | --version)
+			version
+			exit 0
+			;;
+		-*)
+			echo "Error: Unknown option '$1'" >&2
+			usage >&2
+			exit 1
+			;;
+		*)
+			echo "Error: Unexpected argument '$1'" >&2
+			usage >&2
+			exit 1
+			;;
+	esac
 done
 
 # Build docker compose command options
-DOCKER_COMPOSE_OPTS=()
-for f in "${COMPOSE_FILES[@]}"; do
-    DOCKER_COMPOSE_OPTS+=("-f" "$f")
+docker_compose_opts=()
+for f in "${compose_files[@]}"; do
+	docker_compose_opts+=("-f" "$f")
 done
-for e in "${ENV_FILES[@]}"; do
-    DOCKER_COMPOSE_OPTS+=("--env-file" "$e")
+for e in "${env_files[@]}"; do
+	docker_compose_opts+=("--env-file" "$e")
 done
 
 # Validate dependencies are available
-command -v docker >/dev/null 2>&1 || { echo "Error: docker is required" >&2; exit 1; }
-command -v jq >/dev/null 2>&1 || { echo "Error: jq is required" >&2; exit 1; }
-command -v mmdc >/dev/null 2>&1 || { echo "Error: mermaid-cli (mmdc) is required" >&2; exit 1; }
-command -v sha256sum >/dev/null 2>&1 || { echo "Error: sha256sum is required" >&2; exit 1; }
-if [[ "$OPEN_OUTPUT" == true ]]; then
-    command -v xdg-open >/dev/null 2>&1 || { echo "Error: xdg-open is required for --open" >&2; exit 1; }
+command -v docker >/dev/null 2>&1 || {
+	echo "Error: docker is required" >&2
+	exit 1
+}
+command -v jq >/dev/null 2>&1 || {
+	echo "Error: jq is required" >&2
+	exit 1
+}
+command -v mmdc >/dev/null 2>&1 || {
+	echo "Error: mermaid-cli (mmdc) is required" >&2
+	exit 1
+}
+command -v sha256sum >/dev/null 2>&1 || {
+	echo "Error: sha256sum is required" >&2
+	exit 1
+}
+if [[ "$open_output" == true ]]; then
+	command -v xdg-open >/dev/null 2>&1 || {
+		echo "Error: xdg-open is required for --open" >&2
+		exit 1
+	}
 fi
 
 # Check if running in kitty
-if [[ "$OPEN_OUTPUT" != true && -z "${KITTY_PID:-}" && -z "${KITTY_WINDOW_ID:-}" ]]; then
-    echo "Warning: Not running in kitty terminal. Image display may not work." >&2
+if [[ "$open_output" != true && -z "${KITTY_PID:-}" && -z "${KITTY_WINDOW_ID:-}" ]]; then
+	echo "Warning: Not running in kitty terminal. Image display may not work." >&2
 fi
 
 # Create temp and cache files
-CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/docker-compose-deps"
-mkdir -p "$CACHE_DIR"
-MERMAID_FILE=$(mktemp --suffix=.mmd)
-RENDER_OUTPUT_FILE=$(mktemp --tmpdir="$CACHE_DIR" "docker-compose-deps-XXXXXX.$FORMAT")
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/docker-compose-deps"
+mkdir -p "$cache_dir" || exit
+mermaid_file=$(mktemp --suffix=.mmd) || exit
+render_output_file=$(mktemp --tmpdir="$cache_dir" "docker-compose-deps-XXXXXX.$format") || exit
 
 cleanup() {
-    rm -f "$MERMAID_FILE"
-    rm -f "$RENDER_OUTPUT_FILE"
+	rm -f "$mermaid_file"
+	rm -f "$render_output_file"
 }
 
 trap cleanup EXIT
 
 # Get docker compose config and project name
-CONFIG_JSON=$(docker compose "${DOCKER_COMPOSE_OPTS[@]}" config --format json)
-PROJECT_NAME=$(echo "$CONFIG_JSON" | jq -r '.name // "unknown"')
-CONFIG_HASH=$(printf '%s' "$CONFIG_JSON" | sha256sum | cut -d' ' -f1)
-OUTPUT_FILE="$CACHE_DIR/$CONFIG_HASH.$FORMAT"
+config_json=$(docker compose "${docker_compose_opts[@]}" config --format json) || exit
+project_name=$(jq -r '.name // "unknown"' <<<"$config_json") || exit
+config_hash=$(printf '%s' "$config_json" | sha256sum | cut -d' ' -f1) || exit
+output_file="$cache_dir/$config_hash.$format"
 
 # Generate mermaid graph from docker-compose config
 # Handles both array and object formats for depends_on
-if [[ ! -f "$OUTPUT_FILE" ]]; then
-    status "Rendering image: $OUTPUT_FILE"
-    echo "$CONFIG_JSON" | jq -r --arg name "$PROJECT_NAME" '
+if [[ ! -f "$output_file" ]]; then
+	status "Rendering image: $output_file"
+	jq -r --arg name "$project_name" '
       .services as $services |
       ["---", "title: " + $name + " - Dependency Graph", "---", "graph TD"] +
       ($services |
@@ -210,24 +225,24 @@ if [[ ! -f "$OUTPUT_FILE" ]]; then
         )
        ) |
        .[]
-    ' > "$MERMAID_FILE"
+    ' <<<"$config_json" >"$mermaid_file" || exit
 
-    # Render with mermaid-cli (white background for visibility on dark terminals)
-    mmdc --input "$MERMAID_FILE" --output "$RENDER_OUTPUT_FILE" --backgroundColor white
-    mv "$RENDER_OUTPUT_FILE" "$OUTPUT_FILE"
+	# Render with mermaid-cli (white background for visibility on dark terminals)
+	mmdc --input "$mermaid_file" --output "$render_output_file" --backgroundColor white || exit
+	mv "$render_output_file" "$output_file" || exit
 else
-    status "Using cached image: $OUTPUT_FILE"
+	status "Using cached image: $output_file"
 fi
 
 # Display with kitty or open in default viewer
-if [[ "$OPEN_OUTPUT" == true ]]; then
-    xdg-open "$OUTPUT_FILE"
-    status "Opened $OUTPUT_FILE"
+if [[ "$open_output" == true ]]; then
+	xdg-open "$output_file" || exit
+	status "Opened $output_file"
 else
-    if [[ "$FORMAT" != "png" ]]; then
-        echo "Error: Terminal display only supports --format png. Use --open for svg output." >&2
-        exit 1
-    fi
+	if [[ "$format" != "png" ]]; then
+		echo "Error: Terminal display only supports --format png. Use --open for svg output." >&2
+		exit 1
+	fi
 
-    kitty +kitten icat "$OUTPUT_FILE"
+	kitty +kitten icat "$output_file" || exit
 fi
