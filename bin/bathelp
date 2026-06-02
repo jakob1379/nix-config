@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -uo pipefail
 IFS=$'\n\t'
 
 displayUsage() {
-  cat <<'EOF'
+	cat <<'EOF'
 usage: bhelp <command> [args...]
 
 Show a command's help output through bat.
@@ -12,32 +12,32 @@ EOF
 }
 
 while getopts ":h" opt; do
-  case ${opt} in
-    h)
-      displayUsage
-      exit 0
-      ;;
-    \?)
-      echo "Invalid option: $OPTARG" 1>&2
-      exit 2
-      ;;
-    :)
-      echo "Invalid option: $OPTARG requires an argument" 1>&2
-      exit 2
-      ;;
-  esac
+	case ${opt} in
+		h)
+			displayUsage
+			exit 0
+			;;
+		\?)
+			echo "Invalid option: $OPTARG" 1>&2
+			exit 2
+			;;
+		:)
+			echo "Invalid option: $OPTARG requires an argument" 1>&2
+			exit 2
+			;;
+	esac
 done
 
-shift $((OPTIND-1))
+shift $((OPTIND - 1))
 
-if [ $# -eq 0 ]; then
-  echo "Error: No command provided."
-  displayUsage
-  exit 2
+if (($# == 0)); then
+	echo "Error: No command provided."
+	displayUsage
+	exit 2
 fi
 
-command="$*"
+command=("$@")
 
-help_msg="$(eval "$command --help" || eval "$command -h")"
+help_msg="$("${command[@]}" --help || "${command[@]}" -h)"
 
-echo "$help_msg" | bat -pl help
+bat -pl help <<<"$help_msg"
