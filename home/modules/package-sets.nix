@@ -223,6 +223,17 @@
       text = builtins.readFile ../../bin/rg-fuzzy;
     })
     (pkgs.writeShellApplication {
+      name = "git-worktree-cd";
+      runtimeInputs = [
+        pkgs.coreutils
+        pkgs.eza
+        pkgs.findutils
+        pkgs.fzf
+        pkgs.git
+      ];
+      text = builtins.readFile ../../bin/git-worktree-cd;
+    })
+    (pkgs.writeShellApplication {
       name = "update-all";
       runtimeInputs = [
         pkgs.gh

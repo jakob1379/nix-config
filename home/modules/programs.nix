@@ -180,6 +180,7 @@ in
 
             eval "$(batman --export-env)"
             eval "$(command up --init bash)"
+            source <(command git-worktree-cd --init bash)
           '';
         };
 
@@ -252,6 +253,7 @@ in
                 plog = "log --all --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --branches";
                 ignore-change = "update-index --assume-unchanged";
                 unstage = "restore --staged";
+                wt = "!git-worktree-cd";
               };
 
               credential = {
