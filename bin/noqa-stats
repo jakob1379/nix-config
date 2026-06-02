@@ -30,6 +30,7 @@ EOF
 
 print_rule_totals() {
 	local raw_data="$1"
+	local pattern="$2"
 
 	# Fancy header with border and icon
 	gum style \
@@ -45,10 +46,12 @@ print_rule_totals() {
 
 	# First pass: collect counts and find max
 	local counts_data
-	counts_data=$(awk '{
-       if (match($0, /# noqa[: \t]+([^#]+)/)) {
-           content = substr($0, RSTART + 7, RLENGTH - 7)
-           sub(/^[ \t]*/, "", content)
+	counts_data=$(awk -v pattern="${pattern}" '{
+       if (match($0, pattern)) {
+           content = substr($0, RSTART + RLENGTH)
+           sub(/^[ \t:]*/, "", content)
+           sub(/#.*/, "", content)
+           sub(/[ \t]*$/, "", content)
            n = split(content, parts, /[ \t]*,[ \t]*|[ \t]+/)
            for (i=1; i<=n; i++) {
                rule = parts[i]
@@ -90,7 +93,7 @@ print_rule_totals() {
 }
 
 print_file_counts() {
-	local search_dir="$1"
+	local raw_data="$1"
 	local pattern="$2"
 	local max_file_width="${3:-48}"
 	local term_width
@@ -115,13 +118,13 @@ print_file_counts() {
 	# Subtitle
 	gum style --foreground 240 --italic "  Files ranked by noqa count, with rule distribution"
 
-	rg --color=never --line-number --with-filename --no-heading -e "${pattern}" "${search_dir}" 2>/dev/null \
-		| awk -F':' '
+	awk -F':' -v pattern="${pattern}" '
     {
         file=$1
-        # Extract content after noqa:
-        if (match($0, /# noqa[: \t]+([^#]+)/)) {
-            content = substr($0, RSTART + 7, RLENGTH - 7)
+        if (match($0, pattern)) {
+            content = substr($0, RSTART + RLENGTH)
+            sub(/^[ \t:]*/, "", content)
+            sub(/#.*/, "", content)
             gsub(/^[ \t]+|[ \t]+$/, "", content)
             # Split on comma or space
             n = split(content, parts, /[ \t]*,[ \t]*|[ \t]+/)
@@ -142,6 +145,7 @@ print_file_counts() {
             printf "%s\t%s\t%d\t%d\n", p[1], p[2], counts[key], totals[p[1]]
         }
     }' \
+		<<<"${raw_data}" \
 		| sort -t$'\t' -k1,1 -k3,3nr \
 		| awk -v max_rule_len="$((rules_width - 3))" -v max_file_len="$max_file_width" -F'\t' '
     BEGIN { OFS="\t" }
@@ -193,11 +197,29 @@ main() {
 				exit 0
 				;;
 			-d | --dir)
-				search_dir="${2:-.}"
+				if [[ $# -lt 2 ]]; then
+					echo "Error: --dir requires a value" >&2
+					usage >&2
+					exit 1
+				fi
+				search_dir="$2"
+				if [[ -z "${search_dir}" ]]; then
+					echo "Error: --dir requires a non-empty value" >&2
+					exit 1
+				fi
 				shift 2
 				;;
 			-p | --pattern)
-				pattern="${2:-# noqa}"
+				if [[ $# -lt 2 ]]; then
+					echo "Error: --pattern requires a value" >&2
+					usage >&2
+					exit 1
+				fi
+				pattern="$2"
+				if [[ -z "${pattern}" ]]; then
+					echo "Error: --pattern requires a non-empty value" >&2
+					exit 1
+				fi
 				shift 2
 				;;
 			-*)
@@ -218,8 +240,19 @@ main() {
 		exit 1
 	fi
 
-	local raw_data
-	raw_data=$(gum spin --spinner dot --title "Scanning for '${pattern}' in ${search_dir}..." -- rg --color=never --line-number --with-filename --no-heading -e "${pattern}" "${search_dir}" 2>/dev/null || true)
+	local raw_data rg_status rg_stderr
+	rg_stderr=$(mktemp)
+	raw_data=$(gum spin --spinner dot --title "Scanning for '${pattern}' in ${search_dir}..." -- rg --color=never --line-number --with-filename --no-heading -e "${pattern}" "${search_dir}" 2>"${rg_stderr}")
+	rg_status=$?
+	if [[ ${rg_status} -eq 1 ]]; then
+		raw_data=""
+	elif [[ ${rg_status} -ne 0 ]]; then
+		cat "${rg_stderr}" >&2
+		rm -f "${rg_stderr}"
+		echo "Error: ripgrep failed for pattern: ${pattern}" >&2
+		exit "${rg_status}"
+	fi
+	rm -f "${rg_stderr}"
 
 	if [[ -z "${raw_data}" ]]; then
 		# Success state with nice styling
@@ -239,7 +272,20 @@ main() {
 	total_files=$(cut -d: -f1 <<<"${raw_data}" | sort -u | wc -l)
 
 	local unique_rules
-	unique_rules=$(grep -oP '# noqa[: \t]+\K[^#]+' <<<"${raw_data}" | tr ',' '\n' | tr ' ' '\n' | sed 's/^[ \t]*//;s/[ \t]*$//' | grep -v '^$' | sort -u | wc -l)
+	unique_rules=$(awk -v pattern="${pattern}" '{
+       if (match($0, pattern)) {
+           content = substr($0, RSTART + RLENGTH)
+           sub(/^[ \t:]*/, "", content)
+           sub(/#.*/, "", content)
+           sub(/[ \t]*$/, "", content)
+           n = split(content, parts, /[ \t]*,[ \t]*|[ \t]+/)
+           for (i=1; i<=n; i++) {
+               rule = parts[i]
+               gsub(/^[\047"]+|[\047"]+$/, "", rule)
+               if (rule != "" && rule !~ /^#/) print rule
+           }
+       }
+   }' <<<"${raw_data}" | sort -u | wc -l)
 
 	gum style \
 		--border double \
@@ -257,7 +303,7 @@ main() {
 		"$(gum style --foreground 240 --italic "${unique_rules} unique rules • ${total_files} files • ${total_rules} total")" \
 		"$(gum style --foreground 238 --italic "$(date '+%H:%M:%S')")"
 
-	print_rule_totals "${raw_data}"
+	print_rule_totals "${raw_data}" "${pattern}"
 
 	# Decorative separator
 	local term_width
@@ -267,7 +313,7 @@ main() {
 	separator=${separator// /─}
 	gum style --foreground 240 --margin "1 0" "  ${separator}"
 
-	print_file_counts "${search_dir}" "${pattern}"
+	print_file_counts "${raw_data}" "${pattern}"
 }
 
 main "$@"
