@@ -151,9 +151,9 @@ in
             bind -m vi-command '"\C-w": "\C-x\C-w"'
             bind -m vi-insert '"\C-w": "\C-x\C-w"'
 
-            __ag_fuzzy_widget() {
+            __rg_fuzzy_widget() {
                 local selected
-                selected="$(ag-fuzzy)" || return
+                selected="$(rg-fuzzy)" || return
 
                 [[ -z "$selected" ]] && return
 
@@ -161,9 +161,9 @@ in
                 READLINE_POINT=$((READLINE_POINT + ''${#selected}))
                               }
 
-            bind -m emacs-standard -x '"\ea": __ag_fuzzy_widget'
-            bind -m vi-command -x '"\ea": __ag_fuzzy_widget'
-            bind -m vi-insert -x '"\ea": __ag_fuzzy_widget'
+            bind -m emacs-standard -x '"\ea": __rg_fuzzy_widget'
+            bind -m vi-command -x '"\ea": __rg_fuzzy_widget'
+            bind -m vi-insert -x '"\ea": __rg_fuzzy_widget'
             bind -x '"\eu":"up"'
           '';
           shellOptions = [ "cdspell" ];
@@ -255,6 +255,7 @@ in
                 ui = true;
               };
               init.defaultBranch = "main";
+              core.editor = "emacsclient --create-frame --wait --alternate-editor ''";
               pull.rebase = false;
               push.autoSetupRemote = true;
               # credential.helper = "libsecret"; # Keep your existing system helper

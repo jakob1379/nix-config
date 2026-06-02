@@ -43,13 +43,6 @@
           (lib.mkIf cfg.enableEmacs cfg.emacs)
           (lib.mkIf cfg.enableMediaControl cfg.mediaControl)
           {
-            ".local/share/bash-completion/completions/ag".text = ''
-              _split_longopt() {
-                  _comp__split_longopt "$@"
-              }
-
-              . "${pkgs.silver-searcher}/share/bash-completion/completions/ag.bashcomp.sh"
-            '';
             ".local/share/bash-completion/completions/noctalia-shell".source =
               ../../scripts/completions/noctalia-shell-completions.sh;
             ".config/niri/config.kdl".source = ../../dotfiles/niri/config.kdl;

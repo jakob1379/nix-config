@@ -115,7 +115,7 @@ print_file_counts() {
     # Subtitle
     gum style --foreground 240 --italic "  Files ranked by noqa count, with rule distribution"
 
-    ag "${pattern}" "${search_dir}" 2>/dev/null | \
+    rg --color=never --line-number --with-filename --no-heading -e "${pattern}" "${search_dir}" 2>/dev/null | \
     awk -F':' '
     {
         file=$1
@@ -219,7 +219,7 @@ main() {
    fi
 
    local raw_data
-   raw_data=$(gum spin --spinner dot --title "Scanning for '${pattern}' in ${search_dir}..." -- ag "${pattern}" "${search_dir}" 2>/dev/null || true)
+   raw_data=$(gum spin --spinner dot --title "Scanning for '${pattern}' in ${search_dir}..." -- rg --color=never --line-number --with-filename --no-heading -e "${pattern}" "${search_dir}" 2>/dev/null || true)
 
     if [[ -z "${raw_data}" ]]; then
         # Success state with nice styling

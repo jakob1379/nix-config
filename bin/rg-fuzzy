@@ -4,15 +4,15 @@ set -euo pipefail
 
 eval "$(batman --export-env)"
 
-ag_fuzzy_search() {
+rg_fuzzy_search() {
     if [ $# -gt 0 ]; then
-        ag --nocolor --column --one-device -US "$@" 2>/dev/null
+        rg --color=never --column --line-number --with-filename --no-heading --one-file-system --no-ignore-vcs --smart-case "$@" 2>/dev/null
     else
-        ag --nocolor --column --one-device -US . 2>/dev/null
+        rg --color=never --column --line-number --with-filename --no-heading --one-file-system --no-ignore-vcs --smart-case . 2>/dev/null
     fi
 }
 
-ag_fuzzy_preview() {
+rg_fuzzy_preview() {
     # shellcheck disable=SC2034
     local entry="$1"
     # shellcheck disable=SC2034
@@ -26,33 +26,33 @@ ag_fuzzy_preview() {
     # shellcheck disable=SC2086
     bat --force-colorization --style=numbers,header-filename --highlight-line $line "$file"
 }
-export -f ag_fuzzy_preview
+export -f rg_fuzzy_preview
 
-ag_fuzzy_file() {
+rg_fuzzy_file() {
     echo "$1" | cut -d: -f1
 }
-export -f ag_fuzzy_file
+export -f rg_fuzzy_file
 
-ag_fuzzy_line() {
+rg_fuzzy_line() {
     echo "$1" | cut -d: -f2
 }
-export -f ag_fuzzy_line
+export -f rg_fuzzy_line
 
 mapfile -t selections < <(
-    ag_fuzzy_search "$@" | \
+    rg_fuzzy_search "$@" | \
     fzf \
         --delimiter=: \
         --with-nth 1.. \
         --ansi \
-        --prompt="🔎 Ag> " \
+        --prompt="🔎 Rg> " \
         --scheme=history \
         --tac \
         --bind "alt-enter:execute(${EDITOR:-vim} +{2} {1})+abort" \
-        --bind "ctrl-y:execute-silent(ag_fuzzy_file {} | wl-copy 2>/dev/null)" \
+        --bind "ctrl-y:execute-silent(rg_fuzzy_file {} | wl-copy 2>/dev/null)" \
         --bind "tab:down" \
         --bind "ctrl-l:toggle-preview" \
         --preview-window="down:60%:wrap:~3,+{2}+3/2" \
-        --preview 'ag_fuzzy_preview {} {q}' \
+        --preview 'rg_fuzzy_preview {} {q}' \
         --header $'ENTER print • Alt-Enter editor • Ctrl-Y copy • Ctrl-L preview' \
         --info=inline
 )

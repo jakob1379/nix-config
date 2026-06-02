@@ -30,7 +30,7 @@
     onefetch
     python3Packages.keyring
     rename
-    silver-searcher
+    ripgrep
     speedtest-go
     tldr
     unar
@@ -99,7 +99,7 @@
     powershell
     python3
     rassumfrassum
-    silver-searcher
+    ripgrep
     taplo
     texlab
     tinymist
@@ -212,14 +212,14 @@
       text = builtins.readFile ../../bin/nix-find;
     })
     (pkgs.writeShellApplication {
-      name = "ag-fuzzy";
+      name = "rg-fuzzy";
       runtimeInputs = [
-        pkgs.silver-searcher
+        pkgs.ripgrep
         pkgs.fzf
         pkgs.bat
         pkgs.wl-clipboard
       ];
-      text = builtins.readFile ../../bin/ag-fuzzy;
+      text = builtins.readFile ../../bin/rg-fuzzy;
     })
     (pkgs.writeShellApplication {
       name = "update-all";
@@ -251,7 +251,7 @@
       runtimeInputs = [
         pkgs.gum
         pkgs.gnugrep
-        pkgs.silver-searcher
+        pkgs.ripgrep
       ];
       text = builtins.readFile ../../bin/noqa-stats;
     })
