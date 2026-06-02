@@ -1,9 +1,13 @@
 {
   pkgs,
   lib,
+  inputs,
+  system,
   ...
 }:
-
+let
+  coderabbit-cli = inputs.numtide-llm-agents.packages.${system}.coderabbit-cli;
+in
 {
   customGit = {
     userName = "Jakob Stender Guldberg";
@@ -37,11 +41,11 @@
   home.packages = lib.mkAfter (
     with pkgs;
     [
+      coderabbit-cli
       glab
     ]
   );
 
   customSsh.enableKeepassxc = lib.mkForce false;
 
-  customPackages.dev.packages = lib.mkAfter (with pkgs; [ glab ]);
 }

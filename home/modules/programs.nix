@@ -184,18 +184,6 @@ in
           '';
         };
 
-        distrobox = {
-          enable = true;
-          containers = {
-            ubuntu25 = {
-              image = "ubuntu:24.04"; # Specify your desired image here
-              init_hooks = "curl -LsSf https://astral.sh/uv/install.sh | sh";
-              additional_packages = "curl"; # Additional packages needed for init_hooks
-              entry = true; # Make this container enterable by default (optional)
-            };
-          };
-        };
-
         direnv = {
           enable = true;
           enableBashIntegration = true;
@@ -256,7 +244,7 @@ in
                 ui = true;
               };
               init.defaultBranch = "main";
-              core.editor = "emacsclient --create-frame --wait --alternate-editor ''";
+              core.editor = "emacsclient --create-frame --alternate-editor ''";
               pull.rebase = false;
               push.autoSetupRemote = true;
               # credential.helper = "libsecret"; # Keep your existing system helper
@@ -348,10 +336,12 @@ in
               extraConfig = ''
                 set -ag update-environment " SSH_CLIENT SSH_CONNECTION"
                 run-shell 'client_ip=''${SSH_CLIENT%% *}; [ -z "$client_ip" ] && client_ip=''${SSH_CONNECTION%% *}; tmux set -g @tmux-net-client-host "$client_ip"; tmux set -g @tmux-net-client-port "22"; tmux set -g @tmux-net-timeout "1"'
+                setw -g automatic-rename on
+                setw -g automatic-rename-format "#(${tmuxWindowLabel}/bin/tmux-window-label '#{pane_current_path}' '#{pane_current_command}')"
                 set -g @tmux-dotbar-session-text " #H "
                 set -g status-left-length 80
                 set -g @tmux-dotbar-status-left '#[bg=#0B0E14]#{?client_prefix,#[fg=#95E6CB]#[bg=#95E6CB]#[fg=#0B0E14]#[bold]#H#[nobold]#[bg=#0B0E14]#[fg=#95E6CB],#[fg=#565B66] #H }#[bg=#0B0E14]#[fg=#565B66]'
-                set -g @tmux-dotbar-window-status-format " #(${tmuxWindowLabel}/bin/tmux-window-label '#{pane_current_path}' '#{pane_current_command}') "
+                set -g @tmux-dotbar-window-status-format " #W "
                 set -g @tmux-dotbar-right true
                 set -g @tmux-dotbar-status-right-text " #(${tmuxNetStatus}/bin/tmux-net-status) "
                 set -g @tmux-dotbar-ssh-enabled true
@@ -654,7 +644,6 @@ in
         watch = "hwatch";
         cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
         fm = "frogmouth";
-        db = "distrobox";
         df = "duf --hide special";
         open = "xdg-open";
         nshell = ''f(){ [ $# -gt 0 ] || { echo "usage: nshell <package> [nix args...]" >&2; return 1; }; nix shell --set-env-var OMP_NIX_SHELL 1 "nixpkgs#$1" "''${@:2}"; }; f'';

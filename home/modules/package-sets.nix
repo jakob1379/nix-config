@@ -67,6 +67,7 @@
       bun
       dive
       frogmouth
+      glab
       graphviz
       mermaid-cli
       meslo-lgs-nf
