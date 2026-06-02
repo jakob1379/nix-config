@@ -244,7 +244,7 @@ in
                 ui = true;
               };
               init.defaultBranch = "main";
-              core.editor = "emacsclient --create-frame --wait --alternate-editor ''";
+              core.editor = "emacsclient --create-frame --alternate-editor ''";
               pull.rebase = false;
               push.autoSetupRemote = true;
               # credential.helper = "libsecret"; # Keep your existing system helper
