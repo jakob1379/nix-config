@@ -141,6 +141,12 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
+# Early validation: svg format requires --open
+if [[ "$format" == "svg" && "$open_output" != true ]]; then
+	echo "Error: --format svg requires --open" >&2
+	exit 1
+fi
+
 # Build docker compose command options
 docker_compose_opts=()
 for f in "${compose_files[@]}"; do
@@ -170,6 +176,11 @@ command -v sha256sum >/dev/null 2>&1 || {
 if [[ "$open_output" == true ]]; then
 	command -v xdg-open >/dev/null 2>&1 || {
 		echo "Error: xdg-open is required for --open" >&2
+		exit 1
+	}
+else
+	command -v kitty >/dev/null 2>&1 || {
+		echo "Error: kitty is required for terminal display" >&2
 		exit 1
 	}
 fi
