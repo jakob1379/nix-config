@@ -75,5 +75,5 @@ unchanged, your tests are bad.
 - Mimic existing code style, naming conventions, typing
 - Never assume a non-standard library is available
 - Never expose or log secrets and keys
-- Do not add noqa without direct permission - there is almost always a proper
-  solution instead of noqa
+- Do not add noqa without direct permission - uvx ruff-explain gives details on
+  solutions
