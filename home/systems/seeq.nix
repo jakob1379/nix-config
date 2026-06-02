@@ -7,8 +7,68 @@
 }:
 let
   coderabbit-cli = inputs.numtide-llm-agents.packages.${system}.coderabbit-cli;
+  opencodeWslOverlay = _final: prev: {
+    opencode = prev.opencode.overrideAttrs (old: {
+      buildPhase = ''
+        runHook preBuild
+
+        cd ./packages/opencode
+        bun --bun ./script/generate.ts
+        bun --bun ./script/schema.ts config.json tui.json
+
+        runHook postBuild
+      '';
+
+      installPhase = ''
+        runHook preInstall
+
+        mkdir -p $out/bin $out/share/opencode
+        cd ../..
+        cp -R --no-preserve=mode . $out/share/opencode/source
+
+        cat > $out/share/opencode/source/packages/opencode/nix-entry.ts <<'EOF'
+        globalThis.OPENCODE_VERSION = "${old.version}"
+        globalThis.OPENCODE_CHANNEL = "stable"
+        await import("./src/index.ts")
+        EOF
+
+        cat > $out/bin/opencode <<EOF
+        #!${prev.runtimeShell}
+        export MODELS_DEV_API_JSON="${prev.models-dev}/dist/_api.json"
+        export OPENCODE_DISABLE_MODELS_FETCH="1"
+        args=("\$@")
+        case "\''${1-}" in
+          ""|-*)
+            case " \$* " in
+              *" --help "*|*" -h "*|*" --version "*|*" -v "*)
+                ;;
+              *)
+                args+=("\$PWD")
+                ;;
+            esac
+            ;;
+          completion|acp|mcp|attach|run|debug|providers|auth|agent|upgrade|uninstall|serve|web|models|stats|export|import|github|pr|session|plugin|plug|db)
+            ;;
+          *)
+            ;;
+        esac
+        exec ${prev.bun}/bin/bun --cwd "$out/share/opencode/source/packages/opencode" --conditions=browser nix-entry.ts "\''${args[@]}"
+        EOF
+        chmod 755 $out/bin/opencode
+        wrapProgram $out/bin/opencode \
+          --prefix PATH : ${prev.lib.makeBinPath [ prev.ripgrep ]}
+
+        install -Dm644 packages/opencode/config.json $out/share/opencode/config.json
+        install -Dm644 packages/opencode/tui.json $out/share/opencode/tui.json
+
+        runHook postInstall
+      '';
+    });
+  };
 in
 {
+  nixpkgs.overlays = [ opencodeWslOverlay ];
+
   customGit = {
     userName = "Jakob Stender Guldberg";
     userEmail = "jakob1379@gmail.com";
