@@ -3,6 +3,7 @@
   system,
   username,
   homeDirectory,
+  baseModules ? [ ],
   extraModules ? [ ],
   lib,
 }:
@@ -14,12 +15,15 @@ inputs.home-manager.lib.homeManagerConfiguration {
     overlays = [ (import ../overlays/tana.nix) ];
   };
   modules = [
-    ../home/common.nix
     {
       home.username = username;
       home.homeDirectory = homeDirectory;
     }
   ]
+  ++ baseModules
   ++ extraModules;
-  extraSpecialArgs = { inherit inputs system; };
+  extraSpecialArgs = {
+    inherit inputs system;
+    flakeLib = lib;
+  };
 }

@@ -6,8 +6,6 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../../common.nix
-    ../../users/jsg.nix
   ];
   programs.gpu-screen-recorder.enable = true;
   networking.hostName = "amd";

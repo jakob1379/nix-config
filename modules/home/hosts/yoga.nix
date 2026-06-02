@@ -3,11 +3,12 @@
   lib,
   system,
   inputs,
+  flakeLib,
   ...
 }:
 
 let
-  packageSets = import ../modules/package-sets.nix {
+  packageSets = flakeLib.homePackageSets {
     inherit
       pkgs
       lib
