@@ -1,23 +1,21 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -uo pipefail
 IFS=$'\n\t'
 
-
-
-if [ "$#" -ne 1 ]; then
-    echo "Usage: dragon-scp remote_server:path_to_file"
-    exit 1
+if (($# != 1)); then
+	echo "Usage: dragon-scp remote_server:path_to_file"
+	exit 1
 fi
 
 remote_path="$1"
-file_name=$(basename "$remote_path")
+file_name="${remote_path##*/}"
 temp_file=$(mktemp -p /tmp/ "$file_name-XXXXXX")
 
 if scp "$remote_path" "$temp_file"; then
-    xdragon "$temp_file"
-    rm "$temp_file"
+	xdragon "$temp_file"
+	rm "$temp_file"
 else
-    echo "Error in copying file from remote server."
-    rm "$temp_file"
-    exit 1
+	echo "Error in copying file from remote server."
+	rm "$temp_file"
+	exit 1
 fi
