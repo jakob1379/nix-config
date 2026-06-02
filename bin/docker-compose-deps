@@ -150,15 +150,6 @@ for e in "${ENV_FILES[@]}"; do
     DOCKER_COMPOSE_OPTS+=("--env-file" "$e")
 done
 
-# Validate dependencies are available
-command -v docker >/dev/null 2>&1 || { echo "Error: docker is required" >&2; exit 1; }
-command -v jq >/dev/null 2>&1 || { echo "Error: jq is required" >&2; exit 1; }
-command -v mmdc >/dev/null 2>&1 || { echo "Error: mermaid-cli (mmdc) is required" >&2; exit 1; }
-command -v sha256sum >/dev/null 2>&1 || { echo "Error: sha256sum is required" >&2; exit 1; }
-if [[ "$OPEN_OUTPUT" == true ]]; then
-    command -v xdg-open >/dev/null 2>&1 || { echo "Error: xdg-open is required for --open" >&2; exit 1; }
-fi
-
 # Check if running in kitty
 if [[ "$OPEN_OUTPUT" != true && -z "${KITTY_PID:-}" && -z "${KITTY_WINDOW_ID:-}" ]]; then
     echo "Warning: Not running in kitty terminal. Image display may not work." >&2
