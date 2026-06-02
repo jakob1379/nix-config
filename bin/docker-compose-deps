@@ -19,7 +19,7 @@
 #   docker-compose-deps                      # Render graph for docker-compose.yml
 #   docker-compose-deps -f docker-compose.yml -f docker-compose.override.yml
 #   docker-compose-deps -e .env -e .env.local
-#   docker-compose-deps --format svg        # Render graph as SVG
+#   docker-compose-deps --format svg --open  # Render graph as SVG and open in viewer
 #   docker-compose-deps -o                   # Open image in default viewer
 #   docker-compose-deps --help               # Show this help message
 #
@@ -64,7 +64,7 @@ Examples:
     $script_name -f prod.yml               # Use specific file
     $script_name -f base.yml -f local.yml  # Multiple files
     $script_name -e .env -e .env.local     # With env files
-    $script_name --format svg              # Render as SVG
+    $script_name --format svg --open       # Render as SVG and open in viewer
     $script_name -o                        # Open in default image viewer
 
 EOF
