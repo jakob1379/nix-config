@@ -715,13 +715,13 @@ highlights uncommitted changes on the left side of the window
   (helm-autoresize-mode))
 
 #+END_SRC
-**** Helm ag - the silver-search
+**** Helm ripgrep search
 
 #+BEGIN_SRC emacs-lisp
 (use-package helm-ag
   :defer t
   :custom
-  (helm-ag-base-command "ag -t --nocolor --nogroup --ignore-case")
+  (helm-ag-base-command "rg --color=never --line-number --with-filename --no-heading --ignore-case")
   :bind
   ("C-c a a" . helm-do-ag)
   ("C-c a p" . helm-do-ag-project-root)

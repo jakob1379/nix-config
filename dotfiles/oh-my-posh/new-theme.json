@@ -1,0 +1,186 @@
+{
+  "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
+  "version": 222,
+  "final_space": true,
+  "palette": {
+    "white": "#FFFFFF",
+    "tan": "#CC3802",
+    "teal": "#047E84",
+    "plum": "#9A348E",
+    "blush": "#DA627D",
+    "salmon": "#FCA17D",
+    "nix": "#5277C3",
+    "sky": "#86BBD8",
+    "teal_blue": "#33658A"
+  },
+  "blocks": [
+    {
+      "type": "prompt",
+      "alignment": "left",
+      "segments": [
+        {
+          "type": "os",
+          "style": "diamond",
+          "foreground": "p:white",
+          "background": "p:plum",
+          "leading_diamond": "",
+          "cache": {
+            "duration": "none"
+          },
+          "properties": {
+            "windows": ""
+          },
+          "template": "{{ if .Env.CONTAINER_ID }}{{ $distroIcons := dict \"almalinux\" \"\" \"alpine\" \"\" \"android\" \"\" \"aosc\" \"\" \"arch\" \"\" \"centos\" \"\" \"coreos\" \"\" \"debian\" \"\" \"deepin\" \"\" \"devuan\" \"\" \"elementary\" \"\" \"endeavouros\" \"\" \"fedora\" \"\" \"gentoo\" \"\" \"mageia\" \"\" \"manjaro\" \"\" \"mint\" \"\" \"nixos\" \"\" \"opensuse-tumbleweed\" \"\" \"opensuse\" \"\" \"raspbian\" \"\" \"redhat\" \"\" \"rocky\" \"\" \"sabayon\" \"\" \"slackware\" \"\" \"ubuntu\" \"\" }}󱕆{{ readFile \"/etc/os-release\" | regexFind \"(?m)^ID=(.*)\" | trimPrefix \"ID=\" | lower | get $distroIcons }}{{ else }}{{ if .WSL }}WSL at {{ end }}{{ .Icon }}{{ end }}"
+        },
+        {
+          "type": "path",
+          "style": "powerline",
+          "powerline_symbol": "",
+          "foreground": "p:white",
+          "background": "p:blush",
+          "template": "{{ .Path }} ",
+          "properties": {
+            "style": "powerlevel"
+          }
+        },
+        {
+          "type": "text",
+          "style": "powerline",
+          "powerline_symbol": "",
+          "foreground": "p:white",
+          "background": "p:nix",
+          "template": "{{ if .Env.OMP_NIX_SHELL }}  Nix {{ end }}"
+        },
+        {
+          "type": "nix-shell",
+          "style": "powerline",
+          "powerline_symbol": "",
+          "foreground": "p:white",
+          "background": "p:nix",
+          "template": "{{ if not (eq .Type \"unknown\") }}  Nix {{ end }}",
+          "properties": {
+            "style": "full"
+          }
+        },
+        {
+          "type": "node",
+          "style": "powerline",
+          "powerline_symbol": "",
+          "foreground": "p:white",
+          "background": "p:sky",
+          "template": "  {{ if .PackageManagerIcon }}{{ .PackageManagerIcon }} {{ end }}{{ .Full }} "
+        },
+        {
+          "type": "python",
+          "style": "powerline",
+          "powerline_symbol": "",
+          "foreground": "p:white",
+          "background": "p:sky",
+          "template": "  {{ if .Error }}{{ .Error }}{{ else }}{{ if .Venv }}{{ .Venv }}{{ end }}{{ .Full }}{{ end }} ",
+          "properties": {
+            "fetch_version": false
+          }
+        },
+        {
+          "type": "git",
+          "style": "powerline",
+          "powerline_symbol": "",
+          "foreground": "p:white",
+          "background": "p:teal",
+          "background_templates": [
+            "{{ if or (.Working.Changed) (.Staging.Changed) }}p:salmon{{ end }}",
+            "{{ if and (gt .Ahead 0) (gt .Behind 0) }}p:tan{{ end }}",
+            "{{ if gt .Ahead 0 }}p:sky{{ end }}",
+            "{{ if gt .Behind 0 }}p:tan{{ end }}"
+          ],
+          "template": " {{ .UpstreamIcon }}{{ .HEAD }}{{ if .Staging.Changed }}  {{ .Staging.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Working.Changed }}  {{ .Working.String }}{{ end }} ",
+          "properties": {
+            "fetch_status": true,
+            "fetch_upstream_icon": true,
+            "mapped_branches": {
+              "feat/*": "🚀",
+              "bug/*": "🐛",
+              "fix/*": "🩹"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "prompt",
+      "alignment": "right",
+      "segments": [
+        {
+          "type": "status",
+          "style": "powerline",
+          "powerline_symbol": "",
+          "invert_powerline": true,
+          "foreground": "p:white",
+          "background": "p:teal",
+          "background_templates": ["{{ if .Error }}p:salmon{{ end }}"],
+          "template": "{{ if eq .Code 0 }}{{ else }} {{ reason .Code }}{{ end }} ",
+          "properties": {
+            "always_enabled": true
+          }
+        },
+        {
+          "type": "executiontime",
+          "style": "powerline",
+          "powerline_symbol": "",
+          "invert_powerline": true,
+          "foreground": "p:white",
+          "background": "p:plum",
+          "template": " {{ .FormattedMs }} ",
+          "properties": {
+            "always_enabled": true
+          }
+        },
+        {
+          "type": "root",
+          "style": "powerline",
+          "powerline_symbol": "",
+          "invert_powerline": true,
+          "foreground": "p:tan",
+          "background": "p:sky",
+          "template": " ⚡"
+        },
+        {
+          "type": "session",
+          "style": "powerline",
+          "powerline_symbol": "",
+          "invert_powerline": true,
+          "foreground": "p:white",
+          "background": "p:sky",
+          "template": " {{ .UserName }} "
+        },
+        {
+          "type": "shell",
+          "style": "diamond",
+          "invert_powerline": true,
+          "foreground": "p:white",
+          "background": "p:teal_blue",
+          "trailing_diamond": "",
+          "template": " {{ .Name }} "
+        }
+      ]
+    },
+    {
+      "type": "prompt",
+      "alignment": "left",
+      "segments": [
+        {
+          "type": "root",
+          "style": "plain",
+          "template": "  "
+        },
+        {
+          "type": "text",
+          "style": "plain",
+          "foreground": "p:white",
+          "template": "<#69FF94>❯</>"
+        }
+      ],
+      "newline": true
+    }
+  ]
+}
