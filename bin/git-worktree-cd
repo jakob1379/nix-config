@@ -12,8 +12,10 @@ Usage:
 Examples:
   cd "$(git-worktree-cd)"
   source <(git-worktree-cd --init bash)
+  git wt
 
 Notes:
+  git wt changes directory after shell integration is sourced.
   fzf 0.33.0+ enables history ranking.
 EOF
 }
@@ -42,6 +44,16 @@ git-worktree-cd() {
   target="\$("$git_worktree_cd_bin" --print "\$@")" || return \$?
   [[ -n "\$target" ]] || return 1
   cd "\$target" || return
+}
+
+git() {
+  if [[ \$# -gt 0 && \$1 == wt ]]; then
+    shift
+    git-worktree-cd "\$@"
+    return \$?
+  fi
+
+  command git "\$@"
 }
 EOF
       ;;
