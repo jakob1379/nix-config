@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -uo pipefail
 
 # Description: Extracts peer details from netbird status.
 # Usage: nb-peers [netbird-binary] (defaults to 'netbird')
 
-readonly NB_CMD="${1:-netbird}"
+nb_cmd="${1:-netbird}"
 
-if [[ "${NB_CMD}" == "-h" || "${NB_CMD}" == "--help" ]]; then
-  echo "Usage: $(basename "$0") [netbird-binary]"
-  echo "  If binary is omitted, defaults to 'netbird'."
-  exit 0
+if [[ "${nb_cmd}" == "-h" || "${nb_cmd}" == "--help" ]]; then
+	echo "Usage: ${0##*/} [netbird-binary]"
+	echo "  If binary is omitted, defaults to 'netbird'."
+	exit 0
 fi
 
-"${NB_CMD}" status --json | jq -r '.peers.details[] | {fqdn, netbirdIp, status, connectionType}'
+"${nb_cmd}" status --json | jq -r '.peers.details[] | {fqdn, netbirdIp, status, connectionType}'
