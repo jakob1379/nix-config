@@ -1,66 +1,69 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -uo pipefail
 
-eval "$(batman --export-env)"
+export MANPAGER='env BATMAN_IS_BEING_MANPAGER=yes batman'
+export MANROFFOPT='-c'
 
 rg_fuzzy_search() {
-    if [ $# -gt 0 ]; then
-        rg --color=never --column --line-number --with-filename --no-heading --one-file-system --no-ignore-vcs --smart-case "$@" 2>/dev/null
-    else
-        rg --color=never --column --line-number --with-filename --no-heading --one-file-system --no-ignore-vcs --smart-case . 2>/dev/null
-    fi
+	if (($# > 0)); then
+		rg --color=never --column --line-number --with-filename --no-heading --one-file-system --no-ignore-vcs --smart-case "$@" 2>/dev/null
+	else
+		rg --color=never --column --line-number --with-filename --no-heading --one-file-system --no-ignore-vcs --smart-case . 2>/dev/null
+	fi
 }
 
 rg_fuzzy_preview() {
-    # shellcheck disable=SC2034
-    local entry="$1"
-    # shellcheck disable=SC2034
-    local query="${2:-}"
+	# shellcheck disable=SC2034
+	local entry="$1"
+	# shellcheck disable=SC2034
+	local query="${2:-}"
 
-    local file line
-    file=$(echo "$entry" | cut -d: -f1)
-    line=$(echo "$entry" | cut -d: -f2)
+	local file line rest
+	file="${entry%%:*}"
+	rest="${entry#*:}"
+	line="${rest%%:*}"
 
-    [ -z "$file" ] || [ ! -f "$file" ] || [ -z "$line" ] && exit 1
-    # shellcheck disable=SC2086
-    bat --force-colorization --style=numbers,header-filename --highlight-line $line "$file"
+	[[ -z "$file" || ! -f "$file" || -z "$line" ]] && exit 1
+	bat --force-colorization --style=numbers,header-filename --highlight-line "$line" "$file"
 }
 export -f rg_fuzzy_preview
 
 rg_fuzzy_file() {
-    echo "$1" | cut -d: -f1
+	printf '%s\n' "${1%%:*}"
 }
 export -f rg_fuzzy_file
 
 rg_fuzzy_line() {
-    echo "$1" | cut -d: -f2
+	local rest="${1#*:}"
+
+	printf '%s\n' "${rest%%:*}"
 }
 export -f rg_fuzzy_line
 
 mapfile -t selections < <(
-    rg_fuzzy_search "$@" | \
-    fzf \
-        --delimiter=: \
-        --with-nth 1.. \
-        --ansi \
-        --prompt="🔎 Rg> " \
-        --scheme=history \
-        --tac \
-        --bind "alt-enter:execute(${EDITOR:-vim} +{2} {1})+abort" \
-        --bind "ctrl-y:execute-silent(rg_fuzzy_file {} | wl-copy 2>/dev/null)" \
-        --bind "tab:down" \
-        --bind "ctrl-l:toggle-preview" \
-        --preview-window="down:60%:wrap:~3,+{2}+3/2" \
-        --preview 'rg_fuzzy_preview {} {q}' \
-        --header $'ENTER print • Alt-Enter editor • Ctrl-Y copy • Ctrl-L preview' \
-        --info=inline
+	rg_fuzzy_search "$@" \
+		| fzf \
+			--delimiter=: \
+			--with-nth 1.. \
+			--ansi \
+			--prompt="🔎 Rg> " \
+			--scheme=history \
+			--tac \
+			--bind "alt-enter:execute(${EDITOR:-vim} +{2} {1})+abort" \
+			--bind "ctrl-y:execute-silent(rg_fuzzy_file {} | wl-copy 2>/dev/null)" \
+			--bind "tab:down" \
+			--bind "ctrl-l:toggle-preview" \
+			--preview-window="down:60%:wrap:~3,+{2}+3/2" \
+			--preview 'rg_fuzzy_preview {} {q}' \
+			--header $'ENTER print • Alt-Enter editor • Ctrl-Y copy • Ctrl-L preview' \
+			--info=inline
 )
 
 status=$?
-[ $status -eq 130 ] && exit 130
-[ ${#selections[@]} -eq 0 ] && exit 0
+((status == 130)) && exit 130
+((${#selections[@]} == 0)) && exit 0
 
 for entry in "${selections[@]}"; do
-    echo "$entry"
+	echo "$entry"
 done

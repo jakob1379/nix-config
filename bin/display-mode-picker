@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -uo pipefail
 
 state_dir="${XDG_CACHE_HOME:-$HOME/.cache}"
 mirror_pid_file="$state_dir/display-mode-picker.wl-mirror.pid"
@@ -9,328 +9,328 @@ lock_dir="$state_dir/display-mode-picker.lock"
 cooldown_ms=900
 
 mode_cycle=(
-  internal-only
-  mirror
-  extend
-  external-only
+	internal-only
+	mirror
+	extend
+	external-only
 )
 
 usage() {
-  printf '%s\n' "Usage: display-mode-picker [MODE|cycle|--help|-h]"
-  printf '%s\n' ""
-  printf '%s\n' "Modes:"
-  printf '%s\n' "  internal-only  Enable only the internal display"
-  printf '%s\n' "  mirror         Mirror the internal display to external outputs"
-  printf '%s\n' "  extend         Enable internal and external displays"
-  printf '%s\n' "  external-only  Enable only external displays"
-  printf '%s\n' "  cycle          Switch to the next display mode"
-  printf '%s\n' ""
-  printf '%s\n' "Without an argument, opens a Vicinae picker."
+	printf '%s\n' "Usage: display-mode-picker [MODE|cycle|--help|-h]"
+	printf '%s\n' ""
+	printf '%s\n' "Modes:"
+	printf '%s\n' "  internal-only  Enable only the internal display"
+	printf '%s\n' "  mirror         Mirror the internal display to external outputs"
+	printf '%s\n' "  extend         Enable internal and external displays"
+	printf '%s\n' "  external-only  Enable only external displays"
+	printf '%s\n' "  cycle          Switch to the next display mode"
+	printf '%s\n' ""
+	printf '%s\n' "Without an argument, opens a Vicinae picker."
 }
 
 case "${1:-}" in
-  -h|--help)
-    usage
-    exit 0
-    ;;
+	-h | --help)
+		usage
+		exit 0
+		;;
 esac
 
 mkdir -p "$state_dir"
 
 acquire_lock() {
-  mkdir "$lock_dir" 2>/dev/null
+	mkdir "$lock_dir" 2>/dev/null
 }
 
 release_lock() {
-  rmdir "$lock_dir" 2>/dev/null || true
+	rmdir "$lock_dir" 2>/dev/null || true
 }
 
 now_ms() {
-  date +%s%3N
+	date +%s%3N
 }
 
 within_cooldown() {
-  local now_ms_value last_ms delta
+	local now_ms_value last_ms delta
 
-  if [[ ! -f "$cooldown_state_file" ]]; then
-    return 1
-  fi
+	if [[ ! -f "$cooldown_state_file" ]]; then
+		return 1
+	fi
 
-  read -r last_ms < "$cooldown_state_file" || return 1
-  if [[ ! "$last_ms" =~ ^[0-9]+$ ]]; then
-    return 1
-  fi
+	read -r last_ms <"$cooldown_state_file" || return 1
+	if [[ ! "$last_ms" =~ ^[0-9]+$ ]]; then
+		return 1
+	fi
 
-  now_ms_value="$(now_ms)"
-  delta="$((now_ms_value - last_ms))"
-  [[ "$delta" -lt "$cooldown_ms" ]]
+	now_ms_value="$(now_ms)"
+	delta="$((now_ms_value - last_ms))"
+	[[ "$delta" -lt "$cooldown_ms" ]]
 }
 
 mark_switch_time() {
-  printf '%s\n' "$(now_ms)" > "$cooldown_state_file"
+	printf '%s\n' "$(now_ms)" >"$cooldown_state_file"
 }
 
 notify() {
-  notify-send --expire-time=3000 "Display mode" "$1" >/dev/null 2>&1 || true
+	notify-send --expire-time=3000 "Display mode" "$1" >/dev/null 2>&1 || true
 }
 
 mode_short() {
-  case "$1" in
-    internal-only)
-      printf '%s\n' "Laptop"
-      ;;
-    mirror)
-      printf '%s\n' "Mirror"
-      ;;
-    extend)
-      printf '%s\n' "Extend"
-      ;;
-    external-only)
-      printf '%s\n' "External"
-      ;;
-    *)
-      printf '%s\n' "$1"
-      ;;
-  esac
+	case "$1" in
+		internal-only)
+			printf '%s\n' "Laptop"
+			;;
+		mirror)
+			printf '%s\n' "Mirror"
+			;;
+		extend)
+			printf '%s\n' "Extend"
+			;;
+		external-only)
+			printf '%s\n' "External"
+			;;
+		*)
+			printf '%s\n' "$1"
+			;;
+	esac
 }
 
 mode_icon_name() {
-  case "$1" in
-    internal-only)
-      printf '%s\n' "computer-laptop-symbolic"
-      ;;
-    mirror)
-      printf '%s\n' "preferences-desktop-display-randr-symbolic"
-      ;;
-    extend)
-      printf '%s\n' "monitor-symbolic"
-      ;;
-    external-only)
-      printf '%s\n' "video-television-symbolic"
-      ;;
-    *)
-      printf '%s\n' "monitor-symbolic"
-      ;;
-  esac
+	case "$1" in
+		internal-only)
+			printf '%s\n' "computer-laptop-symbolic"
+			;;
+		mirror)
+			printf '%s\n' "preferences-desktop-display-randr-symbolic"
+			;;
+		extend)
+			printf '%s\n' "monitor-symbolic"
+			;;
+		external-only)
+			printf '%s\n' "video-television-symbolic"
+			;;
+		*)
+			printf '%s\n' "monitor-symbolic"
+			;;
+	esac
 }
 
 next_mode_after() {
-  local current="$1"
-  local idx next_idx
+	local current="$1"
+	local idx next_idx
 
-  idx="$(mode_index "$current")"
-  if [[ "$idx" -lt 0 ]]; then
-    idx=0
-  fi
+	idx="$(mode_index "$current")"
+	if [[ "$idx" -lt 0 ]]; then
+		idx=0
+	fi
 
-  next_idx="$(( (idx + 1) % ${#mode_cycle[@]} ))"
-  printf '%s\n' "${mode_cycle[$next_idx]}"
+	next_idx="$(((idx + 1) % ${#mode_cycle[@]}))"
+	printf '%s\n' "${mode_cycle[$next_idx]}"
 }
 
 notify_mode() {
-  local mode="$1"
-  local CURRENT_LAYOUT NEXT_MODE NEXT_LAYOUT
+	local mode="$1"
+	local CURRENT_LAYOUT NEXT_MODE NEXT_LAYOUT
 
-  CURRENT_LAYOUT="$(mode_short "$mode")"
-  NEXT_MODE="$(next_mode_after "$mode")"
-  NEXT_LAYOUT="$(mode_short "$NEXT_MODE")"
+	CURRENT_LAYOUT="$(mode_short "$mode")"
+	NEXT_MODE="$(next_mode_after "$mode")"
+	NEXT_LAYOUT="$(mode_short "$NEXT_MODE")"
 
-  notify-send -i "$(mode_icon_name "$mode")" -t 3000 "${CURRENT_LAYOUT}" "${NEXT_LAYOUT}" >/dev/null 2>&1 || true
+	notify-send -i "$(mode_icon_name "$mode")" -t 3000 "${CURRENT_LAYOUT}" "${NEXT_LAYOUT}" >/dev/null 2>&1 || true
 }
 
 mode_from_label() {
-  case "$1" in
-    "Laptop"|"Laptop [Current]")
-      printf '%s\n' "internal-only"
-      ;;
-    "Mirror"|"Mirror [Current]")
-      printf '%s\n' "mirror"
-      ;;
-    "Extend"|"Extend [Current]")
-      printf '%s\n' "extend"
-      ;;
-    "External"|"External [Current]")
-      printf '%s\n' "external-only"
-      ;;
-    *)
-      printf '%s\n' ""
-      ;;
-  esac
+	case "$1" in
+		"Laptop" | "Laptop [Current]")
+			printf '%s\n' "internal-only"
+			;;
+		"Mirror" | "Mirror [Current]")
+			printf '%s\n' "mirror"
+			;;
+		"Extend" | "Extend [Current]")
+			printf '%s\n' "extend"
+			;;
+		"External" | "External [Current]")
+			printf '%s\n' "external-only"
+			;;
+		*)
+			printf '%s\n' ""
+			;;
+	esac
 }
 
 pick_mode_with_vicinae() {
-  local current mode label selected
+	local current mode label selected
 
-  current="$(normalize_mode "$(detect_current_mode)")"
-  selected="$(
-    {
-      for mode in "${mode_cycle[@]}"; do
-        label="$(mode_short "$mode")"
-        if [[ "$mode" == "$current" ]]; then
-          label+=" [Current]"
-        fi
+	current="$(normalize_mode "$(detect_current_mode)")"
+	selected="$(
+		{
+			for mode in "${mode_cycle[@]}"; do
+				label="$(mode_short "$mode")"
+				if [[ "$mode" == "$current" ]]; then
+					label+=" [Current]"
+				fi
 
-        printf '%s\n' "$label"
-      done
-    } | vicinae dmenu \
-      --navigation-title "Display Mode" \
-      --section-title "Layouts" \
-      --placeholder "Display > " \
-      --no-metadata \
-      --no-quick-look
-  )" || return 1
+				printf '%s\n' "$label"
+			done
+		} | vicinae dmenu \
+			--navigation-title "Display Mode" \
+			--section-title "Layouts" \
+			--placeholder "Display > " \
+			--no-metadata \
+			--no-quick-look
+	)" || return 1
 
-  if [[ -z "$selected" ]]; then
-    return 1
-  fi
+	if [[ -z "$selected" ]]; then
+		return 1
+	fi
 
-  normalize_mode "$(mode_from_label "$selected")"
+	normalize_mode "$(mode_from_label "$selected")"
 }
 
 normalize_mode() {
-  case "$1" in
-    internal-only|laptop-only)
-      printf '%s\n' internal-only
-      ;;
-    external-only|mirror|extend)
-      printf '%s\n' "$1"
-      ;;
-    *)
-      printf '%s\n' ""
-      ;;
-  esac
+	case "$1" in
+		internal-only | laptop-only)
+			printf '%s\n' internal-only
+			;;
+		external-only | mirror | extend)
+			printf '%s\n' "$1"
+			;;
+		*)
+			printf '%s\n' ""
+			;;
+	esac
 }
 
 mode_index() {
-  local target="$1"
-  local idx
-  for idx in "${!mode_cycle[@]}"; do
-    if [[ "${mode_cycle[$idx]}" == "$target" ]]; then
-      printf '%s\n' "$idx"
-      return 0
-    fi
-  done
+	local target="$1"
+	local idx
+	for idx in "${!mode_cycle[@]}"; do
+		if [[ "${mode_cycle[$idx]}" == "$target" ]]; then
+			printf '%s\n' "$idx"
+			return 0
+		fi
+	done
 
-  printf '%s\n' "-1"
+	printf '%s\n' "-1"
 }
 
 mirror_is_active() {
-  local -a alive_pids=()
-  local pid
+	local -a alive_pids=()
+	local pid
 
-  if [[ ! -f "$mirror_pid_file" ]]; then
-    return 1
-  fi
+	if [[ ! -f "$mirror_pid_file" ]]; then
+		return 1
+	fi
 
-  while IFS= read -r pid; do
-    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
-      alive_pids+=("$pid")
-    fi
-  done < "$mirror_pid_file"
+	while IFS= read -r pid; do
+		if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+			alive_pids+=("$pid")
+		fi
+	done <"$mirror_pid_file"
 
-  if [[ "${#alive_pids[@]}" -eq 0 ]]; then
-    rm -f "$mirror_pid_file"
-    return 1
-  fi
+	if [[ "${#alive_pids[@]}" -eq 0 ]]; then
+		rm -f "$mirror_pid_file"
+		return 1
+	fi
 
-  printf '%s\n' "${alive_pids[@]}" > "$mirror_pid_file"
-  return 0
+	printf '%s\n' "${alive_pids[@]}" >"$mirror_pid_file"
+	return 0
 }
 
 stop_mirror() {
-  if [[ -f "$mirror_pid_file" ]]; then
-    while IFS= read -r pid; do
-      if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
-        kill -TERM "$pid" 2>/dev/null || true
-      fi
-    done < "$mirror_pid_file"
-    rm -f "$mirror_pid_file"
-  fi
+	if [[ -f "$mirror_pid_file" ]]; then
+		while IFS= read -r pid; do
+			if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+				kill -TERM "$pid" 2>/dev/null || true
+			fi
+		done <"$mirror_pid_file"
+		rm -f "$mirror_pid_file"
+	fi
 }
 
 set_output_mode_to_internal_resolution() {
-  local output="$1"
-  local candidate_mode width height refresh mode
+	local output="$1"
+	local candidate_mode width height refresh mode
 
-  if [[ -z "$internal_width" || -z "$internal_height" || -z "$internal_refresh" ]]; then
-    return 0
-  fi
+	if [[ -z "$internal_width" || -z "$internal_height" || -z "$internal_refresh" ]]; then
+		return 0
+	fi
 
-  candidate_mode="$(jq -r \
-    --arg output "$output" \
-    --argjson width "$internal_width" \
-    --argjson height "$internal_height" \
-    --argjson refresh "$internal_refresh" '
+	candidate_mode="$(jq -r \
+		--arg output "$output" \
+		--argjson width "$internal_width" \
+		--argjson height "$internal_height" \
+		--argjson refresh "$internal_refresh" '
       .[$output].modes
       | map(select(.width == $width and .height == $height))
       | if length == 0 then empty else min_by((.refresh_rate - $refresh) | abs) | "\(.width) \(.height) \(.refresh_rate)" end
     ' <<<"$outputs_json")"
 
-  if [[ -z "$candidate_mode" ]]; then
-    notify "$output has no ${internal_width}x${internal_height} mode"
-    return 0
-  fi
+	if [[ -z "$candidate_mode" ]]; then
+		notify "$output has no ${internal_width}x${internal_height} mode"
+		return 0
+	fi
 
-  read -r width height refresh <<<"$candidate_mode"
-  mode="${width}x${height}@$(printf '%d.%03d' "$((refresh / 1000))" "$((refresh % 1000))")"
-  niri msg output "$output" mode "$mode"
+	read -r width height refresh <<<"$candidate_mode"
+	mode="${width}x${height}@$(printf '%d.%03d' "$((refresh / 1000))" "$((refresh % 1000))")"
+	niri msg output "$output" mode "$mode"
 }
 
 join_csv() {
-  local first=1 item
-  for item in "$@"; do
-    if [[ "$first" -eq 1 ]]; then
-      printf '%s' "$item"
-      first=0
-    else
-      printf ', %s' "$item"
-    fi
-  done
+	local first=1 item
+	for item in "$@"; do
+		if [[ "$first" -eq 1 ]]; then
+			printf '%s' "$item"
+			first=0
+		else
+			printf ', %s' "$item"
+		fi
+	done
 }
 
 detect_current_mode() {
-  local current=""
+	local current=""
 
-  if mirror_is_active; then
-    printf '%s\n' mirror
-    return 0
-  fi
+	if mirror_is_active; then
+		printf '%s\n' mirror
+		return 0
+	fi
 
-  if [[ -n "$internal_mode" && "${#external_enabled_outputs[@]}" -gt 0 ]]; then
-    current="extend"
-  elif [[ -n "$internal_mode" ]]; then
-    current="internal-only"
-  elif [[ "${#external_enabled_outputs[@]}" -gt 0 ]]; then
-    current="external-only"
-  fi
+	if [[ -n "$internal_mode" && "${#external_enabled_outputs[@]}" -gt 0 ]]; then
+		current="extend"
+	elif [[ -n "$internal_mode" ]]; then
+		current="internal-only"
+	elif [[ "${#external_enabled_outputs[@]}" -gt 0 ]]; then
+		current="external-only"
+	fi
 
-  printf '%s\n' "$current"
+	printf '%s\n' "$current"
 }
 
 pick_next_mode() {
-  local current="" next_idx idx
+	local current="" next_idx idx
 
-  if [[ -f "$mode_state_file" ]]; then
-    current="$(normalize_mode "$(<"$mode_state_file")")"
-  fi
-  if [[ -z "$current" ]]; then
-    current="$(normalize_mode "$(detect_current_mode)")"
-  fi
-  if [[ -z "$current" ]]; then
-    current="${mode_cycle[0]}"
-  fi
+	if [[ -f "$mode_state_file" ]]; then
+		current="$(normalize_mode "$(<"$mode_state_file")")"
+	fi
+	if [[ -z "$current" ]]; then
+		current="$(normalize_mode "$(detect_current_mode)")"
+	fi
+	if [[ -z "$current" ]]; then
+		current="${mode_cycle[0]}"
+	fi
 
-  idx="$(mode_index "$current")"
-  if [[ "$idx" -lt 0 ]]; then
-    idx=0
-  fi
-  next_idx="$(( (idx + 1) % ${#mode_cycle[@]} ))"
+	idx="$(mode_index "$current")"
+	if [[ "$idx" -lt 0 ]]; then
+		idx=0
+	fi
+	next_idx="$(((idx + 1) % ${#mode_cycle[@]}))"
 
-  printf '%s\n' "${mode_cycle[$next_idx]}"
+	printf '%s\n' "${mode_cycle[$next_idx]}"
 }
 
 if ! acquire_lock; then
-  exit 0
+	exit 0
 fi
 trap release_lock EXIT
 
@@ -352,115 +352,115 @@ internal_width=""
 internal_height=""
 internal_refresh=""
 if [[ -n "$internal_mode" ]]; then
-  read -r internal_width internal_height internal_refresh <<<"$internal_mode"
+	read -r internal_width internal_height internal_refresh <<<"$internal_mode"
 fi
 
 mode="${1:-}"
 if [[ -z "$mode" ]]; then
-  mode="$(pick_mode_with_vicinae || true)"
-  if [[ -z "$mode" ]]; then
-    exit 0
-  fi
+	mode="$(pick_mode_with_vicinae || true)"
+	if [[ -z "$mode" ]]; then
+		exit 0
+	fi
 fi
 
 if [[ "$mode" == "cycle" ]]; then
-  mode="$(pick_next_mode)"
+	mode="$(pick_next_mode)"
 fi
 
 normalized_mode="$(normalize_mode "$mode")"
 if [[ -n "$normalized_mode" ]]; then
-  mode="$normalized_mode"
+	mode="$normalized_mode"
 fi
 
 if [[ -z "$mode" ]]; then
-  exit 0
+	exit 0
 fi
 
 if within_cooldown; then
-  exit 0
+	exit 0
 fi
 
 case "$mode" in
-  external-only)
-    external_outputs_label=""
-    stop_mirror
-    if [[ "${#external_outputs[@]}" -eq 0 ]]; then
-      notify "No external display detected"
-      exit 1
-    fi
+	external-only)
+		external_outputs_label=""
+		stop_mirror
+		if [[ "${#external_outputs[@]}" -eq 0 ]]; then
+			notify "No external display detected"
+			exit 1
+		fi
 
-    for output in "${external_outputs[@]}"; do
-      niri msg output "$output" on
-    done
+		for output in "${external_outputs[@]}"; do
+			niri msg output "$output" on
+		done
 
-    if [[ -n "$internal_output" ]]; then
-      niri msg output "$internal_output" off
-    fi
+		if [[ -n "$internal_output" ]]; then
+			niri msg output "$internal_output" off
+		fi
 
-    external_outputs_label="$(join_csv "${external_outputs[@]}")"
-    notify_mode external-only "$external_outputs_label"
-    ;;
-  internal-only)
-    stop_mirror
-    if [[ -z "$internal_output" ]]; then
-      notify "No internal panel detected"
-      exit 1
-    fi
+		external_outputs_label="$(join_csv "${external_outputs[@]}")"
+		notify_mode external-only "$external_outputs_label"
+		;;
+	internal-only)
+		stop_mirror
+		if [[ -z "$internal_output" ]]; then
+			notify "No internal panel detected"
+			exit 1
+		fi
 
-    niri msg output "$internal_output" on
+		niri msg output "$internal_output" on
 
-    for output in "${external_outputs[@]}"; do
-      niri msg output "$output" off
-    done
+		for output in "${external_outputs[@]}"; do
+			niri msg output "$output" off
+		done
 
-    notify_mode internal-only "$internal_output"
-    ;;
-  mirror)
-    mirror_targets_label=""
-    stop_mirror
-    if [[ -z "$internal_output" && "${#external_outputs[@]}" -eq 0 ]]; then
-      notify "No displays detected to mirror"
-      exit 1
-    fi
-    if [[ -z "$internal_output" ]]; then
-      notify "Only external display detected; no internal source to mirror"
-      exit 1
-    fi
-    if [[ "${#external_outputs[@]}" -eq 0 ]]; then
-      notify "Only internal display detected; no external target to mirror"
-      exit 1
-    fi
+		notify_mode internal-only "$internal_output"
+		;;
+	mirror)
+		mirror_targets_label=""
+		stop_mirror
+		if [[ -z "$internal_output" && "${#external_outputs[@]}" -eq 0 ]]; then
+			notify "No displays detected to mirror"
+			exit 1
+		fi
+		if [[ -z "$internal_output" ]]; then
+			notify "Only external display detected; no internal source to mirror"
+			exit 1
+		fi
+		if [[ "${#external_outputs[@]}" -eq 0 ]]; then
+			notify "Only internal display detected; no external target to mirror"
+			exit 1
+		fi
 
-    niri msg output "$internal_output" on
+		niri msg output "$internal_output" on
 
-    : > "$mirror_pid_file"
-    for output in "${external_outputs[@]}"; do
-      niri msg output "$output" on
-      set_output_mode_to_internal_resolution "$output"
-      wl-mirror --fullscreen-output "$output" "$internal_output" >/dev/null 2>&1 &
-      echo "$!" >> "$mirror_pid_file"
-    done
+		: >"$mirror_pid_file"
+		for output in "${external_outputs[@]}"; do
+			niri msg output "$output" on
+			set_output_mode_to_internal_resolution "$output"
+			wl-mirror --fullscreen-output "$output" "$internal_output" >/dev/null 2>&1 &
+			echo "$!" >>"$mirror_pid_file"
+		done
 
-    mirror_targets_label="$(join_csv "${external_outputs[@]}")"
-    notify_mode mirror "$internal_output -> $mirror_targets_label"
-    ;;
-  extend)
-    stop_mirror
-    if [[ -n "$internal_output" ]]; then
-      niri msg output "$internal_output" on
-    fi
+		mirror_targets_label="$(join_csv "${external_outputs[@]}")"
+		notify_mode mirror "$internal_output -> $mirror_targets_label"
+		;;
+	extend)
+		stop_mirror
+		if [[ -n "$internal_output" ]]; then
+			niri msg output "$internal_output" on
+		fi
 
-    for output in "${external_outputs[@]}"; do
-      niri msg output "$output" on
-    done
+		for output in "${external_outputs[@]}"; do
+			niri msg output "$output" on
+		done
 
-    notify_mode extend ""
-    ;;
-  *)
-    notify "Unknown mode: $mode"
-    exit 1
-    ;;
+		notify_mode extend ""
+		;;
+	*)
+		notify "Unknown mode: $mode"
+		exit 1
+		;;
 esac
 
-printf '%s\n' "$mode" > "$mode_state_file"
+printf '%s\n' "$mode" >"$mode_state_file"
 mark_switch_time

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -uo pipefail
 
 flakePath="${XDG_CONFIG_HOME:-$HOME/.config}/home-manager"
 
