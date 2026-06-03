@@ -15,6 +15,9 @@ let
       inputs
       ;
   };
+  btopCuda = pkgs.btop.override {
+    cudaSupport = true;
+  };
 in
 {
   customGit = {
@@ -24,18 +27,10 @@ in
 
   customPackages = {
     gui.enable = lib.mkForce true;
-    core.packages = lib.mkForce (
-      builtins.map (
-        p:
-        if p == pkgs.btop then
-          pkgs.btop.override {
-            cudaSupport = true;
-          }
-        else
-          p
-      ) packageSets.core
-    );
+    core.packages = lib.mkForce (builtins.filter (p: p != pkgs.btop) packageSets.core);
   };
+
+  home.packages = lib.mkAfter [ btopCuda ];
 
   customDotfiles = {
     enableMediaControl = true;

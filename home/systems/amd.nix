@@ -17,6 +17,9 @@ let
   };
 
   coderabbit-cli = inputs.numtide-llm-agents.packages.${system}.coderabbit-cli;
+  btopRocm = pkgs.btop.override {
+    rocmSupport = true;
+  };
   hermesAgent = inputs.hermes-agent.packages.${system}.default;
   hermesAgentWithEspeak = pkgs.symlinkJoin {
     name = "hermes-agent-with-espeak-ng";
@@ -38,17 +41,7 @@ in
 
   customPackages = {
     gui.enable = lib.mkForce true;
-    core.packages = lib.mkForce (
-      builtins.map (
-        p:
-        if p == pkgs.btop then
-          pkgs.btop.override {
-            rocmSupport = true;
-          }
-        else
-          p
-      ) packageSets.core
-    );
+    core.packages = lib.mkForce (builtins.filter (p: p != pkgs.btop) packageSets.core);
   };
 
   home.packages = lib.mkAfter (
@@ -59,6 +52,7 @@ in
       glab
       hermesAgentWithEspeak
       coderabbit-cli
+      btopRocm
       # teams-for-linux
       kdePackages.qt6ct
       libsForQt5.qt5ct

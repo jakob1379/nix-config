@@ -6,7 +6,19 @@
   ...
 }:
 let
+  packageSets = import ../modules/package-sets.nix {
+    inherit
+      pkgs
+      lib
+      system
+      inputs
+      ;
+  };
+
   coderabbit-cli = inputs.numtide-llm-agents.packages.${system}.coderabbit-cli;
+  btopRocm = pkgs.btop.override {
+    rocmSupport = true;
+  };
   opencodeWslOverlay = _final: prev: {
     opencode = prev.opencode.overrideAttrs (old: {
       buildPhase = ''
@@ -103,8 +115,13 @@ in
     [
       coderabbit-cli
       glab
+      btopRocm
     ]
   );
+
+  customPackages = {
+    core.packages = lib.mkForce (builtins.filter (p: p != pkgs.btop) packageSets.core);
+  };
 
   customSsh.enableKeepassxc = lib.mkForce false;
 
