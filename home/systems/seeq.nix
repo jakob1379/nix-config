@@ -16,8 +16,14 @@ let
   };
 
   coderabbit-cli = inputs.numtide-llm-agents.packages.${system}.coderabbit-cli;
-  btopRocm = pkgs.btop.override {
-    rocmSupport = true;
+  btopCudaWsl = pkgs.symlinkJoin {
+    name = "btop-cuda-wsl";
+    paths = [ pkgs.btop-cuda ];
+    buildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/btop \
+        --prefix LD_LIBRARY_PATH : /usr/lib/wsl/lib
+    '';
   };
   opencodeWslOverlay = _final: prev: {
     opencode = prev.opencode.overrideAttrs (old: {
@@ -115,7 +121,7 @@ in
     [
       coderabbit-cli
       glab
-      btopRocm
+      btopCudaWsl
     ]
   );
 
