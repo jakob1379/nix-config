@@ -6,7 +6,25 @@
   ...
 }:
 let
+  packageSets = import ../modules/package-sets.nix {
+    inherit
+      pkgs
+      lib
+      system
+      inputs
+      ;
+  };
+
   coderabbit-cli = inputs.numtide-llm-agents.packages.${system}.coderabbit-cli;
+  btopCudaWsl = pkgs.symlinkJoin {
+    name = "btop-cuda-wsl";
+    paths = [ pkgs.btop-cuda ];
+    buildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/btop \
+        --prefix LD_LIBRARY_PATH : /usr/lib/wsl/lib
+    '';
+  };
   opencodeWslOverlay = _final: prev: {
     opencode = prev.opencode.overrideAttrs (old: {
       buildPhase = ''
@@ -103,8 +121,13 @@ in
     [
       coderabbit-cli
       glab
+      btopCudaWsl
     ]
   );
+
+  customPackages = {
+    core.packages = lib.mkForce (builtins.filter (p: p != pkgs.btop) packageSets.core);
+  };
 
   customSsh.enableKeepassxc = lib.mkForce false;
 
