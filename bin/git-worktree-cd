@@ -156,6 +156,8 @@ format_worktrees() {
     (( ${#path} > path_width )) && path_width="${#path}"
   done
 
+  printf '%-*s  %s\t%s\n' "$path_width" "PATH" "BRANCH" ""
+
   for row in "${rows[@]}"; do
     IFS=$'\t' read -r path branch <<< "$row"
     printf '%-*s  %s\t%s\n' "$path_width" "$path" "$branch" "$path"
@@ -191,6 +193,8 @@ choose_worktree() {
     --bind 'enter:accept'
     --bind 'alt-l:toggle-preview'
     --bind 'ctrl-l:toggle-preview'
+    --header-lines=1
+    --header-lines-border=bottom
     --header 'ENTER cd | Alt-L/Ctrl-L preview'
   )
 
