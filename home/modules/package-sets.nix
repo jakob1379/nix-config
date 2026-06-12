@@ -2,7 +2,6 @@
   pkgs,
   lib,
   system,
-  inputs,
   ...
 }:
 
@@ -76,7 +75,7 @@
       nurl
       pandoc
       poppler-utils
-      inputs.t3code-flake.packages.${system}.t3code
+      t3code
       wakatime-cli
     ]
     ++ lib.optionals (system != "aarch64-linux") [ jdk ];

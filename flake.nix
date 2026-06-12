@@ -20,10 +20,6 @@
       url = "github:jakob1379/waytorandr";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    t3code-flake = {
-      url = "github:jakob1379/t3code-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     hermes-agent = {
       url = "github:NousResearch/hermes-agent";
       inputs.nixpkgs.follows = "nixpkgs";
