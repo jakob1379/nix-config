@@ -44,6 +44,7 @@
     wdisplays
     wifi-qr
     feh
+    flameshot
     swaybg
     libnotify
     prettier

@@ -650,8 +650,8 @@ binds {
 
     Ctrl+Alt+K { switch-layout "next"; }
 
-    Print { screenshot; }
-    Ctrl+Print { screenshot-screen; }
+    Print { spawn "flameshot" "gui"; }
+    Ctrl+Print { spawn "flameshot" "screen"; }
     Alt+Print { screenshot-window; }
 
     // Applications such as remote-desktop clients and software KVM switches may
