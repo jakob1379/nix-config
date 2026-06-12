@@ -294,14 +294,11 @@ main() {
 		--margin "1 0" \
 		--padding "1 4" \
 		--align center \
-		"$(gum style --foreground 212 --bold "✨  NOQA Statistics")" \
+		"$(gum style --foreground 212 --bold "✨  NOQA Scan")" \
 		"$(gum style --foreground 240 "${search_dir}")" \
 		"" \
-		"$(gum style --foreground 183 --bold "🔍  Found ${total_rules} noqa occurrences")" \
-		"$(gum style --foreground 240 "across ${total_files} files")" \
-		"" \
-		"$(gum style --foreground 240 --italic "${unique_rules} unique rules • ${total_files} files • ${total_rules} total")" \
-		"$(gum style --foreground 238 --italic "$(date '+%H:%M:%S')")"
+		"$(gum style --foreground 183 --bold "${total_rules} suppressions    ${total_files} files    ${unique_rules} rules")" \
+		"$(gum style --foreground 240 --italic "Pattern: ${pattern}    $(date '+%H:%M:%S')")"
 
 	print_rule_totals "${raw_data}" "${pattern}"
 
