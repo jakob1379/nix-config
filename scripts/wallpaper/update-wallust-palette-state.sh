@@ -4,12 +4,16 @@ set -eu
 
 wallust_cache_dir="$1"
 target_file="$2"
+run_marker="${3:-}"
 latest_dir=""
 palette_file=""
 
 if [ -d "$wallust_cache_dir" ]; then
   for dir in "$wallust_cache_dir"/*_1.7; do
     [ -d "$dir" ] || continue
+    if [ -n "$run_marker" ] && [ -r "$run_marker" ] && [ ! "$dir" -nt "$run_marker" ]; then
+      continue
+    fi
     if [ -z "$latest_dir" ] || [ "$dir" -nt "$latest_dir" ]; then
       latest_dir="$dir"
     fi
