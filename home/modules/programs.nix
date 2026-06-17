@@ -173,8 +173,8 @@ in
                 return
             fi
 
-            if [[ -z "$SSH_CONNECTION" ]]; then
-                ${pkgs.coreutils}/bin/cat ${config.xdg.cacheHome}/wal/sequences
+            if [[ -z "$SSH_CONNECTION" && -r ${config.xdg.cacheHome}/wallust/sequences ]]; then
+                ${pkgs.coreutils}/bin/cat ${config.xdg.cacheHome}/wallust/sequences
             fi
             ${builtins.readFile ../../scripts/shell/secret-export.sh}
 

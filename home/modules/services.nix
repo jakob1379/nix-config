@@ -53,13 +53,8 @@ let
   varietyWallpaperPointerFile = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
   wallpaperStateDir = "${config.xdg.stateHome}/wallpaper";
   currentWallpaperStateFile = "${wallpaperStateDir}/current-wallpaper";
-  wallustPaletteStateFile = "${wallpaperStateDir}/wallust-palette.json";
-  niriGeneratedFilesDir = "${config.xdg.configHome}/niri/generated";
-  niriFocusGradientFile = "${niriGeneratedFilesDir}/wallust-focus-ring.kdl";
-  niriWindowBorderRulesFile = "${niriGeneratedFilesDir}/window-border-rules.kdl";
-  vicinaeThemesDir = "${config.xdg.dataHome}/vicinae/themes";
-  vicinaeWallustDarkThemeFile = "${vicinaeThemesDir}/wallust-dark.toml";
-  vicinaeWallustLightThemeFile = "${vicinaeThemesDir}/wallust-light.toml";
+  niriFocusGradientFile = "${config.xdg.configHome}/niri/generated/wallust-focus-ring.kdl";
+  niriWindowBorderRulesFile = "${config.xdg.configHome}/niri/generated/window-border-rules.kdl";
 
   noctaliaWallpaperSyncScript = pkgs.writeShellApplication {
     name = "sync-noctalia-wallpaper";
@@ -71,27 +66,7 @@ let
     text = builtins.readFile ../../scripts/wallpaper/sync-noctalia-wallpaper.sh;
   };
 
-  wallustPaletteStateSyncScript = pkgs.writeShellApplication {
-    name = "update-wallust-palette-state";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.jq
-    ];
-    text = builtins.readFile ../../scripts/wallpaper/update-wallust-palette-state.sh;
-  };
-
   niriSessionExecCondition = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "${pkgs.coreutils}/bin/printenv XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qi niri"}";
-
-  niriFocusGradientSyncScript = pkgs.writeShellApplication {
-    name = "sync-niri-focus-gradient";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.jq
-      pkgs.niri
-      pkgs.procps
-    ];
-    text = builtins.readFile ../../scripts/niri/sync-focus-gradient.sh;
-  };
 
   niriWindowBorderRulesSyncScript = pkgs.writeShellApplication {
     name = "sync-niri-window-border-rules";
@@ -116,38 +91,20 @@ let
     text = builtins.readFile ../../scripts/niri/watch-window-border-rules.sh;
   };
 
-  vicinaeThemeSyncScript = pkgs.writeShellApplication {
-    name = "sync-vicinae-theme";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.jq
-    ];
-    text = builtins.readFile ../../scripts/wallpaper/sync-vicinae-theme.sh;
-  };
-
   varietyWallpaperThemeSyncScript = pkgs.writeShellApplication {
     name = "sync-variety-wallpaper-theme";
     runtimeInputs = [
       pkgs.coreutils
       pkgs.wallust
-      wallustPaletteStateSyncScript
       noctaliaWallpaperSyncScript
-      niriFocusGradientSyncScript
-      vicinaeThemeSyncScript
     ];
     text = builtins.readFile ../../scripts/wallpaper/sync-variety-wallpaper-theme.sh;
   };
 
   varietyWallpaperThemeSyncCommand =
     "${varietyWallpaperThemeSyncScript}/bin/sync-variety-wallpaper-theme "
-    + "${lib.escapeShellArg varietyWallpaperPointerFile} "
-    + "${lib.escapeShellArg currentWallpaperStateFile} "
-    + "${lib.escapeShellArg "${config.xdg.cacheHome}/wallust"} "
-    + "${lib.escapeShellArg wallustPaletteStateFile} "
-    + "${lib.escapeShellArg "${config.xdg.configHome}/noctalia/colors.json"} "
-    + "${lib.escapeShellArg niriFocusGradientFile} "
-    + "${lib.escapeShellArg vicinaeWallustDarkThemeFile} "
-    + lib.escapeShellArg vicinaeWallustLightThemeFile;
+    + "${lib.escapeShellArg "${pkgs.variety}/bin/variety"} "
+    + lib.escapeShellArg currentWallpaperStateFile;
 
   niriWindowBorderRulesWatchCommand =
     "${niriWindowBorderRulesWatchScript}/bin/watch-niri-window-border-rules "

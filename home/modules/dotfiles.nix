@@ -49,9 +49,6 @@
             ".config/noctalia/settings.json".source = config.lib.file.mkOutOfStoreSymlink (
               config.home.homeDirectory + "/.config/home-manager/dotfiles/noctalia/settings.json"
             );
-            ".config/noctalia/colors.json".source = config.lib.file.mkOutOfStoreSymlink (
-              config.home.homeDirectory + "/.config/home-manager/dotfiles/noctalia/colors.json"
-            );
             ".config/noctalia/plugins.json".source = config.lib.file.mkOutOfStoreSymlink (
               config.home.homeDirectory + "/.config/home-manager/dotfiles/noctalia/plugins.json"
             );
