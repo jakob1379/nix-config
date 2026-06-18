@@ -459,6 +459,15 @@ in
 
         easyeffects.enable = true;
         mpris-proxy.enable = true;
+        open-design = {
+          enable = true;
+          autoStart = true;
+          webFrontend = {
+            enable = true;
+            host = "127.0.0.1";
+            port = 5174;
+          };
+        };
       };
     in
     {
