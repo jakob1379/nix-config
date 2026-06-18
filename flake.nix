@@ -16,6 +16,10 @@
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    noctalia = {
+      url = "github:noctalia-dev/noctalia";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     waytorandr = {
       url = "github:jakob1379/waytorandr";
       inputs.nixpkgs.follows = "nixpkgs";

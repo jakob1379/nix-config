@@ -16,6 +16,6 @@ if [ -z "${wallpaper_path:-}" ] || [ ! -r "$wallpaper_path" ]; then
   exit 0
 fi
 
-if ! output="$(noctalia-shell ipc --newest call wallpaper set "$wallpaper_path" all 2>&1)"; then
+if ! output="$(noctalia msg wallpaper-set "$wallpaper_path" 2>&1)"; then
   printf 'sync-noctalia-wallpaper: failed to set wallpaper to %s: %s\n' "$wallpaper_path" "$output" >&2
 fi

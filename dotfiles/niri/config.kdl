@@ -128,6 +128,7 @@ environment {
 layout {
     // Set gaps around windows in logical pixels.
     gaps 5
+    background-color "transparent"
 
     // When to center a column when changing focus, options are:
     // - "never", default behavior, focusing an off-screen column will keep at the left
@@ -286,9 +287,8 @@ include "/home/jsg/.config/niri/generated/window-border-rules.kdl"
 // This line starts waybar, a commonly used bar for Wayland compositors.
 // spawn-at-startup "waybar"
 spawn-at-startup "vicinae" "server"
-spawn-at-startup "noctalia-shell" "--no-duplicate"
+spawn-at-startup "noctalia" "--daemon"
 spawn-sh-at-startup "systemctl --user import-environment DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE NIRI_SOCKET; dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE NIRI_SOCKET; systemctl --user start emacs.service"
-spawn-sh-at-startup "city=$(curl -fsSL --max-time 3 https://ipinfo.io/city | tr -d '\\r\\n'); [ -n \"$city\" ] && /home/jsg/.nix-profile/bin/noctalia-shell ipc call location set \"$city\" || true"
 
 // To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:
 // spawn-sh-at-startup "qs -c ~/source/qs/MyAwesomeShell"
@@ -366,6 +366,31 @@ window-rule {
     clip-to-geometry true
 }
 
+// Floating Noctalia settings window.
+window-rule {
+    match app-id="dev.noctalia.Noctalia.Settings"
+    open-floating true
+    default-column-width { fixed 1080; }
+    default-window-height { fixed 920; }
+}
+
+debug {
+    // Allows notification actions and window activation from Noctalia.
+    honor-xdg-activation-with-invalid-serial
+}
+
+// Keep Noctalia's stationary wallpaper layer visible in Niri's backdrop.
+layer-rule {
+    match namespace="^noctalia-wallpaper"
+    place-within-backdrop true
+}
+
+overview {
+    workspace-shadow {
+        off
+    }
+}
+
 // Make sure to hide the gradient border
 window-rule {
     draw-border-with-background false
@@ -413,10 +438,10 @@ binds {
     Mod+Shift+V hotkey-overlay-title="Open Clipboard History: Vicinae" { spawn "vicinae" "vicinae://launch/clipboard/history"; }
     Mod+Shift+W hotkey-overlay-title="Open Window Switcher: Vicinae" { spawn "vicinae" "vicinae://launch/wm/switch-windows"; }
     Mod+Period hotkey-overlay-title="Open Emoji Picker: Vicinae" { spawn "vicinae" "vicinae://launch/core/search-emojis"; }
-    Mod+B hotkey-overlay-title="Cycle Power Profile" { spawn "/home/jsg/.nix-profile/bin/noctalia-shell" "ipc" "call" "powerProfile" "cycle"; }
+    Mod+B hotkey-overlay-title="Cycle Power Profile" { spawn "noctalia" "msg" "power-cycle"; }
     Super+P hotkey-overlay-title="Display Mode" { spawn "display-mode-picker" "cycle"; }
     XF86Display hotkey-overlay-title="Display Mode" { spawn "display-mode-picker" "cycle"; }
-    Super+Alt+L hotkey-overlay-title="Lock the Screen: Noctalia" { spawn "noctalia-shell" "ipc" "call" "lockScreen" "lock"; }
+    Super+Alt+L hotkey-overlay-title="Lock the Screen: Noctalia" { spawn "noctalia" "msg" "session" "lock"; }
 
     // Use spawn-sh to run a shell command. Do this if you need pipes, multiple commands, etc.
     // Note: the entire command goes as a single argument. It's passed verbatim to `sh -c`.
@@ -439,8 +464,8 @@ binds {
     XF86AudioPrev        allow-when-locked=true { spawn-sh "playerctl previous"; }
     XF86AudioNext        allow-when-locked=true { spawn-sh "playerctl next"; }
 
-    XF86MonBrightnessUp allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "brightness" "increase"; }
-    XF86MonBrightnessDown allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "brightness" "decrease"; }
+    XF86MonBrightnessUp allow-when-locked=true { spawn "noctalia" "msg" "brightness-up"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "noctalia" "msg" "brightness-down"; }
     XF86WLAN allow-when-locked=true { spawn-sh "state=$(nmcli -t -f WIFI g 2>/dev/null); if [ \"$state\" = enabled ]; then nmcli radio all off; else nmcli radio all on; fi"; }
 
     // Open/close the Overview: a zoomed-out view of workspaces and windows.

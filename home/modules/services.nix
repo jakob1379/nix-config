@@ -59,7 +59,7 @@ let
   noctaliaWallpaperSyncScript = pkgs.writeShellApplication {
     name = "sync-noctalia-wallpaper";
     runtimeInputs = [
-      pkgs.noctalia-shell
+      config.programs.noctalia.package
       pkgs.procps
       pkgs.coreutils
     ];
@@ -95,8 +95,8 @@ let
     name = "sync-variety-wallpaper-theme";
     runtimeInputs = [
       pkgs.coreutils
-      pkgs.wallust
       noctaliaWallpaperSyncScript
+      pkgs.wallust
     ];
     text = builtins.readFile ../../scripts/wallpaper/sync-variety-wallpaper-theme.sh;
   };
