@@ -20,6 +20,12 @@
       url = "github:jakob1379/waytorandr";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    open-design = {
+      url = "github:nexu-io/open-design/open-design-v0.11.0";
+      inputs.flake-utils.follows = "flake-utils";
+      inputs.home-manager.follows = "home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     hermes-agent = {
       url = "github:NousResearch/hermes-agent";
       inputs.nixpkgs.follows = "nixpkgs";
