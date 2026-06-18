@@ -56,6 +56,27 @@
     };
   };
 
+  system.autoUpgrade = {
+    enable = true;
+    dates = "03:00";
+    randomizedDelaySec = "30min";
+    fixedRandomDelay = true;
+    persistent = true;
+
+    flake = "github:jakob1379/nix-config#vm-docker-main";
+    flags = [ "-L" ];
+    operation = "boot";
+    upgrade = false;
+
+    allowReboot = true;
+    rebootWindow = {
+      lower = "01:00";
+      upper = "05:00";
+    };
+
+    runGarbageCollection = true;
+  };
+
   security.sudo.wheelNeedsPassword = false;
 
   environment.systemPackages = with pkgs; [
