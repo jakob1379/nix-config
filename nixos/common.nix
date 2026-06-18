@@ -81,6 +81,7 @@
   services.fwupd.enable = true;
   services.udisks2.enable = true;
   services.tailscale.enable = true;
+  systemd.services.tailscaled.wantedBy = lib.mkForce [ ];
   services.netbird = {
     ui.enable = true;
     enable = true;
