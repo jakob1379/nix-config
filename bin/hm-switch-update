@@ -6,7 +6,11 @@ flakePath="${XDG_CONFIG_HOME:-$HOME/.config}/home-manager"
 if command -v gh >/dev/null 2>&1 && [[ "${NIX_CONFIG:-}" != *"github.com="* ]]; then
 	githubToken="$(gh auth token -h github.com 2>/dev/null || true)"
 	if [[ -n "$githubToken" ]]; then
-		export NIX_CONFIG="access-tokens = github.com=$githubToken"
+		if [[ -n "${NIX_CONFIG:-}" ]]; then
+			export NIX_CONFIG="${NIX_CONFIG}"$'\n'"access-tokens = github.com=$githubToken"
+		else
+			export NIX_CONFIG="access-tokens = github.com=$githubToken"
+		fi
 	fi
 fi
 
