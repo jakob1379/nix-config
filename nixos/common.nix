@@ -10,6 +10,7 @@
 
   # Nix settings
   nix = {
+    distributedBuilds = true;
     gc = {
       automatic = true;
       dates = "weekly";
