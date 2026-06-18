@@ -43,15 +43,7 @@
           (lib.mkIf cfg.enableEmacs cfg.emacs)
           (lib.mkIf cfg.enableMediaControl cfg.mediaControl)
           {
-            ".local/share/bash-completion/completions/noctalia-shell".source =
-              ../../scripts/completions/noctalia-shell-completions.sh;
             ".config/niri/config.kdl".source = ../../dotfiles/niri/config.kdl;
-            ".config/noctalia/settings.json".source = config.lib.file.mkOutOfStoreSymlink (
-              config.home.homeDirectory + "/.config/home-manager/dotfiles/noctalia/settings.json"
-            );
-            ".config/noctalia/plugins.json".source = config.lib.file.mkOutOfStoreSymlink (
-              config.home.homeDirectory + "/.config/home-manager/dotfiles/noctalia/plugins.json"
-            );
             ".config/vicinae/settings.json".source = config.lib.file.mkOutOfStoreSymlink (
               config.home.homeDirectory + "/.config/home-manager/dotfiles/vicinae/settings.json"
             );

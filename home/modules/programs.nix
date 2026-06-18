@@ -312,6 +312,89 @@ in
 
         nix-init.enable = true;
 
+        noctalia = lib.mkIf config.customPackages.gui.enable {
+          enable = true;
+          systemd.enable = false;
+          settings = {
+            shell = {
+              ui_scale = 1.0;
+              corner_radius_scale = 1.0;
+              avatar_path = "${config.home.homeDirectory}/.face";
+              show_location = true;
+            };
+
+            wallpaper = {
+              enabled = true;
+              directory = "${config.home.homeDirectory}/Pictures/Wallpapers";
+              fill_mode = "crop";
+              transition_on_startup = false;
+              automation.enabled = false;
+            };
+
+            theme = {
+              mode = "light";
+              source = "wallpaper";
+              wallpaper_scheme = "muted";
+            };
+
+            location = {
+              auto_locate = false;
+              address = "Copenhagen";
+            };
+
+            weather = {
+              enabled = true;
+              unit = "celsius";
+              effects = true;
+            };
+
+            backdrop.enabled = false;
+
+            bar.main = {
+              position = "top";
+              background_opacity = 0.93;
+              radius = 12;
+              margin_ends = 4;
+              margin_edge = 0;
+              padding = 2;
+              widget_spacing = 6;
+              scale = 1.0;
+              reserve_space = true;
+              capsule = true;
+              start = [
+                "clock"
+                "sysmon-cpu"
+                "sysmon-ram"
+                "active_window"
+                "media"
+              ];
+              center = [ "workspaces" ];
+              end = [
+                "tray"
+                "notifications"
+                "battery"
+                "input-volume"
+                "volume"
+                "brightness"
+                "bluetooth"
+                "control-center"
+                "session"
+              ];
+            };
+
+            widget = {
+              sysmon-cpu = {
+                type = "sysmon";
+                stat = "cpu_usage";
+              };
+              sysmon-ram = {
+                type = "sysmon";
+                stat = "ram_used";
+              };
+            };
+          };
+        };
+
         rclone = {
           enable = true;
         };
@@ -639,7 +722,8 @@ in
 
       # Home shell aliases
       home.shellAliases = {
-        noctalia-restart = "noctalia-shell list --all --json | jq -Rsc '(fromjson? // [])[]?.pid' | xargs -r kill; noctalia-shell -d";
+        noctalia-restart = "pkill -x noctalia || true; noctalia --daemon";
+        noctalia-reload = "noctalia msg config-reload";
         onefetch = "onefetch -E --nerd-fonts --no-color-palette";
         cat = "bat";
         watch = "hwatch";

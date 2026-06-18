@@ -39,7 +39,6 @@
   gui = with pkgs; [
     brave
     tana
-    noctalia-shell
     xwayland-satellite
     wdisplays
     wifi-qr
