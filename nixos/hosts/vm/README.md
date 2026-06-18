@@ -8,6 +8,42 @@
 If a second VM ever appears, then split shared defaults back out. Until then,
 the extra host wrapper is just noise.
 
+## Dockhand bootstrap updates
+
+The VM owns the Dockhand bootstrap updater. Dockhand still manages the main
+homelab stack, but the Dockhand container itself is updated by a NixOS systemd
+timer.
+
+Initial checkout:
+
+```bash
+sudo git clone https://github.com/jakob1379/homelab.git /opt/homelab
+sudo docker compose -f /opt/homelab/docker-compose.pods.yml up -d
+```
+
+Timer operations:
+
+```bash
+systemctl list-timers dockhand-bootstrap-update.timer
+sudo systemctl start dockhand-bootstrap-update.service
+journalctl -u dockhand-bootstrap-update.service -n 100 --no-pager
+```
+
+Manual recovery remains:
+
+```bash
+cd /opt/homelab
+sudo docker compose -f docker-compose.pods.yml up -d
+```
+
+Deployment policy:
+
+1. Dependabot updates the homelab Docker image pins.
+2. CI passes in `homelab`.
+3. The homelab PR is merged.
+4. The VM timer fast-forwards `/opt/homelab`.
+5. Dockhand is redeployed only when the pods compose files changed.
+
 ## Build a Proxmox image
 
 `nixos-generators` is deprecated. Use the upstream image builder via
