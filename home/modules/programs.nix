@@ -520,16 +520,14 @@ in
             ControlPersist = "no";
           };
 
-          matchBlocks = {
-            "*" = {
-              forwardAgent = true;
-              addKeysToAgent = "yes";
-              controlMaster = "auto";
-              controlPath = "~/.ssh/sockets/%r@%h-%p";
-              controlPersist = "yes";
-              serverAliveInterval = 30;
-              serverAliveCountMax = 3;
-            };
+          settings."*" = {
+            ForwardAgent = true;
+            AddKeysToAgent = "yes";
+            ControlMaster = "auto";
+            ControlPath = "~/.ssh/sockets/%r@%h-%p";
+            ControlPersist = "yes";
+            ServerAliveInterval = 30;
+            ServerAliveCountMax = 3;
           };
         };
 
