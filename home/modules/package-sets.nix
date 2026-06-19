@@ -222,6 +222,16 @@
       text = builtins.readFile ../../bin/rg-fuzzy;
     })
     (pkgs.writeShellApplication {
+      name = "screenshot-ocr";
+      runtimeInputs = [
+        pkgs.coreutils
+        pkgs.flameshot
+        pkgs.tesseract
+        pkgs.wl-clipboard
+      ];
+      text = builtins.readFile ../../bin/screenshot-ocr;
+    })
+    (pkgs.writeShellApplication {
       name = "git-worktree-cd";
       runtimeInputs = [
         pkgs.coreutils

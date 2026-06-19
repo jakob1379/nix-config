@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+tmp_dir="$(mktemp -d /tmp/screenshot-ocr.XXXXXX)"
+tmp_file="${tmp_dir}/capture.png"
+trap 'rm -rf "$tmp_dir"' EXIT
+
+if ! flameshot gui -p "$tmp_file"; then
+	echo "Screenshot cancelled or failed." >&2
+	exit 1
+fi
+
+if [[ ! -s $tmp_file ]]; then
+	echo "Screenshot file was not created." >&2
+	exit 1
+fi
+
+if ! output="$(tesseract "$tmp_file" stdout --psm 1 --oem lstm_only)"; then
+	echo "OCR failed." >&2
+	exit 1
+fi
+
+if [[ -z ${output//[[:space:]]/} ]]; then
+	echo "No text found." >&2
+	exit 1
+fi
+
+printf 'FOUND TEXT\n%s\n' "$output"
+printf '%s' "$output" | wl-copy
