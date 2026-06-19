@@ -51,20 +51,7 @@ let
   rcloneDropboxPrivateService = "rclone-mount-dropbox-private.service";
   dropboxPrivateMountPath = "${config.home.homeDirectory}/dropbox-private";
   varietyWallpaperPointerFile = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
-  wallpaperStateDir = "${config.xdg.stateHome}/wallpaper";
-  currentWallpaperStateFile = "${wallpaperStateDir}/current-wallpaper";
-  niriFocusGradientFile = "${config.xdg.configHome}/niri/generated/wallust-focus-ring.kdl";
   niriWindowBorderRulesFile = "${config.xdg.configHome}/niri/generated/window-border-rules.kdl";
-
-  noctaliaWallpaperSyncScript = pkgs.writeShellApplication {
-    name = "sync-noctalia-wallpaper";
-    runtimeInputs = [
-      config.programs.noctalia.package
-      pkgs.procps
-      pkgs.coreutils
-    ];
-    text = builtins.readFile ../../scripts/wallpaper/sync-noctalia-wallpaper.sh;
-  };
 
   niriSessionExecCondition = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "${pkgs.coreutils}/bin/printenv XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qi niri"}";
 
@@ -91,20 +78,18 @@ let
     text = builtins.readFile ../../scripts/niri/watch-window-border-rules.sh;
   };
 
-  varietyWallpaperThemeSyncScript = pkgs.writeShellApplication {
-    name = "sync-variety-wallpaper-theme";
+  varietyWallustTerminalColorsSyncScript = pkgs.writeShellApplication {
+    name = "sync-variety-wallust-terminal-colors";
     runtimeInputs = [
       pkgs.coreutils
-      noctaliaWallpaperSyncScript
       pkgs.wallust
     ];
-    text = builtins.readFile ../../scripts/wallpaper/sync-variety-wallpaper-theme.sh;
+    text = builtins.readFile ../../scripts/wallpaper/sync-variety-wallust-terminal-colors.sh;
   };
 
-  varietyWallpaperThemeSyncCommand =
-    "${varietyWallpaperThemeSyncScript}/bin/sync-variety-wallpaper-theme "
-    + "${lib.escapeShellArg "${pkgs.variety}/bin/variety"} "
-    + lib.escapeShellArg currentWallpaperStateFile;
+  varietyWallustTerminalColorsSyncCommand =
+    "${varietyWallustTerminalColorsSyncScript}/bin/sync-variety-wallust-terminal-colors "
+    + lib.escapeShellArg "${pkgs.variety}/bin/variety";
 
   niriWindowBorderRulesWatchCommand =
     "${niriWindowBorderRulesWatchScript}/bin/watch-niri-window-border-rules "
@@ -150,15 +135,15 @@ in
                 };
               };
 
-              "variety-wallpaper-theme" = {
+              "variety-wallust-terminal-colors" = {
                 Unit = {
-                  Description = "Sync wallpaper themes from Variety";
+                  Description = "Sync terminal colors from Variety wallpaper";
                   After = [ rcloneDropboxPrivateService ];
                   Wants = [ rcloneDropboxPrivateService ];
                   Requires = [ rcloneDropboxPrivateService ];
                 };
                 Service = {
-                  ExecStart = varietyWallpaperThemeSyncCommand;
+                  ExecStart = varietyWallustTerminalColorsSyncCommand;
                   TimeoutStartSec = 60;
                   Type = "oneshot";
                 };
@@ -169,12 +154,12 @@ in
             };
 
             path = {
-              "variety-wallpaper-theme" = {
+              "variety-wallust-terminal-colors" = {
                 Unit = {
-                  Description = "Watch Variety wallpaper pointer";
+                  Description = "Watch Variety wallpaper pointer for terminal colors";
                   After = [ rcloneDropboxPrivateService ];
                   Wants = [
-                    "variety-wallpaper-theme.service"
+                    "variety-wallust-terminal-colors.service"
                     rcloneDropboxPrivateService
                   ];
                   Requires = [ rcloneDropboxPrivateService ];
@@ -271,19 +256,6 @@ in
       };
     in
     {
-      home.activation.ensureNiriFocusGradientFile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        target_file="${niriFocusGradientFile}"
-        ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target_file")"
-        if [ ! -f "$target_file" ]; then
-          ${pkgs.coreutils}/bin/printf '%s\n' \
-            'layout {' \
-            '    focus-ring {' \
-            '        active-gradient from="#80c8ff" to="#c7ff7f" angle=45' \
-            '    }' \
-            '}' > "$target_file"
-        fi
-      '';
-
       home.activation.ensureNiriWindowBorderRulesFile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         target_file="${niriWindowBorderRulesFile}"
         ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target_file")"

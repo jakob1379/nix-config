@@ -421,11 +421,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1781839026,
-        "narHash": "sha256-va+uSimE2DiYN6tZ/XtJy7on2nrvRLblhinL2XBHLjM=",
+        "lastModified": 1781849779,
+        "narHash": "sha256-Ihdla0v+oCO6dNN6iExgdGc9+JmKLmAnbiTneiJgZbE=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "815fcb0494fc165dae77c828ecf63634e9030043",
+        "rev": "a1e67cc315b6bd924614d4232e09bab54df3ae39",
         "type": "github"
       },
       "original": {
@@ -437,11 +437,11 @@
     "oh-my-opencode-slim-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1781823452,
-        "narHash": "sha256-m8yDOAJTpQjvE9wCN19xIrb545PnWpL5Jyz+3hapw1Q=",
+        "lastModified": 1781856842,
+        "narHash": "sha256-ZDRqGfY1GsFRyv61nernidMBtpD3CH8qCWClbYigysQ=",
         "owner": "alvinunreal",
         "repo": "oh-my-opencode-slim",
-        "rev": "97c3abbacdd07f8fff388f29bd3e4fee5f1102b1",
+        "rev": "f87d73ed309fabb5947b70d3aba2d4139c14b2d1",
         "type": "github"
       },
       "original": {
@@ -740,11 +740,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1781761091,
-        "narHash": "sha256-WfgNo6W1U7dwWZsdaAnoG62CXvvJDL+dXfUxnAS7WhU=",
+        "lastModified": 1781847955,
+        "narHash": "sha256-1OSYOGuJp/NoODmSHjsz+6TB/kSilJ+BsFihjY7TTnc=",
         "owner": "youwen5",
         "repo": "zen-browser-flake",
-        "rev": "e843542efbb7405141659d47bef211c9a8efbc54",
+        "rev": "4bca251cd556677f7b765ff324d1638ae215be13",
         "type": "github"
       },
       "original": {

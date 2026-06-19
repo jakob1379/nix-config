@@ -276,7 +276,6 @@ layout {
     }
 }
 
-include "/home/jsg/.config/niri/generated/wallust-focus-ring.kdl"
 include "/home/jsg/.config/niri/generated/window-border-rules.kdl"
 
 // Add lines like this to spawn processes at startup.
