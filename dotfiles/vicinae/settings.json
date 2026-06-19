@@ -24,7 +24,7 @@
       "icon_theme": "default"
     }
   },
-  "favorites": ["applications:org.keepassxc.KeePassXC"],
+  "favorites": ["power:suspend", "applications:org.keepassxc.KeePassXC"],
   "providers": {
     "clipboard": {
       "enabled": true,

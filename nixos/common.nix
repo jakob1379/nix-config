@@ -10,6 +10,7 @@
 
   # Nix settings
   nix = {
+    distributedBuilds = true;
     gc = {
       automatic = true;
       dates = "weekly";
@@ -27,6 +28,8 @@
   # Networking
   networking.networkmanager.enable = true;
   services.resolved.enable = true;
+  services.upower.enable = true;
+  services.power-profiles-daemon.enable = true;
 
   # Timezone
   time.timeZone = "Europe/Copenhagen";
@@ -80,6 +83,7 @@
   services.fwupd.enable = true;
   services.udisks2.enable = true;
   services.tailscale.enable = true;
+  systemd.services.tailscaled.wantedBy = lib.mkForce [ ];
   services.netbird = {
     ui.enable = true;
     enable = true;
