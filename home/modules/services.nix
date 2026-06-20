@@ -1,7 +1,9 @@
 {
   config,
+  inputs,
   pkgs,
   lib,
+  system,
   ...
 }:
 
@@ -52,6 +54,7 @@ let
   dropboxPrivateMountPath = "${config.home.homeDirectory}/dropbox-private";
   varietyWallpaperPointerFile = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
   niriWindowBorderRulesFile = "${config.xdg.configHome}/niri/generated/window-border-rules.kdl";
+  noctaliaPackage = inputs.noctalia.packages.${system}.default;
 
   niriSessionExecCondition = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "${pkgs.coreutils}/bin/printenv XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qi niri"}";
 
@@ -78,17 +81,18 @@ let
     text = builtins.readFile ../../scripts/niri/watch-window-border-rules.sh;
   };
 
-  varietyWallustTerminalColorsSyncScript = pkgs.writeShellApplication {
-    name = "sync-variety-wallust-terminal-colors";
+  varietyWallpaperStateSyncScript = pkgs.writeShellApplication {
+    name = "sync-variety-wallpaper-state";
     runtimeInputs = [
       pkgs.coreutils
+      noctaliaPackage
       pkgs.wallust
     ];
     text = builtins.readFile ../../scripts/wallpaper/sync-variety-wallust-terminal-colors.sh;
   };
 
-  varietyWallustTerminalColorsSyncCommand =
-    "${varietyWallustTerminalColorsSyncScript}/bin/sync-variety-wallust-terminal-colors "
+  varietyWallpaperStateSyncCommand =
+    "${varietyWallpaperStateSyncScript}/bin/sync-variety-wallpaper-state "
     + lib.escapeShellArg "${pkgs.variety}/bin/variety";
 
   niriWindowBorderRulesWatchCommand =
@@ -135,15 +139,15 @@ in
                 };
               };
 
-              "variety-wallust-terminal-colors" = {
+              "variety-wallpaper-sync" = {
                 Unit = {
-                  Description = "Sync terminal colors from Variety wallpaper";
+                  Description = "Sync Noctalia and terminal colors from Variety wallpaper";
                   After = [ rcloneDropboxPrivateService ];
                   Wants = [ rcloneDropboxPrivateService ];
                   Requires = [ rcloneDropboxPrivateService ];
                 };
                 Service = {
-                  ExecStart = varietyWallustTerminalColorsSyncCommand;
+                  ExecStart = varietyWallpaperStateSyncCommand;
                   TimeoutStartSec = 60;
                   Type = "oneshot";
                 };
@@ -154,12 +158,12 @@ in
             };
 
             path = {
-              "variety-wallust-terminal-colors" = {
+              "variety-wallpaper-sync" = {
                 Unit = {
-                  Description = "Watch Variety wallpaper pointer for terminal colors";
+                  Description = "Watch Variety wallpaper pointer for Noctalia and terminal colors";
                   After = [ rcloneDropboxPrivateService ];
                   Wants = [
-                    "variety-wallust-terminal-colors.service"
+                    "variety-wallpaper-sync.service"
                     rcloneDropboxPrivateService
                   ];
                   Requires = [ rcloneDropboxPrivateService ];
