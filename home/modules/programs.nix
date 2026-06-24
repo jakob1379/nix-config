@@ -192,7 +192,13 @@ in
 
         emacs = {
           enable = true;
-          package = pkgs.emacs-pgtk;
+          package = pkgs.emacs31-pgtk;
+          extraPackages =
+            epkgs:
+            with epkgs;
+            [
+              treesit-grammars.with-all-grammars
+            ];
         };
 
         fastfetch = {

@@ -12,6 +12,7 @@
       type = lib.types.attrs;
       default = {
         ".emacs.d/config.org".source = ../../dotfiles/emacs/config.org;
+        ".emacs.d/early-init.el".source = ../../dotfiles/emacs/early-init.el;
         ".emacs.d/init.el".source = ../../dotfiles/emacs/init.el;
         ".local/share/bash-completion/completions/emacs".source =
           ../../scripts/completions/emacs-completions.sh;

@@ -212,7 +212,7 @@ in
       cfg = config.customServices;
       coreServices = {
         emacs = {
-          package = pkgs.emacs-pgtk;
+          package = pkgs.emacs31-pgtk;
           startWithUserSession = false;
           enable = true;
           defaultEditor = true;
