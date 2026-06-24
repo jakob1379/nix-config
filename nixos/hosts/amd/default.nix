@@ -36,6 +36,12 @@
   # dynamic swap
   services.swapspace.enable = true;
 
+  services.cachix-watch-store = {
+    enable = true;
+    cacheName = "jgalabs-homelab";
+    cachixTokenFile = /etc/cachix-watch-store.token;
+  };
+
   # amd graphics
   boot.initrd.kernelModules = lib.mkAfter [ "amdgpu" ];
   services.xserver.videoDrivers = lib.mkAfter [ "amdgpu" ];
