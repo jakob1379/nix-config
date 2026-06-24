@@ -54,12 +54,18 @@
 
 ;; Load the tangled config directly when it is current. Fall back to Org only
 ;; when the literate source has changed or no tangled file exists yet.
-(if (and (file-readable-p me/config-el-file)
-         (file-readable-p me/config-org-file)
-         (not (file-newer-than-file-p me/config-org-file me/config-el-file)))
-    (load-file me/config-el-file)
+(cond
+ ((and (file-readable-p me/config-el-file)
+       (or (not (file-readable-p me/config-org-file))
+           (not (file-newer-than-file-p me/config-org-file me/config-el-file))))
+  (load-file me/config-el-file))
+ ((file-readable-p me/config-org-file)
   (straight-use-package 'org)
   (require 'org)
   (org-babel-load-file me/config-org-file))
+ (t
+  (user-error "Cannot find readable Emacs config: %s or %s"
+              me/config-el-file
+              me/config-org-file)))
 
 ;;; init.el ends here
