@@ -750,13 +750,11 @@ in
           substituters = [
             "https://cache.nixos.org/"
             "https://jgalabs-homelab.cachix.org"
+            "https://noctalia.cachix.org"
           ];
-          extra-substituters = [ "https://noctalia.cachix.org" ];
           trusted-public-keys = [
             "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
             "jgalabs-homelab.cachix.org-1:STDTFhtj7rW1eWuCT75Ns0UDZqYu0BUTYsXeYHlbhwE="
-          ];
-          extra-trusted-public-keys = [
             "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
           ];
           max-jobs = 1;
