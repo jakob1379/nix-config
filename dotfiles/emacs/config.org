@@ -5,7 +5,11 @@
 #+KEYWORDS: org-mode, org, config
 #+LANGUAGE: en
 #+OPTIONS: H:4 toc:t num:2
-#+PROPERTY: header-args :results silent :tangle ~/.emacs.d/config.el :padline no
+#+PROPERTY: header-args :results silent :tangle ~/.emacs.d/config.el :padline no :lexical yes
+
+#+BEGIN_SRC emacs-lisp
+;;; -*- lexical-binding: t; -*-
+#+END_SRC
 
 But it sure does take a lot of inspiration from it to improve performance.
 
@@ -19,7 +23,10 @@ The config is divided into sensible sections (hopefully) to segregate mode-speci
   )
 
 (use-package benchmark-init
+  :if (getenv "EMACS_PROFILE")
+  :demand t
   :config
+  (benchmark-init/activate)
   (add-hook 'after-init-hook 'benchmark-init/deactivate)
   )
 
@@ -38,31 +45,20 @@ The config is divided into sensible sections (hopefully) to segregate mode-speci
             gcs-done)))
 #+END_SRC
 ** Early init
-:PROPERTIES:
-:header-args+: :tangle "~/.emacs.d/early-init.el"
-:END:
-In Emacs 27+, package initialization occurs before ~user-init-file~ is loaded, but after
-~early-init-file~. We handle package initialization, so we must prevent Emacs from doing it early!
-
-#+BEGIN_SRC emacs-lisp
-;;; -*- lexical-binding: t; -*-
-(setq package-enable-at-startup nil)
-(setq native-comp-async-report-warnings-errors nil)
-#+END_SRC
+Early startup settings live in =~/.emacs.d/early-init.el= so they are applied before package and frame initialization. Keeping them in this file was too late for package startup and would also make tangling try to rewrite Home Manager's symlinked early-init file.
 ** Straight
 Straight is a package manager for Emacs making it easier to fetch packages from anywhere.
 
 We want it to integrate nicely with use-package
 #+BEGIN_SRC emacs-lisp
 (setq straight-cache-autoloads t
-      straight-check-for-modifications '(check-on-save find-when-checking)
+      straight-check-for-modifications '(check-on-save)
       straight-vc-git-auto-fast-forward nil
       straight-vc-git-default-clone-depth 1
       straight-vc-git-default-protocol 'https
-      ;; use-package-always-defer t
-      use-package-compute-statistics t
+      use-package-compute-statistics nil
       vc-follow-symlinks t
-  	  straight-use-package-by-default t
+      straight-use-package-by-default t
       )
 #+END_SRC
 ** Defer Compilations
@@ -76,6 +72,15 @@ we easily halve startup times with fonts that are larger than the system default
 
 #+BEGIN_SRC emacs-lisp
 (setq frame-inhibit-implied-resize t)
+#+END_SRC
+** Deferred startup helpers
+#+BEGIN_SRC emacs-lisp
+(defun me/run-after-startup-idle (seconds function)
+  "Run FUNCTION after startup and SECONDS idle seconds."
+  (add-hook 'emacs-startup-hook
+            (list 'lambda nil
+                  (list 'run-with-idle-timer seconds nil
+                        (list 'quote function)))))
 #+END_SRC
 ** Reduce GC
 Following [[https://github.com/hlissner/doom-emacs/blob/develop/docs/faq.org#how-does-doom-start-up-so-quickly][Doom-Emacs FAQ]], we max the garbage collection threshold on startup, and reset it to the original value after.
@@ -131,8 +136,13 @@ state.
 #+BEGIN_SRC emacs-lisp
 (use-package gcmh
   :delight gcmh-mode
-  :config
-  (gcmh-mode 1))
+  :commands gcmh-mode
+  :init
+  (me/run-after-startup-idle
+   1
+   (lambda ()
+     (when (require 'gcmh nil t)
+       (gcmh-mode 1)))))
 #+END_SRC
 * General Emacs settings
 ** Sane defaults
@@ -263,8 +273,12 @@ Emacs is very conservative about assuming encoding. Everything is UTF-8 these da
 If Emacs is not running as a server, start one. It should've been started by systemd, but this is just to be sure
 #+BEGIN_SRC emacs-lisp
 (require 'server)
-(unless (server-running-p)
-  (server-start))
+(unless noninteractive
+  (me/run-after-startup-idle
+   1
+   (lambda ()
+     (unless (server-running-p)
+       (server-start)))))
 #+END_SRC
 ** Delete trailing spaces
 #+BEGIN_SRC emacs-lisp
@@ -316,7 +330,8 @@ These two packages allow customizing the mode line to either hide or change text
 Nice developer icons.
 #+BEGIN_SRC emacs-lisp
 (use-package all-the-icons
-  ;; :if (display-graphic-p)
+  :defer t
+  :if (display-graphic-p)
   )
 
 (use-package all-the-icons-completion
@@ -338,7 +353,7 @@ Ansible mode should only be loaded when a local variable indicates that the file
 *** Auto Sudoedit
 #+BEGIN_SRC emacs-lisp
 (use-package auto-sudoedit
-  :defer t
+  :defer 3
   :config (auto-sudoedit-mode 1)
   :delight
   )
@@ -357,17 +372,43 @@ Don't lose your cursor.
 #+BEGIN_SRC emacs-lisp
 (use-package beacon
   :delight
+  :commands (beacon-blink beacon-mode)
   :bind ("C-x =" . (lambda ()
                      (interactive)
                      (beacon-blink)
                      (what-cursor-position)))
-  :config (beacon-mode 1))
+  :init
+  (me/run-after-startup-idle
+   2
+   (lambda ()
+     (when (require 'beacon nil t)
+       (beacon-mode 1)))))
 #+END_SRC
 *** Corfu - Completion Overlay Region Function
 Corfu is a small CAPF UI. Eglot publishes LSP completions through CAPF, so the efficient path is Eglot -> CAPF -> Corfu, with Cape only for a few explicit fallback completions.
 #+BEGIN_SRC emacs-lisp
 (use-package emacs
   :straight nil
+  :init
+  (when (boundp 'treesit-enabled-modes)
+    (setq treesit-enabled-modes t))
+  (when (boundp 'treesit-auto-install-grammar)
+    ;; Grammars are provided by Nix; ask before compiling/downloading any gap.
+    (setq treesit-auto-install-grammar 'ask))
+  (when (boundp 'completion-eager-update)
+    (setq completion-eager-update t))
+  (when (boundp 'completion-eager-display)
+    (setq completion-eager-display 'auto))
+  (when (boundp 'minibuffer-visible-completions)
+    (setq minibuffer-visible-completions 'up-down))
+  (when (boundp 'eldoc-help-at-pt)
+    (setq eldoc-help-at-pt t))
+  (when (boundp 'kill-region-dwim)
+    (setq kill-region-dwim 'emacs-word))
+  (when (boundp 'ibuffer-human-readable-size)
+    (setq ibuffer-human-readable-size t))
+  (when (boundp 'display-fill-column-indicator-warning)
+    (setq display-fill-column-indicator-warning nil))
   :custom
   ;; Let TAB indent first and complete when point is already indented.
   (tab-always-indent 'complete)
@@ -474,6 +515,8 @@ let dired know how to use native system applications to open files.
 **** Dired rainbow - color by attribute
 #+BEGIN_SRC emacs-lisp
 (use-package dired-rainbow
+  :defer t
+  :hook (dired-mode . (lambda () (require 'dired-rainbow)))
   :config
   (progn
     (dired-rainbow-define-chmod directory "#6cb2eb" "d.*")
@@ -556,8 +599,13 @@ Always redraw immediately when scrolling, making it more responsive and preventi
   (scroll-conservatively 101) ;; important!
   (scroll-margin 0)
   :straight (:host github :repo "jdtsmith/ultra-scroll")
-  :config
-  (ultra-scroll-mode 1))
+  :commands ultra-scroll-mode
+  :init
+  (me/run-after-startup-idle
+   1
+   (lambda ()
+     (when (require 'ultra-scroll nil t)
+       (ultra-scroll-mode 1)))))
 #+END_SRC
 *** Flymake
 #+BEGIN_SRC emacs-lisp
@@ -593,14 +641,18 @@ We set a regular font and a ~variable-pitch~ one, the latter is used by ~mixed-p
 
 #+BEGIN_SRC emacs-lisp
 (use-package persistent-soft
-  :demand t
+  :defer t
   )
 (use-package unicode-fonts
-  :demand t
+  :defer t
+  :if (display-graphic-p)
   :after persistent-soft
-  :config
-  (unicode-fonts-setup)
-  )
+  :init
+  (me/run-after-startup-idle
+   4
+   (lambda ()
+     (when (require 'unicode-fonts nil t)
+       (unicode-fonts-setup)))))
 #+END_SRC
 **** Firacode
 nice ligatures
@@ -622,8 +674,9 @@ nice ligatures
 Nice tool that uses prettier to format code
 #+BEGIN_SRC emacs-lisp
 (use-package format-all
-  :config
-  (format-all-mode)
+  :defer t
+  :hook (prog-mode . format-all-mode)
+  :commands (format-all-buffer format-all-region-or-buffer format-all-mode)
   :diminish
   )
 
@@ -644,9 +697,14 @@ highlights uncommitted changes on the left side of the window
   :hook ((dired-mode . diff-hl-dired-mode-unless-remote)
          (magit-pre-refresh . diff-hl-magit-pre-refresh)
          (magit-post-refresh . diff-hl-magit-post-refresh))
-  :config
-  (global-diff-hl-mode 1)
-  (diff-hl-margin-mode)
+  :commands (global-diff-hl-mode diff-hl-margin-mode)
+  :init
+  (me/run-after-startup-idle
+   3
+   (lambda ()
+     (when (require 'diff-hl nil t)
+       (global-diff-hl-mode 1)
+       (diff-hl-margin-mode))))
   ;; :custom
   ;; (diff-hl-disable-on-remote t)
   )
@@ -778,10 +836,15 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
 #+BEGIN_SRC emacs-lisp
 (use-package hungry-delete
   :delight
+  :commands global-hungry-delete-mode
   :custom
   (hungry-delete-join-reluctantly 1)
-  :config
-  (global-hungry-delete-mode))
+  :init
+  (me/run-after-startup-idle
+   2
+   (lambda ()
+     (when (require 'hungry-delete nil t)
+       (global-hungry-delete-mode 1)))))
 #+END_SRC
 *** IBuffer
 #+BEGIN_SRC emacs-lisp
@@ -828,7 +891,8 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
 
 #+BEGIN_SRC emacs-lisp
 (use-package guess-language
-  :defer nil
+  :defer t
+  :hook (text-mode . guess-language-mode)
   :config
   (setq guess-language-languages '(en da)
                 guess-language-min-paragraph-length 35)
@@ -858,7 +922,10 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
 #+END_SRC
 *** Justfile mode
 #+BEGIN_SRC emacs-lisp
-(use-package just-mode)
+(use-package just-mode
+  :defer t
+  :mode (("justfile\\'" . just-mode)
+         ("Justfile\\'" . just-mode)))
 #+END_SRC
 *** LaTeX
 #+BEGIN_SRC emacs-lisp
@@ -926,6 +993,11 @@ Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Cor
 (use-package eglot
   :straight (:type built-in)
   :commands (eglot eglot-ensure)
+  :init
+  (when (boundp 'eglot-documentation-renderer)
+    (setq eglot-documentation-renderer 'markdown-ts-view-mode))
+  (when (boundp 'eglot-code-action-indications)
+    (setq eglot-code-action-indications nil))
   :hook
   ((conf-toml-mode . eglot-ensure)
    (css-mode . eglot-ensure)
@@ -1113,14 +1185,17 @@ Makefile modes comes with Emacs, but we still want to use it and be able to conf
   (use-package move-text
     :ensure t
     :straight (:host github :repo "emacsfodder/move-text" :files ("move-text.el"))
-    :config
-    (move-text-default-bindings)
+    :defer t
+    :commands (move-text-up move-text-down)
+    :bind (([M-up] . move-text-up)
+           ([M-down] . move-text-down))
     )
 #+end_src
 *** Multiple Cursors
 #+BEGIN_SRC emacs-lisp
 (use-package multiple-cursors
-  :config (multiple-cursors-mode t)
+  :defer t
+  :commands multiple-cursors-mode
   :bind (("H-SPC" . set-rectangular-region-anchor)
          ("C-M-SPC" . set-rectangular-region-anchor)
          ("C->" . mc/mark-next-like-this)
@@ -1356,7 +1431,9 @@ We want to be able to view PDFs in Emacs
 #+END_SRC
 *** Projectile
 #+BEGIN_SRC emacs-lisp
-(use-package projectile)
+(use-package projectile
+  :defer t
+  :commands (projectile-project-root projectile-find-file projectile-switch-project))
 #+END_SRC
 *** Python
 Since I am doing a lot of python, many modes and other things related to python has been bundled in this section
@@ -1406,6 +1483,7 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
 
 #+BEGIN_SRC emacs-lisp
 (use-package pyvenv
+  :defer t
   :hook
   (python-mode . pyvenv-mode)
   :config
@@ -1451,6 +1529,7 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
 #+BEGIN_SRC emacs-lisp
 ;; A more complex, more lazy-loaded config
 (use-package solaire-mode
+  :defer t
   :hook
   ;; Ensure solaire-mode is running in all solaire-mode buffers
   (change-major-mode . turn-on-solaire-mode)
@@ -1461,8 +1540,13 @@ LSP is nice and all, but ELPY still have a lot of nice tools for refactoring and
   (ediff-prepare-buffer . solaire-mode)
   :custom
   (solaire-mode-auto-swap-bg t)
-  :config
-  (solaire-global-mode +1))
+  :commands solaire-global-mode
+  :init
+  (me/run-after-startup-idle
+   3
+   (lambda ()
+     (when (require 'solaire-mode nil t)
+       (solaire-global-mode +1)))))
 #+END_SRC
 *** SSH
 **** TRAMP
@@ -1519,18 +1603,37 @@ necessarily superseded by the ssh config.
 (use-package doom-themes
   :config
   (doom-themes-org-config))
-(load-theme 'doom-xcode t)
+
+(defun me/load-theme-safely (theme &optional fallback)
+  "Load THEME and fall back to FALLBACK without leaving partial theme state."
+  (condition-case err
+      (load-theme theme t)
+    (error
+     (message "Failed to load %s theme: %s" theme err)
+     (mapc #'disable-theme custom-enabled-themes)
+     (when fallback
+       (condition-case fallback-err
+           (load-theme fallback t)
+         (error
+          (message "Failed to load fallback %s theme: %s" fallback fallback-err)
+          (mapc #'disable-theme custom-enabled-themes)))))))
+
+(if (>= emacs-major-version 31)
+    (me/load-theme-safely 'modus-vivendi)
+  (me/load-theme-safely 'doom-xcode 'modus-vivendi))
 #+end_src
 **** Snazzy
 #+BEGIN_SRC emacs-lisp
 (use-package emacs-snazzy
   :straight (:host github :repo "weijiangan/emacs-snazzy" :files ("*.el"))
+  :defer t
   :requires base16-theme
   ;; :config
   ;; (load-theme 'snazzy t)
   )
 
 (use-package base16-theme
+  :defer t
   :straight t)
 #+END_SRC
 *** Title Case
@@ -1556,6 +1659,9 @@ simple package that enable titlecasing
 
 #+BEGIN_SRC emacs-lisp
 (use-package treemacs
+  :defer t
+  :commands treemacs
+  :bind ([f10] . treemacs)
   :config
   (treemacs-git-mode 'deferred)
   (treemacs-project-follow-mode t)
@@ -1585,7 +1691,10 @@ simple package that enable titlecasing
 #+END_SRC
 *** Typescript
 #+BEGIN_SRC emacs-lisp
-(use-package typescript-mode)
+(use-package typescript-mode
+  :defer t
+  :mode (("\\.ts\\'" . typescript-mode)
+         ("\\.tsx\\'" . typescript-mode)))
 
 #+END_SRC
 
@@ -1613,12 +1722,19 @@ simple package that enable titlecasing
           (match-string 1))))))
 
 (use-package wakatime-mode
+  :defer t
+  :commands global-wakatime-mode
   :init
   ;; Use expand-file-name to ensure correct user, or omit if in PATH
   (setq wakatime-cli-path (expand-file-name "~/.nix-profile/bin/wakatime-cli"))
   (setq wakatime-api-key (get-wakatime-api-key))
+  (me/run-after-startup-idle
+   5
+   (lambda ()
+     (when (require 'wakatime-mode nil t)
+       (global-wakatime-mode 1))))
   :diminish
-  :config (global-wakatime-mode))
+  )
 #+END_SRC
 *** Webpaste
 #+BEGIN_SRC emacs-lisp
@@ -1635,11 +1751,17 @@ simple package that enable titlecasing
 #+BEGIN_SRC emacs-lisp
 (use-package which-key
   :diminish
-  :config
-  (which-key-mode)
-  (which-key-setup-minibuffer)
-  (set-face-attribute
-   'which-key-local-map-description-face nil :weight 'bold)
+  :defer t
+  :commands which-key-mode
+  :init
+  (me/run-after-startup-idle
+   2
+   (lambda ()
+     (when (require 'which-key nil t)
+       (which-key-mode)
+       (which-key-setup-minibuffer)
+       (set-face-attribute
+        'which-key-local-map-description-face nil :weight 'bold))))
   :custom
   (which-key-idle-delay 2)
   (which-key-show-remaining-keys t)
@@ -1667,15 +1789,16 @@ snippets for common operations instead of macros, allows it to be portable and p
 #+begin_src emacs-lisp
 (use-package yasnippet
   :delight yas
-  :init
-  (yas-global-mode 1)
+  :defer t
+  :commands (yas-minor-mode yas-global-mode yas-expand)
+  :hook ((prog-mode text-mode org-mode) . yas-minor-mode)
   :custom
   (yas-prompt-functions '(yas-completing-prompt))
   (yas-snippet-dirs '("~/.config/home-manager/dotfiles/emacs/yasnippet/snippets")))
 (use-package yasnippet-snippets
   :after yasnippet
+  :defer t
   :config
   (yasnippet-snippets-initialize)
-  (yas-reload-all)
   )
 #+end_src
