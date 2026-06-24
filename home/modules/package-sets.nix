@@ -44,6 +44,16 @@
     wifi-qr
     feh
     flameshot
+    (pkgs.writeShellApplication {
+      name = "screenshot-ocr";
+      runtimeInputs = [
+        pkgs.coreutils
+        pkgs.flameshot
+        pkgs.tesseract
+        pkgs.wl-clipboard
+      ];
+      text = builtins.readFile ../../bin/screenshot-ocr;
+    })
     swaybg
     libnotify
     prettier
@@ -220,16 +230,6 @@
         pkgs.wl-clipboard
       ];
       text = builtins.readFile ../../bin/rg-fuzzy;
-    })
-    (pkgs.writeShellApplication {
-      name = "screenshot-ocr";
-      runtimeInputs = [
-        pkgs.coreutils
-        pkgs.flameshot
-        pkgs.tesseract
-        pkgs.wl-clipboard
-      ];
-      text = builtins.readFile ../../bin/screenshot-ocr;
     })
     (pkgs.writeShellApplication {
       name = "git-worktree-cd";
