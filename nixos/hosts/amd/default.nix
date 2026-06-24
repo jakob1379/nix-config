@@ -39,7 +39,7 @@
   services.cachix-watch-store = {
     enable = true;
     cacheName = "jgalabs-homelab";
-    cachixTokenFile = /etc/cachix-watch-store.token;
+    cachixTokenFile = "/etc/cachix-watch-store.token";
   };
 
   # amd graphics
