@@ -59,9 +59,9 @@
        (or (not (file-readable-p me/config-org-file))
            (not (file-newer-than-file-p me/config-org-file me/config-el-file))))
   (load-file me/config-el-file))
- ((file-readable-p me/config-org-file)
-  (straight-use-package 'org)
+((file-readable-p me/config-org-file)
   (require 'org)
+  (require 'ob-tangle)
   (org-babel-load-file me/config-org-file))
  (t
   (user-error "Cannot find readable Emacs config: %s or %s"

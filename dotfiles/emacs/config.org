@@ -1245,8 +1245,11 @@ We also set ~custom-file~ to be within one of these new nice directories, so Ema
 **** The org package
 #+BEGIN_SRC emacs-lisp
 (use-package org
+  :straight (:type built-in)
   :defer t
   :delight
+  :mode ("\\.org\\'" . org-mode)
+  :commands (org-agenda org-babel-load-file org-capture org-mode org-store-link)
   :custom
   (org-agenda-files "~/dropbox-private/Documents/RoamNotes")
   (org-cycle-separator-lines -1)
