@@ -83,7 +83,31 @@
   services.fwupd.enable = true;
   services.udisks2.enable = true;
   services.tailscale.enable = true;
-  systemd.services.tailscaled.wantedBy = lib.mkForce [ ];
+  systemd.services.tailscale-disconnect-at-boot = {
+    description = "Keep Tailscale disconnected after daemon startup";
+    after = [ "tailscaled.service" ];
+    wants = [ "tailscaled.service" ];
+    wantedBy = [ "multi-user.target" ];
+    path = [
+      config.services.tailscale.package
+      pkgs.coreutils
+      pkgs.jq
+    ];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      state=""
+      for ((attempt = 0; attempt < 20; attempt++)); do
+        if state="$(tailscale status --json --peers=false | jq --raw-output '.BackendState')"; then
+          break
+        fi
+        sleep 0.5
+      done
+
+      if [[ "$state" == "Running" ]]; then
+        tailscale down --accept-risk=all
+      fi
+    '';
+  };
   services.netbird = {
     ui.enable = true;
     enable = true;
