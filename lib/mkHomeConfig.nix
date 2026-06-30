@@ -11,7 +11,10 @@ inputs.home-manager.lib.homeManagerConfiguration {
   pkgs = import inputs.nixpkgs {
     inherit system;
     config.allowUnfreePredicate = lib.allowUnfreePredicate;
-    overlays = [ (import ../overlays/tana.nix) ];
+    overlays = [
+      (import ../overlays/t3code.nix)
+      (import ../overlays/tana.nix)
+    ];
   };
   modules = [
     ../home/common.nix
