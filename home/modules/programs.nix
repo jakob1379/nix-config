@@ -194,9 +194,7 @@ in
           enable = true;
           package = pkgs.emacs31-pgtk;
           extraPackages =
-            epkgs:
-            with epkgs;
-            [
+            epkgs: with epkgs; [
               treesit-grammars.with-all-grammars
             ];
         };
