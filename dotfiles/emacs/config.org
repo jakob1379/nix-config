@@ -1064,6 +1064,12 @@ tasks.
   (magit-process-finish-apply-ansi-colors t)
   (magit-process-log-max 100)
   )
+
+(use-package magit-boost
+  :straight (:host github :repo "jeremy-compostella/magit-boost" :files ("magit-boost.el"))
+  :config
+  (setq magit-boost-mode 1
+        magit-boost-progress-mode 1))
 #+END_SRC
 **** Magit Todos
 #+BEGIN_SRC emacs-lisp
