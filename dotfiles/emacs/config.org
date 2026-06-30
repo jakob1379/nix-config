@@ -1034,9 +1034,7 @@ Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Cor
              (typescript-mode . ("vtsls" "--stdio"))
              (nix-mode . ("nixd"))
              (markdown-mode . ("marksman" "server"))
-             (python-base-mode . ("rass"
-                                  "--" "uv" "run" "--with" "ty" "ty" "server"
-                                  "--" "uv" "run" "--with" "ruff" "ruff" "server"))))
+             (python-base-mode . ("rass" "python"))))
     (add-to-list 'eglot-server-programs server))
   (add-to-list 'eglot-server-programs '(yaml-mode . ("yaml-language-server" "--stdio"))))
 #+END_SRC

@@ -110,9 +110,11 @@
     python3
     rassumfrassum
     ripgrep
+    ruff
     taplo
     texlab
     tinymist
+    ty
     vscode-langservers-extracted
     vtsls
     wl-clipboard-rs
