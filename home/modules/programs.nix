@@ -422,7 +422,7 @@ in
               plugin = pkgs.tmuxPlugins.dotbar;
               extraConfig = ''
                 set -ag update-environment " SSH_CLIENT SSH_CONNECTION"
-                run-shell 'client_ip=''${SSH_CLIENT%% *}; [ -z "$client_ip" ] && client_ip=''${SSH_CONNECTION%% *}; tmux set -g @tmux-net-client-host "$client_ip"; tmux set -g @tmux-net-client-port "22"; tmux set -g @tmux-net-timeout "1"'
+                run-shell 'set -- $SSH_CLIENT; client_ip=$1; client_source_port=$2; ssh_server_port=$3; if [ -z "$client_ip" ]; then set -- $SSH_CONNECTION; client_ip=$1; client_source_port=$2; ssh_server_port=$4; fi; tmux set -g @tmux-net-client-host "$client_ip"; tmux set -g @tmux-net-client-source-port "$client_source_port"; tmux set -g @tmux-net-ssh-server-port "$ssh_server_port"; tmux set -g @tmux-net-timeout "1"'
                 setw -g automatic-rename on
                 setw -g automatic-rename-format "#(${tmuxWindowLabel}/bin/tmux-window-label '#{pane_current_path}' '#{pane_current_command}')"
                 set -g @tmux-dotbar-session-text " #H "

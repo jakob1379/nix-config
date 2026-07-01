@@ -24,7 +24,7 @@ tmux_environment() {
   local value
 
   if [ -n "${TMUX:-}" ]; then
-    value="$(tmux show-environment -g "$1" 2>/dev/null || true)"
+    value="$(tmux show-environment "$1" 2>/dev/null || tmux show-environment -g "$1" 2>/dev/null || true)"
     case "$value" in
       "$1="*) printf '%s\n' "${value#*=}" ;;
     esac
@@ -56,11 +56,16 @@ EOF
   fi
 }
 
-option_value="$(tmux_option @tmux-net-client-host)"
-[ -n "$option_value" ] && client_host="$option_value"
 resolve_ssh_client
+option_value="$(tmux_option @tmux-net-client-host)"
+[ -z "$client_host" ] && [ -n "$option_value" ] && client_host="$option_value"
+option_value="$(tmux_option @tmux-net-client-source-port)"
+[ -z "$client_source_port" ] && [ -n "$option_value" ] && client_source_port="$option_value"
+option_value="$(tmux_option @tmux-net-ssh-server-port)"
+[ -z "$ssh_server_port" ] && [ -n "$option_value" ] && ssh_server_port="$option_value"
 option_value="$(tmux_option @tmux-net-client-port)"
-[ -n "$option_value" ] && client_port="$option_value"
+[ -z "$ssh_server_port" ] && [ -n "$option_value" ] && ssh_server_port="$option_value"
+[ -n "$ssh_server_port" ] && client_port="$ssh_server_port"
 option_value="$(tmux_option @tmux-net-timeout)"
 [ -n "$option_value" ] && timeout="$option_value"
 
