@@ -5,6 +5,17 @@
   ...
 }:
 
+let
+  hsu = pkgs.writeShellApplication {
+    name = "hsu";
+    runtimeInputs = [
+      pkgs.gh
+      pkgs.home-manager
+      pkgs.nix-output-monitor
+    ];
+    text = builtins.readFile ../../bin/hm-switch-update;
+  };
+in
 {
   core = with pkgs; [
     btop
@@ -203,15 +214,7 @@
       ];
       text = builtins.readFile ../../bin/hm-switch;
     })
-    (pkgs.writeShellApplication {
-      name = "hsu";
-      runtimeInputs = [
-        pkgs.gh
-        pkgs.home-manager
-        pkgs.nix-output-monitor
-      ];
-      text = builtins.readFile ../../bin/hm-switch-update;
-    })
+    hsu
     (pkgs.writeShellApplication {
       name = "nix-find";
       runtimeInputs = [
@@ -247,9 +250,13 @@
     (pkgs.writeShellApplication {
       name = "update-all";
       runtimeInputs = [
-        pkgs.gh
-        pkgs.home-manager
+        hsu
+        pkgs.coreutils
+        pkgs.nix
         pkgs.nix-output-monitor
+        pkgs.nixos-rebuild
+        pkgs.opencode
+        pkgs.sudo
         pkgs.uv
       ];
       text = builtins.readFile ../../bin/update-all;
