@@ -278,17 +278,5 @@
       ];
       text = builtins.readFile ../../bin/noqa-stats;
     })
-    (pkgs.writeShellApplication {
-      name = "display-mode-picker";
-      runtimeInputs = with pkgs; [
-        coreutils
-        jq
-        libnotify
-        niri
-        vicinae
-        wl-mirror
-      ];
-      text = builtins.readFile ../../bin/display-mode-picker;
-    })
   ];
 }
