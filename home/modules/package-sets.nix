@@ -132,14 +132,6 @@
     })
 
     (pkgs.writeShellApplication {
-      name = "bak";
-      runtimeInputs = [
-        pkgs.bash
-        pkgs.coreutils
-      ];
-      text = builtins.readFile ../../bin/bak;
-    })
-    (pkgs.writeShellApplication {
       name = "bhelp";
       runtimeInputs = [ pkgs.bat ];
       text = builtins.readFile ../../bin/bathelp;
