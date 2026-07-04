@@ -168,12 +168,7 @@
     })
     (pkgs.writeShellApplication {
       name = "docker-compose-deps";
-      runtimeInputs = with pkgs; [
-        docker-compose
-        jq
-        mermaid-cli
-        kitty
-      ];
+      runtimeInputs = [ pkgs.docker ];
       text = builtins.readFile ../../bin/docker-compose-deps;
     })
     (pkgs.writeShellApplication {
