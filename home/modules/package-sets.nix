@@ -272,8 +272,8 @@
     (pkgs.writeShellApplication {
       name = "noqa-stats";
       runtimeInputs = [
-        pkgs.gum
-        pkgs.gnugrep
+        pkgs.coreutils
+        pkgs.gawk
         pkgs.ripgrep
       ];
       text = builtins.readFile ../../bin/noqa-stats;
