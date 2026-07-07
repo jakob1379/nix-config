@@ -102,114 +102,8 @@ let
 
 in
 {
-  options = {
-    customServices = {
-      storage = lib.mkOption {
-        type = lib.types.attrs;
-        default = {
-          rclone = {
-            service = {
-              rclone-mount-dropbox-private = createRcloneMountService { name = "dropbox-private"; };
-            };
-          };
-        };
-        description = "Systemd services for storage mounts.";
-      };
-
-      wallpaper = lib.mkOption {
-        type = lib.types.attrs;
-        default = {
-          varietyWallpaper = {
-            service = {
-              variety = {
-                Unit = {
-                  Description = "Variety wallpaper changer";
-                  After = [ rcloneDropboxPrivateService ];
-                  Wants = [ rcloneDropboxPrivateService ];
-                  Requires = [ rcloneDropboxPrivateService ];
-                };
-                Service = {
-                  ExecStartPre = "${pkgs.util-linux}/bin/mountpoint -q ${lib.escapeShellArg dropboxPrivateMountPath}";
-                  ExecStart = "${pkgs.variety}/bin/variety";
-                  Restart = "on-failure";
-                  RestartSec = 5;
-                };
-                Install = {
-                  WantedBy = [ "graphical-session.target" ];
-                };
-              };
-
-              "variety-wallpaper-sync" = {
-                Unit = {
-                  Description = "Sync Noctalia and terminal colors from Variety wallpaper";
-                  After = [ rcloneDropboxPrivateService ];
-                  Wants = [ rcloneDropboxPrivateService ];
-                  Requires = [ rcloneDropboxPrivateService ];
-                };
-                Service = {
-                  ExecStart = varietyWallpaperStateSyncCommand;
-                  TimeoutStartSec = 60;
-                  Type = "oneshot";
-                };
-                Install = {
-                  WantedBy = [ "graphical-session.target" ];
-                };
-              };
-            };
-
-            path = {
-              "variety-wallpaper-sync" = {
-                Unit = {
-                  Description = "Watch Variety wallpaper pointer for Noctalia and terminal colors";
-                  After = [ rcloneDropboxPrivateService ];
-                  Wants = [
-                    "variety-wallpaper-sync.service"
-                    rcloneDropboxPrivateService
-                  ];
-                  Requires = [ rcloneDropboxPrivateService ];
-                };
-                Install = {
-                  WantedBy = [ "graphical-session.target" ];
-                };
-                Path = {
-                  PathChanged = varietyWallpaperPointerFile;
-                };
-              };
-            };
-          };
-        };
-        description = "Systemd services for wallpaper state.";
-      };
-
-      desktop = lib.mkOption {
-        type = lib.types.attrs;
-        default = {
-          niriWindowBorders = {
-            "niri-window-border-rules" = {
-              Unit = {
-                Description = "Sync per-window hashed border rules for Niri";
-                After = [ "graphical-session.target" ];
-              };
-              Install = {
-                WantedBy = [ "graphical-session.target" ];
-              };
-              Service = {
-                ExecCondition = niriSessionExecCondition;
-                ExecStart = niriWindowBorderRulesWatchCommand;
-                Restart = "always";
-                RestartSec = 2;
-              };
-            };
-          };
-        };
-        description = "Systemd services for desktop integration.";
-      };
-    };
-  };
-
   config =
     let
-      cfg = config.customServices;
       coreServices = {
         emacs = {
           package = pkgs.emacs31-pgtk;
@@ -269,16 +163,85 @@ in
           startServices = true;
 
           services = lib.mkMerge [
-            (lib.mkIf config.customPackages.gui.enable (cfg.storage.rclone.service or { }))
-            (lib.mkIf config.customPackages.gui.enable (cfg.wallpaper.varietyWallpaper.service or { }))
-            (lib.mkIf config.customPackages.gui.enable cfg.desktop.niriWindowBorders)
+            (lib.mkIf config.customPackages.gui.enable {
+              rclone-mount-dropbox-private = createRcloneMountService { name = "dropbox-private"; };
+
+              variety = {
+                Unit = {
+                  Description = "Variety wallpaper changer";
+                  After = [ rcloneDropboxPrivateService ];
+                  Wants = [ rcloneDropboxPrivateService ];
+                  Requires = [ rcloneDropboxPrivateService ];
+                };
+                Service = {
+                  ExecStartPre = "${pkgs.util-linux}/bin/mountpoint -q ${lib.escapeShellArg dropboxPrivateMountPath}";
+                  ExecStart = "${pkgs.variety}/bin/variety";
+                  Restart = "on-failure";
+                  RestartSec = 5;
+                };
+                Install = {
+                  WantedBy = [ "graphical-session.target" ];
+                };
+              };
+
+              "variety-wallpaper-sync" = {
+                Unit = {
+                  Description = "Sync Noctalia and terminal colors from Variety wallpaper";
+                  After = [ rcloneDropboxPrivateService ];
+                  Wants = [ rcloneDropboxPrivateService ];
+                  Requires = [ rcloneDropboxPrivateService ];
+                };
+                Service = {
+                  ExecStart = varietyWallpaperStateSyncCommand;
+                  TimeoutStartSec = 60;
+                  Type = "oneshot";
+                };
+                Install = {
+                  WantedBy = [ "graphical-session.target" ];
+                };
+              };
+
+              "niri-window-border-rules" = {
+                Unit = {
+                  Description = "Sync per-window hashed border rules for Niri";
+                  After = [ "graphical-session.target" ];
+                };
+                Install = {
+                  WantedBy = [ "graphical-session.target" ];
+                };
+                Service = {
+                  ExecCondition = niriSessionExecCondition;
+                  ExecStart = niriWindowBorderRulesWatchCommand;
+                  Restart = "always";
+                  RestartSec = 2;
+                };
+              };
+            })
             (lib.mkIf config.services.swayidle.enable {
               swayidle.Service.ExecCondition = niriSessionExecCondition;
             })
           ];
 
           paths = lib.mkMerge [
-            (lib.mkIf config.customPackages.gui.enable (cfg.wallpaper.varietyWallpaper.path or { }))
+            (lib.mkIf config.customPackages.gui.enable {
+              "variety-wallpaper-sync" = {
+                Unit = {
+                  Description = "Watch Variety wallpaper pointer for Noctalia and terminal colors";
+                  After = [ rcloneDropboxPrivateService ];
+                  Wants = [
+                    "variety-wallpaper-sync.service"
+                    rcloneDropboxPrivateService
+                  ];
+                  Requires = [ rcloneDropboxPrivateService ];
+                };
+                Install = {
+                  WantedBy = [ "graphical-session.target" ];
+                };
+                Path = {
+                  PathChanged = varietyWallpaperPointerFile;
+                };
+              };
+            })
           ];
         };
       };
