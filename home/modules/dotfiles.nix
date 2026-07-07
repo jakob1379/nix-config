@@ -14,6 +14,8 @@
         ".emacs.d/config.org".source = ../../dotfiles/emacs/config.org;
         ".emacs.d/early-init.el".source = ../../dotfiles/emacs/early-init.el;
         ".emacs.d/init.el".source = ../../dotfiles/emacs/init.el;
+        ".local/share/bash-completion/completions/emacs".source =
+          ../../scripts/completions/emacs-completions.sh;
       };
       description = "Emacs dotfiles.";
     };
@@ -41,6 +43,10 @@
         file = lib.mkMerge [
           (lib.mkIf cfg.enableEmacs cfg.emacs)
           (lib.mkIf cfg.enableMediaControl cfg.mediaControl)
+          (lib.mkIf config.customPackages.gui.enable {
+            ".local/share/bash-completion/completions/noctalia".source =
+              ../../scripts/completions/noctalia-completions.sh;
+          })
           {
             ".config/niri/config.kdl".source = ../../dotfiles/niri/config.kdl;
             ".config/vicinae/settings.json".source = config.lib.file.mkOutOfStoreSymlink (
