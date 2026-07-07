@@ -1,29 +1,20 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 flakePath="${XDG_CONFIG_HOME:-$HOME/.config}/home-manager"
 
-if command -v gh >/dev/null 2>&1 && [[ "${NIX_CONFIG:-}" != *"github.com="* ]]; then
-	githubToken="$(gh auth token -h github.com 2>/dev/null || true)"
-	if [[ -n "$githubToken" ]]; then
-		export NIX_CONFIG="access-tokens = github.com=$githubToken"
-	fi
-fi
-
-# Parallel updates
 sudo -v
-sudo nix-channel --update &
-nix flake update --flake "${flakePath}" &
 nix-channel --update &
+sudo nix-channel --update &
 wait
-# Home Manager switch with output monitor
-home-manager switch --flake "${flakePath}" "$@" |& nom
+
+hsu "$@"
 
 uv tool upgrade --all &
-rm -rf ~/.cache/opencode
+rm -rf "$HOME/.cache/opencode"
 opencode models --refresh &
 
 wait
 
-# NixOS switch with output monitor
 sudo -v
 nixos-rebuild switch --sudo --flake "${flakePath}" |& nom
