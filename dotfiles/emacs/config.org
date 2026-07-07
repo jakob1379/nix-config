@@ -732,7 +732,6 @@ highlights uncommitted changes on the left side of the window
 
 #+BEGIN_SRC emacs-lisp
 (use-package helm
-  :after all-the-icons
   :defer t
   :bind (("M-x"     . helm-M-x) ;; Evaluate functions
          ("C-x C-f" . helm-find-files) ;; Open or create files

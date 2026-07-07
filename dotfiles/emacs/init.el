@@ -46,26 +46,16 @@
 (straight-use-package 'use-package)
 
 (defvar me/config-org-file (expand-file-name "config.org" user-emacs-directory))
-(defvar me/config-el-file (expand-file-name "config.el" user-emacs-directory))
 
 ;; add the readthedocs theme as safe
 (setq org-safe-remote-resources
       '("\\`https://fniessen\\.github\\.io/org-html-themes/org/theme-readtheorg\\.setup\\'"))
 
-;; Load the tangled config directly when it is current. Fall back to Org only
-;; when the literate source has changed or no tangled file exists yet.
-(cond
- ((and (file-readable-p me/config-el-file)
-       (or (not (file-readable-p me/config-org-file))
-           (not (file-newer-than-file-p me/config-org-file me/config-el-file))))
-  (load-file me/config-el-file))
-((file-readable-p me/config-org-file)
-  (require 'org)
-  (require 'ob-tangle)
-  (org-babel-load-file me/config-org-file))
- (t
-  (user-error "Cannot find readable Emacs config: %s or %s"
-              me/config-el-file
-              me/config-org-file)))
+(if (file-readable-p me/config-org-file)
+    (progn
+      (require 'org)
+      (require 'ob-tangle)
+      (org-babel-load-file me/config-org-file))
+  (user-error "Cannot find readable Emacs config: %s" me/config-org-file))
 
 ;;; init.el ends here
