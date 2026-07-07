@@ -438,8 +438,8 @@ binds {
     Mod+Shift+W hotkey-overlay-title="Open Window Switcher: Vicinae" { spawn "vicinae" "vicinae://launch/wm/switch-windows"; }
     Mod+Period hotkey-overlay-title="Open Emoji Picker: Vicinae" { spawn "vicinae" "vicinae://launch/core/search-emojis"; }
     Mod+B hotkey-overlay-title="Cycle Power Profile" { spawn "noctalia" "msg" "power-cycle"; }
-    Super+P hotkey-overlay-title="Display Mode" { spawn "display-mode-picker" "cycle"; }
-    XF86Display hotkey-overlay-title="Display Mode" { spawn "display-mode-picker" "cycle"; }
+    Super+P hotkey-overlay-title="Display Mode" { spawn "waytorandr" "cycle"; }
+    XF86Display hotkey-overlay-title="Display Mode" { spawn "waytorandr" "cycle"; }
     Super+Alt+L hotkey-overlay-title="Lock the Screen: Noctalia" { spawn "noctalia" "msg" "session" "lock"; }
 
     // Use spawn-sh to run a shell command. Do this if you need pipes, multiple commands, etc.
