@@ -8,6 +8,48 @@
 }:
 
 let
+  createRcloneMountService =
+    {
+      name,
+      remote ? "${name}",
+      mountPath ? "${config.home.homeDirectory}/${name}",
+      remotePath ? "/",
+      configPath ? "${config.xdg.configHome}/rclone/rclone.conf",
+      cacheMode ? "full",
+    }:
+    {
+      Unit = {
+        Description = "Rclone mount service for ${name}";
+        After = [ "network-online.target" ];
+        Wants = [ "network-online.target" ];
+      };
+
+      Service = {
+        ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg mountPath}";
+        ExecStart = ''
+          ${pkgs.rclone}/bin/rclone mount \
+            --allow-other \
+            --attr-timeout 1h \
+            --buffer-size=32M \
+            --config "${configPath}" \
+            --dir-cache-time 3h0m0s \
+            --vfs-cache-max-age 6h \
+            --vfs-cache-max-size 10G \
+            --vfs-cache-mode "${cacheMode}" \
+            --vfs-fast-fingerprint \
+            ${remote}:${remotePath} ${lib.escapeShellArg mountPath}
+        '';
+        ExecStop = "fusermount -u ${lib.escapeShellArg mountPath}";
+        Type = "notify";
+        Restart = "on-failure";
+        RestartSec = "10s";
+      };
+
+      Install = {
+        WantedBy = [ "default.target" ];
+      };
+    };
+
   rcloneDropboxPrivateService = "rclone-mount-dropbox-private.service";
   dropboxPrivateMountPath = "${config.home.homeDirectory}/dropbox-private";
   varietyWallpaperPointerFile = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
@@ -122,38 +164,7 @@ in
 
           services = lib.mkMerge [
             (lib.mkIf config.customPackages.gui.enable {
-              rclone-mount-dropbox-private = {
-                Unit = {
-                  Description = "Rclone mount service for dropbox-private";
-                  After = [ "network-online.target" ];
-                  Wants = [ "network-online.target" ];
-                };
-
-                Service = {
-                  ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg dropboxPrivateMountPath}";
-                  ExecStart = ''
-                    ${pkgs.rclone}/bin/rclone mount \
-                      --allow-other \
-                      --attr-timeout 1h \
-                      --buffer-size=32M \
-                      --config "${config.xdg.configHome}/rclone/rclone.conf" \
-                      --dir-cache-time 3h0m0s \
-                      --vfs-cache-max-age 6h \
-                      --vfs-cache-max-size 10G \
-                      --vfs-cache-mode "full" \
-                      --vfs-fast-fingerprint \
-                      dropbox-private:/ ${lib.escapeShellArg dropboxPrivateMountPath}
-                  '';
-                  ExecStop = "fusermount -u ${lib.escapeShellArg dropboxPrivateMountPath}";
-                  Type = "notify";
-                  Restart = "on-failure";
-                  RestartSec = "10s";
-                };
-
-                Install = {
-                  WantedBy = [ "default.target" ];
-                };
-              };
+              rclone-mount-dropbox-private = createRcloneMountService { name = "dropbox-private"; };
 
               variety = {
                 Unit = {
