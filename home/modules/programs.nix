@@ -321,8 +321,6 @@ in
           systemd.enable = false;
           settings = {
             shell = {
-              ui_scale = 1.0;
-              corner_radius_scale = 1.0;
               avatar_path = "${config.home.homeDirectory}/.face";
               show_location = true;
             };
@@ -342,7 +340,7 @@ in
             };
 
             location = {
-              auto_locate = false;
+              auto_locate = true;
               address = "Copenhagen";
             };
 
@@ -356,7 +354,7 @@ in
 
             bar.main = {
               position = "top";
-              background_opacity = 0.93;
+              background_opacity = 0.0;
               radius = 12;
               margin_ends = 4;
               margin_edge = 0;
@@ -365,6 +363,8 @@ in
               scale = 1.0;
               reserve_space = true;
               capsule = true;
+              capsule_fill = "#f4f4f5";
+              capsule_opacity = 1.0;
               start = [
                 "clock"
                 "sysmon-cpu"
@@ -372,17 +372,35 @@ in
                 "active_window"
                 "media"
               ];
-              center = [ "workspaces" ];
-              end = [
-                "tray"
-                "notifications"
-                "battery"
-                "input-volume"
-                "volume"
-                "brightness"
-                "bluetooth"
-                "control-center"
-                "session"
+              center = [ "group:mid" ];
+              end = [ "group:right" ];
+              capsule_group = [
+                {
+                  id = "mid";
+                  members = [ "workspaces" ];
+                  fill = "#f4f4f5";
+                  opacity = 1.0;
+                  padding = 6.0;
+                  radius = 12.0;
+                }
+                {
+                  id = "right";
+                  members = [
+                    "tray"
+                    "notifications"
+                    "battery"
+                    "input-volume"
+                    "volume"
+                    "brightness"
+                    "bluetooth"
+                    "control-center"
+                    "session"
+                  ];
+                  fill = "#f4f4f5";
+                  opacity = 1.0;
+                  padding = 6.0;
+                  radius = 12.0;
+                }
               ];
             };
 
