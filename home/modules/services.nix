@@ -93,7 +93,9 @@ let
 
   varietyWallpaperStateSyncCommand =
     "${varietyWallpaperStateSyncScript}/bin/sync-variety-wallpaper-state "
-    + lib.escapeShellArg "${pkgs.variety}/bin/variety";
+    + lib.escapeShellArg "${pkgs.variety}/bin/variety"
+    + " "
+    + lib.escapeShellArg varietyWallpaperPointerFile;
 
   niriWindowBorderRulesWatchCommand =
     "${niriWindowBorderRulesWatchScript}/bin/watch-niri-window-border-rules "
