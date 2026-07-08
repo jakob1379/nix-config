@@ -68,6 +68,9 @@
     {
       homeConfigurations = import ./home { inherit lib; };
       nixosConfigurations = import ./nixos { inherit nixpkgs inputs lib; };
+      packages = forAllSystems (pkgs: {
+        emacs-config-el = pkgs.callPackage ./nix/emacs-config-el.nix { };
+      });
       checks = forAllSystems (pkgs: {
         pre-commit-check = git-hooks.lib.${pkgs.stdenv.hostPlatform.system}.run (
           import ./nix/git-hooks.nix {
