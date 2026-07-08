@@ -732,7 +732,6 @@ highlights uncommitted changes on the left side of the window
 
 #+BEGIN_SRC emacs-lisp
 (use-package helm
-  :after all-the-icons
   :defer t
   :bind (("M-x"     . helm-M-x) ;; Evaluate functions
          ("C-x C-f" . helm-find-files) ;; Open or create files
@@ -1027,9 +1026,11 @@ Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Cor
              (typescript-mode . ("vtsls" "--stdio"))
              (nix-mode . ("nixd"))
              (markdown-mode . ("marksman" "server"))
-             (python-base-mode . ("rass" "python"))))
+             (python-base-mode . ("rass" "--" "ty" "server" "--" "ruff" "server"))
+             )
+           )
     (add-to-list 'eglot-server-programs server))
-  (add-to-list 'eglot-server-programs '(yaml-mode . ("yaml-language-server" "--stdio"))))
+   (add-to-list 'eglot-server-programs '(yaml-mode . ("yaml-language-server" "--stdio"))))
 #+END_SRC
 **** Dape
 Dape replaces dap-mode without depending on lsp-mode.

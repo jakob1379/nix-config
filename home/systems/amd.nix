@@ -20,18 +20,18 @@ let
   btopRocm = pkgs.btop.override {
     rocmSupport = true;
   };
-  hermesAgent = inputs.hermes-agent.packages.${system}.default;
-  hermesAgentWithEspeak = pkgs.symlinkJoin {
-    name = "hermes-agent-with-espeak-ng";
-    paths = [ hermesAgent ];
-    nativeBuildInputs = [ pkgs.makeWrapper ];
-    postBuild = ''
-      for bin in hermes hermes-agent hermes-acp; do
-        wrapProgram "$out/bin/$bin" \
-          --suffix PATH : ${lib.makeBinPath [ pkgs.espeak-ng ]}
-      done
-    '';
-  };
+  # hermesAgent = inputs.hermes-agent.packages.${system}.default;
+  # hermesAgentWithEspeak = pkgs.symlinkJoin {
+  #   name = "hermes-agent-with-espeak-ng";
+  #   paths = [ hermesAgent ];
+  #   nativeBuildInputs = [ pkgs.makeWrapper ];
+  #   postBuild = ''
+  #     for bin in hermes hermes-agent hermes-acp; do
+  #       wrapProgram "$out/bin/$bin" \
+  #         --suffix PATH : ${lib.makeBinPath [ pkgs.espeak-ng ]}
+  #     done
+  #   '';
+  # };
 in
 {
   customGit = {
@@ -51,7 +51,7 @@ in
       adw-gtk3
       cachix
       glab
-      hermesAgentWithEspeak
+      # hermesAgentWithEspeak
       coderabbit-cli
       btopRocm
       # teams-for-linux

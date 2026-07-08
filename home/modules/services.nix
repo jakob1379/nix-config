@@ -53,33 +53,9 @@ let
   rcloneDropboxPrivateService = "rclone-mount-dropbox-private.service";
   dropboxPrivateMountPath = "${config.home.homeDirectory}/dropbox-private";
   varietyWallpaperPointerFile = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
-  niriWindowBorderRulesFile = "${config.xdg.configHome}/niri/generated/window-border-rules.kdl";
   noctaliaPackage = inputs.noctalia.packages.${system}.default;
 
   niriSessionExecCondition = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "${pkgs.coreutils}/bin/printenv XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qi niri"}";
-
-  niriWindowBorderRulesSyncScript = pkgs.writeShellApplication {
-    name = "sync-niri-window-border-rules";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.diffutils
-      pkgs.niri
-      pkgs.procps
-      pkgs.python3
-    ];
-    text = builtins.readFile ../../scripts/niri/sync-window-border-rules.sh;
-  };
-
-  niriWindowBorderRulesWatchScript = pkgs.writeShellApplication {
-    name = "watch-niri-window-border-rules";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.jq
-      pkgs.niri
-      pkgs.procps
-    ];
-    text = builtins.readFile ../../scripts/niri/watch-window-border-rules.sh;
-  };
 
   varietyWallpaperStateSyncScript = pkgs.writeShellApplication {
     name = "sync-variety-wallpaper-state";
@@ -96,11 +72,6 @@ let
     + lib.escapeShellArg "${pkgs.variety}/bin/variety"
     + " "
     + lib.escapeShellArg varietyWallpaperPointerFile;
-
-  niriWindowBorderRulesWatchCommand =
-    "${niriWindowBorderRulesWatchScript}/bin/watch-niri-window-border-rules "
-    + "${lib.escapeShellArg "${niriWindowBorderRulesSyncScript}/bin/sync-niri-window-border-rules"} "
-    + "${lib.escapeShellArg niriWindowBorderRulesFile}";
 
 in
 {
@@ -185,25 +156,7 @@ in
 
       desktop = lib.mkOption {
         type = lib.types.attrs;
-        default = {
-          niriWindowBorders = {
-            "niri-window-border-rules" = {
-              Unit = {
-                Description = "Sync per-window hashed border rules for Niri";
-                After = [ "graphical-session.target" ];
-              };
-              Install = {
-                WantedBy = [ "graphical-session.target" ];
-              };
-              Service = {
-                ExecCondition = niriSessionExecCondition;
-                ExecStart = niriWindowBorderRulesWatchCommand;
-                Restart = "always";
-                RestartSec = 2;
-              };
-            };
-          };
-        };
+        default = { };
         description = "Systemd services for desktop integration.";
       };
     };
@@ -258,14 +211,6 @@ in
       };
     in
     {
-      home.activation.ensureNiriWindowBorderRulesFile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        target_file="${niriWindowBorderRulesFile}"
-        ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target_file")"
-        if [ ! -f "$target_file" ]; then
-          ${pkgs.coreutils}/bin/touch "$target_file"
-        fi
-      '';
-
       systemd = {
         user = {
           startServices = true;
@@ -273,7 +218,6 @@ in
           services = lib.mkMerge [
             (lib.mkIf config.customPackages.gui.enable (cfg.storage.rclone.service or { }))
             (lib.mkIf config.customPackages.gui.enable (cfg.wallpaper.varietyWallpaper.service or { }))
-            (lib.mkIf config.customPackages.gui.enable cfg.desktop.niriWindowBorders)
             (lib.mkIf config.services.swayidle.enable {
               swayidle.Service.ExecCondition = niriSessionExecCondition;
             })

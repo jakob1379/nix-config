@@ -321,8 +321,6 @@ in
           systemd.enable = false;
           settings = {
             shell = {
-              ui_scale = 1.0;
-              corner_radius_scale = 1.0;
               avatar_path = "${config.home.homeDirectory}/.face";
               show_location = true;
             };
@@ -342,7 +340,7 @@ in
             };
 
             location = {
-              auto_locate = false;
+              auto_locate = true;
               address = "Copenhagen";
             };
 
@@ -356,7 +354,7 @@ in
 
             bar.main = {
               position = "top";
-              background_opacity = 0.93;
+              background_opacity = 0.0;
               radius = 12;
               margin_ends = 4;
               margin_edge = 0;
@@ -365,6 +363,8 @@ in
               scale = 1.0;
               reserve_space = true;
               capsule = true;
+              capsule_fill = "#f4f4f5";
+              capsule_opacity = 1.0;
               start = [
                 "clock"
                 "sysmon-cpu"
@@ -372,17 +372,35 @@ in
                 "active_window"
                 "media"
               ];
-              center = [ "workspaces" ];
-              end = [
-                "tray"
-                "notifications"
-                "battery"
-                "input-volume"
-                "volume"
-                "brightness"
-                "bluetooth"
-                "control-center"
-                "session"
+              center = [ "group:mid" ];
+              end = [ "group:right" ];
+              capsule_group = [
+                {
+                  id = "mid";
+                  members = [ "workspaces" ];
+                  fill = "#f4f4f5";
+                  opacity = 1.0;
+                  padding = 6.0;
+                  radius = 12.0;
+                }
+                {
+                  id = "right";
+                  members = [
+                    "tray"
+                    "notifications"
+                    "battery"
+                    "input-volume"
+                    "volume"
+                    "brightness"
+                    "bluetooth"
+                    "control-center"
+                    "session"
+                  ];
+                  fill = "#f4f4f5";
+                  opacity = 1.0;
+                  padding = 6.0;
+                  radius = 12.0;
+                }
               ];
             };
 
@@ -422,12 +440,12 @@ in
               plugin = pkgs.tmuxPlugins.dotbar;
               extraConfig = ''
                 set -ag update-environment " SSH_CLIENT SSH_CONNECTION"
-                run-shell 'client_ip=''${SSH_CLIENT%% *}; [ -z "$client_ip" ] && client_ip=''${SSH_CONNECTION%% *}; tmux set -g @tmux-net-client-host "$client_ip"; tmux set -g @tmux-net-client-port "22"; tmux set -g @tmux-net-timeout "1"'
+                run-shell 'set -- $SSH_CLIENT; client_ip=$1; client_source_port=$2; ssh_server_port=$3; if [ -z "$client_ip" ]; then set -- $SSH_CONNECTION; client_ip=$1; client_source_port=$2; ssh_server_port=$4; fi; tmux set -g @tmux-net-client-host "$client_ip"; tmux set -g @tmux-net-client-source-port "$client_source_port"; tmux set -g @tmux-net-ssh-server-port "$ssh_server_port"; tmux set -g @tmux-net-timeout "1"'
                 setw -g automatic-rename on
                 setw -g automatic-rename-format "#(${tmuxWindowLabel}/bin/tmux-window-label '#{pane_current_path}' '#{pane_current_command}')"
                 set -g @tmux-dotbar-session-text " #H "
                 set -g status-left-length 80
-                set -g @tmux-dotbar-status-left '#[bg=#0B0E14]#{?client_prefix,#[fg=#95E6CB]#[bg=#95E6CB]#[fg=#0B0E14]#[bold]#H#[nobold]#[bg=#0B0E14]#[fg=#95E6CB],#[fg=#565B66] #H }#[bg=#0B0E14]#[fg=#565B66]'
+                set -g @tmux-dotbar-status-left '#[bg=#0B0E14]#{?client_prefix,#[fg=#95E6CB]#[bg=#95E6CB]#[fg=#0B0E14]#[bold]#{?#{@tmux-net-client-host},󰌘 #H,#H}#[nobold]#[bg=#0B0E14]#[fg=#95E6CB],#[fg=#565B66] #{?#{@tmux-net-client-host},󰌘 #H,#H} }#[bg=#0B0E14]#[fg=#565B66]'
                 set -g @tmux-dotbar-window-status-format " #W "
                 set -g @tmux-dotbar-right true
                 set -g @tmux-dotbar-status-right-text " #(${tmuxNetStatus}/bin/tmux-net-status) "
@@ -541,7 +559,6 @@ in
 
         navi = {
           enable = true;
-          enableBashIntegration = true;
           settings.cheats.paths = [
             "${inputs.navi-cheats-src}"
             "${inputs.navi-tldr-pages-src}"
