@@ -427,7 +427,7 @@ in
                 setw -g automatic-rename-format "#(${tmuxWindowLabel}/bin/tmux-window-label '#{pane_current_path}' '#{pane_current_command}')"
                 set -g @tmux-dotbar-session-text " #H "
                 set -g status-left-length 80
-                set -g @tmux-dotbar-status-left '#[bg=#0B0E14]#{?client_prefix,#[fg=#95E6CB]#[bg=#95E6CB]#[fg=#0B0E14]#[bold]#H#[nobold]#[bg=#0B0E14]#[fg=#95E6CB],#[fg=#565B66] #H }#[bg=#0B0E14]#[fg=#565B66]'
+                set -g @tmux-dotbar-status-left '#[bg=#0B0E14]#{?client_prefix,#[fg=#95E6CB]#[bg=#95E6CB]#[fg=#0B0E14]#[bold]#{?#{@tmux-net-client-host},󰌘 #H,#H}#[nobold]#[bg=#0B0E14]#[fg=#95E6CB],#[fg=#565B66] #{?#{@tmux-net-client-host},󰌘 #H,#H} }#[bg=#0B0E14]#[fg=#565B66]'
                 set -g @tmux-dotbar-window-status-format " #W "
                 set -g @tmux-dotbar-right true
                 set -g @tmux-dotbar-status-right-text " #(${tmuxNetStatus}/bin/tmux-net-status) "
@@ -537,7 +537,6 @@ in
 
         navi = {
           enable = true;
-          enableBashIntegration = true;
           settings.cheats.paths = [
             "${inputs.navi-cheats-src}"
             "${inputs.navi-tldr-pages-src}"
