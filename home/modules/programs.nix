@@ -469,14 +469,18 @@ in
         fzf = {
           enable = true;
           enableBashIntegration = true;
-          changeDirWidgetOptions = [
-            "--preview '${pkgs.eza}/bin/eza --tree --color=always \"{}\" | head -200'"
-          ];
-          changeDirWidgetCommand = "fd --type d";
-          fileWidgetCommand = "fd --type file --hidden --no-ignore-vcs";
-          fileWidgetOptions = [
-            "--preview '${pkgs.bat}/bin/bat \"{}\" --style=changes,header-filename,numbers,snip,rule --paging always --force-colorization'"
-          ];
+          changeDirWidget = {
+            options = [
+              "--preview '${pkgs.eza}/bin/eza --tree --color=always \"{}\" | head -200'"
+            ];
+            command = "fd --type d";
+          };
+          fileWidget = {
+            command = "fd --type file --hidden --no-ignore-vcs";
+            options = [
+              "--preview '${pkgs.bat}/bin/bat \"{}\" --style=changes,header-filename,numbers,snip,rule --paging always --force-colorization'"
+            ];
+          };
         };
 
         bat = {
