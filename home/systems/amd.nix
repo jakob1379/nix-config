@@ -49,6 +49,7 @@ in
     [
       clockify
       adw-gtk3
+      cachix
       glab
       hermesAgentWithEspeak
       coderabbit-cli
@@ -66,7 +67,7 @@ in
     };
   };
 
-  services.tailscale-systray.enable = false;
+  services.tailscale-systray.enable = true;
 
   customDotfiles = {
     enableMediaControl = true;
