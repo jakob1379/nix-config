@@ -193,6 +193,7 @@ in
         emacs = {
           enable = true;
           package = pkgs.emacs31-pgtk;
+          extraConfig = builtins.readFile ../../dotfiles/emacs/config.el;
           extraPackages =
             epkgs: with epkgs; [
               treesit-grammars.with-all-grammars

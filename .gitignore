@@ -37,7 +37,6 @@ dotfiles/emacs/**/anaconda-mode/
 dotfiles/emacs/**/auto-save-list
 dotfiles/emacs/**/auto/
 dotfiles/emacs/**/company-statistics-cache.el
-dotfiles/emacs/**/config.el
 dotfiles/emacs/**/dist/
 dotfiles/emacs/**/elpa/
 dotfiles/emacs/**/elpy/

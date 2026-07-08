@@ -9,6 +9,8 @@
       native-comp-async-report-warnings-errors nil
       site-run-file nil
       frame-inhibit-implied-resize t
+      inhibit-startup-message t
+      inhibit-startup-screen t
       inhibit-compacting-font-caches t)
 
 (when (boundp 'native-comp-async-on-battery-power)
