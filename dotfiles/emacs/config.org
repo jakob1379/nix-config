@@ -773,18 +773,11 @@ highlights uncommitted changes on the left side of the window
   (helm-autoresize-mode))
 
 #+END_SRC
-**** Helm ripgrep search
+**** Ripgrep search
 
 #+BEGIN_SRC emacs-lisp
-(use-package helm-ag
-  :defer t
-  :custom
-  (helm-ag-base-command "rg --color=never --line-number --with-filename --no-heading --ignore-case")
-  :bind
-  ("C-c a a" . helm-do-ag)
-  ("C-c a p" . helm-do-ag-project-root)
-  ("C-c a g" . helm-do-grep-ag)
-  )
+(use-package rg
+  :defer t)
 #+END_SRC
 *** Helpful
 [[https://github.com/Wilfred/helpful][helpful]] makes a better Emacs =*help*= buffer, with colors and contextual information.
@@ -1440,7 +1433,11 @@ We want to be able to view PDFs in Emacs
 #+BEGIN_SRC emacs-lisp
 (use-package projectile
   :defer t
-  :commands (projectile-project-root projectile-find-file projectile-switch-project))
+  :commands (projectile-project-root
+             projectile-find-file
+             projectile-ripgrep
+             projectile-switch-project)
+  :bind ("C-c a p" . projectile-ripgrep))
 #+END_SRC
 *** Python
 Since I am doing a lot of python, many modes and other things related to python has been bundled in this section
