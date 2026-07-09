@@ -1002,7 +1002,8 @@ Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Cor
    (toml-mode . eglot-ensure)
    (typst-mode . eglot-ensure)
    (typescript-mode . eglot-ensure)
-   (yaml-mode . eglot-ensure))
+   (yaml-mode . eglot-ensure)
+   (yaml-ts-mode . eglot-ensure))
   :bind
   (:map eglot-mode-map
         ("C-M-<mouse-2>" . eglot-code-actions-at-mouse)
@@ -1026,11 +1027,21 @@ Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Cor
              (typescript-mode . ("vtsls" "--stdio"))
              (nix-mode . ("nixd"))
              (markdown-mode . ("marksman" "server"))
-             (python-base-mode . ("rass" "--" "ty" "server" "--" "ruff" "server"))
-             )
+             (python-base-mode . ("rass" "--" "ty" "server" "--" "ruff" "server")))
            )
     (add-to-list 'eglot-server-programs server))
-   (add-to-list 'eglot-server-programs '(yaml-mode . ("yaml-language-server" "--stdio"))))
+  (add-to-list 'eglot-server-programs
+               '((yaml-mode yaml-ts-mode) . ("yaml-language-server" "--stdio")))
+  (let ((schemas (make-hash-table :test 'equal)))
+    (puthash "https://gitlab.com/gitlab-org/gitlab/-/raw/master/app/assets/javascripts/editor/schema/ci.json"
+             [".gitlab-ci.yml" ".gitlab-ci.yaml" "**/.gitlab-ci.yml" "**/.gitlab-ci.yaml"]
+             schemas)
+    (setq-default eglot-workspace-configuration
+                  `(:yaml (:schemas ,schemas
+                           :schemaStore (:enable t)
+                           :validate t
+                           :completion t
+                           :hover t)))))
 #+END_SRC
 **** Dape
 Dape replaces dap-mode without depending on lsp-mode.
@@ -1783,9 +1794,11 @@ simple package that enable titlecasing
 #+BEGIN_SRC emacs-lisp
 (use-package yaml-mode
   :defer t
+  :init
+  (when (fboundp 'yaml-ts-mode)
+    (add-to-list 'major-mode-remap-alist '(yaml-mode . yaml-ts-mode)))
   :mode
-  ("\\.yml\\'" . yaml-mode)
-  ("\\.yaml\\'" . yaml-mode))
+  ("\\.ya?ml\\'" . yaml-mode))
 #+END_SRC
 *** Yasnippet
 Yasnippet is one of the main reasons I have a hard time moving away. The ease of creating new

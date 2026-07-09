@@ -3,11 +3,11 @@
     "agent-browser-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1782493662,
-        "narHash": "sha256-uCLzNQ0NAeg1TtA6tcBhTu5VTyjkumsyiEpAhYLPQD0=",
+        "lastModified": 1783520190,
+        "narHash": "sha256-2x5/Nc5KCrgk9dYXur7y9Y9z4JzcJVW4WSYWarcL61k=",
         "owner": "vercel-labs",
         "repo": "agent-browser",
-        "rev": "ed2e10598c9064aecfaeb7cf21b540684db4be2c",
+        "rev": "afae698a51242166170b6fe4809dd57fe9f75798",
         "type": "github"
       },
       "original": {
@@ -265,11 +265,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1783479733,
-        "narHash": "sha256-d/JatqgG+Pmo+IuCTZfnrEAPWU3fdha48GQeXuFO+bE=",
+        "lastModified": 1783550008,
+        "narHash": "sha256-qbbZUk9IG9dLNwCPwdPBs6I5clxwugRpP+1YU+GPK20=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "cee3f0e7fec85d80c149c7afc29926747f7bd3c2",
+        "rev": "f4d01c1d87c7c2ec909549165d5a8338f1bd3315",
         "type": "github"
       },
       "original": {
@@ -353,11 +353,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1783475899,
-        "narHash": "sha256-mj7b2eTuSlJPcIgl3SHMJ7GsQ6bBiIhNaLSWoxnPNXw=",
+        "lastModified": 1783584736,
+        "narHash": "sha256-SpVstdSlicUCcAFAbf0EAIxAwAFlz1PGTGNZZEusRyI=",
         "owner": "noctalia-dev",
         "repo": "noctalia",
-        "rev": "099312d33ff36f8738fcac9df6c034e6c8289b9b",
+        "rev": "e97e57721424de38e86982604dd02015919a39fb",
         "type": "github"
       },
       "original": {
@@ -399,11 +399,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1783492272,
-        "narHash": "sha256-4APwmEAAxW6MQAJgblXemdd0U5TkUa0w77/LpsPP8Po=",
+        "lastModified": 1783583789,
+        "narHash": "sha256-HbqSaikSTGq3iTsrqRwHxOCHA4RSdvZSB6WWx7/0cA0=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "e0319c8c10dffb2dc564417ce49baba49b149b33",
+        "rev": "f435ce87ba1f65542d2b67267757ca3fbd8b58bf",
         "type": "github"
       },
       "original": {
@@ -415,11 +415,11 @@
     "oh-my-opencode-slim-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1783444367,
-        "narHash": "sha256-a5/pEGqB6ajfDJQ+Dg6jwpLAUKBWP5CzjvCer6h9oNw=",
+        "lastModified": 1783546642,
+        "narHash": "sha256-aWo6Z2qhvF4Xwq4A60f54NKh64AxhmeQVq4fs7yMljE=",
         "owner": "alvinunreal",
         "repo": "oh-my-opencode-slim",
-        "rev": "a9f6508a8c646084834575cbf2509963b180be1e",
+        "rev": "7b6e3e13869efeb8bc87afa39a16fe68c79fd8c8",
         "type": "github"
       },
       "original": {
