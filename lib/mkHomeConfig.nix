@@ -12,6 +12,7 @@ inputs.home-manager.lib.homeManagerConfiguration {
     inherit system;
     config.allowUnfreePredicate = lib.allowUnfreePredicate;
     overlays = [
+      (import ../overlays/codex.nix)
       (import ../overlays/tana.nix)
     ];
   };
