@@ -7,13 +7,13 @@ _final: prev:
       cargoHash = "sha256-S4dsZXfmKvJItL2XYKyxfhqdCMATEG6oPjrtVRwkuYc=";
     in
     {
-      version = "0.144.0";
+      version = "0.144.1";
 
       src = prev.fetchFromGitHub {
         owner = "openai";
         repo = "codex";
         tag = "rust-v${finalAttrs.version}";
-        hash = "sha256-GbLeECsju5jifeVah1xN4HFFHxOKtCj55gl/0ZULj+g=";
+        hash = "sha256-KHgrqIZyAmLhTZSRYbb7huBO8neOib/B1Vx/oPW2nEU=";
       };
 
       inherit cargoHash;
