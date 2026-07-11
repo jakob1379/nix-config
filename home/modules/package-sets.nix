@@ -256,7 +256,6 @@ in
         pkgs.nix-output-monitor
         pkgs.nixos-rebuild
         pkgs.opencode
-        pkgs.sudo
         pkgs.uv
       ];
       text = builtins.readFile ../../bin/update-all;
