@@ -69,6 +69,10 @@ option_value="$(tmux_option @tmux-net-client-port)"
 option_value="$(tmux_option @tmux-net-timeout)"
 [ -n "$option_value" ] && timeout="$option_value"
 
+if [ -z "$client_host" ]; then
+  exit 0
+fi
+
 cache_key="$(printf '%s-%s\n' "${client_host:-none}" "$client_port" | tr -c 'A-Za-z0-9_.-' '_')"
 cache="$state_dir/status-$cache_key"
 lock="$state_dir/lock-$cache_key"
