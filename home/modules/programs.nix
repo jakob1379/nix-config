@@ -762,7 +762,7 @@ in
         dcview = "docker compose config | bat -l yml";
         dk = "dragon-drop --keep";
         dx = "dragon-drop --and-exit";
-        ec = ''emacsclient --no-wait --reuse-frame --alternate-editor ""'';
+        ec = ''f(){ if [ -n "''${DISPLAY:-}''${WAYLAND_DISPLAY:-}" ]; then emacsclient --no-wait --reuse-frame --alternate-editor "" "$@"; else emacsclient -nw --alternate-editor "" "$@"; fi; }; f'';
         cx = "codex resume";
         grep = "grep --color=auto";
         q = "qalc";
