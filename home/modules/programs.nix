@@ -131,8 +131,13 @@ in
         bash = {
           enable = true;
           profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
-          initExtra = lib.mkOrder 3000 ''
-            __nix_find_widget() {
+          initExtra = lib.mkMerge [
+            (lib.mkOrder 900 ''
+              source "${pkgs.blesh}/share/blesh/ble.sh" --attach=none
+              eval "$(${lib.getExe config.programs.atuin.package} init bash ${lib.escapeShellArgs config.programs.atuin.flags})"
+            '')
+            (lib.mkOrder 3000 ''
+              __nix_find_widget() {
                 local selected
                 selected="$(nix-find)" || return
 
@@ -142,16 +147,16 @@ in
                 READLINE_POINT=$((READLINE_POINT + ''${#selected}))
                               }
 
-            bind -x '"\C-x\C-w":__nix_find_widget'
-            bind -m emacs-standard -x '"\C-x\C-w":__nix_find_widget'
-            bind -m vi-command -x '"\C-x\C-w":__nix_find_widget'
-            bind -m vi-insert -x '"\C-x\C-w":__nix_find_widget'
-            bind '"\C-w": "\C-x\C-w"'
-            bind -m emacs-standard '"\C-w": "\C-x\C-w"'
-            bind -m vi-command '"\C-w": "\C-x\C-w"'
-            bind -m vi-insert '"\C-w": "\C-x\C-w"'
+              bind -x '"\C-x\C-w":__nix_find_widget'
+              bind -m emacs-standard -x '"\C-x\C-w":__nix_find_widget'
+              bind -m vi-command -x '"\C-x\C-w":__nix_find_widget'
+              bind -m vi-insert -x '"\C-x\C-w":__nix_find_widget'
+              bind '"\C-w": "\C-x\C-w"'
+              bind -m emacs-standard '"\C-w": "\C-x\C-w"'
+              bind -m vi-command '"\C-w": "\C-x\C-w"'
+              bind -m vi-insert '"\C-w": "\C-x\C-w"'
 
-            __rg_fuzzy_widget() {
+              __rg_fuzzy_widget() {
                 local selected
                 selected="$(rg-fuzzy)" || return
 
@@ -161,24 +166,17 @@ in
                 READLINE_POINT=$((READLINE_POINT + ''${#selected}))
                               }
 
-            bind -m emacs-standard -x '"\ea": __rg_fuzzy_widget'
-            bind -m vi-command -x '"\ea": __rg_fuzzy_widget'
-            bind -m vi-insert -x '"\ea": __rg_fuzzy_widget'
-            bind -x '"\eu":"up"'
+              bind -m emacs-standard -x '"\ea": __rg_fuzzy_widget'
+              bind -m vi-command -x '"\ea": __rg_fuzzy_widget'
+              bind -m vi-insert -x '"\ea": __rg_fuzzy_widget'
+              bind -x '"\eu":"up"'
 
-            # Finish bash-preexec setup after every prompt integration is registered.
-            unset __bp_delay_install
-            if declare -F __bp_install >/dev/null; then
-                __bp_trap_string="$(trap -p DEBUG)"
-                __bp_install
-            fi
-          '';
+              [[ ''${BLE_VERSION-} ]] && ble-attach
+            '')
+          ];
           shellOptions = [ "cdspell" ];
           historyControl = [ "ignoreboth" ];
           bashrcExtra = ''
-            # Its delayed installer breaks when Ghostty creates a PROMPT_COMMAND array.
-            __bp_delay_install=1
-
             if [[ $TERM = dumb ]]; then
                 return
             fi
@@ -485,6 +483,7 @@ in
 
         atuin = {
           enable = true;
+          enableBashIntegration = false;
           daemon.enable = true;
           flags = [ "--disable-ai" ];
           forceOverwriteSettings = true;
