@@ -25,6 +25,11 @@ let
     ];
     text = builtins.readFile ../../scripts/tmux/window-label.sh;
   };
+  updateBatteryBorder = pkgs.writeShellApplication {
+    name = "update-battery-border";
+    runtimeInputs = [ pkgs.coreutils ];
+    text = builtins.readFile ../../scripts/desktop/update-battery-border.sh;
+  };
 in
 {
   imports = [
@@ -359,6 +364,16 @@ in
             };
 
             backdrop.enabled = false;
+
+            battery.warning_threshold = 20;
+
+            hooks = {
+              started = "${updateBatteryBorder}/bin/update-battery-border";
+              battery_charging = "${updateBatteryBorder}/bin/update-battery-border";
+              battery_discharging = "${updateBatteryBorder}/bin/update-battery-border";
+              battery_percentage_changed = "${updateBatteryBorder}/bin/update-battery-border";
+              battery_plugged = "${updateBatteryBorder}/bin/update-battery-border";
+            };
 
             bar.main = {
               position = "top";
