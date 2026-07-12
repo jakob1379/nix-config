@@ -1,0 +1,150 @@
+"$schema" = "https://starship.rs/config-schema.json"
+add_newline = false
+palette = "current"
+format = """
+[](fg:plum)\
+$os\
+$container\
+[](fg:prev_bg bg:blush)\
+$directory\
+([](fg:prev_bg bg:nix)\
+$nix_shell)\
+([](fg:prev_bg bg:sky)\
+$nodejs\
+$python)\
+([](fg:prev_bg bg:teal)\
+$git_branch\
+$git_status)\
+[](fg:prev_bg)\
+$fill\
+$status\
+$cmd_duration\
+[](fg:sky bg:prev_bg)\
+${custom.root}\
+$username\
+[](fg:teal_blue bg:prev_bg)\
+$shell\
+[](fg:prev_bg)\
+$line_break\
+$character\
+"""
+
+[character]
+success_symbol = " [❯](bold #69FF94)"
+error_symbol = " [❯](bold #69FF94)"
+
+[cmd_duration]
+disabled = false
+min_time = 0
+show_milliseconds = false
+style = "fg:white bg:plum"
+format = "[](fg:plum bg:prev_bg)[ $duration ]($style)"
+
+[container]
+symbol = "󱕖"
+style = "fg:white bg:plum"
+format = "[$symbol $name]($style)"
+
+[custom.root]
+command = "printf '⚡'"
+when = "test \"$EUID\" -eq 0"
+shell = ["bash", "--noprofile", "--norc"]
+style = "fg:tan bg:sky"
+format = "[ $output]($style)"
+
+[directory]
+style = "fg:white bg:blush"
+format = "[ $path ]($style)"
+truncation_length = 3
+truncate_to_repo = true
+
+[fill]
+symbol = " "
+
+[git_branch]
+style = "fg:white bg:teal"
+format = "[ $symbol$branch]($style)"
+
+[git_status]
+style = "fg:white bg:teal"
+format = "[$all_status$ahead_behind ]($style)"
+conflicted = " =${count}"
+ahead = " ⇡${count}"
+behind = " ⇣${count}"
+diverged = " ⇕⇡${ahead_count}⇣${behind_count}"
+untracked = " ?${count}"
+stashed = " *${count}"
+modified = "  ${count}"
+staged = "  ${count}"
+renamed = " »${count}"
+deleted = " ✘${count}"
+
+[nix_shell]
+symbol = ""
+style = "fg:white bg:nix"
+format = "[ $symbol Nix ]($style)"
+
+[nodejs]
+symbol = ""
+style = "fg:white bg:sky"
+format = "[ $symbol $version ]($style)"
+
+[os]
+disabled = false
+format = "[$symbol](fg:white bg:plum)"
+
+[os.symbols]
+Alpine = ""
+Arch = ""
+CentOS = ""
+Debian = ""
+Fedora = ""
+Linux = ""
+Macos = ""
+NixOS = ""
+Raspbian = ""
+Ubuntu = ""
+Windows = ""
+
+[palettes.current]
+white = "#FFFFFF"
+tan = "#CC3802"
+teal = "#047E84"
+plum = "#9A348E"
+blush = "#DA627D"
+salmon = "#FCA17D"
+nix = "#5277C3"
+sky = "#86BBD8"
+teal_blue = "#33658A"
+
+[python]
+symbol = ""
+style = "fg:white bg:sky"
+format = "[ $symbol ${pyenv_prefix}(${virtualenv} )$version ]($style)"
+
+[shell]
+disabled = false
+bash_indicator = "bash"
+fish_indicator = "fish"
+zsh_indicator = "zsh"
+nu_indicator = "nu"
+unknown_indicator = "shell"
+style = "fg:white bg:teal_blue"
+format = "[ $indicator ]($style)"
+
+[status]
+disabled = false
+map_symbol = true
+symbol = "[](fg:salmon)[ $status ](fg:white bg:salmon)"
+success_symbol = "[](fg:teal)[ ](fg:white bg:teal)"
+not_executable_symbol = "[](fg:salmon)[ permission denied ](fg:white bg:salmon)"
+not_found_symbol = "[](fg:salmon)[ command not found ](fg:white bg:salmon)"
+sigint_symbol = "[](fg:salmon)[ interrupted ](fg:white bg:salmon)"
+signal_symbol = "[](fg:salmon)[ signal ](fg:white bg:salmon)"
+format = "$symbol"
+
+[username]
+show_always = true
+style_user = "fg:white bg:sky"
+style_root = "fg:white bg:sky"
+format = "[ $user ]($style)"

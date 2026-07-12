@@ -131,7 +131,7 @@ in
         bash = {
           enable = true;
           profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
-          initExtra = lib.mkOrder 2000 ''
+          initExtra = lib.mkOrder 3000 ''
             __nix_find_widget() {
                 local selected
                 selected="$(nix-find)" || return
@@ -165,10 +165,20 @@ in
             bind -m vi-command -x '"\ea": __rg_fuzzy_widget'
             bind -m vi-insert -x '"\ea": __rg_fuzzy_widget'
             bind -x '"\eu":"up"'
+
+            # Finish bash-preexec setup after every prompt integration is registered.
+            unset __bp_delay_install
+            if declare -F __bp_install >/dev/null; then
+                __bp_trap_string="$(trap -p DEBUG)"
+                __bp_install
+            fi
           '';
           shellOptions = [ "cdspell" ];
           historyControl = [ "ignoreboth" ];
           bashrcExtra = ''
+            # Its delayed installer breaks when Ghostty creates a PROMPT_COMMAND array.
+            __bp_delay_install=1
+
             if [[ $TERM = dumb ]]; then
                 return
             fi
@@ -473,9 +483,21 @@ in
           ];
         };
 
-        oh-my-posh = {
+        atuin = {
           enable = true;
-          settings = builtins.fromJSON (builtins.readFile ../../dotfiles/oh-my-posh/new-theme.json);
+          daemon.enable = true;
+          flags = [ "--disable-ai" ];
+          forceOverwriteSettings = true;
+          settings = {
+            enter_accept = true;
+            search_mode = "daemon-fuzzy";
+            sync.records = true;
+          };
+        };
+
+        starship = {
+          enable = true;
+          settings = builtins.fromTOML (builtins.readFile ../../dotfiles/starship/starship.toml);
         };
 
         keepassxc = {
@@ -487,6 +509,7 @@ in
         fzf = {
           enable = true;
           enableBashIntegration = true;
+          historyWidget.command = "";
           changeDirWidget = {
             options = [
               "--preview '${pkgs.eza}/bin/eza --tree --color=always \"{}\" | head -200'"
@@ -754,7 +777,7 @@ in
         fm = "frogmouth";
         df = "duf --hide special";
         open = "xdg-open";
-        nshell = ''f(){ [ $# -gt 0 ] || { echo "usage: nshell <package> [nix args...]" >&2; return 1; }; nix shell --set-env-var OMP_NIX_SHELL 1 "nixpkgs#$1" "''${@:2}"; }; f'';
+        nshell = ''f(){ [ $# -gt 0 ] || { echo "usage: nshell <package> [nix args...]" >&2; return 1; }; nix shell "nixpkgs#$1" "''${@:2}"; }; f'';
         venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
         rsync = "rsync --info=progress2";
         plasma-restart = "systemctl restart --user plasma-plasmashell";
