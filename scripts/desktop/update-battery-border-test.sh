@@ -8,6 +8,9 @@ systemctl_log="$runtime_dir/systemctl.log"
 export SYSTEMCTL_LOG="$systemctl_log"
 trap 'rm -rf "$runtime_dir"' EXIT
 
+stop_cmd="--user stop battery-screen-border.service"
+restart_cmd="--user restart battery-screen-border.service"
+
 systemctl() {
   printf '%s\n' "$*" > "$SYSTEMCTL_LOG"
 }
@@ -27,20 +30,22 @@ check_case() {
     NOCTALIA_BATTERY_STATE="$state" \
     bash "$script_dir/update-battery-border.sh" "$threshold"
 
-  [ "$(< "$systemctl_log")" = "$expected_command" ]
-  if [ -n "$expected_border" ]; then
-    [ "$(< "$state_file")" = "$expected_border" ]
+  [[ -f "$systemctl_log" ]] || return 1
+  [[ "$(< "$systemctl_log")" = "$expected_command" ]] || return 1
+  if [[ -n "$expected_border" ]]; then
+    [[ -f "$state_file" ]] || return 1
+    [[ "$(< "$state_file")" = "$expected_border" ]] || return 1
   else
-    [ ! -e "$state_file" ]
+    [[ ! -e "$state_file" ]] || return 1
   fi
 }
 
-check_case 21 discharging "--user stop battery-screen-border.service"
-check_case 20 discharging "--user restart battery-screen-border.service" "3 #ffb000 #ffb000"
-check_case 15 discharging "--user restart battery-screen-border.service" "3 #ff7520 #ff7520"
-check_case 10 discharging "--user restart battery-screen-border.service" "3 #ff9500 #ff2d55"
-check_case 74 discharging "--user restart battery-screen-border.service" "3 #ff9110 #ff9110" 100
-check_case 12 charging "--user stop battery-screen-border.service"
+check_case 21 discharging "$stop_cmd"
+check_case 20 discharging "$restart_cmd" "3 #ffb000 #ffb000"
+check_case 15 discharging "$restart_cmd" "3 #ff7520 #ff7520"
+check_case 10 discharging "$restart_cmd" "3 #ff9500 #ff2d55"
+check_case 74 discharging "$restart_cmd" "3 #ff9110 #ff9110" 100
+check_case 12 charging "$stop_cmd"
 
 if XDG_RUNTIME_DIR="$runtime_dir" bash "$script_dir/update-battery-border.sh" 11 2>/dev/null; then
   exit 1
