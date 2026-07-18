@@ -1,7 +1,15 @@
 #!/usr/bin/env bash
 set -eu
 
-override_file="$HOME/.local/state/niri/battery-border.kdl"
+state_file="${XDG_RUNTIME_DIR:?}/battery-screen-border"
+service_name="battery-screen-border.service"
+warning_threshold="${1:-}"
+
+if ! [[ "$warning_threshold" =~ ^[0-9]+$ ]] || [ "$warning_threshold" -lt 12 ] || [ "$warning_threshold" -gt 100 ]; then
+  printf 'warning threshold must be an integer between 12 and 100\n' >&2
+  exit 2
+fi
+warning_threshold=$((10#$warning_threshold))
 
 read_battery() {
   local battery=""
@@ -23,56 +31,40 @@ read_battery() {
   battery_state="unknown"
 }
 
-write_override() {
-  local directory="${override_file%/*}"
+write_state() {
   local temporary=""
 
-  mkdir -p "$directory"
-  temporary="$(mktemp "$override_file.XXXXXX")"
+  temporary="$(mktemp "$state_file.XXXXXX")"
   trap 'rm -f "$temporary"' EXIT
   cat > "$temporary"
-  mv "$temporary" "$override_file"
+  mv "$temporary" "$state_file"
   trap - EXIT
 }
 
-render_alarm() {
-  local progress=$((20 - percent))
-  local active_green=$((176 - (107 * progress / 9)))
-  local active_blue=$((0 + (58 * progress / 9)))
-  local inactive_red=$((107 + (15 * progress / 9)))
-  local inactive_green=$((75 - (44 * progress / 9)))
-  local inactive_blue=$((0 + (26 * progress / 9)))
-  local active=""
-  local inactive=""
+render_color() {
+  local progress=$((warning_threshold - percent))
+  local range=$((warning_threshold - 11))
+  local green=$((176 - (107 * progress / range)))
+  local blue=$((58 * progress / range))
 
-  printf -v active '#ff%02x%02x' "$active_green" "$active_blue"
-  printf -v inactive '#%02x%02x%02x' "$inactive_red" "$inactive_green" "$inactive_blue"
-
-  cat <<EOF
-layout {
-    border {
-        active-color "$active"
-        inactive-color "$inactive"
-    }
-}
-EOF
+  printf '#ff%02x%02x' "$green" "$blue"
 }
 
 read_battery
 battery_state="${battery_state,,}"
 battery_state="${battery_state// /_}"
+if [[ "$percent" =~ ^[0-9]+$ ]]; then
+  percent=$((10#$percent))
+fi
 
-if ! [[ "$percent" =~ ^[0-9]+$ ]] || [ "$percent" -gt 20 ] || [[ "$battery_state" != "discharging" && "$battery_state" != "pending_discharge" ]]; then
-  printf '// Low-battery border inactive.\n' | write_override
+if ! [[ "$percent" =~ ^[0-9]+$ ]] || [ "$percent" -gt "$warning_threshold" ] || [[ "$battery_state" != "discharging" && "$battery_state" != "pending_discharge" ]]; then
+  rm -f "$state_file"
+  systemctl --user stop "$service_name" || true
 elif [ "$percent" -le 10 ]; then
-  cat <<'EOF' | write_override
-layout {
-    border {
-        active-gradient from="#ff9500" to="#ff2d55" angle=90 relative-to="workspace-view"
-        inactive-gradient from="#7a1f1a" to="#4a0b12" angle=90 relative-to="workspace-view"
-    }
-}
-EOF
+  printf '3 #ff9500 #ff2d55\n' | write_state
+  systemctl --user restart "$service_name"
 else
-  render_alarm | write_override
+  color="$(render_color)"
+  printf '3 %s %s\n' "$color" "$color" | write_state
+  systemctl --user restart "$service_name"
 fi
