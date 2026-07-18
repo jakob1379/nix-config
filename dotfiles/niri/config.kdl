@@ -693,10 +693,6 @@ binds {
     Mod+Shift+P { power-off-monitors; }
 }
 
-// Noctalia's battery hooks update this state file as charge falls.
-include optional=true "~/.local/state/niri/battery-border.kdl"
-
-
 // Local Variables:
 // mode: java
 // End:

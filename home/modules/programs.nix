@@ -25,9 +25,28 @@ let
     ];
     text = builtins.readFile ../../scripts/tmux/window-label.sh;
   };
+  batteryScreenBorder =
+    pkgs.runCommandCC "battery-screen-border"
+      {
+        nativeBuildInputs = [ pkgs.pkg-config ];
+        buildInputs = [
+          pkgs.gtk3
+          pkgs.gtk-layer-shell
+        ];
+      }
+      ''
+        mkdir -p "$out/bin"
+        $CC -Wall -Wextra -Werror $(pkg-config --cflags gtk+-3.0 gtk-layer-shell-0) \
+          ${../../scripts/desktop/battery-screen-border.c} \
+          -o "$out/bin/battery-screen-border" \
+          $(pkg-config --libs gtk+-3.0 gtk-layer-shell-0)
+      '';
   updateBatteryBorder = pkgs.writeShellApplication {
     name = "update-battery-border";
-    runtimeInputs = [ pkgs.coreutils ];
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.systemd
+    ];
     text = builtins.readFile ../../scripts/desktop/update-battery-border.sh;
   };
 in
@@ -56,6 +75,12 @@ in
         default = true;
         description = "Enable KeepassXC integration for SSH connections.";
       };
+    };
+
+    customBattery.warningThreshold = lib.mkOption {
+      type = lib.types.ints.between 12 100;
+      default = 20;
+      description = "Battery percentage at which low-battery warnings start.";
     };
   };
 
@@ -115,6 +140,7 @@ in
           };
         };
       };
+      batteryWarningThreshold = toString config.customBattery.warningThreshold;
       sshSocketDir = config.home.homeDirectory + "/.ssh/sockets";
     in
     {
@@ -129,6 +155,19 @@ in
 
         file = lib.optionalAttrs config.customSsh.enableKeepassxc {
           ".ssh/keepassxc-prompt".source = ../../scripts/ssh/keepassxc-prompt.sh;
+        };
+      };
+
+      systemd.user.services.battery-screen-border = lib.mkIf config.customPackages.gui.enable {
+        Unit = {
+          Description = "Show the low-battery screen border";
+          After = [ "graphical-session.target" ];
+          PartOf = [ "graphical-session.target" ];
+        };
+        Service = {
+          ExecStart = "${batteryScreenBorder}/bin/battery-screen-border %t/battery-screen-border";
+          Restart = "on-failure";
+          RestartSec = 1;
         };
       };
 
@@ -365,14 +404,14 @@ in
 
             backdrop.enabled = false;
 
-            battery.warning_threshold = 20;
+            battery.warning_threshold = config.customBattery.warningThreshold;
 
             hooks = {
-              started = "${updateBatteryBorder}/bin/update-battery-border";
-              battery_charging = "${updateBatteryBorder}/bin/update-battery-border";
-              battery_discharging = "${updateBatteryBorder}/bin/update-battery-border";
-              battery_percentage_changed = "${updateBatteryBorder}/bin/update-battery-border";
-              battery_plugged = "${updateBatteryBorder}/bin/update-battery-border";
+              started = "${updateBatteryBorder}/bin/update-battery-border ${batteryWarningThreshold}";
+              battery_charging = "${updateBatteryBorder}/bin/update-battery-border ${batteryWarningThreshold}";
+              battery_discharging = "${updateBatteryBorder}/bin/update-battery-border ${batteryWarningThreshold}";
+              battery_percentage_changed = "${updateBatteryBorder}/bin/update-battery-border ${batteryWarningThreshold}";
+              battery_plugged = "${updateBatteryBorder}/bin/update-battery-border ${batteryWarningThreshold}";
             };
 
             bar.main = {
