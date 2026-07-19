@@ -230,7 +230,6 @@ in
             fi
             ${builtins.readFile ../../scripts/shell/secret-export.sh}
 
-            eval "$(batman --export-env)"
             eval "$(command up --init bash)"
             source <(command git-worktree-cd --init bash)
           '';
