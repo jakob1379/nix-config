@@ -382,6 +382,15 @@ layer-rule {
     place-within-backdrop true
 }
 
+// Keep empty Noctalia bar space transparent instead of blurred.
+layer-rule {
+    match namespace="^noctalia-bar-"
+
+    background-effect {
+        blur false
+    }
+}
+
 overview {
     workspace-shadow {
         off
