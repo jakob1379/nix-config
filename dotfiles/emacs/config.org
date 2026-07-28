@@ -189,6 +189,7 @@ state.
 (electric-pair-mode 1)
 (global-auto-revert-mode 1)                         ;; refresh a buffer if changed on disk
 (global-display-fill-column-indicator-mode 1)       ;; Show this indicator > | <
+(set-face-attribute 'fill-column-indicator nil :foreground "grey90")
 (global-display-line-numbers-mode 1)                ;; show the left column with line numbers
 (global-font-lock-mode t)                           ;; always highlight code
 (global-so-long-mode 1)
@@ -1640,9 +1641,10 @@ necessarily superseded by the ssh config.
           (message "Failed to load fallback %s theme: %s" fallback fallback-err)
           (mapc #'disable-theme custom-enabled-themes)))))))
 
-(if (>= emacs-major-version 31)
-    (me/load-theme-safely 'modus-vivendi)
-  (me/load-theme-safely 'doom-xcode 'modus-vivendi))
+;; (if (>= emacs-major-version 31)
+;;     (me/load-theme-safely 'doom-snazmodus-vivendi)
+(me/load-theme-safely 'doom-snazzy 'doom-xcode)
+;; )
 #+end_src
 **** Snazzy
 #+BEGIN_SRC emacs-lisp
