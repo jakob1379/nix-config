@@ -9,6 +9,12 @@
   ];
 
   hooks = {
+    betterleaks = {
+      enable = true;
+      name = "betterleaks";
+      entry = "${lib.getExe pkgs.betterleaks} git --pre-commit --redact --staged --verbose";
+      pass_filenames = false;
+    };
     check-added-large-files.enable = true;
     check-case-conflicts.enable = true;
     check-executables-have-shebangs.enable = true;
@@ -37,12 +43,6 @@
     };
     end-of-file-fixer.enable = true;
     fix-byte-order-marker.enable = true;
-    gitleaks = {
-      enable = true;
-      name = "gitleaks";
-      entry = "${lib.getExe pkgs.gitleaks} protect --verbose --redact --staged";
-      pass_filenames = false;
-    };
     mixed-line-endings = {
       enable = true;
       args = [ "--fix=auto" ];
