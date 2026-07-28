@@ -1090,6 +1090,12 @@ tasks.
   :hook (magit-status-mode . turn-on-magit-gitflow)
   )
 #+END_SRC
+*** HTML
+#+BEGIN_SRC emacs-lisp
+(use-package web-mode
+  :straight (:host github :repo "fxbois/web-mode")
+  :mode "\\.html?\\'")
+#+END_SRC
 *** Makefile / cMakefile
 Makefile modes comes with Emacs, but we still want to use it and be able to configure it
 #+begin_src emacs-lisp
