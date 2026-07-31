@@ -191,6 +191,10 @@ in
           '';
         };
 
+        claude-code.skills = {
+          aggregate-code-quality-report = ../../dotfiles/skills/aggregate-code-quality-report;
+        };
+
         direnv = {
           enable = true;
           enableBashIntegration = true;
