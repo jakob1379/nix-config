@@ -93,6 +93,29 @@ in
   };
 
   programs = {
+    claude-code = {
+      enable = true;
+      settings = {
+        extraKnownMarketplaces = {
+          ponytail = {
+            source = {
+              source = "github";
+              repo = "DietrichGebert/ponytail";
+            };
+          };
+        };
+
+        enabledPlugins."ponytail@ponytail" = true;
+        agentPushNotifEnabled = true;
+        includeCoAuthoredBy = false;
+        attribution.sessionUrl = false;
+        permissions.defaultMode = "auto";
+        statusLine = {
+          type = "command";
+          command = "bash ~/.claude/statusline-command.sh";
+        };
+      };
+    };
     codex = {
       enable = true;
     };
