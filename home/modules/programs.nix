@@ -350,6 +350,8 @@ in
               wallpaper_scheme = "muted";
             };
 
+            notification.enable_daemon = true;
+
             location = {
               auto_locate = true;
               address = "Copenhagen";
