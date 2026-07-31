@@ -824,6 +824,7 @@ in
 
       xdg = {
         configFile = {
+          "blesh/init.sh".source = ../../dotfiles/blesh/init.sh;
           "opencode/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink (
             config.home.homeDirectory + "/.config/home-manager/dotfiles/AGENTS.md"
           );
