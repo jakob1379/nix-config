@@ -373,7 +373,7 @@ in
             };
 
             theme = {
-              mode = "light";
+              mode = "auto";
               source = "wallpaper";
               wallpaper_scheme = "muted";
             };
@@ -404,7 +404,6 @@ in
               scale = 1.0;
               reserve_space = true;
               capsule = true;
-              capsule_fill = "#f4f4f5";
               capsule_opacity = 1.0;
               start = [
                 "clock"
@@ -419,7 +418,6 @@ in
                 {
                   id = "mid";
                   members = [ "workspaces" ];
-                  fill = "#f4f4f5";
                   opacity = 1.0;
                   padding = 6.0;
                   radius = 12.0;
@@ -437,7 +435,6 @@ in
                     "control-center"
                     "session"
                   ];
-                  fill = "#f4f4f5";
                   opacity = 1.0;
                   padding = 6.0;
                   radius = 12.0;
