@@ -49,6 +49,18 @@
       url = "github:vercel-labs/agent-browser";
       flake = false;
     };
+    claude-code-src = {
+      url = "github:anthropics/claude-code";
+      flake = false;
+    };
+    open-code-review-src = {
+      url = "github:alibaba/open-code-review";
+      flake = false;
+    };
+    ponytail-src = {
+      url = "github:DietrichGebert/ponytail";
+      flake = false;
+    };
     zen-browser = {
       url = "github:youwen5/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";

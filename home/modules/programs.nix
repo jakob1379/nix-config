@@ -114,7 +114,10 @@ in
     in
     {
       home = {
-        packages = [ pkgs.agent-browser ];
+        packages = [
+          pkgs.agent-browser
+          inputs.numtide-llm-agents.packages.${system}.open-code-review
+        ];
         shell.enableBashIntegration = true;
         activation.ensureSshSocketsDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
           ${pkgs.coreutils}/bin/mkdir -p "${sshSocketDir}"
@@ -191,8 +194,33 @@ in
           '';
         };
 
-        claude-code.skills = {
-          aggregate-code-quality-report = ../../dotfiles/skills/aggregate-code-quality-report;
+        claude-code = {
+          enable = true;
+
+          skills = {
+            aggregate-code-quality-report = ../../dotfiles/skills/aggregate-code-quality-report;
+            frontend-design = "${inputs.claude-code-src}/plugins/frontend-design/skills/frontend-design";
+          };
+
+          # Pinned via flake.lock instead of fetched from a marketplace at
+          # runtime, so `nix flake update` is what bumps them.
+          # open-code-review needs the `ocr` binary on PATH (see home.packages).
+          plugins = {
+            open-code-review = "${inputs.open-code-review-src}/plugins/open-code-review/claude-code";
+            ponytail = "${inputs.ponytail-src}";
+          };
+
+          settings = {
+            enabledPlugins."frontend-design@claude-plugins-official" = true;
+            agentPushNotifEnabled = true;
+            includeCoAuthoredBy = false;
+            attribution.sessionUrl = false;
+            permissions.defaultMode = "auto";
+            statusLine = {
+              type = "command";
+              command = "bash ~/.claude/statusline-command.sh";
+            };
+          };
         };
 
         direnv = {
