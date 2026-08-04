@@ -208,6 +208,12 @@ in
           plugins = {
             open-code-review = "${inputs.open-code-review-src}/plugins/open-code-review/claude-code";
             ponytail = "${inputs.ponytail-src}";
+            superpowers = "${inputs.superpowers-src}";
+          };
+
+          mcpServers.context7 = {
+            type = "http";
+            url = "https://mcp.context7.com/mcp";
           };
 
           settings = {

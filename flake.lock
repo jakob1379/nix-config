@@ -52,11 +52,11 @@
     "claude-code-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1784943347,
-        "narHash": "sha256-E18pPkdErB133CIShgLBhdHBiyPALuRl30uOqhy21v0=",
+        "lastModified": 1785802457,
+        "narHash": "sha256-S2j8tUkSrE1TfsK+ix2RBWURhA/Gn7dG7rs14laG/ww=",
         "owner": "anthropics",
         "repo": "claude-code",
-        "rev": "7ef6eec9d9ba84ea6f233f26c45f1df5c5991843",
+        "rev": "dd796139237c9c105ffed1e2a40ea3a1faae9108",
         "type": "github"
       },
       "original": {
@@ -339,11 +339,11 @@
     },
     "nixpkgs-small": {
       "locked": {
-        "lastModified": 1785743583,
-        "narHash": "sha256-BlRhES2xIe6CMwlHgls5ZMUQ0do8TzCLnHGwWUshPD8=",
+        "lastModified": 1785792798,
+        "narHash": "sha256-CSVbsqKC/0h6eWBaL1c505Cy/x7FJqne+zO25D+qgeA=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "2faa05b4f6904c4f57584476e4d04ff7b2fbbd3d",
+        "rev": "d5b60683f2be469f332381b81d91b3e11c6e4b3e",
         "type": "github"
       },
       "original": {
@@ -360,11 +360,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785707827,
-        "narHash": "sha256-H70rICsCS/cx4KR1Qryln9HJd0iVekP+8or3OCKvPT0=",
+        "lastModified": 1785809412,
+        "narHash": "sha256-QbFIduUhpNIucJy/WcwRxsvTQocnwIXlSwnYEjmGMSQ=",
         "owner": "noctalia-dev",
         "repo": "noctalia",
-        "rev": "5aae077a3563da6fda3fc2a2b8ce9162e3a42019",
+        "rev": "e41c99439605df6d2fa62409139f96ded6ac7345",
         "type": "github"
       },
       "original": {
@@ -405,11 +405,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1785747486,
-        "narHash": "sha256-A88hE9728l+C1azDF3j7zkBeotx1Yp4K34bS/nNq0XQ=",
+        "lastModified": 1785813059,
+        "narHash": "sha256-FJX9Ts8wAY0Uy9ysvTPuvY35VF4kt9RXyDJYXrf3i8A=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "45da7d1c9105e9c47ad49566a02233f0d07c919a",
+        "rev": "71c0eafcae20331346e60154ca843d4791ba1245",
         "type": "github"
       },
       "original": {
@@ -421,11 +421,11 @@
     "oh-my-opencode-slim-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1785673528,
-        "narHash": "sha256-+Py+HmcN0aoUth0a9GRkfmogG8zkWKRoBGV6GKJZaaM=",
+        "lastModified": 1785790997,
+        "narHash": "sha256-H5BOemAsaLTQRZKI1336pXTBve5bq1ONBrSXFlqeyxI=",
         "owner": "alvinunreal",
         "repo": "oh-my-opencode-slim",
-        "rev": "63125156b14577f19f8502d2bb788e521ceab710",
+        "rev": "0781456f133d1d2b4008675ba8d9b87a45013924",
         "type": "github"
       },
       "original": {
@@ -437,11 +437,11 @@
     "open-code-review-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1785749449,
-        "narHash": "sha256-9/6wT3rwELo1jJ4/vpQ/yISZSnPx1F4aC+xXcS+SY6A=",
+        "lastModified": 1785765211,
+        "narHash": "sha256-cB5x2Rs6jXG1pe169KgLpYo4isltAf/KRCPQUw8/evg=",
         "owner": "alibaba",
         "repo": "open-code-review",
-        "rev": "27fab9546ff01675ebbb331dd6d665fce3152eaa",
+        "rev": "0f3c920fc8ff091cbd1ad9e0632bf54bba56e46b",
         "type": "github"
       },
       "original": {
@@ -572,6 +572,7 @@
         "oh-my-opencode-slim-src": "oh-my-opencode-slim-src",
         "open-code-review-src": "open-code-review-src",
         "ponytail-src": "ponytail-src",
+        "superpowers-src": "superpowers-src",
         "waytorandr": "waytorandr",
         "zen-browser": "zen-browser"
       }
@@ -594,6 +595,22 @@
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "superpowers-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785266736,
+        "narHash": "sha256-fnl+HbPL2qD5Zgz8a1NctjFJSqu6UsyHJAhQMLQNXXc=",
+        "owner": "obra",
+        "repo": "superpowers",
+        "rev": "44c9b2d6e889982ac18c27d05a19fefe335194e1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "obra",
+        "repo": "superpowers",
         "type": "github"
       }
     },

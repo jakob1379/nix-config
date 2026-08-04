@@ -61,6 +61,10 @@
       url = "github:DietrichGebert/ponytail";
       flake = false;
     };
+    superpowers-src = {
+      url = "github:obra/superpowers";
+      flake = false;
+    };
     zen-browser = {
       url = "github:youwen5/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
