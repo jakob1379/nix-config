@@ -218,6 +218,7 @@ in
 
           settings = {
             enabledPlugins."frontend-design@claude-plugins-official" = true;
+            sandbox.enabled = true;
             agentPushNotifEnabled = true;
             includeCoAuthoredBy = false;
             attribution.sessionUrl = false;
