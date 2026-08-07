@@ -14,16 +14,36 @@
   programs.fuse.userAllowOther = true;
   fonts.packages = [ pkgs.colloid-icon-theme ];
   i18n.defaultLocale = "en_US.UTF-8";
+
   # programs.gnupg.agent = {
   #   enable = false;
   #   enableSSHSupport = true;
   #   pinentryPackage = pkgs.pinentry-gtk2;
   # };
+
   services.pcscd.enable = true;
 
   services.xserver.xkb = {
     layout = "dk";
     variant = "";
+  };
+
+  users.users.jsg.extraGroups = [
+    "netbird-homelab"
+    "netbird-seeq"
+  ];
+  services.netbird = {
+    enable = lib.mkForce false;
+    clients = {
+      homelab = {
+        port = 51821;
+        autoStart = false;
+      };
+      seeq = {
+        autoStart = false;
+        port = 51822;
+      };
+    };
   };
 
   hardware.bluetooth = {
