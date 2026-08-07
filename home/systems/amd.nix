@@ -67,8 +67,6 @@ in
     };
   };
 
-  services.tailscale-systray.enable = true;
-
   customDotfiles = {
     enableMediaControl = true;
   };
