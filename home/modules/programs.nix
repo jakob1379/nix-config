@@ -217,6 +217,11 @@ in
           };
 
           settings = {
+            # Superpowers ships no telemetry today (audited: no network calls,
+            # no SUPERPOWERS_* env reads). Set preemptively so any future
+            # opt-out telemetry stays off by default.
+            env.SUPERPOWERS_DISABLE_TELEMETRY = "1";
+
             enabledPlugins."frontend-design@claude-plugins-official" = true;
             sandbox.enabled = true;
             agentPushNotifEnabled = true;
@@ -365,6 +370,14 @@ in
         noctalia = lib.mkIf config.customPackages.gui.enable {
           enable = true;
           systemd.enable = false;
+          # Upstream's critical-notification outline is 1px, invisible in practice.
+          # Drop once noctalia makes the toast border width configurable.
+          # package = inputs.noctalia.packages.${system}.default.overrideAttrs (prev: {
+          #   postPatch = (prev.postPatch or "") + ''
+          #     substituteInPlace src/shell/notification/notification_toast.cpp \
+          #       --replace-fail "? Style::borderWidth : 0.0F" "? 1.0F : 0.0F"
+          #   '';
+          # });
           settings = {
             shell = {
               avatar_path = "${config.home.homeDirectory}/.face";
