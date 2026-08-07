@@ -1,5 +1,4 @@
-from rich import pretty
-from rich import print
+from rich import pretty, print
 
 pretty.install()
 
