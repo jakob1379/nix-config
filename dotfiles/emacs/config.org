@@ -740,6 +740,10 @@ highlights uncommitted changes on the left side of the window
          ("C-x C-r" . helm-recentf) ;; Select recently saved files
          ("C-c i"   . helm-imenu) ;; Select document heading
          ("M-y"     . helm-show-kill-ring)
+         ("C-c a p" . helm-do-grep-ag-project) ;; Ripgrep the whole project
+         ("C-c a d" . helm-do-grep-ag) ;; Ripgrep from `default-directory'
+         ("C-x C-d" . helm-browse-project) ;; Fuzzy-find files in the project
+         ("C-x r p" . helm-projects-history) ;; Jump between known projects
          :map helm-map
          ;; ("<tab>" . helm-execute-persistent-action)
          )
@@ -753,8 +757,14 @@ highlights uncommitted changes on the left side of the window
   (helm-move-to-line-cycle-in-source t) ;; move to end or beginning of source when reaching top or bottom of source.
   (helm-split-window-in-side-p t) ;; open helm buffer inside current window, not occupy whole other window
   (helm-M-x-show-short-doc t)
-  (helm-M-x-fuzzy-match t)
   (helm-candidate-number-limit 20)
+  ;; Fuzzy narrowing. `helm-grep-ag-command' is deliberately unset: helm already
+  ;; defaults it to ripgrep whenever rg is on PATH (helm-grep.el).
+  (helm-M-x-fuzzy-match t)
+  (helm-buffers-fuzzy-matching t)
+  (helm-recentf-fuzzy-match t)
+  (helm-imenu-fuzzy-match t)
+  (helm-apropos-fuzzy-match t)
   :config
   ;; (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
   (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
@@ -775,8 +785,20 @@ highlights uncommitted changes on the left side of the window
 #+END_SRC
 **** Ripgrep search
 
+Standalone transient UI (=M-x rg-menu=) with a =wgrep=-editable results buffer. Separate
+tool from helm's live-narrowing session above, which needs no package at all.
+
 #+BEGIN_SRC emacs-lisp
 (use-package rg
+  :defer t)
+#+END_SRC
+**** Git-aware project browsing
+
+No bindings needed: =helm-browse-project= requires this at call time and upgrades itself to
+show branches, status and stash alongside the file list.
+
+#+BEGIN_SRC emacs-lisp
+(use-package helm-ls-git
   :defer t)
 #+END_SRC
 *** Helpful
@@ -920,65 +942,69 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
   :mode (("justfile\\'" . just-mode)
          ("Justfile\\'" . just-mode)))
 #+END_SRC
-*** LaTeX
+*** LaTeX / AUCTeX
+AUCTeX registers the =.tex= → =LaTeX-mode= remap itself from its autoloads, so no =:mode= is
+needed here. Nothing below loads at startup: every hook and key target is an autoload, so
+=tex.el=, =tex-fold.el=, =reftex.el= and =cdlatex.el= arrive with the first =.tex= buffer.
+
+The package is declared as =tex= with =:straight auctex= rather than as =auctex=: =tex.el= is
+the feature that actually gets loaded when a =.tex= buffer opens, which is what makes =:config=
+run while still deferring ([[https://github.com/jwiegley/use-package/issues/379#issuecomment-246161500][use-package#379]]). =TeX-after-compilation-finished-functions= must live in
+=:config= because it is a plain =defvar=, not a =defcustom= — =:custom= silently drops it.
+
 #+BEGIN_SRC emacs-lisp
-(use-package latex
+(use-package tex
   :defer t
-  :straight (:type built-in)
-  :mode ("\\.tex\\'$" . latex-mode)
+  :straight auctex
   :custom
-  (LaTeX-electric-left-right-brace t)
-  (TeX-PDF-mode t)
-  (TeX-auto-save t)
-  (TeX-electric-math (cons "$" "$"))
-  (TeX-parse-self t)
-  (TeX-source-correlate-method 'synctax)
-  (TeX-source-correlate-mode t)
-  (TeX-source-correlate-start-server nil)
-  (TeX-syntactic-comment t)
-  (reftex-plug-into-AUCTeX t)
-  (TeX-view-program-list
-   '(("DVI Viewer" "open %o")
-     ("PDF Viewer" "open %o")
-     ("HTML Viewer" "open %o")))
-  :hook
-  (latex-mode . (lambda ()
-                  (tool-bar-mode 1)))
-  )
-
-;; AUCTeX configuration
-(use-package auctex
-  :defer t
-  :mode ("\\.tex\\'" . latex-mode)
-  :custom
-  ;; Enable parsing
   (TeX-auto-save t)
   (TeX-parse-self t)
-  ;; Default PDF viewer
-  (TeX-view-program-selection '((output-pdf "PDF Viewer")))
-  ;; Use pdf-tools to open PDF files
-  (TeX-view-program-list '(("PDF Viewer" "pdf-tools %o")))
-  ;; Enable TeX-fold-mode automatically in TeX/LaTeX mode
-  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-  ;; Configure RefTeX with AUCTeX
-  (reftex-plug-into-AUCTeX t)
-  :hook
-  (TeX-mode-hook . (lambda () (TeX-fold-mode 1)))
-  ;; Enable RefTeX in AUCTeX
-  (LaTeX-mode-hook . turn-on-reftex)
-  ;; Configure RefTeX with AUCTeX
-  (LaTeX-mode-hook . reftex-plug-into-AUCTeX)
-  )
-
-;; LaTeX completion via cape and auctex
-;; Note: AUCTeX provides its own completion via TeX-complete-symbol
-;; which works with corfu through completion-at-point-functions
+  (TeX-save-query nil)                    ;; don't ask before compiling
+  (TeX-source-correlate-method 'synctex)
+  (TeX-source-correlate-start-server t)   ;; inverse search from the PDF
+  (TeX-electric-math nil)                 ;; cdlatex owns $
+  (TeX-electric-sub-and-superscript nil)  ;; cdlatex owns _ and ^
+  (LaTeX-electric-left-right-brace nil)   ;; electric-pair-mode owns braces
+  (TeX-view-program-selection '((output-pdf "PDF Tools")))
+  (preview-auto-cache-preamble t)
+  ;; Sectioning size. The number is a *cumulative* scale from
+  ;; `font-latex-sectioning-5-face' upward, so 1.1 gives
+  ;; subsubsection 1.1, subsection 1.21, section 1.331, chapter 1.46, part 1.61.
+  ;; Must go through :custom — it has a :set handler, so setq is a no-op.
+  ;; Colour comes from the theme, which restyles each level individually.
+  (font-latex-fontify-sectioning 1.1)
+  ;; \title is in font-latex's "textual" class, which has no size. Promote it
+  ;; to the largest sectioning face; the textual class still supplies colour.
+  (font-latex-user-keyword-classes
+   '(("documenttitle" (("title" "{")) font-latex-sectioning-0-face command)))
+  ;; AUCTeX fills prettify-symbols-alist with ~725 entries (\alpha -> α);
+  ;; unprettify-at-point keeps the raw macro editable under the cursor.
+  (prettify-symbols-unprettify-at-point 'right-edge)
+  :config
+  ;; plain defvar hook: re-render the PDF in pdf-tools after each compile
+  (add-hook 'TeX-after-compilation-finished-functions
+            #'TeX-revert-document-buffer)
+  :hook ((LaTeX-mode . TeX-source-correlate-mode)
+         (LaTeX-mode . TeX-fold-mode)
+         (LaTeX-mode . prettify-symbols-mode)
+         (LaTeX-mode . turn-on-reftex)))
 
 (use-package reftex
+  :straight (:type built-in)
   :defer t
+  :commands (turn-on-reftex reftex-mode)
   :custom
+  (reftex-plug-into-AUCTeX t)
   (reftex-cite-prompt-optional-args t)) ; Prompt for empty optional arguments in cite
 
+;; TAB stays with yasnippet; cdlatex tabbing moves to C-<tab>.
+(use-package cdlatex
+  :defer t
+  :commands (turn-on-cdlatex cdlatex-mode)
+  :hook (LaTeX-mode . turn-on-cdlatex)
+  :bind (:map cdlatex-mode-map
+              ("TAB" . nil)
+              ("C-<tab>" . cdlatex-tab)))
 #+END_SRC
 *** Eglot
 Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Corfu, Xref for definitions/references, Eldoc for hover/signatures, Imenu for symbols, and Flymake for diagnostics.
@@ -995,7 +1021,7 @@ Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Cor
   ((conf-toml-mode . eglot-ensure)
    (css-mode . eglot-ensure)
    (just-mode . eglot-ensure)
-   (latex-mode . eglot-ensure)
+   (LaTeX-mode . eglot-ensure)
    (markdown-mode . eglot-ensure)
    (nix-mode . eglot-ensure)
    (python-base-mode . eglot-ensure)
@@ -1128,6 +1154,9 @@ Makefile modes comes with Emacs, but we still want to use it and be able to conf
 
 #+END_SRC
 *** Markdown
+
+**** Markdown mode
+
 #+BEGIN_SRC emacs-lisp
 (use-package markdown-mode
   :defer t
@@ -1135,7 +1164,9 @@ Makefile modes comes with Emacs, but we still want to use it and be able to conf
   :bind
   (("M-<right>" . markdown-demote)
    ("M-<left>" . markdown-promote)
-   ("M-<return>" . markdown-insert-header-dwim))
+   ("M-<return>" . markdown-insert-header-dwim)
+   :map markdown-mode-map
+   ("C-c m m" . markdown-mermaid-preview))
 
   :mode
   (("README\\.md\\'" . gfm-mode)
@@ -1182,6 +1213,15 @@ Makefile modes comes with Emacs, but we still want to use it and be able to conf
   :defer t
   )
 #+end_src
+**** Render mermaid blocks
+#+BEGIN_SRC emacs-lisp
+(use-package markdown-mermaid
+  :straight (:host github :repo "pasunboneleve/markdown-mermaid" :files ("markdown-mermaid.el"))
+  :defer t
+  :commands (markdown-mermaid-preview))
+#+END_SRC
+
+
 *** Mermaid Diagrams
 #+BEGIN_SRC emacs-lisp
 (use-package mermaid-mode
@@ -1447,16 +1487,6 @@ We want to be able to view PDFs in Emacs
   :defer t
   :mode
   ("\\.ps1" . powershell-mode))
-#+END_SRC
-*** Projectile
-#+BEGIN_SRC emacs-lisp
-(use-package projectile
-  :defer t
-  :commands (projectile-project-root
-             projectile-find-file
-             projectile-ripgrep
-             projectile-switch-project)
-  :bind ("C-c a p" . projectile-ripgrep))
 #+END_SRC
 *** Python
 Since I am doing a lot of python, many modes and other things related to python has been bundled in this section
