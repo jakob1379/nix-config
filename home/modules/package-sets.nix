@@ -20,7 +20,8 @@ in
   core = with pkgs; [
     btop
     git-filter-repo
-    busybox
+    # applet symlinks off: they shadow coreutils/gnugrep/gnused on PATH
+    (busybox.override { enableAppletSymlinks = false; })
     dconf
     duf
     entr
