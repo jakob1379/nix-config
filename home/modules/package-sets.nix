@@ -120,6 +120,12 @@ in
     nixd
     powershell
     python3
+    python3Packages.jedi-language-server
+    # Stable-named python that always has debugpy importable, so dape's
+    # adapter works regardless of which project venv is active.
+    (writeShellScriptBin "python-dap" ''
+      exec ${python3.withPackages (ps: [ ps.debugpy ])}/bin/python "$@"
+    '')
     rassumfrassum
     ripgrep
     ruff

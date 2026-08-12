@@ -1054,7 +1054,23 @@ Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Cor
              (typescript-mode . ("vtsls" "--stdio"))
              (nix-mode . ("nixd"))
              (markdown-mode . ("marksman" "server"))
-             (python-base-mode . ("rass" "--" "ty" "server" "--" "ruff" "server")))
+             (python-base-mode
+              ;; jedi LAST: rass gives hover/rename/documentSymbol to the first
+              ;; server supporting them and everything else to the primary, so
+              ;; ty must stay first. Jedi is here only for refactor.extract.
+              . ("rass" "--" "ty" "server" "--" "ruff" "server"
+                 "--" "jedi-language-server"
+                 :initializationOptions
+                 ;; rass eats the :rass key and merges the overlay whose key
+                 ;; regex-matches the server name; others just get {}.
+                 ;; ponytail: jedi's completions get concatenated with ty's, so
+                 ;; candidates double up. Upgrade path is a rass preset with a
+                 ;; logic class routing only codeAction to jedi.
+                 (:rass
+                  (:jedi
+                   (:diagnostics (:enable :json-false)
+                    :codeAction (:nameExtractFunction "extracted_function"
+                                 :nameExtractVariable "extracted_variable"))))))
            )
     (add-to-list 'eglot-server-programs server))
   (add-to-list 'eglot-server-programs
@@ -1071,16 +1087,39 @@ Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Cor
                            :hover t)))))
 #+END_SRC
 **** Dape
-Dape replaces dap-mode without depending on lsp-mode.
+Dape replaces dap-mode without depending on lsp-mode. The debugpy adapter runs
+from the nix-provided =python-dap= wrapper (which always has debugpy), while the
+debuggee runs on the project's own python (pyvenv/direnv); debugpy injects itself
+into the debuggee, so projects never need debugpy in their venv.
 #+BEGIN_SRC emacs-lisp
 (use-package dape
   :defer t
   :bind (("C-c d d" . dape)
          ("C-c d b" . dape-breakpoint-toggle)
+         ("C-c d B" . dape-breakpoint-remove-all)
+         ("C-c d e" . dape-breakpoint-expression)
          ("C-c d c" . dape-continue)
          ("C-c d n" . dape-next)
          ("C-c d i" . dape-step-in)
-         ("C-c d o" . dape-step-out)))
+         ("C-c d o" . dape-step-out)
+         ("C-c d r" . dape-restart)
+         ("C-c d q" . dape-quit)
+         ("C-c d w" . dape-watch-dwim)
+         ("C-c d R" . dape-repl))
+  :custom
+  (dape-buffer-window-arrangement 'right)
+  :config
+  (defun jsg/dape-python ()
+    "Python for the debuggee: active venv if any, else the nix debug python."
+    (or (executable-find "python") "python-dap"))
+  (dolist (key '(debugpy debugpy-module))
+    (setf (plist-get (alist-get key dape-configs) 'command) "python-dap"
+          (plist-get (alist-get key dape-configs) :python) 'jsg/dape-python))
+  (setf (alist-get 'debugpy-pytest dape-configs)
+        (thread-first (alist-get 'debugpy-module dape-configs)
+                      copy-sequence
+                      (plist-put :module "pytest")
+                      (plist-put :args [dape-buffer-default]))))
 #+END_SRC
 *** Magit
 Magit is an amazing git client that can do 90% of what git can, this covers almost all regular
