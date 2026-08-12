@@ -197,7 +197,7 @@ state.
 (menu-bar-mode 1)
 (save-place-mode 1)                                 ;; continue where you left off
 (tool-bar-mode 0)                                   ;; it's not used anyways
-;; (windmove-default-keybindings)
+(windmove-default-keybindings)                      ;; long live easy pane navigation <3
 #+END_SRC
 ** UTF-8 by Default
 Emacs is very conservative about assuming encoding. Everything is UTF-8 these days, let's have that as the default.
