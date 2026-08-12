@@ -32,6 +32,7 @@
     "netbird"
   ];
 
+  i18n.extraLocaleSettings.LC_TIME = lib.mkForce "en_DK.UTF-8";
 
   hardware.bluetooth = {
     enable = true;

@@ -41,15 +41,7 @@
   ];
   i18n.extraLocaleSettings =
     let
-      defaultLocale =
-        if
-          lib.hasAttr "i18n" config
-          && lib.hasAttr "defaultLocale" config.i18n
-          && config.i18n.defaultLocale != null
-        then
-          config.i18n.defaultLocale
-        else
-          "en_US.UTF-8";
+      defaultLocale = "en_US.UTF-8";
     in
     {
       LC_ADDRESS = defaultLocale;
