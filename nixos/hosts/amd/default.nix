@@ -29,22 +29,9 @@
   };
 
   users.users.jsg.extraGroups = [
-    "netbird-homelab"
-    "netbird-seeq"
+    "netbird"
   ];
-  services.netbird = {
-    enable = lib.mkForce false;
-    clients = {
-      homelab = {
-        port = 51821;
-        autoStart = false;
-      };
-      seeq = {
-        autoStart = false;
-        port = 51822;
-      };
-    };
-  };
+
 
   hardware.bluetooth = {
     enable = true;
