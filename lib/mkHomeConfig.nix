@@ -20,6 +20,8 @@ inputs.home-manager.lib.homeManagerConfiguration {
     overlays = [
       (import ../overlays/tana.nix)
       (_: _: inputs.nixpkgs.lib.getAttrs fromSmall inputs.nixpkgs-small.legacyPackages.${system})
+      # Must come after fromSmall, which replaces t3code wholesale.
+      (import ../overlays/t3code.nix inputs.nixpkgs-small.legacyPackages.${system})
     ];
   };
   modules = [
