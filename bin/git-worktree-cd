@@ -128,15 +128,37 @@ bash -c '
 path="$1"
 [[ -d "$path" ]] || exit 1
 
+# Prunable worktrees keep their directory but lose the gitdir link, guard once here
+# instead of letting every git call below print its own "not a git repository" fatal.
+git -C "$path" rev-parse --git-dir >/dev/null 2>&1 || {
+  printf "stale worktree (prunable), git metadata is gone:\n%s\n" "$path"
+  exit 0
+}
+
 git -C "$path" status --short --branch
 printf "\n"
 
-if command -v eza >/dev/null 2>&1; then
-  eza --tree --color=always "$path" | head -200
-elif command -v find >/dev/null 2>&1; then
-  find "$path" -maxdepth 3 -print 2>/dev/null | head -200
+base=""
+for candidate in "$(git -C "$path" symbolic-ref --quiet --short refs/remotes/origin/HEAD)" origin/main origin/master main master; do
+  [[ -n "$candidate" ]] || continue
+  git -C "$path" rev-parse --verify --quiet "$candidate^{commit}" >/dev/null && { base="$candidate"; break; }
+done
+
+# ponytail: --max-count=50 caps output, the base..HEAD negative walk is unbounded in
+# principle. Measured at 18-29ms in an 8832-commit repo, add timeout 5 if it ever wedges.
+log_args=(--color --graph --abbrev-commit --max-count=50
+  --pretty=format:"%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset")
+
+commits=""
+if [[ -n "$base" ]]; then
+  commits="$(git -C "$path" log "${log_args[@]}" "$base..HEAD" 2>/dev/null)"
+fi
+
+if [[ -n "$commits" ]]; then
+  printf "commits vs %s:\n\n%s\n" "$base" "$commits"
 else
-  printf "Install eza or find for worktree previews.\n" >&2
+  printf "no commits ahead of %s - recent history:\n\n" "${base:-HEAD}"
+  git -C "$path" log "${log_args[@]}"
 fi
 ' -- {2}
 EOF
