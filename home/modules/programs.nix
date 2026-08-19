@@ -197,6 +197,9 @@ in
         claude-code = {
           enable = true;
 
+          # Shared with opencode (see xdg.configFile."opencode/AGENTS.md").
+          context = ../../dotfiles/AGENTS.md;
+
           skills = {
             aggregate-code-quality-report = ../../dotfiles/skills/aggregate-code-quality-report;
             frontend-design = "${inputs.claude-code-src}/plugins/frontend-design/skills/frontend-design";
