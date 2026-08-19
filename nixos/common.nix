@@ -37,6 +37,7 @@
   # Locale support (hosts may override defaultLocale)
   i18n.supportedLocales = [
     "en_US.UTF-8/UTF-8"
+    "en_DK.UTF-8/UTF-8"
     "da_DK.UTF-8/UTF-8"
   ];
   i18n.extraLocaleSettings =
@@ -52,7 +53,7 @@
       LC_NUMERIC = defaultLocale;
       LC_PAPER = defaultLocale;
       LC_TELEPHONE = defaultLocale;
-      LC_TIME = defaultLocale;
+      LC_TIME = "en_DK.UTF-8";
     };
 
   # X / Plasma defaults
