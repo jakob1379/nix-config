@@ -180,8 +180,8 @@ in
 
         gpg-agent = {
           enable = true;
-          pinentry.package = pkgs.pinentry-gtk2;
-          pinentry.program = "pinentry-gtk-2";
+          pinentry.package = pkgs.pinentry-gnome3;
+          pinentry.program = "pinentry-gnome3";
         };
 
         ssh-agent = {
