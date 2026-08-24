@@ -2,29 +2,32 @@
 name: evdi 7.2 watch
 on:
   schedule:
-    - cron: '17 4 * * 1'
+    - cron: 17 4 * * 1
   workflow_dispatch:
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 jobs:
   check:
     runs-on: ubuntu-latest
+    permissions:
+      # push the promotion branch and open its PR
+      contents: write
+      pull-requests: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v25
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+      - uses: cachix/install-nix-action@6004951b182f8860210c8d6f0d808ec5b1a33d28  # v25
       - id: evdi
         continue-on-error: true
-        run: nix build --no-link 'github:NixOS/nixpkgs/nixos-unstable#linuxKernel.packages.linux_7_2.evdi'
+        run: |
+          nix flake update nixpkgs
+          sed -i 's/packages\.linux_7_1/packages.linux_7_2/' nixos/common.nix
+          nix build --no-link '.#nixosConfigurations.amd.config.boot.kernelPackages.evdi'
       - if: steps.evdi.outcome == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
+        run: |-
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git checkout -b evdi-kernel-7-2
-          nix flake update nixpkgs
-          sed -i 's/packages\.linux_7_1/packages.linux_7_2/' nixos/common.nix
           git rm -q .github/workflows/evdi-watch.yml
           git commit -aqm 'feat(kernel): back to 7.2, evdi builds again'
           git push -qf origin evdi-kernel-7-2
