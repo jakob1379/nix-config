@@ -123,10 +123,6 @@ state.
           (lambda ()
             (setq file-name-handler-alist me/-file-name-handler-alist)))
 #+END_SRC
-** Disable =site-run-file=
-#+BEGIN_SRC emacs-lisp
-(setq site-run-file nil)
-#+END_SRC
 ** Don't compact font caches
 #+BEGIN_SRC emacs-lisp
 (setq inhibit-compacting-font-caches t)
