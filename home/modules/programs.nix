@@ -203,12 +203,14 @@ in
           skills = {
             aggregate-code-quality-report = ../../dotfiles/skills/aggregate-code-quality-report;
             frontend-design = "${inputs.claude-code-src}/plugins/frontend-design/skills/frontend-design";
+            unslop = "${inputs.cursor-plugins-src}/pstack/skills/unslop";
           };
 
           # Pinned via flake.lock instead of fetched from a marketplace at
           # runtime, so `nix flake update` is what bumps them.
           # open-code-review needs the `ocr` binary on PATH (see home.packages).
           plugins = {
+            mattpocock-skills = inputs.mattpocock-skills-src;
             open-code-review = "${inputs.open-code-review-src}/plugins/open-code-review/claude-code";
             ponytail = "${inputs.ponytail-src}";
             superpowers = "${inputs.superpowers-src}";

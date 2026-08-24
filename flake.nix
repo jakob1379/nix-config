@@ -53,6 +53,14 @@
       url = "github:anthropics/claude-code";
       flake = false;
     };
+    cursor-plugins-src = {
+      url = "github:cursor/plugins";
+      flake = false;
+    };
+    mattpocock-skills-src = {
+      url = "github:mattpocock/skills";
+      flake = false;
+    };
     open-code-review-src = {
       url = "github:alibaba/open-code-review";
       flake = false;
