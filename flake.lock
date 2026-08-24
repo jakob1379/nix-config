@@ -65,6 +65,22 @@
         "type": "github"
       }
     },
+    "cursor-plugins-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1787281804,
+        "narHash": "sha256-rTkT/2dliMzvwDkza2+JNhSIzcTr9fXjvK2zwi/lRl8=",
+        "owner": "cursor",
+        "repo": "plugins",
+        "rev": "46125561306434d8a1d7745d540d8932ab0cd2a2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cursor",
+        "repo": "plugins",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -266,6 +282,22 @@
       "original": {
         "owner": "nix-community",
         "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "mattpocock-skills-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1787309793,
+        "narHash": "sha256-FPAAotNqA5aHrFDlj/XddoLs4TDKi+4J5H/mvevlOlk=",
+        "owner": "mattpocock",
+        "repo": "skills",
+        "rev": "5b15a47f2d7150f545fbcacbfe381787fc0230dc",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mattpocock",
+        "repo": "skills",
         "type": "github"
       }
     },
@@ -558,10 +590,12 @@
       "inputs": {
         "agent-browser-src": "agent-browser-src",
         "claude-code-src": "claude-code-src",
+        "cursor-plugins-src": "cursor-plugins-src",
         "flake-utils": "flake-utils",
         "git-hooks": "git-hooks",
         "hermes-agent": "hermes-agent",
         "home-manager": "home-manager",
+        "mattpocock-skills-src": "mattpocock-skills-src",
         "navi-cheats-src": "navi-cheats-src",
         "navi-tldr-pages-src": "navi-tldr-pages-src",
         "nix-index-database": "nix-index-database",
