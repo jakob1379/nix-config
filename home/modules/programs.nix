@@ -375,6 +375,7 @@ in
         noctalia = lib.mkIf config.customPackages.gui.enable {
           enable = true;
           systemd.enable = false;
+          package = inputs.noctalia.packages.${system}.default;
           # Upstream's critical-notification outline is 1px, invisible in practice.
           # Drop once noctalia makes the toast border width configurable.
           # package = inputs.noctalia.packages.${system}.default.overrideAttrs (prev: {
