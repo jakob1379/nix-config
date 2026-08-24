@@ -1,0 +1,31 @@
+---
+name: evdi 7.2 watch
+on:
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v25
+      - id: evdi
+        continue-on-error: true
+        run: nix build --no-link 'github:NixOS/nixpkgs/nixos-unstable#linuxKernel.packages.linux_7_2.evdi'
+      - if: steps.evdi.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -b evdi-kernel-7-2
+          nix flake update nixpkgs
+          sed -i 's/packages\.linux_7_1/packages.linux_7_2/' nixos/common.nix
+          git rm -q .github/workflows/evdi-watch.yml
+          git commit -aqm 'feat(kernel): back to 7.2, evdi builds again'
+          git push -qf origin evdi-kernel-7-2
+          gh pr create --fill --head evdi-kernel-7-2 || true
