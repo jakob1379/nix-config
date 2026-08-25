@@ -226,7 +226,7 @@ in
             # no SUPERPOWERS_* env reads). Set preemptively so any future
             # opt-out telemetry stays off by default.
             env.SUPERPOWERS_DISABLE_TELEMETRY = "1";
-
+            autoMemoryEnabled = false;
             enabledPlugins."frontend-design@claude-plugins-official" = true;
             sandbox.enabled = true;
             agentPushNotifEnabled = true;
