@@ -983,7 +983,7 @@ Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Cor
                    (:diagnostics (:enable :json-false)
                     :codeAction (:nameExtractFunction "extracted_function"
                                  :nameExtractVariable "extracted_variable"))))))
-           )
+           ))
     (add-to-list 'eglot-server-programs server))
   (add-to-list 'eglot-server-programs
                '((yaml-mode yaml-ts-mode) . ("yaml-language-server" "--stdio")))
