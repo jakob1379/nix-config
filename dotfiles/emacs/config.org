@@ -46,33 +46,6 @@ The config is divided into sensible sections (hopefully) to segregate mode-speci
 #+END_SRC
 ** Early init
 Early startup settings live in =~/.emacs.d/early-init.el= so they are applied before package and frame initialization. Keeping them in this file was too late for package startup and would also make tangling try to rewrite Home Manager's symlinked early-init file.
-** Straight
-Straight is a package manager for Emacs making it easier to fetch packages from anywhere.
-
-We want it to integrate nicely with use-package
-#+BEGIN_SRC emacs-lisp
-(setq straight-cache-autoloads t
-      straight-check-for-modifications '(check-on-save)
-      straight-vc-git-auto-fast-forward nil
-      straight-vc-git-default-clone-depth 1
-      straight-vc-git-default-protocol 'https
-      use-package-compute-statistics nil
-      vc-follow-symlinks t
-      straight-use-package-by-default t
-      )
-#+END_SRC
-** Defer Compilations
-
-#+BEGIN_SRC emacs-lisp
-(setq native-comp-deferred-compilation t)
-#+END_SRC
-** Low-hanging Speedup Fruits
-Resizing the Emacs frame can be a terribly expensive part of changing the font. By inhibiting this,
-we easily halve startup times with fonts that are larger than the system default.
-
-#+BEGIN_SRC emacs-lisp
-(setq frame-inhibit-implied-resize t)
-#+END_SRC
 ** Deferred startup helpers
 #+BEGIN_SRC emacs-lisp
 (defun me/run-after-startup-idle (seconds function)
@@ -82,56 +55,6 @@ we easily halve startup times with fonts that are larger than the system default
                   (list 'run-with-idle-timer seconds nil
                         (list 'quote function)))))
 #+END_SRC
-** Reduce GC
-Following [[https://github.com/hlissner/doom-emacs/blob/develop/docs/faq.org#how-does-doom-start-up-so-quickly][Doom-Emacs FAQ]], we max the garbage collection threshold on startup, and reset it to the original value after.
-
-#+BEGIN_SRC emacs-lisp
-;; max memory available for gc on startup
-(defvar me/gc-cons-threshold 16777216)
-
-(setq gc-cons-threshold most-positive-fixnum
-      gc-cons-percentage 0.6)
-
-(add-hook 'emacs-startup-hook
-          (lambda ()
-            (setq gc-cons-threshold me/gc-cons-threshold
-                  gc-cons-percentage 0.1)))
-
-;; max memory available for gc when opening minibuffer
-(defun me/defer-garbage-collection-h ()
-  (setq gc-cons-threshold most-positive-fixnum))
-
-(defun me/restore-garbage-collection-h ()
-  ;; Defer it so that commands launched immediately after will enjoy the
-  ;; benefits.
-  (run-at-time
-   1 nil (lambda () (setq gc-cons-threshold me/gc-cons-threshold))))
-
-(add-hook 'minibuffer-setup-hook #'me/defer-garbage-collection-h)
-(add-hook 'minibuffer-exit-hook #'me/restore-garbage-collection-h)
-(setq garbage-collection-messages t)
-#+END_SRC
-** Temporarily avoid special handling of files
-
-This script temporarily disables file name handlers during the startup of Emacs to speed up the
-process. Once Emacs has finished starting up, it restores the file name handlers to their original
-state.
-#+BEGIN_SRC emacs-lisp
-(defvar me/-file-name-handler-alist file-name-handler-alist)
-(setq file-name-handler-alist nil)
-(add-hook 'emacs-startup-hook
-          (lambda ()
-            (setq file-name-handler-alist me/-file-name-handler-alist)))
-#+END_SRC
-** Disable =site-run-file=
-#+BEGIN_SRC emacs-lisp
-(setq site-run-file nil)
-#+END_SRC
-** Don't compact font caches
-#+BEGIN_SRC emacs-lisp
-(setq inhibit-compacting-font-caches t)
-#+END_SRC
-
 ** Use the garbage collector magic hack
 #+BEGIN_SRC emacs-lisp
 (use-package gcmh
@@ -257,13 +180,6 @@ Emacs is very conservative about assuming encoding. Everything is UTF-8 these da
   (interactive)
   (ansi-color-apply-on-region (point-min) (point-max)))
 
-#+END_SRC
-** Extra Garbage Collection (disabled)
-#+BEGIN_SRC emacs-lisp
-;; (add-function :after after-focus-change-function
-;;               (defun me/garbage-collect-maybe ()
-;;                 (unless (frame-focus-state)
-;;                   (garbage-collect))))
 #+END_SRC
 ** non-ASCII characters
 #+BEGIN_SRC emacs-lisp
@@ -393,9 +309,6 @@ Corfu is a small CAPF UI. Eglot publishes LSP completions through CAPF, so the e
   :init
   (when (boundp 'treesit-enabled-modes)
     (setq treesit-enabled-modes t))
-  (when (boundp 'treesit-auto-install-grammar)
-    ;; Grammars are provided by Nix; ask before compiling/downloading any gap.
-    (setq treesit-auto-install-grammar 'ask))
   (when (boundp 'completion-eager-update)
     (setq completion-eager-update t))
   (when (boundp 'completion-eager-display)
@@ -1029,7 +942,6 @@ Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Cor
    (toml-mode . eglot-ensure)
    (typst-mode . eglot-ensure)
    (typescript-mode . eglot-ensure)
-   (yaml-mode . eglot-ensure)
    (yaml-ts-mode . eglot-ensure))
   :bind
   (:map eglot-mode-map
@@ -1071,7 +983,7 @@ Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Cor
                    (:diagnostics (:enable :json-false)
                     :codeAction (:nameExtractFunction "extracted_function"
                                  :nameExtractVariable "extracted_variable"))))))
-           )
+           ))
     (add-to-list 'eglot-server-programs server))
   (add-to-list 'eglot-server-programs
                '((yaml-mode yaml-ts-mode) . ("yaml-language-server" "--stdio")))
@@ -1867,16 +1779,6 @@ simple package that enable titlecasing
   :bind ("C-c w t" . why-this)
   :config ())
 #+end_src
-*** YAML mode
-#+BEGIN_SRC emacs-lisp
-(use-package yaml-mode
-  :defer t
-  :init
-  (when (fboundp 'yaml-ts-mode)
-    (add-to-list 'major-mode-remap-alist '(yaml-mode . yaml-ts-mode)))
-  :mode
-  ("\\.ya?ml\\'" . yaml-mode))
-#+END_SRC
 *** Yasnippet
 Yasnippet is one of the main reasons I have a hard time moving away. The ease of creating new
 snippets for common operations instead of macros, allows it to be portable and powerful.

@@ -633,7 +633,10 @@ in
             AddKeysToAgent = "yes";
             ControlMaster = "auto";
             ControlPath = "~/.ssh/sockets/%r@%h-%p";
-            ControlPersist = "yes";
+            # Bounded, not "yes": a master whose netbird tunnel dies never notices
+            # (ServerAlive* does not reap it through the ProxyCommand pipe), so an
+            # infinite master stays broken forever. Expire instead.
+            ControlPersist = "10m";
             ServerAliveInterval = 30;
             ServerAliveCountMax = 3;
           };

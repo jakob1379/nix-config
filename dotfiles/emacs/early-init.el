@@ -7,7 +7,6 @@
 
 (setq package-enable-at-startup nil
       native-comp-async-report-warnings-errors nil
-      site-run-file nil
       frame-inhibit-implied-resize t
       inhibit-compacting-font-caches t)
 
