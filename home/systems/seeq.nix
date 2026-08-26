@@ -120,12 +120,11 @@ in
       enable = true;
     };
 
-    emacs.package = lib.mkForce pkgs.emacs-nox;
+    emacs.package = lib.mkForce pkgs.emacs31-nox;
   };
 
   services.emacs = {
     enable = lib.mkForce true;
-    package = lib.mkForce pkgs.emacs-nox;
     startWithUserSession = lib.mkForce true;
     socketActivation.enable = lib.mkForce false;
     defaultEditor = lib.mkForce false;

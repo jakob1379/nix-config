@@ -72,7 +72,12 @@
 ((file-readable-p me/config-org-file)
   (require 'org)
   (require 'ob-tangle)
-  (org-babel-load-file me/config-org-file))
+  ;; Not `org-babel-load-file': its own staleness check uses
+  ;; `file-newer-than-file-p', which follows the home-manager symlink to a
+  ;; store file with an epoch mtime and so never re-tangles.
+  (org-babel-tangle-file me/config-org-file me/config-el-file
+                         (rx string-start (or "emacs-lisp" "elisp") string-end))
+  (load-file me/config-el-file))
  (t
   (user-error "Cannot find readable Emacs config: %s or %s"
               me/config-el-file
