@@ -120,7 +120,7 @@ in
       enable = true;
     };
 
-    emacs.package = lib.mkForce pkgs.emacs-nox;
+    emacs.package = lib.mkForce pkgs.emacs31-nox;
   };
 
   services.emacs = {
