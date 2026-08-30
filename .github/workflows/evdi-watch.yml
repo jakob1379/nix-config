@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: 17 4 * * 1
   workflow_dispatch:
+concurrency:
+  group: evdi-watch
+  cancel-in-progress: false
 permissions: {}
 jobs:
   check:
@@ -15,6 +18,8 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
+          # manual runs must branch off the default branch, not the selected ref
+          ref: ${{ github.event.repository.default_branch }}
           # keep the write token out of the steps that evaluate upstream nix
           persist-credentials: false
       - uses: cachix/install-nix-action@6004951b182f8860210c8d6f0d808ec5b1a33d28  # v25
@@ -34,4 +39,5 @@ jobs:
           git rm -q .github/workflows/evdi-watch.yml
           git commit -aqm 'feat(kernel): back to 7.2, evdi builds again'
           git push -qf "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY" evdi-kernel-7-2
-          gh pr create --fill --head evdi-kernel-7-2 || true
+          gh pr view evdi-kernel-7-2 --json state -q .state | grep -qx OPEN ||
+            gh pr create --fill --head evdi-kernel-7-2
