@@ -7,6 +7,7 @@ on:
 concurrency:
   group: evdi-watch
   cancel-in-progress: false
+  queue: max
 permissions: {}
 jobs:
   check:
