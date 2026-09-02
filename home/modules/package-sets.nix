@@ -2,6 +2,7 @@
   pkgs,
   lib,
   system,
+  inputs,
   ...
 }:
 
@@ -48,6 +49,7 @@ in
   ];
 
   gui = with pkgs; [
+    inputs.ai-usagebar.packages.${system}.default
     brave
     tana
     xwayland-satellite
