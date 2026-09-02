@@ -257,8 +257,114 @@ in
 
         fastfetch = {
           enable = true;
+          settings = {
+            "$schema" = "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json";
+            display = {
+              separator = "  ";
+              freq.ndigits = 1;
+            };
+            modules = [
+              {
+                type = "title";
+                keyWidth = 10;
+              }
+              "break"
+              {
+                type = "os";
+                key = " 󰟀 OS";
+                keyColor = "yellow";
+              }
+              {
+                type = "kernel";
+                key = "├  Kernel";
+                keyColor = "yellow";
+              }
+              {
+                type = "packages";
+                key = "├ 󰏖 Packages";
+                keyColor = "yellow";
+              }
+              {
+                type = "shell";
+                key = "├ 󰞷 Shell";
+                keyColor = "yellow";
+              }
+              {
+                type = "localip";
+                key = "├ 󰩟 Local IP";
+                keyColor = "yellow";
+              }
+              {
+                type = "uptime";
+                key = "└ 󰅐 Uptime";
+                keyColor = "yellow";
+              }
+              "break"
+              {
+                type = "wm";
+                key = " 󰨇 WM";
+                keyColor = "blue";
+              }
+              {
+                type = "de";
+                key = "├ 󰜬 DE";
+                keyColor = "blue";
+              }
+              {
+                type = "theme";
+                key = "├ 󰉼 Theme";
+                keyColor = "blue";
+              }
+              {
+                type = "font";
+                key = "├ 󰛖 Font";
+                keyColor = "blue";
+              }
+              {
+                type = "terminal";
+                key = "└ 󰆍 Terminal";
+                keyColor = "blue";
+              }
+              "break"
+              {
+                type = "host";
+                key = " 󰌢 Host";
+                keyColor = "green";
+              }
+              {
+                type = "cpu";
+                key = "├ 󰘚 CPU";
+                keyColor = "green";
+                temp = true;
+              }
+              {
+                type = "gpu";
+                key = "├ 󰢮 GPU";
+                keyColor = "green";
+              }
+              {
+                type = "memory";
+                key = "├ 󰍛 Memory";
+                keyColor = "green";
+              }
+              {
+                type = "disk";
+                key = "├ 󰋊 Disk";
+                keyColor = "green";
+              }
+              {
+                type = "display";
+                key = "└ 󰍹 Display";
+                keyColor = "green";
+              }
+              "break"
+              {
+                type = "colors";
+                symbol = "circle";
+              }
+            ];
+          };
         };
-
         fd.enable = true;
 
         firefox = {
