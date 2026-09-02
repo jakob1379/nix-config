@@ -283,7 +283,6 @@ layout {
 
 // This line starts waybar, a commonly used bar for Wayland compositors.
 // spawn-at-startup "waybar"
-spawn-at-startup "vicinae" "server"
 spawn-at-startup "noctalia" "--daemon"
 spawn-sh-at-startup "systemctl --user import-environment DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE NIRI_SOCKET; dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE NIRI_SOCKET; systemctl --user start emacs.service"
 
