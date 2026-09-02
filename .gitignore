@@ -95,3 +95,7 @@ result
 /.opencode/
 .desloppify/
 .ooc
+
+# Vicinae extension build artifacts
+dotfiles/vicinae/*/node_modules/
+dotfiles/vicinae/*/vicinae-env.d.ts

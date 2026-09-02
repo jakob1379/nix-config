@@ -493,6 +493,12 @@ in
           inherit (config.customPackages.gui) enable;
           package = pkgs.vicinae;
           systemd.enable = true;
+          extensions = [
+            (config.lib.vicinae.mkExtension {
+              name = "nix-find";
+              src = ../../dotfiles/vicinae/nix-find;
+            })
+          ];
         };
 
         tmux = {

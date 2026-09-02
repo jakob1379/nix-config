@@ -32,6 +32,7 @@
       name = "codespell";
       entry = "${lib.getExe pkgs.codespell} --write-changes";
       types = [ "text" ];
+      excludes = [ "(^|/)package-lock\\.json$" ];
     };
     deadnix.enable = true;
     detect-private-keys.enable = true;
