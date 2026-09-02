@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-flakePath="${XDG_CONFIG_HOME:-$HOME/.config}/home-manager"
-
 sudo -v
 nix-channel --update &
 sudo nix-channel --update &
@@ -17,4 +15,4 @@ opencode models --refresh &
 wait
 
 sudo -v
-nixos-rebuild switch --sudo --flake "${flakePath}" |& nom
+nh os switch "$HOME/.config/home-manager/"

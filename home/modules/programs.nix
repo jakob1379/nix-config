@@ -813,6 +813,11 @@ in
           shellWrapperName = "y";
         };
 
+        nh = {
+          enable = true;
+          flake = "${config.home.homeDirectory}/.config/home-manager";
+        };
+
         nix-search-tv = {
           enable = true;
           settings = {

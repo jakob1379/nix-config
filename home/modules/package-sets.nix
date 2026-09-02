@@ -10,8 +10,7 @@ let
     name = "hsu";
     runtimeInputs = [
       pkgs.gh
-      pkgs.home-manager
-      pkgs.nix-output-monitor
+      pkgs.nh
     ];
     text = builtins.readFile ../../bin/hm-switch-update;
   };
@@ -259,9 +258,8 @@ in
       runtimeInputs = [
         hsu
         pkgs.coreutils
+        pkgs.nh
         pkgs.nix
-        pkgs.nix-output-monitor
-        pkgs.nixos-rebuild
         pkgs.opencode
         pkgs.uv
       ];
