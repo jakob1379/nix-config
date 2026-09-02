@@ -1,0 +1,52 @@
+---
+name: t3code 0.0.38 watch
+on:
+  schedule:
+    - cron: 23 5 * * *
+  workflow_dispatch:
+concurrency:
+  group: t3code-watch
+  cancel-in-progress: false
+  queue: max
+permissions: {}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      # push the promotion branch and open its PR
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          # manual runs must branch off the default branch, not the selected ref
+          ref: ${{ github.event.repository.default_branch }}
+          # keep the write token out of the steps that evaluate upstream nix
+          persist-credentials: false
+      - uses: cachix/install-nix-action@6004951b182f8860210c8d6f0d808ec5b1a33d28  # v25
+      - id: landed
+        run: |
+          for channel in nixos-unstable-small nixos-unstable; do
+            version=$(nix eval --raw "github:nixos/nixpkgs/$channel#t3code.version") || continue
+            echo "$channel: $version"
+            if [ "$(printf '%s\n0.0.38\n' "$version" | sort -V | head -1)" = 0.0.38 ]; then
+              echo 'yes=true' >> "$GITHUB_OUTPUT"
+            fi
+          done
+      - if: steps.landed.outputs.yes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |-
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -b t3code-0-0-38
+          git rm -q overlays/t3code.nix .github/workflows/t3code-watch.yml
+          sed -i '/Must come after fromSmall/d; \#overlays/t3code.nix#d' lib/mkHomeConfig.nix
+          nix flake update nixpkgs nixpkgs-small
+          # the pin is only safe to drop if the plain channels really ship 0.0.38
+          version=$(nix eval --raw '.#homeConfigurations."jsg@amd".pkgs.t3code.version')
+          [ "$(printf '%s\n0.0.38\n' "$version" | sort -V | head -1)" = 0.0.38 ]
+          git commit -aqm 'chore(t3code): drop 0.0.38 overlay, nixpkgs ships it'
+          git push -qf "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY" t3code-0-0-38
+          gh pr view t3code-0-0-38 --json state -q .state | grep -qx OPEN ||
+            gh pr create --fill --head t3code-0-0-38

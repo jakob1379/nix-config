@@ -1,35 +1,44 @@
+# Ahead-of-nixpkgs bump to t3code 0.0.38, mirroring
+# https://github.com/NixOS/nixpkgs/pull/558233 (version, src hash, pnpm deps
+# hash, electron 41 -> 43).
+#
+# The old commandInvariants.ts patch for
+# https://github.com/pingdotgg/t3code/issues/4647 is gone: 0.0.38 fixes it
+# upstream, requireThreadAbsent now treats a soft-deleted thread as absent.
+#
 # t3code is pulled from nixos-unstable-small (see `fromSmall` in
-# lib/mkHomeConfig.nix), so the patched `t3code-unwrapped` must be built from
-# that same package set rather than the main nixpkgs one.
+# lib/mkHomeConfig.nix), so the bumped `t3code-unwrapped` must be built from
+# that same package set. It is not a top-level attribute — package.nix only
+# takes it as a defaulted argument — so it has to be re-instantiated here
+# rather than reached through `.override`'s function form.
+#
+# .github/workflows/t3code-watch.yml deletes this file once either channel
+# ships 0.0.38.
 smallPkgs:
 
 _: prev:
 
 {
-  # Upstream https://github.com/pingdotgg/t3code/issues/4647: when thread
-  # bootstrap fails (e.g. the worktree's `git fetch` errors), the rollback
-  # soft-deletes the thread, but requireThreadAbsent matches on id alone and
-  # ignores deletedAt. The id is burned permanently, and the web client — whose
-  # projections all filter `deleted_at IS NULL` — believes it is still free and
-  # keeps retrying it, wedging the draft with "already exists and cannot be
-  # created twice".
-  #
-  # Treat a soft-deleted thread as absent. Safe because thread.created resets
-  # deletedAt to null and fully replaces the row in both the decider read model
-  # and the SQL projection, so a revived id yields a fully visible thread.
-  #
-  # t3code-unwrapped is not a top-level attribute — package.nix only takes it as
-  # a defaulted argument — so it has to be re-instantiated here rather than
-  # reached through `.override`'s function form.
   t3code = prev.t3code.override {
     t3code-unwrapped =
-      (smallPkgs.callPackage "${smallPkgs.path}/pkgs/by-name/t3/t3code/unwrapped.nix" { }).overrideAttrs
+      (smallPkgs.callPackage "${smallPkgs.path}/pkgs/by-name/t3/t3code/unwrapped.nix" {
+        electron_41 = smallPkgs.electron_43;
+      }).overrideAttrs
         (prevAttrs: {
-          postPatch = (prevAttrs.postPatch or "") + ''
-            substituteInPlace apps/server/src/orchestration/commandInvariants.ts \
-              --replace-fail 'if (!findThreadById(input.readModel, input.threadId)) {' \
-                             'if (findThreadById(input.readModel, input.threadId)?.deletedAt !== null) {'
-          '';
+          version = "0.0.38";
+
+          src = smallPkgs.fetchFromGitHub {
+            owner = "pingdotgg";
+            repo = "t3code";
+            tag = "v0.0.38";
+            hash = "sha256-lbAOIlNwVxrjXA5jJGzmOm7Fe2ZcsnFuDzaSEt6R7G4=";
+          };
+
+          # fetchDeps inherits pname/version/src from finalAttrs, so the bump
+          # above already reaches it; only the fixed-output hash needs replacing.
+          pnpmDeps = prevAttrs.pnpmDeps.overrideAttrs {
+            outputHash = "sha256-t/hmpXdYPnBFx18A6NrSL4zSvVnUDIjIPtLjGOzoaDk=";
+          };
         });
   };
 }
