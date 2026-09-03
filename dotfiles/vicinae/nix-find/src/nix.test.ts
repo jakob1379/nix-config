@@ -96,14 +96,14 @@ test("withLinks appends homepage and source", () => {
   );
 });
 
-test("withLinks skips urls already in the preview and duplicates", () => {
+test("withLinks skips a homepage already in the preview but always keeps source", () => {
   assert.equal(
     withLinks("# pkg\n\n<https://a.com>", "https://a.com", "https://b.com"),
     "# pkg\n\n<https://a.com>\n\n[Source](https://b.com)",
   );
   assert.equal(
     withLinks("# opt", "https://a.com", "https://a.com"),
-    "# opt\n\n[Homepage](https://a.com)",
+    "# opt\n\n[Homepage](https://a.com) • [Source](https://a.com)",
   );
   assert.equal(withLinks("# pkg\n\n<https://a.com>", "https://a.com", ""), "# pkg\n\n<https://a.com>");
 });
