@@ -7,12 +7,19 @@ const SGR = /\x1b\[([0-9;]*)m/g;
 const BOX_EDGE = /^[┌└][─┐┘]*$/;
 const BOX_ROW = /^│(.*)│$/;
 
+let queue: Promise<unknown> = Promise.resolve();
+
+/** Spawns one process at a time: `nix-search-tv` holds an exclusive lock on its badger index. */
 export function run(cmd: string, args: string[]): Promise<string> {
-  return new Promise((resolve, reject) =>
-    execFile(cmd, args, { maxBuffer: 64 << 20 }, (err, stdout) =>
-      err ? reject(err) : resolve(stdout),
-    ),
-  );
+  const spawn = () =>
+    new Promise<string>((resolve, reject) =>
+      execFile(cmd, args, { maxBuffer: 64 << 20 }, (err, stdout) =>
+        err ? reject(err) : resolve(stdout),
+      ),
+    );
+  const next = queue.then(spawn, spawn);
+  queue = next.catch(() => {});
+  return next;
 }
 
 /** Parses `nix-find -p` output lines, which look like `nixpkgs/ firefox`. */
