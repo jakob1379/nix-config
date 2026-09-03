@@ -82,6 +82,22 @@ function section(header: Line, value: Line[]): string {
   return `${inline(header)}\n\n${fenced}`;
 }
 
+/** Appends homepage/source links, skipping URLs the preview already shows. */
+export function withLinks(markdown: string, homepage: string, source: string): string {
+  let seen = markdown;
+  const links: string[] = [];
+  for (const [label, raw] of [
+    ["Homepage", homepage],
+    ["Source", source],
+  ] as const) {
+    const url = raw.trim();
+    if (!url || seen.includes(url)) continue;
+    links.push(`[${label}](${url})`);
+    seen += url;
+  }
+  return links.length ? `${markdown}\n\n${links.join(" • ")}` : markdown;
+}
+
 /**
  * Renders `nix-search-tv preview` output as markdown: the attribute becomes a
  * heading, bold ANSI runs stay bold, and literal values become `nix` code

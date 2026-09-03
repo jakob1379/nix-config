@@ -37,6 +37,22 @@ nix_find_extract_pkgs() {
 }
 export -f nix_find_extract_pkgs
 
+# Helper: preview with homepage/source links, skipping URLs already shown
+nix_find_preview() {
+	local preview homepage source
+	preview=$(nix-search-tv preview "$1")
+	homepage=$(nix-search-tv homepage "$1")
+	source=$(nix-search-tv source "$1")
+	printf '%s\n' "$preview"
+	if [[ -n "$homepage" && "$preview" != *"$homepage"* ]]; then
+		printf '\n\033[1mhomepage\033[22m\n%s\n' "$homepage"
+	fi
+	if [[ -n "$source" && "$source" != "$homepage" && "$preview" != *"$source"* ]]; then
+		printf '\n\033[1msource\033[22m\n%s\n' "$source"
+	fi
+}
+export -f nix_find_preview
+
 # Build info command for fzf (receives {+} as space-separated args)
 # shellcheck disable=SC2016
 info_cmd='echo "nix-shell -p $(nix_find_extract_pkgs {+})"'
@@ -51,7 +67,7 @@ mapfile -t selections < <(
 			--prompt="❄ Query> " \
 			--scheme=history \
 			--preview-window=down:60%:wrap \
-			--preview 'nix-search-tv preview {}' \
+			--preview 'nix_find_preview {}' \
 			--bind "enter:accept" \
 			--bind "alt-c:execute-silent(echo {} | awk -F'/ +' '{print \$2}' | tr -d ' ' | wl-copy 2>/dev/null || xclip -selection clipboard)" \
 			--bind "alt-l:toggle-preview" \
