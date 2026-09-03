@@ -37,22 +37,17 @@ nix_find_extract_pkgs() {
 }
 export -f nix_find_extract_pkgs
 
-# Helper: print a URL as an OSC 8 hyperlink so it stays clickable when wrapped
-nix_find_link() {
-	printf '\033]8;;%s\033\\%s\033]8;;\033\\\n' "$1" "$1"
-}
-export -f nix_find_link
-
 # Helper: preview with a homepage/source section under the title, so it
 # stays above the fold for packages with long descriptions
 nix_find_preview() {
 	local preview rest=""
 	preview=$(nix-search-tv preview "$1")
 	[[ "$preview" == *$'\n'* ]] && rest="${preview#*$'\n'}"
-	printf '%s\n\n\033[1mhomepage/source\033[22m\n' "${preview%%$'\n'*}"
-	nix_find_link "$(nix-search-tv homepage "$1")"
-	nix_find_link "$(nix-search-tv source "$1")"
-	printf '\n%s\n' "$rest"
+	printf '%s\n\n\033[1mhomepage/source\033[22m\n%s\n%s\n\n%s\n' \
+		"${preview%%$'\n'*}" \
+		"$(nix-search-tv homepage "$1")" \
+		"$(nix-search-tv source "$1")" \
+		"$rest"
 }
 export -f nix_find_preview
 
