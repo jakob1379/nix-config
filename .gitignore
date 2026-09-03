@@ -84,7 +84,6 @@ __pycache__/
 /package.json
 /package-lock.json
 /.pre-commit-config.yaml
-/flake.lock
 .aider*
 .aider.*
 .codex
