@@ -172,6 +172,25 @@ Emacs is very conservative about assuming encoding. Everything is UTF-8 these da
 (global-set-key [C-mouse-5]     'text-scale-decrease)
 (global-set-key [C-tab]         'other-window)
 (global-set-key [f10]           'treemacs)
+
+(defun my/forward-sexp-or-string (&optional arg)
+  "Like `forward-sexp', but jump out of a string when point is inside one."
+  (interactive "^p")
+  (let ((ppss (syntax-ppss)))
+    (if (nth 3 ppss)
+        (goto-char (scan-sexps (nth 8 ppss) 1))
+      (forward-sexp arg))))
+
+(defun my/backward-sexp-or-string (&optional arg)
+  "Like `backward-sexp', but jump to the opening quote when inside a string."
+  (interactive "^p")
+  (let ((ppss (syntax-ppss)))
+    (if (nth 3 ppss)
+        (goto-char (nth 8 ppss))
+      (backward-sexp arg))))
+
+(global-set-key (kbd "C-M-<right>") 'my/forward-sexp-or-string)
+(global-set-key (kbd "C-M-<left>")  'my/backward-sexp-or-string)
 #+END_SRC
 ** Ansi colors decoding/rendering
 #+BEGIN_SRC emacs-lisp
@@ -1783,19 +1802,46 @@ simple package that enable titlecasing
 Yasnippet is one of the main reasons I have a hard time moving away. The ease of creating new
 snippets for common operations instead of macros, allows it to be portable and powerful.
 
+=yas-global-mode= rather than a hook list: =yas-expand-snippet= asserts that =yas-minor-mode= is
+live in the current buffer, and =conf-mode= derives from neither =prog-mode= nor =text-mode=, so
+the conf-*/direnv snippet dirs were unreachable.
+
 #+begin_src emacs-lisp
 (use-package yasnippet
   :delight yas
   :defer t
   :commands (yas-minor-mode yas-global-mode yas-expand)
-  :hook ((prog-mode text-mode org-mode) . yas-minor-mode)
+  :hook (after-init . yas-global-mode)
+  :init
+  ;; Set before load: the defcustom's setter triggers a redundant `yas-reload-all'.
+  (setq yas-snippet-dirs '("~/.config/home-manager/dotfiles/emacs/yasnippet/snippets"))
   :custom
-  (yas-prompt-functions '(yas-completing-prompt))
-  (yas-snippet-dirs '("~/.config/home-manager/dotfiles/emacs/yasnippet/snippets")))
+  (yas-prompt-functions '(yas-completing-prompt)))
+
+;; Registers itself through its own autoloaded `eval-after-load'.
 (use-package yasnippet-snippets
+  :after yasnippet)
+#+end_src
+
+**** Snippets in Corfu
+Bridges yasnippet into CAPF so snippets show up in the Corfu popup while typing, annotated and
+previewable through =corfu-popupinfo=.
+
+#+begin_src emacs-lisp
+(use-package yasnippet-capf
   :after yasnippet
-  :defer t
+  :custom
+  ;; Default nil scans unbounded on every keystroke.
+  (yasnippet-capf-max-search-distance 500)
+  :init
+  (add-hook 'completion-at-point-functions #'yasnippet-capf 50)
   :config
-  (yasnippet-snippets-initialize)
-  )
+  ;; Eglot's CAPF is exclusive, so a global fallback never fires in the modes
+  ;; hooked to `eglot-ensure'. Merge the two instead of chaining them.
+  (defun me/eglot-capf-with-snippets ()
+    (when (eglot-managed-p)
+      (setq-local completion-at-point-functions
+                  (list (cape-capf-super #'eglot-completion-at-point #'yasnippet-capf)
+                        t))))
+  (add-hook 'eglot-managed-mode-hook #'me/eglot-capf-with-snippets))
 #+end_src
