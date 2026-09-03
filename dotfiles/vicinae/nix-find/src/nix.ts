@@ -82,14 +82,10 @@ function section(header: Line, value: Line[]): string {
   return `${inline(header)}\n\n${fenced}`;
 }
 
-/** Appends homepage/source links; homepage is skipped if the preview already shows it. */
+/** Appends a `homepage/source` section with both links. */
 export function withLinks(markdown: string, homepage: string, source: string): string {
-  const links: string[] = [];
-  const home = homepage.trim();
-  const src = source.trim();
-  if (home && !markdown.includes(home)) links.push(`[Homepage](${home})`);
-  if (src) links.push(`[Source](${src})`);
-  return links.length ? `${markdown}\n\n${links.join(" • ")}` : markdown;
+  const links = [homepage.trim(), source.trim()].filter(Boolean).map((url) => `<${url}>`);
+  return links.length ? `${markdown}\n\n**homepage/source**\n\n${links.join("\n\n")}` : markdown;
 }
 
 /**

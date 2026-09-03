@@ -89,21 +89,17 @@ test("toMarkdown returns empty for empty preview", () => {
   assert.equal(toMarkdown(""), "");
 });
 
-test("withLinks appends homepage and source", () => {
+test("withLinks appends a homepage/source section", () => {
   assert.equal(
     withLinks("# pkg", "https://a.com\n", "https://b.com\n"),
-    "# pkg\n\n[Homepage](https://a.com) • [Source](https://b.com)",
+    "# pkg\n\n**homepage/source**\n\n<https://a.com>\n\n<https://b.com>",
   );
 });
 
-test("withLinks skips a homepage already in the preview but always keeps source", () => {
+test("withLinks drops empty links and skips the section when both are empty", () => {
   assert.equal(
-    withLinks("# pkg\n\n<https://a.com>", "https://a.com", "https://b.com"),
-    "# pkg\n\n<https://a.com>\n\n[Source](https://b.com)",
+    withLinks("# pkg", "", "https://b.com"),
+    "# pkg\n\n**homepage/source**\n\n<https://b.com>",
   );
-  assert.equal(
-    withLinks("# opt", "https://a.com", "https://a.com"),
-    "# opt\n\n[Homepage](https://a.com) • [Source](https://a.com)",
-  );
-  assert.equal(withLinks("# pkg\n\n<https://a.com>", "https://a.com", ""), "# pkg\n\n<https://a.com>");
+  assert.equal(withLinks("# pkg", "", "  "), "# pkg");
 });

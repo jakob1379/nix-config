@@ -37,19 +37,12 @@ nix_find_extract_pkgs() {
 }
 export -f nix_find_extract_pkgs
 
-# Helper: preview with homepage/source links; homepage skipped if already shown
+# Helper: preview followed by a homepage/source section
 nix_find_preview() {
-	local preview homepage source
-	preview=$(nix-search-tv preview "$1")
-	homepage=$(nix-search-tv homepage "$1")
-	source=$(nix-search-tv source "$1")
-	printf '%s\n' "$preview"
-	if [[ -n "$homepage" && "$preview" != *"$homepage"* ]]; then
-		printf '\n\033[1mhomepage\033[22m\n%s\n' "$homepage"
-	fi
-	if [[ -n "$source" ]]; then
-		printf '\n\033[1msource\033[22m\n%s\n' "$source"
-	fi
+	nix-search-tv preview "$1"
+	printf '\n\033[1mhomepage/source\033[22m\n%s\n%s\n' \
+		"$(nix-search-tv homepage "$1")" \
+		"$(nix-search-tv source "$1")"
 }
 export -f nix_find_preview
 
