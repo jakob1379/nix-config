@@ -9,7 +9,7 @@ import {
   type Image,
 } from "@vicinae/api";
 import { useEffect, useState } from "react";
-import { parse, run, toMarkdown, type Entry } from "./nix.ts";
+import { parse, run, toMarkdown, withLinks, type Entry } from "./nix.ts";
 
 /**
  * The index is shown as its own logo so the whole row width stays with the
@@ -60,9 +60,13 @@ function usePreview(entry: Entry | undefined) {
       return;
     }
     let cancelled = false;
-    run("nix-search-tv", ["preview", entry.line])
-      .then((preview) => !cancelled && setMarkdown(toMarkdown(preview, entry.index)))
-      .catch(() => !cancelled && setMarkdown(""));
+    const resolve = (subcommand: string) =>
+      run("nix-search-tv", [subcommand, entry.line]).catch(() => "");
+    Promise.all([resolve("preview"), resolve("homepage"), resolve("source")]).then(
+      ([preview, homepage, source]) =>
+        !cancelled &&
+        setMarkdown(withLinks(toMarkdown(preview, entry.index), homepage, source)),
+    );
     return () => {
       cancelled = true;
     };

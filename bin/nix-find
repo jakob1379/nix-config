@@ -37,6 +37,20 @@ nix_find_extract_pkgs() {
 }
 export -f nix_find_extract_pkgs
 
+# Helper: preview with a homepage/source section under the title, so it
+# stays above the fold for packages with long descriptions
+nix_find_preview() {
+	local preview rest=""
+	preview=$(nix-search-tv preview "$1")
+	[[ "$preview" == *$'\n'* ]] && rest="${preview#*$'\n'}"
+	printf '%s\n\n\033[1mhomepage/source\033[22m\n%s\n%s\n\n%s\n' \
+		"${preview%%$'\n'*}" \
+		"$(nix-search-tv homepage "$1")" \
+		"$(nix-search-tv source "$1")" \
+		"$rest"
+}
+export -f nix_find_preview
+
 # Build info command for fzf (receives {+} as space-separated args)
 # shellcheck disable=SC2016
 info_cmd='echo "nix-shell -p $(nix_find_extract_pkgs {+})"'
@@ -51,7 +65,7 @@ mapfile -t selections < <(
 			--prompt="❄ Query> " \
 			--scheme=history \
 			--preview-window=down:60%:wrap \
-			--preview 'nix-search-tv preview {}' \
+			--preview 'nix_find_preview {}' \
 			--bind "enter:accept" \
 			--bind "alt-c:execute-silent(echo {} | awk -F'/ +' '{print \$2}' | tr -d ' ' | wl-copy 2>/dev/null || xclip -selection clipboard)" \
 			--bind "alt-l:toggle-preview" \

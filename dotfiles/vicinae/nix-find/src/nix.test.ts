@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { parse, toMarkdown } from "./nix.ts";
+import { parse, toMarkdown, withLinks } from "./nix.ts";
 
 const B = "\x1b[1m";
 const b = "\x1b[22m";
@@ -87,4 +87,20 @@ test("toMarkdown escapes markdown metacharacters in option paths", () => {
 
 test("toMarkdown returns empty for empty preview", () => {
   assert.equal(toMarkdown(""), "");
+});
+
+test("withLinks inserts a homepage/source section under the heading and index", () => {
+  assert.equal(
+    withLinks("# pkg\n\n*nixpkgs*\n\ndescription", "https://a.com\n", "https://b.com\n"),
+    "# pkg\n\n*nixpkgs*\n\n**homepage/source**\n\n<https://a.com>\n\n<https://b.com>\n\ndescription",
+  );
+  assert.equal(
+    withLinks("# pkg\n\ndescription", "https://a.com", ""),
+    "# pkg\n\n**homepage/source**\n\n<https://a.com>\n\ndescription",
+  );
+});
+
+test("withLinks drops empty links and skips the section when both are empty", () => {
+  assert.equal(withLinks("# pkg", "", "  "), "# pkg");
+  assert.equal(withLinks("", "https://a.com", ""), "");
 });

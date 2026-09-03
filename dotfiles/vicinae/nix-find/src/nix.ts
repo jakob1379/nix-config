@@ -82,6 +82,16 @@ function section(header: Line, value: Line[]): string {
   return `${inline(header)}\n\n${fenced}`;
 }
 
+/** Inserts a `homepage/source` section right under the heading, above the fold. */
+export function withLinks(markdown: string, homepage: string, source: string): string {
+  const links = [homepage.trim(), source.trim()].filter(Boolean).map((url) => `<${url}>`);
+  if (!links.length || !markdown) return markdown;
+  const blocks = markdown.split("\n\n");
+  const at = blocks[1]?.startsWith("*") ? 2 : 1;
+  blocks.splice(at, 0, `**homepage/source**\n\n${links.join("\n\n")}`);
+  return blocks.join("\n\n");
+}
+
 /**
  * Renders `nix-search-tv preview` output as markdown: the attribute becomes a
  * heading, bold ANSI runs stay bold, and literal values become `nix` code
