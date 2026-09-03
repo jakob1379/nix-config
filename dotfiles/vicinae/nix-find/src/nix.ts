@@ -82,10 +82,14 @@ function section(header: Line, value: Line[]): string {
   return `${inline(header)}\n\n${fenced}`;
 }
 
-/** Appends a `homepage/source` section with both links. */
+/** Inserts a `homepage/source` section right under the heading, above the fold. */
 export function withLinks(markdown: string, homepage: string, source: string): string {
   const links = [homepage.trim(), source.trim()].filter(Boolean).map((url) => `<${url}>`);
-  return links.length ? `${markdown}\n\n**homepage/source**\n\n${links.join("\n\n")}` : markdown;
+  if (!links.length || !markdown) return markdown;
+  const blocks = markdown.split("\n\n");
+  const at = blocks[1]?.startsWith("*") ? 2 : 1;
+  blocks.splice(at, 0, `**homepage/source**\n\n${links.join("\n\n")}`);
+  return blocks.join("\n\n");
 }
 
 /**

@@ -89,17 +89,18 @@ test("toMarkdown returns empty for empty preview", () => {
   assert.equal(toMarkdown(""), "");
 });
 
-test("withLinks appends a homepage/source section", () => {
+test("withLinks inserts a homepage/source section under the heading and index", () => {
   assert.equal(
-    withLinks("# pkg", "https://a.com\n", "https://b.com\n"),
-    "# pkg\n\n**homepage/source**\n\n<https://a.com>\n\n<https://b.com>",
+    withLinks("# pkg\n\n*nixpkgs*\n\ndescription", "https://a.com\n", "https://b.com\n"),
+    "# pkg\n\n*nixpkgs*\n\n**homepage/source**\n\n<https://a.com>\n\n<https://b.com>\n\ndescription",
+  );
+  assert.equal(
+    withLinks("# pkg\n\ndescription", "https://a.com", ""),
+    "# pkg\n\n**homepage/source**\n\n<https://a.com>\n\ndescription",
   );
 });
 
 test("withLinks drops empty links and skips the section when both are empty", () => {
-  assert.equal(
-    withLinks("# pkg", "", "https://b.com"),
-    "# pkg\n\n**homepage/source**\n\n<https://b.com>",
-  );
   assert.equal(withLinks("# pkg", "", "  "), "# pkg");
+  assert.equal(withLinks("", "https://a.com", ""), "");
 });
