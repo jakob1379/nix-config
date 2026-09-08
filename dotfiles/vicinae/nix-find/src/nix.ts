@@ -89,6 +89,17 @@ function section(header: Line, value: Line[]): string {
   return `${inline(header)}\n\n${fenced}`;
 }
 
+/**
+ * Home-Manager options have no homepage of their own, so `nix-search-tv` falls
+ * back to the module source for both links. Send the homepage to the option
+ * search instead, on `master`, the branch `nix-search-tv` indexes.
+ */
+export function optionsUrl(entry: Entry): string | null {
+  if (entry.index !== "home-manager") return null;
+  const query = encodeURIComponent(entry.attr);
+  return `https://home-manager-options.extranix.com/?query=${query}&release=master`;
+}
+
 /** Inserts a `homepage/source` section right under the heading, above the fold. */
 export function withLinks(markdown: string, homepage: string, source: string): string {
   const links = [homepage.trim(), source.trim()].filter(Boolean).map((url) => `<${url}>`);
