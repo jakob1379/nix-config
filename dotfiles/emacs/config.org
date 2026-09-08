@@ -1235,6 +1235,105 @@ Makefile modes comes with Emacs, but we still want to use it and be able to conf
   :defer t
   :mode (rx ".nix" eos))
 #+END_SRC
+**** Flake-aware attribute completion
+=nixd= completes NixOS/home-manager /option/ paths, but not the values behind a
+flake input: =inputs.foo= is a module argument bound at eval time, so no amount
+of static analysis reaches it. This asks Nix itself, via =builtins.getFlake= and
+=builtins.attrNames=.
+
+Everything runs through an async =nix eval=, so a cold lookup never blocks
+typing --- the CAPF returns nil, and the sentinel refires completion once the
+answer lands. Measured worst-case block: 5.7ms. Results are cached per
+=(flake-root . attr-path)=, and the flake's top-level attrs are fetched when a
+Nix file is opened, so =inputs.= is usually warm before you finish typing it.
+
+The root guard matters more than it looks: without it, every =config.= and
+=pkgs.= prefix spends ~1.3s discovering that module arguments are not flake
+attributes.
+
+#+BEGIN_SRC emacs-lisp
+(defvar nix-flake--cache (make-hash-table :test 'equal)
+  "Maps (ROOT . PATH) to a list of attr names, or the symbol `none'.")
+(defvar nix-flake--pending (make-hash-table :test 'equal))
+
+(defun nix-flake--expr (root path)
+  ;; ponytail: bare attr paths only; quoted keys ("foo.bar") would need escaping
+  (format "with builtins; let v = (getFlake \"%s\")%s; in \
+if isAttrs v then concatStringsSep \"\\n\" (attrNames v) else \"\""
+          root (if (string-empty-p path) "" (concat "." path))))
+
+(defun nix-flake--fetch (root path)
+  "Kick off an async `nix eval' for ROOT/PATH.  Return immediately."
+  (let ((key (cons root path)))
+    (unless (gethash key nix-flake--pending)
+      (puthash key t nix-flake--pending)
+      (let ((out (generate-new-buffer " *nix-flake-eval*"))
+            (src (current-buffer))
+            (pt  (point)))
+        (make-process
+         :name "nix-flake-eval" :buffer out :noquery t :connection-type 'pipe
+         :command (list "nix" "eval" "--impure" "--raw"
+                        "--no-warn-dirty" "--quiet" "--expr"
+                        (nix-flake--expr root path))
+         :sentinel
+         (lambda (proc _event)
+           (when (memq (process-status proc) '(exit signal))
+             (let* ((ok (and (eq (process-status proc) 'exit)
+                             (zerop (process-exit-status proc))))
+                    (text (with-current-buffer out (buffer-string))))
+               (kill-buffer out)
+               (remhash key nix-flake--pending)
+               (puthash key (if ok (split-string text "\n" t) 'none)
+                        nix-flake--cache)
+               (when (and ok (buffer-live-p src))
+                 (with-current-buffer src
+                   (when (and (= (point) pt)
+                              (not (bound-and-true-p completion-in-region-mode)))
+                     (ignore-errors (completion-at-point)))))))))))))
+
+(defun nix-flake--get (root path)
+  "Cached attr names for ROOT/PATH, or nil while an async fetch runs."
+  (or (gethash (cons root path) nix-flake--cache)
+      (progn (nix-flake--fetch root path) nil)))
+
+(defun nix-flake-capf ()
+  "Complete flake-rooted Nix attribute paths.  Never blocks."
+  (when-let* ((dir (locate-dominating-file default-directory "flake.nix"))
+              (root (expand-file-name dir))
+              (beg (save-excursion (skip-chars-backward "a-zA-Z0-9'_.-") (point)))
+              ((< beg (point)))
+              (full (buffer-substring-no-properties beg (point)))
+              (dot (string-match-p "\\.[^.]*\\'" full))
+              (parent (substring full 0 dot))
+              (roots (nix-flake--get root ""))
+              ((consp roots))
+              ((member (car (split-string parent "\\." t)) roots))
+              (names (nix-flake--get root parent))
+              ((consp names)))
+    (list (+ beg dot 1) (point) names :exclusive 'no)))
+
+(defun nix-flake-prewarm ()
+  "Warm the flake attr cache in the background when opening a Nix file."
+  (when-let* ((dir (locate-dominating-file default-directory "flake.nix"))
+              (root (expand-file-name dir)))
+    (nix-flake--get root "")
+    (nix-flake--get root "inputs")))
+
+(defun nix-flake-invalidate ()
+  "Drop every cached flake attr set."
+  (interactive)
+  (clrhash nix-flake--cache))
+
+(defun me/nix-flake-capf-enable ()
+  (when (derived-mode-p 'nix-mode)
+    (nix-flake-prewarm)
+    (add-hook 'completion-at-point-functions #'nix-flake-capf -10 t)))
+
+(add-hook 'nix-mode-hook #'me/nix-flake-capf-enable)
+;; Depth 90: `me/eglot-capf-with-snippets' overwrites the buffer-local CAPF
+;; list, so this has to re-add afterwards.
+(add-hook 'eglot-managed-mode-hook #'me/nix-flake-capf-enable 90)
+#+END_SRC
 **** nicely format nix stuff
 #+BEGIN_SRC emacs-lisp
 (use-package nixpkgs-fmt
@@ -1640,6 +1739,20 @@ necessarily superseded by the ssh config.
          (error
           (message "Failed to load fallback %s theme: %s" fallback fallback-err)
           (mapc #'disable-theme custom-enabled-themes)))))))
+
+;; Emacs 31 defines `gnus-group-news-low' as inheriting `gnus-group-news-low-empty',
+;; and doom-themes makes the -empty face inherit back. Once gnus is loaded that
+;; cycle aborts `face-spec-recalc', which runs for every new frame -- so corfu's
+;; child frame dies. Inline the colours the -empty face contributed and drop the
+;; inherit; appearance is unchanged, the cycle is gone in either load order.
+;; Set before gnus loads: `custom-declare-face' is a no-op when the face already
+;; has a `face-defface-spec', so this replaces gnus's cyclic declaration outright.
+(face-spec-set
+ 'gnus-group-news-low
+ '((((class color) (background dark))  (:foreground "DarkTurquoise" :weight bold))
+   (((class color) (background light)) (:foreground "DarkGreen" :weight bold))
+   (t (:weight bold)))
+ 'face-defface-spec)
 
 ;; (if (>= emacs-major-version 31)
 ;;     (me/load-theme-safely 'doom-snazmodus-vivendi)
