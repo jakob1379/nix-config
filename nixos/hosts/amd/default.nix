@@ -12,9 +12,7 @@
   ];
 
   # Readline replacement (syntax highlighting, autosuggestions, fuzzy
-  # history) as a loadable Bash builtin. Replaces ble.sh, which cost
-  # ~1900ms per interactive shell; flyline measures ~35ms.
-  # Note: flyline owns Ctrl+R, so atuin's search UI is not reachable.
+  # history) as a loadable Bash builtin: ~35ms per interactive shell.
   programs.flyline.enable = true;
   programs.gpu-screen-recorder.enable = true;
   networking.hostName = "amd";

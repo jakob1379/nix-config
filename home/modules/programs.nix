@@ -150,9 +150,6 @@ in
           enable = true;
           profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
           initExtra = lib.mkMerge [
-            (lib.mkOrder 900 ''
-              eval "$(${lib.getExe config.programs.atuin.package} init bash ${lib.escapeShellArgs config.programs.atuin.flags})"
-            '')
             (lib.mkOrder 3000 ''
               __nix_find_widget() {
                 local selected
@@ -658,19 +655,6 @@ in
           ];
         };
 
-        atuin = {
-          enable = true;
-          enableBashIntegration = false;
-          daemon.enable = true;
-          flags = [ "--disable-ai" ];
-          forceOverwriteSettings = true;
-          settings = {
-            enter_accept = true;
-            search_mode = "daemon-fuzzy";
-            sync.records = true;
-          };
-        };
-
         starship = {
           enable = true;
           settings = builtins.fromTOML (builtins.readFile ../../dotfiles/starship/starship.toml);
@@ -1006,7 +990,6 @@ in
 
       xdg = {
         configFile = {
-          "blesh/init.sh".source = ../../dotfiles/blesh/init.sh;
           # The ghostty HM module writes the unit via xdg.configFile, which
           # bypasses HM's systemd handling, so its [Install] section is never
           # realised. Wire it up so the instance is warm before the first
