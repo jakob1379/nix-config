@@ -605,6 +605,7 @@ in
           package = pkgs.vicinae;
           systemd.enable = true;
           extensions = [
+            inputs.vicinae-extensions.packages.x86_64-linux.niri-monitors
             (config.lib.vicinae.mkExtension {
               name = "nix-find";
               src = ../../dotfiles/vicinae/nix-find;
@@ -1008,6 +1009,12 @@ in
       xdg = {
         configFile = {
           "blesh/init.sh".source = ../../dotfiles/blesh/init.sh;
+          # The ghostty HM module writes the unit via xdg.configFile, which
+          # bypasses HM's systemd handling, so its [Install] section is never
+          # realised. Wire it up so the instance is warm before the first
+          # Mod+Return instead of costing ~1.8s on the first launch.
+          "systemd/user/graphical-session.target.wants/app-com.mitchellh.ghostty.service".source =
+            "${config.programs.ghostty.package}/share/systemd/user/app-com.mitchellh.ghostty.service";
           "opencode/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink (
             config.home.homeDirectory + "/.config/home-manager/dotfiles/AGENTS.md"
           );
