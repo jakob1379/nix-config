@@ -151,7 +151,6 @@ in
           profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
           initExtra = lib.mkMerge [
             (lib.mkOrder 900 ''
-              source "${pkgs.blesh}/share/blesh/ble.sh" --attach=none -o exec_elapsed_mark= -o exec_errexit_mark=
               eval "$(${lib.getExe config.programs.atuin.package} init bash ${lib.escapeShellArgs config.programs.atuin.flags})"
             '')
             (lib.mkOrder 3000 ''
@@ -189,7 +188,6 @@ in
               bind -m vi-insert -x '"\ea": __rg_fuzzy_widget'
               bind -x '"\eu":"up"'
 
-              [[ ''${BLE_VERSION-} ]] && ble-attach
             '')
           ];
           shellOptions = [ "cdspell" ];
