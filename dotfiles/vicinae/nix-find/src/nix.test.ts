@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { parse, toMarkdown, withLinks } from "./nix.ts";
+import { optionsUrl, parse, run, toMarkdown, withLinks } from "./nix.ts";
 
 const B = "\x1b[1m";
 const b = "\x1b[22m";
@@ -103,4 +103,35 @@ test("withLinks inserts a homepage/source section under the heading and index", 
 test("withLinks drops empty links and skips the section when both are empty", () => {
   assert.equal(withLinks("# pkg", "", "  "), "# pkg");
   assert.equal(withLinks("", "https://a.com", ""), "");
+});
+
+test("optionsUrl points Home-Manager options at the option search", () => {
+  assert.equal(
+    optionsUrl({ line: "home-manager/ programs.mcp.enable", index: "home-manager", attr: "programs.mcp.enable" }),
+    "https://home-manager-options.extranix.com/?query=programs.mcp.enable&release=master",
+  );
+  assert.equal(
+    optionsUrl({
+      line: 'home-manager/ targets.darwin.defaults."com.apple.Safari".AutoFillPasswords',
+      index: "home-manager",
+      attr: 'targets.darwin.defaults."com.apple.Safari".AutoFillPasswords',
+    }),
+    "https://home-manager-options.extranix.com/?query=targets.darwin.defaults.%22com.apple.Safari%22.AutoFillPasswords&release=master",
+  );
+  assert.equal(
+    optionsUrl({ line: "nixos/ services.openssh.enable", index: "nixos", attr: "services.openssh.enable" }),
+    null,
+  );
+});
+
+test("run never overlaps processes", async () => {
+  const log = `${process.env.TMPDIR ?? "/tmp"}/nix-find-run-${process.pid}`;
+  const step = `echo start >> ${log}; sleep 0.1; echo end >> ${log}`;
+  await Promise.all([
+    run("sh", ["-c", step]),
+    run("false", []).catch(() => ""),
+    run("sh", ["-c", step]),
+  ]);
+  assert.equal(await run("cat", [log]), "start\nend\nstart\nend\n");
+  await run("rm", [log]);
 });

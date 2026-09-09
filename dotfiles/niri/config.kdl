@@ -436,8 +436,11 @@ binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
 
     // Suggested binds for running programs: terminal, app launcher, screen locker.
-    Mod+Return hotkey-overlay-title="Open a Terminal: (xdg default )" { spawn "xdg-terminal-exec"; }
-    Mod+Shift+Return hotkey-overlay-title="Open Terminal Below" { spawn-sh "before=\"$(niri msg -j windows)\"; niri msg action spawn -- xdg-terminal-exec; i=0; while [ \"$i\" -lt 40 ]; do new_id=\"$(niri msg -j windows | jq -r --argjson b \"$before\" '([.[].id] - ($b | map(.id))) | .[0] // empty')\"; [ -n \"$new_id\" ] && { niri msg action consume-or-expel-window-left --id \"$new_id\"; break; }; i=$((i + 1)); sleep 0.05; done"; }
+    // Ask the resident ghostty instance for a window over D-Bus instead of
+    // forking a new process: ~300ms vs ~800ms warm, ~1.8s cold. If the service
+    // is not running, D-Bus activates app-com.mitchellh.ghostty.service.
+    Mod+Return hotkey-overlay-title="Open a Terminal: (ghostty)" { spawn-sh "gdbus call --session --dest com.mitchellh.ghostty --object-path /com/mitchellh/ghostty --method org.gtk.Actions.Activate new-window '[]' '{}' >/dev/null"; }
+    Mod+Shift+Return hotkey-overlay-title="Open Terminal Below" { spawn-sh "before=\"$(niri msg -j windows)\"; gdbus call --session --dest com.mitchellh.ghostty --object-path /com/mitchellh/ghostty --method org.gtk.Actions.Activate new-window '[]' '{}' >/dev/null; i=0; while [ \"$i\" -lt 40 ]; do new_id=\"$(niri msg -j windows | jq -r --argjson b \"$before\" '([.[].id] - ($b | map(.id))) | .[0] // empty')\"; [ -n \"$new_id\" ] && { niri msg action consume-or-expel-window-left --id \"$new_id\"; break; }; i=$((i + 1)); sleep 0.05; done"; }
     Mod+D hotkey-overlay-title="Run an Application: Vicinae" { spawn "vicinae" "vicinae://toggle"; }
     Mod+Shift+D hotkey-overlay-title="Open Launcher Root: Vicinae" { spawn "vicinae" "vicinae://open?popToRoot=true"; }
     Mod+Shift+V hotkey-overlay-title="Open Clipboard History: Vicinae" { spawn "vicinae" "vicinae://launch/clipboard/history"; }

@@ -7,12 +7,19 @@ const SGR = /\x1b\[([0-9;]*)m/g;
 const BOX_EDGE = /^[┌└][─┐┘]*$/;
 const BOX_ROW = /^│(.*)│$/;
 
+let queue: Promise<unknown> = Promise.resolve();
+
+/** Spawns one process at a time: `nix-search-tv` holds an exclusive lock on its badger index. */
 export function run(cmd: string, args: string[]): Promise<string> {
-  return new Promise((resolve, reject) =>
-    execFile(cmd, args, { maxBuffer: 64 << 20 }, (err, stdout) =>
-      err ? reject(err) : resolve(stdout),
-    ),
-  );
+  const spawn = () =>
+    new Promise<string>((resolve, reject) =>
+      execFile(cmd, args, { maxBuffer: 64 << 20 }, (err, stdout) =>
+        err ? reject(err) : resolve(stdout),
+      ),
+    );
+  const next = queue.then(spawn, spawn);
+  queue = next.catch(() => {});
+  return next;
 }
 
 /** Parses `nix-find -p` output lines, which look like `nixpkgs/ firefox`. */
@@ -80,6 +87,17 @@ function section(header: Line, value: Line[]): string {
   if (!body) return inline(header);
   const fenced = /^https?:\/\/\S+$/.test(body) ? `<${body}>` : "```nix\n" + body + "\n```";
   return `${inline(header)}\n\n${fenced}`;
+}
+
+/**
+ * Home-Manager options have no homepage of their own, so `nix-search-tv` falls
+ * back to the module source for both links. Send the homepage to the option
+ * search instead, on `master`, the branch `nix-search-tv` indexes.
+ */
+export function optionsUrl(entry: Entry): string | null {
+  if (entry.index !== "home-manager") return null;
+  const query = encodeURIComponent(entry.attr);
+  return `https://home-manager-options.extranix.com/?query=${query}&release=master`;
 }
 
 /** Inserts a `homepage/source` section right under the heading, above the fold. */

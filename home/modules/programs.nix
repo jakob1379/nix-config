@@ -150,10 +150,6 @@ in
           enable = true;
           profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
           initExtra = lib.mkMerge [
-            (lib.mkOrder 900 ''
-              source "${pkgs.blesh}/share/blesh/ble.sh" --attach=none -o exec_elapsed_mark= -o exec_errexit_mark=
-              eval "$(${lib.getExe config.programs.atuin.package} init bash ${lib.escapeShellArgs config.programs.atuin.flags})"
-            '')
             (lib.mkOrder 3000 ''
               __nix_find_widget() {
                 local selected
@@ -189,7 +185,24 @@ in
               bind -m vi-insert -x '"\ea": __rg_fuzzy_widget'
               bind -x '"\eu":"up"'
 
-              [[ ''${BLE_VERSION-} ]] && ble-attach
+              # flyline replaces readline's key loop, so `bind -x` never fires
+              # under it -- not even for keys it has no binding of its own for.
+              # Its runBashCommand action is the same contract: it exports
+              # READLINE_LINE/POINT/MARK, runs the command with the terminal
+              # cooked (so fzf draws), then reads them back into its buffer.
+              # The bind -x lines above stay for shells where flyline declines
+              # to load, e.g. INSIDE_EMACS.
+              if [[ $(type -t flyline) == builtin ]]; then
+                # fzf binds \ec with a readline macro rather than a function,
+                # so wrap __fzf_cd__ to get something runBashCommand can call.
+                __fzf_cd_widget() { local out; out=$(__fzf_cd__) && eval "$out"; }
+
+                flyline key bind Ctrl+t 'always=runBashCommand(fzf-file-widget)'
+                flyline key bind Alt+c  'always=runBashCommand(__fzf_cd_widget)'
+                flyline key bind Ctrl+w 'always=runBashCommand(__nix_find_widget)'
+                flyline key bind Alt+a  'always=runBashCommand(__rg_fuzzy_widget)'
+                flyline key bind Alt+u  'always=runBashCommand(up)'
+              fi
             '')
           ];
           shellOptions = [ "cdspell" ];
@@ -606,6 +619,7 @@ in
           package = pkgs.vicinae;
           systemd.enable = true;
           extensions = [
+            inputs.vicinae-extensions.packages.x86_64-linux.niri-monitors
             (config.lib.vicinae.mkExtension {
               name = "nix-find";
               src = ../../dotfiles/vicinae/nix-find;
@@ -658,19 +672,6 @@ in
             "--group-directories-first"
             "--smart-group"
           ];
-        };
-
-        atuin = {
-          enable = true;
-          enableBashIntegration = false;
-          daemon.enable = true;
-          flags = [ "--disable-ai" ];
-          forceOverwriteSettings = true;
-          settings = {
-            enter_accept = true;
-            search_mode = "daemon-fuzzy";
-            sync.records = true;
-          };
         };
 
         starship = {
@@ -1008,7 +1009,12 @@ in
 
       xdg = {
         configFile = {
-          "blesh/init.sh".source = ../../dotfiles/blesh/init.sh;
+          # The ghostty HM module writes the unit via xdg.configFile, which
+          # bypasses HM's systemd handling, so its [Install] section is never
+          # realised. Wire it up so the instance is warm before the first
+          # Mod+Return instead of costing ~1.8s on the first launch.
+          "systemd/user/graphical-session.target.wants/app-com.mitchellh.ghostty.service".source =
+            "${config.programs.ghostty.package}/share/systemd/user/app-com.mitchellh.ghostty.service";
           "opencode/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink (
             config.home.homeDirectory + "/.config/home-manager/dotfiles/AGENTS.md"
           );

@@ -1,6 +1,6 @@
 {
   lib,
-  pkgs,
+  inputs,
   ...
 }:
 {
@@ -8,11 +8,15 @@
     ./hardware-configuration.nix
     ../../common.nix
     ../../users/jsg.nix
+    inputs.flyline.nixosModules.default
   ];
+
+  # Readline replacement (syntax highlighting, autosuggestions, fuzzy
+  # history) as a loadable Bash builtin: ~35ms per interactive shell.
+  programs.flyline.enable = true;
   programs.gpu-screen-recorder.enable = true;
   networking.hostName = "amd";
   programs.fuse.userAllowOther = true;
-  fonts.packages = [ pkgs.colloid-icon-theme ];
   i18n.defaultLocale = "en_US.UTF-8";
 
   # programs.gnupg.agent = {

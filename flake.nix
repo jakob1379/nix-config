@@ -29,6 +29,10 @@
       url = "github:jakob1379/waytorandr";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    flyline = {
+      url = "github:HalFrgrd/flyline";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     hermes-agent = {
       url = "github:NousResearch/hermes-agent/v2026.6.5";
       inputs.nixpkgs.follows = "nixpkgs";

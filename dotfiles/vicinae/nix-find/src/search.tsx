@@ -9,7 +9,7 @@ import {
   type Image,
 } from "@vicinae/api";
 import { useEffect, useState } from "react";
-import { parse, run, toMarkdown, withLinks, type Entry } from "./nix.ts";
+import { optionsUrl, parse, run, toMarkdown, withLinks, type Entry } from "./nix.ts";
 
 /**
  * The index is shown as its own logo so the whole row width stays with the
@@ -62,7 +62,8 @@ function usePreview(entry: Entry | undefined) {
     let cancelled = false;
     const resolve = (subcommand: string) =>
       run("nix-search-tv", [subcommand, entry.line]).catch(() => "");
-    Promise.all([resolve("preview"), resolve("homepage"), resolve("source")]).then(
+    const options = optionsUrl(entry);
+    Promise.all([resolve("preview"), options ?? resolve("homepage"), resolve("source")]).then(
       ([preview, homepage, source]) =>
         !cancelled &&
         setMarkdown(withLinks(toMarkdown(preview, entry.index), homepage, source)),
@@ -77,7 +78,9 @@ function usePreview(entry: Entry | undefined) {
 
 async function openResolved(subcommand: "homepage" | "source", entry: Entry) {
   try {
-    const url = (await run("nix-search-tv", [subcommand, entry.line])).trim();
+    const url =
+      (subcommand === "homepage" && optionsUrl(entry)) ||
+      (await run("nix-search-tv", [subcommand, entry.line])).trim();
     if (!url) throw new Error(`nothing published for ${entry.attr}`);
     await open(url);
   } catch (err) {
