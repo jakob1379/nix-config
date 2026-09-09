@@ -232,6 +232,7 @@ in
             # opt-out telemetry stays off by default.
             env.SUPERPOWERS_DISABLE_TELEMETRY = "1";
             autoMemoryEnabled = false;
+            tui = "fullscreen";
             enabledPlugins."frontend-design@claude-plugins-official" = true;
             sandbox.enabled = true;
             agentPushNotifEnabled = true;
