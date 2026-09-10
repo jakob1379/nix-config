@@ -97,6 +97,8 @@ in
           profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
           initExtra = lib.mkMerge [
             (lib.mkOrder 3000 ''
+              enable -f ${inputs.flyline.packages.${system}.default}/lib/libflyline.so flyline
+
               __nix_find_widget() {
                 local selected
                 selected="$(nix-find)" || return
