@@ -19,6 +19,13 @@
   programs.fuse.userAllowOther = true;
   i18n.defaultLocale = "en_US.UTF-8";
 
+  # PM Software vikunja
+  services.vikunja = {
+    enable = true;
+    frontendScheme = "http";
+    frontendHostname = "localhost";
+  };
+
   # programs.gnupg.agent = {
   #   enable = false;
   #   enableSSHSupport = true;
