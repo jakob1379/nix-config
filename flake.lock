@@ -1,21 +1,5 @@
 {
   "nodes": {
-    "agent-browser-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1788825337,
-        "narHash": "sha256-tC3gMLSd2kuuYUxTx8/RwbW1Fz8IiXRLbejrTeA65LI=",
-        "owner": "vercel-labs",
-        "repo": "agent-browser",
-        "rev": "471ab3852b47b98847f1d9c855c272bb62d0d50b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "vercel-labs",
-        "repo": "agent-browser",
-        "type": "github"
-      }
-    },
     "ai-usagebar": {
       "inputs": {
         "nixpkgs": [
@@ -507,22 +491,6 @@
         "type": "github"
       }
     },
-    "oh-my-opencode-slim-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1788805571,
-        "narHash": "sha256-OKhjVvhK7oTVov/UJ9LXw5Pqk8iommDn16oU4Sz1CZI=",
-        "owner": "alvinunreal",
-        "repo": "oh-my-opencode-slim",
-        "rev": "75cf76e59e2ab33d6a0b08487ec464e15c77443e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "alvinunreal",
-        "repo": "oh-my-opencode-slim",
-        "type": "github"
-      }
-    },
     "open-code-review-src": {
       "flake": false,
       "locked": {
@@ -645,7 +613,6 @@
     },
     "root": {
       "inputs": {
-        "agent-browser-src": "agent-browser-src",
         "ai-usagebar": "ai-usagebar",
         "claude-code-src": "claude-code-src",
         "cursor-plugins-src": "cursor-plugins-src",
@@ -662,7 +629,6 @@
         "nixpkgs-small": "nixpkgs-small",
         "noctalia": "noctalia",
         "numtide-llm-agents": "numtide-llm-agents",
-        "oh-my-opencode-slim-src": "oh-my-opencode-slim-src",
         "open-code-review-src": "open-code-review-src",
         "ponytail-src": "ponytail-src",
         "superpowers-src": "superpowers-src",

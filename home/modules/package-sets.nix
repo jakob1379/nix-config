@@ -171,21 +171,6 @@ in
       text = builtins.readFile ../../bin/docker-volume-copy;
     })
     (pkgs.writeShellApplication {
-      name = "ooc";
-      runtimeInputs = [
-        pkgs.bash
-        pkgs.coreutils
-        pkgs.gnugrep
-        pkgs.gnused
-        pkgs.opencode
-        pkgs.util-linux
-      ];
-      text = lib.concatStringsSep "\n" [
-        (builtins.readFile ../../bin/lib/session-wrapper-common.sh)
-        (builtins.readFile ../../bin/ooc)
-      ];
-    })
-    (pkgs.writeShellApplication {
       name = "docker-compose-deps";
       runtimeInputs = with pkgs; [
         docker-compose
@@ -262,7 +247,6 @@ in
         pkgs.coreutils
         pkgs.nh
         pkgs.nix
-        pkgs.opencode
         pkgs.uv
       ];
       text = builtins.readFile ../../bin/update-all;

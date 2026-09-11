@@ -49,14 +49,6 @@
       url = "github:denisidoro/navi-tldr-pages";
       flake = false;
     };
-    oh-my-opencode-slim-src = {
-      url = "github:alvinunreal/oh-my-opencode-slim";
-      flake = false;
-    };
-    agent-browser-src = {
-      url = "github:vercel-labs/agent-browser";
-      flake = false;
-    };
     claude-code-src = {
       url = "github:anthropics/claude-code";
       flake = false;

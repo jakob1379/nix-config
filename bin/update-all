@@ -9,8 +9,6 @@ wait
 hsu "$@"
 
 uv tool upgrade --all &
-rm -rf "$HOME/.cache/opencode"
-opencode models --refresh &
 
 wait
 
