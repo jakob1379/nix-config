@@ -230,6 +230,7 @@ in
 
           skills = {
             aggregate-code-quality-report = ../../dotfiles/skills/aggregate-code-quality-report;
+            converge-review = ../../dotfiles/skills/converge-review;
             frontend-design = "${inputs.claude-code-src}/plugins/frontend-design/skills/frontend-design";
             unslop = "${inputs.cursor-plugins-src}/pstack/skills/unslop";
           };
