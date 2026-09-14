@@ -426,26 +426,6 @@
         "type": "github"
       }
     },
-    "noctalia": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1789344529,
-        "narHash": "sha256-vZ0K+5Par33Omh1z1iRAXEvS4m0/jIb6S6aflJjyUVE=",
-        "owner": "noctalia-dev",
-        "repo": "noctalia",
-        "rev": "5d66d118861fedcbe039d9d04d06904cced40613",
-        "type": "github"
-      },
-      "original": {
-        "owner": "noctalia-dev",
-        "repo": "noctalia",
-        "type": "github"
-      }
-    },
     "npm-lockfile-fix": {
       "inputs": {
         "nixpkgs": [
@@ -627,7 +607,6 @@
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs",
         "nixpkgs-small": "nixpkgs-small",
-        "noctalia": "noctalia",
         "numtide-llm-agents": "numtide-llm-agents",
         "open-code-review-src": "open-code-review-src",
         "ponytail-src": "ponytail-src",

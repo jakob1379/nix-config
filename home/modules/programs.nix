@@ -470,10 +470,9 @@ in
         noctalia = lib.mkIf config.customPackages.gui.enable {
           enable = true;
           systemd.enable = false;
-          package = inputs.noctalia.packages.${system}.default;
           # Upstream's critical-notification outline is 1px, invisible in practice.
           # Drop once noctalia makes the toast border width configurable.
-          # package = inputs.noctalia.packages.${system}.default.overrideAttrs (prev: {
+          # package = pkgs.noctalia.overrideAttrs (prev: {
           #   postPatch = (prev.postPatch or "") + ''
           #     substituteInPlace src/shell/notification/notification_toast.cpp \
           #       --replace-fail "? Style::borderWidth : 0.0F" "? 1.0F : 0.0F"
@@ -804,12 +803,10 @@ in
           substituters = [
             "https://cache.nixos.org/"
             "https://jgalabs-homelab.cachix.org"
-            "https://noctalia.cachix.org"
           ];
           trusted-public-keys = [
             "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
             "jgalabs-homelab.cachix.org-1:STDTFhtj7rW1eWuCT75Ns0UDZqYu0BUTYsXeYHlbhwE="
-            "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
           ];
           max-jobs = 1;
           experimental-features = [

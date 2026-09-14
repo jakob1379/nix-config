@@ -53,7 +53,7 @@ let
   rcloneDropboxPrivateService = "rclone-mount-dropbox-private.service";
   dropboxPrivateMountPath = "${config.home.homeDirectory}/dropbox-private";
   varietyWallpaperPointerFile = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
-  noctaliaPackage = inputs.noctalia.packages.${system}.default;
+  noctaliaPackage = pkgs.noctalia;
 
   niriSessionExecCondition = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "${pkgs.coreutils}/bin/printenv XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qi niri"}";
 
