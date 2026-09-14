@@ -23,6 +23,8 @@ inputs.home-manager.lib.homeManagerConfiguration {
     inherit system config;
     overlays = [
       (import ../overlays/tana.nix)
+      inputs.flyline.overlays.default
+      (import ../overlays/flyline-glibc-tls.nix)
       (_: _: inputs.nixpkgs.lib.getAttrs fromSmall smallPkgs)
     ];
   };
