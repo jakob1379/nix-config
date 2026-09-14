@@ -267,9 +267,12 @@ in
               }
               "break"
               {
-                type = "wm";
-                key = " 󰨇 WM";
+                type = "command";
+                key = " 󰍹 Session";
                 keyColor = "blue";
+                text = ''
+                  if [ -n "$WAYLAND_DISPLAY$DISPLAY" ]; then echo "graphical (''${XDG_SESSION_TYPE:-x11})"; else echo "headless''${SSH_CONNECTION:+ (ssh)}"; fi
+                '';
               }
               {
                 type = "de";
@@ -277,8 +280,28 @@ in
                 keyColor = "blue";
               }
               {
+                type = "wm";
+                key = "├ 󰨇 Window Manager";
+                keyColor = "blue";
+              }
+              {
+                type = "lm";
+                key = "├ 󰧨 Login Manager";
+                keyColor = "blue";
+              }
+              {
+                type = "wmtheme";
+                key = "├ 󰉼 WM Theme";
+                keyColor = "blue";
+              }
+              {
                 type = "theme";
                 key = "├ 󰉼 Theme";
+                keyColor = "blue";
+              }
+              {
+                type = "icons";
+                key = "├ 󰸉 Icons";
                 keyColor = "blue";
               }
               {
