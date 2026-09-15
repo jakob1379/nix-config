@@ -48,7 +48,7 @@
   services.swapspace.enable = true;
 
   services.cachix-watch-store = {
-    enable = true;
+    enable = false;
     cacheName = "jgalabs-homelab";
     cachixTokenFile = "/etc/cachix-watch-store.token";
   };
