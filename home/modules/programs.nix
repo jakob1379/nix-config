@@ -193,7 +193,6 @@ in
             env.SUPERPOWERS_DISABLE_TELEMETRY = "1";
             autoMemoryEnabled = false;
             tui = "fullscreen";
-            enabledPlugins."frontend-design@claude-plugins-official" = true;
             sandbox.enabled = true;
             agentPushNotifEnabled = true;
             includeCoAuthoredBy = false;
