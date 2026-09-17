@@ -97,7 +97,7 @@ in
           profileExtra = builtins.readFile ../../dotfiles/bash/.profile;
           initExtra = lib.mkMerge [
             (lib.mkOrder 3000 ''
-              enable -f ${inputs.flyline.packages.${system}.default}/lib/libflyline.so flyline
+              enable -f ${pkgs.flyline}/lib/libflyline.so flyline
 
               __nix_find_widget() {
                 local selected
@@ -150,6 +150,11 @@ in
                 flyline key bind Ctrl+w 'always=runBashCommand(__nix_find_widget)'
                 flyline key bind Alt+a  'always=runBashCommand(__rg_fuzzy_widget)'
                 flyline key bind Alt+u  'always=runBashCommand(up)'
+
+                flyline set-agent-mode \
+                  --system-prompt "Be concise. Answer with a JSON array of at most 3 items with objects containing: command and description. Command will be a Bash command. " \
+                  --trigger-prefix ': ' \
+                  --command '${lib.getExe pkgs.claude-code} --effort low --print'
               fi
             '')
           ];
@@ -266,9 +271,12 @@ in
               }
               "break"
               {
-                type = "wm";
-                key = " 󰨇 WM";
+                type = "command";
+                key = " 󰍹 Session";
                 keyColor = "blue";
+                text = ''
+                  if [ -n "$WAYLAND_DISPLAY$DISPLAY" ]; then echo "graphical (''${XDG_SESSION_TYPE:-x11})"; else echo "headless''${SSH_CONNECTION:+ (ssh)}"; fi
+                '';
               }
               {
                 type = "de";
@@ -276,8 +284,28 @@ in
                 keyColor = "blue";
               }
               {
+                type = "wm";
+                key = "├ 󰨇 Window Manager";
+                keyColor = "blue";
+              }
+              {
+                type = "lm";
+                key = "├ 󰧨 Login Manager";
+                keyColor = "blue";
+              }
+              {
+                type = "wmtheme";
+                key = "├ 󰉼 WM Theme";
+                keyColor = "blue";
+              }
+              {
                 type = "theme";
                 key = "├ 󰉼 Theme";
+                keyColor = "blue";
+              }
+              {
+                type = "icons";
+                key = "├ 󰸉 Icons";
                 keyColor = "blue";
               }
               {
@@ -447,10 +475,9 @@ in
         noctalia = lib.mkIf config.customPackages.gui.enable {
           enable = true;
           systemd.enable = false;
-          package = inputs.noctalia.packages.${system}.default;
           # Upstream's critical-notification outline is 1px, invisible in practice.
           # Drop once noctalia makes the toast border width configurable.
-          # package = inputs.noctalia.packages.${system}.default.overrideAttrs (prev: {
+          # package = pkgs.noctalia.overrideAttrs (prev: {
           #   postPatch = (prev.postPatch or "") + ''
           #     substituteInPlace src/shell/notification/notification_toast.cpp \
           #       --replace-fail "? Style::borderWidth : 0.0F" "? 1.0F : 0.0F"
@@ -780,13 +807,11 @@ in
         settings = {
           substituters = [
             "https://cache.nixos.org/"
-            "https://jakob1379.cachix.org"
-            "https://noctalia.cachix.org"
+            "https://jgalabs-homelab.cachix.org"
           ];
           trusted-public-keys = [
             "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-            "jakob1379.cachix.org-1:BGOTkTeW2DuuYzV6PJ1VlLwGNYRgPLHfKukS6XyxDm0="
-            "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
+            "jgalabs-homelab.cachix.org-1:STDTFhtj7rW1eWuCT75Ns0UDZqYu0BUTYsXeYHlbhwE="
           ];
           max-jobs = 1;
           experimental-features = [

@@ -1,0 +1,56 @@
+---
+name: flyline host-glibc watch
+on:
+  schedule:
+    - cron: 23 4 * * 1
+  workflow_dispatch:
+concurrency:
+  group: flyline-watch
+  cancel-in-progress: false
+  queue: max
+permissions: {}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      # push the removal branch and open its PR
+      contents: write
+      pull-requests: write
+    steps:
+      - id: merged
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          merged=$(gh pr view 1001 -R HalFrgrd/flyline --json mergedAt -q .mergedAt)
+          echo "merged=$([ -n "$merged" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - if: steps.merged.outputs.merged == 'true'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          # manual runs must branch off the default branch, not the selected ref
+          ref: ${{ github.event.repository.default_branch }}
+          # keep the write token out of the steps that evaluate upstream nix
+          persist-credentials: false
+      - if: steps.merged.outputs.merged == 'true'
+        uses: cachix/install-nix-action@6004951b182f8860210c8d6f0d808ec5b1a33d28  # v25
+      # merged is not enough: the runner's system bash (glibc 2.39) must load
+      # upstream's library with the overlay gone
+      - id: flyline
+        if: steps.merged.outputs.merged == 'true'
+        continue-on-error: true
+        run: |
+          nix flake update flyline
+          git rm -q overlays/flyline-glibc-tls.nix .github/workflows/flyline-watch.yml
+          sed -i '\|overlays/flyline-glibc-tls.nix|d' lib/mkHomeConfig.nix
+          out=$(nix build --no-link --print-out-paths '.#homeConfigurations."jsg@SEEQWS-001".pkgs.flyline')
+          /usr/bin/bash --norc -ic "enable -f $out/lib/libflyline.so flyline && [[ \$(type -t flyline) == builtin ]]" </dev/null
+      - if: steps.flyline.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |-
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -b flyline-drop-glibc-overlay
+          git commit -aqm 'chore(flyline): drop host-glibc overlay, fixed upstream'
+          git push -qf "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY" flyline-drop-glibc-overlay
+          gh pr view flyline-drop-glibc-overlay --json state -q .state | grep -qx OPEN ||
+            gh pr create --fill --head flyline-drop-glibc-overlay

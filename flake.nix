@@ -17,10 +17,6 @@
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    noctalia = {
-      url = "github:noctalia-dev/noctalia";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     ai-usagebar = {
       url = "github:akitaonrails/ai-usagebar";
       inputs.nixpkgs.follows = "nixpkgs";
