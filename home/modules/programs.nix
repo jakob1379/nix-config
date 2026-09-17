@@ -419,6 +419,7 @@ in
             clipboard-paste-protection = false;
             confirm-close-surface = true;
             copy-on-select = "clipboard";
+            cursor-click-to-move = false;
             cursor-style = "block";
             cursor-style-blink = false;
             shell-integration-features = "no-cursor";
