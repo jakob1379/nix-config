@@ -215,6 +215,7 @@ in
           startServices = true;
 
           services = lib.mkMerge [
+            { emacs.Service.Environment = [ "COLORTERM=truecolor" ]; }
             (lib.mkIf config.customPackages.gui.enable (cfg.storage.rclone.service or { }))
             (lib.mkIf config.customPackages.gui.enable (cfg.wallpaper.varietyWallpaper.service or { }))
             (lib.mkIf config.services.swayidle.enable {
