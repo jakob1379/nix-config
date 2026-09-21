@@ -722,6 +722,11 @@ in
           #   ControlPersist = "no";
           # };
 
+          settings."*.computerome.dk" = lib.hm.dag.entryBefore [ "*" ] {
+            PubkeyAuthentication = "no";
+            ForwardAgent = false;
+          };
+
           settings."*" = {
             ForwardAgent = true;
             AddKeysToAgent = "yes";
