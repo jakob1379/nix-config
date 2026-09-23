@@ -115,11 +115,26 @@
         default =
           let
             inherit (self.checks.${pkgs.stdenv.hostPlatform.system}) pre-commit-check;
+            inherit (pre-commit-check.config) configFile installStages package;
+            git = pkgs.lib.getExe pkgs.git;
+            prek = pkgs.lib.getExe package;
+            hookStages = pkgs.lib.concatStringsSep " " (pkgs.lib.remove "manual" installStages);
           in
           pkgs.mkShell {
             packages = (generalPackages pkgs) ++ pre-commit-check.enabledPackages;
             shellHook = ''
               ${pre-commit-check.shellHook}
+              common_dir=$(${git} rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+              if [ -n "$common_dir" ] && {
+                [ "$(${git} config --local core.hooksPath)" != "$common_dir/hooks" ] \
+                  || ! grep -qF -- '--config="${configFile}"' "$common_dir/hooks/pre-commit" 2>/dev/null
+              }; then
+                ${git} config --local --unset-all core.hooksPath || true
+                for stage in ${hookStages}; do
+                  ${prek} install -f -c ${configFile} -t "$stage"
+                done
+                ${git} config --local core.hooksPath "$common_dir/hooks"
+              fi
               export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
               export PS1="(dotfiles-shell 🫥) $PS1"
             '';
