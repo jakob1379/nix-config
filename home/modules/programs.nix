@@ -61,7 +61,6 @@ in
     {
       home = {
         packages = [
-          pkgs.agent-browser
           inputs.numtide-llm-agents.packages.${system}.open-code-review
         ];
         shell.enableBashIntegration = true;
@@ -801,7 +800,6 @@ in
         dk = "dragon-drop --keep";
         dx = "dragon-drop --and-exit";
         ec = ''f(){ if [ -n "''${DISPLAY:-}''${WAYLAND_DISPLAY:-}" ]; then emacsclient --no-wait --reuse-frame --alternate-editor "" "$@"; else emacsclient -nw --alternate-editor "" "$@"; fi; }; f'';
-        cx = "codex resume";
         grep = "grep --color=auto";
         q = "qalc";
         tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
