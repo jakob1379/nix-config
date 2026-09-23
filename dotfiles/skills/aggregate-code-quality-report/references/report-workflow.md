@@ -147,17 +147,8 @@ desloppify status
 desloppify next
 ```
 
-Follow `desloppify next` exactly. If it requests subjective review, run:
-
-```bash
-desloppify review --run-batches --runner codex --parallel --scan-after-import
-desloppify status
-desloppify next
-```
-
-Do not ask review or triage prompts to spawn child agents; the first-class batch
-runner owns isolation and parallelism. Retry only failed packet slices using the
-immutable packet and `--only-batches` when needed.
+Do not run subjective review. When `desloppify next` requests it, stop there and
+report the subjective dimensions as unreviewed.
 
 This task is observational. Do not fix, resolve, skip, or mark findings
 complete.
