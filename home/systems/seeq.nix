@@ -64,6 +64,8 @@ in
     ]
   );
 
+  customServices.t3code.enable = true;
+
   customPackages = {
     core.packages = lib.mkForce (builtins.filter (p: p != pkgs.btop) packageSets.core);
   };

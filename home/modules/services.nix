@@ -77,6 +77,8 @@ in
 {
   options = {
     customServices = {
+      t3code.enable = lib.mkEnableOption "T3 Code server user service";
+
       storage = lib.mkOption {
         type = lib.types.attrs;
         default = {
@@ -220,6 +222,24 @@ in
             (lib.mkIf config.customPackages.gui.enable (cfg.wallpaper.varietyWallpaper.service or { }))
             (lib.mkIf config.services.swayidle.enable {
               swayidle.Service.ExecCondition = niriSessionExecCondition;
+            })
+            (lib.mkIf cfg.t3code.enable {
+              t3code = {
+                Unit = {
+                  Description = "T3 Code server";
+                  StartLimitIntervalSec = 300;
+                  StartLimitBurst = 5;
+                };
+                Service = {
+                  WorkingDirectory = "%h";
+                  ExecStart = "${pkgs.t3code}/bin/t3 serve";
+                  KillMode = "mixed";
+                  OOMPolicy = "continue";
+                  Restart = "always";
+                  RestartSec = 5;
+                };
+                Install.WantedBy = [ "default.target" ];
+              };
             })
           ];
 

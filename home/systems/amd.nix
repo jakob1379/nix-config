@@ -39,6 +39,8 @@ in
     userEmail = "jakob1379@gmail.com";
   };
 
+  customServices.t3code.enable = true;
+
   customPackages = {
     gui.enable = lib.mkForce true;
     core.packages = lib.mkForce (builtins.filter (p: p != pkgs.btop) packageSets.core);
