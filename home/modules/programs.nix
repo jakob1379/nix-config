@@ -819,11 +819,11 @@ in
         settings = {
           substituters = [
             "https://cache.nixos.org/"
-            "https://jgalabs-homelab.cachix.org"
+            "https://jakob1379.cachix.org"
           ];
           trusted-public-keys = [
             "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-            "jgalabs-homelab.cachix.org-1:STDTFhtj7rW1eWuCT75Ns0UDZqYu0BUTYsXeYHlbhwE="
+            "jakob1379.cachix.org-1:BGOTkTeW2DuuYzV6PJ1VlLwGNYRgPLHfKukS6XyxDm0="
           ];
           max-jobs = 1;
           experimental-features = [
