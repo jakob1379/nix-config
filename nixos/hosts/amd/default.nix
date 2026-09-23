@@ -9,7 +9,10 @@
     ../../common.nix
     ../../users/jsg.nix
   ];
-  programs.gpu-screen-recorder.enable = true;
+  programs.gpu-screen-recorder = {
+    enable = true;
+    ui.enable = true;
+  };
   networking.hostName = "amd";
   programs.fuse.userAllowOther = true;
   i18n.defaultLocale = "en_US.UTF-8";
