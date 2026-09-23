@@ -26,6 +26,7 @@ inputs.home-manager.lib.homeManagerConfiguration {
       inputs.flyline.overlays.default
       (import ../overlays/flyline-glibc-tls.nix)
       (_: _: inputs.nixpkgs.lib.getAttrs fromSmall smallPkgs)
+      (import ../overlays/claude-code.nix)
     ];
   };
   modules = [
