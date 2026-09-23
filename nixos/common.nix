@@ -86,6 +86,11 @@
   hardware.graphics.enable = true;
 
   # Virtualisation
+  virtualisation.podman = {
+    enable = true;
+    extraPackages = [ pkgs.podman-compose ];
+  };
+
   virtualisation.docker.enable = true;
   virtualisation.libvirtd.enable = true;
   programs.dconf.enable = true; # virt-manager/other tools
