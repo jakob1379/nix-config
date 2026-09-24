@@ -211,7 +211,10 @@ in
             # Superpowers ships no telemetry today (audited: no network calls,
             # no SUPERPOWERS_* env reads). Set preemptively so any future
             # opt-out telemetry stays off by default.
-            env.SUPERPOWERS_DISABLE_TELEMETRY = "1";
+            env = {
+              SUPERPOWERS_DISABLE_TELEMETRY = "1";
+              DISABLE_AUTOUPDATER = "1";
+            };
             autoMemoryEnabled = false;
             tui = "fullscreen";
             sandbox.enabled = true;
