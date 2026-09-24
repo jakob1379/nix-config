@@ -44,6 +44,12 @@
     };
     end-of-file-fixer.enable = true;
     fix-byte-order-marker.enable = true;
+    keep-sorted = {
+      enable = true;
+      name = "keep-sorted";
+      entry = lib.getExe pkgs.keep-sorted;
+      types = [ "text" ];
+    };
     mixed-line-endings = {
       enable = true;
       args = [ "--fix=auto" ];

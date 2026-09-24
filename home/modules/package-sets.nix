@@ -18,18 +18,18 @@ let
 in
 {
   core = with pkgs; [
-    btop
-    git-filter-repo
+    # keep-sorted start block=yes
     # applet symlinks off: they shadow coreutils/gnugrep/gnused on PATH
     (busybox.override { enableAppletSymlinks = false; })
+    betterleaks
+    btop
     dconf
     duf
     entr
     gdu
-    betterleaks
+    git-filter-repo
     glib
     gnumake
-    unixtools.ping
     hyperfine
     imagemagick
     isd
@@ -45,18 +45,13 @@ in
     speedtest-go
     tldr
     unar
+    unixtools.ping
     yq-go
+    # keep-sorted end
   ];
 
   gui = with pkgs; [
-    inputs.ai-usagebar.packages.${system}.default
-    brave
-    tana
-    xwayland-satellite
-    wdisplays
-    wifi-qr
-    feh
-    flameshot
+    # keep-sorted start block=yes
     (pkgs.writeShellApplication {
       name = "screenshot-ocr";
       runtimeInputs = [
@@ -67,25 +62,35 @@ in
       ];
       text = builtins.readFile ../../bin/screenshot-ocr;
     })
-    swaybg
+    brave
+    dragon-drop
+    feh
+    flameshot
+    inputs.ai-usagebar.packages.${system}.default
     libnotify
-    prettier
     onlyoffice-desktopeditors
     pika-backup
+    prettier
     signal-desktop
     spotify
     stretchly
+    swaybg
+    tana
     udiskie
     variety
     virt-manager
     vlc
-    dragon-drop
+    wdisplays
+    wifi-qr
     xkill
+    xwayland-satellite
+    # keep-sorted end
   ];
 
   dev =
     with pkgs;
     [
+      # keep-sorted start block=yes
       bun
       dive
       frogmouth
@@ -100,12 +105,12 @@ in
       poppler-utils
       t3code
       wakatime-cli
+      # keep-sorted end
     ]
     ++ lib.optionals (system != "aarch64-linux") [ jdk ];
 
   emacs = with pkgs; [
-    autotools-language-server
-    just-lsp
+    # keep-sorted start block=yes
     (aspellWithDicts (
       dicts: with dicts; [
         da
@@ -114,19 +119,21 @@ in
         en-science
       ]
     ))
-    bash-language-server
-    hunspell
-    ispell
-    marksman
-    nixd
-    powershell
-    python3
-    python3Packages.jedi-language-server
     # Stable-named python that always has debugpy importable, so dape's
     # adapter works regardless of which project venv is active.
     (writeShellScriptBin "python-dap" ''
       exec ${python3.withPackages (ps: [ ps.debugpy ])}/bin/python "$@"
     '')
+    autotools-language-server
+    bash-language-server
+    hunspell
+    ispell
+    just-lsp
+    marksman
+    nixd
+    powershell
+    python3
+    python3Packages.jedi-language-server
     rassumfrassum
     ripgrep
     ruff
@@ -138,18 +145,11 @@ in
     vtsls
     wl-clipboard-rs
     yaml-language-server
+    # keep-sorted end
   ];
 
   scripts = [
-    (pkgs.writeShellApplication {
-      name = "nb-peers";
-      runtimeInputs = [
-        pkgs.jq
-        pkgs.netbird
-      ];
-      text = builtins.readFile ../../bin/nb-peers;
-    })
-
+    # keep-sorted start block=yes
     (pkgs.writeShellApplication {
       name = "bak";
       runtimeInputs = [
@@ -164,13 +164,6 @@ in
       text = builtins.readFile ../../bin/bathelp;
     })
     (pkgs.writeShellApplication {
-      name = "docker-volume-copy";
-      runtimeInputs = [
-        pkgs.docker
-      ];
-      text = builtins.readFile ../../bin/docker-volume-copy;
-    })
-    (pkgs.writeShellApplication {
       name = "docker-compose-deps";
       runtimeInputs = with pkgs; [
         docker-compose
@@ -179,6 +172,13 @@ in
         kitty
       ];
       text = builtins.readFile ../../bin/docker-compose-deps;
+    })
+    (pkgs.writeShellApplication {
+      name = "docker-volume-copy";
+      runtimeInputs = [
+        pkgs.docker
+      ];
+      text = builtins.readFile ../../bin/docker-volume-copy;
     })
     (pkgs.writeShellApplication {
       name = "dragon-scp";
@@ -200,6 +200,17 @@ in
       text = builtins.readFile ../../bin/emacs-clean;
     })
     (pkgs.writeShellApplication {
+      name = "git-worktree-cd";
+      runtimeInputs = [
+        pkgs.coreutils
+        pkgs.eza
+        pkgs.findutils
+        pkgs.fzf
+        pkgs.git
+      ];
+      text = builtins.readFile ../../bin/git-worktree-cd;
+    })
+    (pkgs.writeShellApplication {
       name = "hs";
       runtimeInputs = [
         pkgs.home-manager
@@ -207,7 +218,21 @@ in
       ];
       text = builtins.readFile ../../bin/hm-switch;
     })
-    hsu
+    (pkgs.writeShellApplication {
+      name = "icat";
+      runtimeInputs = [ pkgs.kitty ];
+      text = ''
+        exec kitty +kitten icat "$@"
+      '';
+    })
+    (pkgs.writeShellApplication {
+      name = "nb-peers";
+      runtimeInputs = [
+        pkgs.jq
+        pkgs.netbird
+      ];
+      text = builtins.readFile ../../bin/nb-peers;
+    })
     (pkgs.writeShellApplication {
       name = "nix-find";
       runtimeInputs = [
@@ -220,6 +245,15 @@ in
       text = builtins.readFile ../../bin/nix-find;
     })
     (pkgs.writeShellApplication {
+      name = "noqa-stats";
+      runtimeInputs = [
+        pkgs.coreutils
+        pkgs.gawk
+        pkgs.ripgrep
+      ];
+      text = builtins.readFile ../../bin/noqa-stats;
+    })
+    (pkgs.writeShellApplication {
       name = "rg-fuzzy";
       runtimeInputs = [
         pkgs.ripgrep
@@ -230,15 +264,12 @@ in
       text = builtins.readFile ../../bin/rg-fuzzy;
     })
     (pkgs.writeShellApplication {
-      name = "git-worktree-cd";
+      name = "up";
       runtimeInputs = [
         pkgs.coreutils
-        pkgs.eza
-        pkgs.findutils
-        pkgs.fzf
-        pkgs.git
+        pkgs.gum
       ];
-      text = builtins.readFile ../../bin/git-worktree-cd;
+      text = builtins.readFile ../../bin/up;
     })
     (pkgs.writeShellApplication {
       name = "update-all";
@@ -251,29 +282,7 @@ in
       ];
       text = builtins.readFile ../../bin/update-all;
     })
-    (pkgs.writeShellApplication {
-      name = "up";
-      runtimeInputs = [
-        pkgs.coreutils
-        pkgs.gum
-      ];
-      text = builtins.readFile ../../bin/up;
-    })
-    (pkgs.writeShellApplication {
-      name = "icat";
-      runtimeInputs = [ pkgs.kitty ];
-      text = ''
-        exec kitty +kitten icat "$@"
-      '';
-    })
-    (pkgs.writeShellApplication {
-      name = "noqa-stats";
-      runtimeInputs = [
-        pkgs.coreutils
-        pkgs.gawk
-        pkgs.ripgrep
-      ];
-      text = builtins.readFile ../../bin/noqa-stats;
-    })
+    hsu
+    # keep-sorted end
   ];
 }

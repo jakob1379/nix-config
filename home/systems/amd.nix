@@ -63,12 +63,6 @@ in
     ]
   );
 
-  programs = {
-    codex = {
-      enable = true;
-    };
-  };
-
   customDotfiles = {
     enableMediaControl = true;
   };

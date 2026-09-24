@@ -61,7 +61,6 @@ in
     {
       home = {
         packages = [
-          pkgs.agent-browser
           inputs.numtide-llm-agents.packages.${system}.open-code-review
         ];
         shell.enableBashIntegration = true;
@@ -175,6 +174,23 @@ in
           '';
         };
 
+        # keep-sorted start block=yes newline_separated=yes
+        bat = {
+          enable = true;
+          extraPackages = with pkgs.bat-extras; [ batman ];
+          config = {
+            map-syntax = [
+              "*.conf:TOML"
+              "*.gdextension:TOML"
+              "*.kdl:java"
+              ".env.*:toml"
+              ".envrc:bash"
+              "justfile:make"
+              "u2f_keys:CSV"
+            ];
+          };
+        };
+
         claude-code = {
           enable = true;
           context = ../../dotfiles/AGENTS.md;
@@ -195,7 +211,10 @@ in
             # Superpowers ships no telemetry today (audited: no network calls,
             # no SUPERPOWERS_* env reads). Set preemptively so any future
             # opt-out telemetry stays off by default.
-            env.SUPERPOWERS_DISABLE_TELEMETRY = "1";
+            env = {
+              SUPERPOWERS_DISABLE_TELEMETRY = "1";
+              DISABLE_AUTOUPDATER = "1";
+            };
             autoMemoryEnabled = false;
             tui = "fullscreen";
             sandbox.enabled = true;
@@ -208,6 +227,11 @@ in
               command = "bash ~/.claude/statusline-command.sh";
             };
           };
+        };
+
+        difftastic = {
+          enable = true;
+          git.enable = true;
         };
 
         direnv = {
@@ -223,6 +247,17 @@ in
             epkgs: with epkgs; [
               treesit-grammars.with-all-grammars
             ];
+        };
+
+        eza = {
+          enable = true;
+          enableBashIntegration = true;
+          icons = "auto";
+          git = true;
+          extraOptions = [
+            "--group-directories-first"
+            "--smart-group"
+          ];
         };
 
         fastfetch = {
@@ -358,6 +393,7 @@ in
             ];
           };
         };
+
         fd.enable = true;
 
         firefox = {
@@ -380,10 +416,61 @@ in
             userChrome = builtins.readFile ../../dotfiles/firefox/firefox_userchrome.css;
           };
         };
-        difftastic = {
+
+        fzf = {
           enable = true;
-          git.enable = true;
+          enableBashIntegration = true;
+          historyWidget.command = "";
+          changeDirWidget = {
+            options = [
+              "--preview '${pkgs.eza}/bin/eza --tree --color=always \"{}\" | head -200'"
+            ];
+            command = "fd --type d";
+          };
+          fileWidget = {
+            command = "fd --type file --hidden --no-ignore-vcs";
+            options = [
+              "--preview '${pkgs.bat}/bin/bat \"{}\" --style=changes,header-filename,numbers,snip,rule --paging always --force-colorization'"
+            ];
+          };
         };
+
+        gh = {
+          enable = true;
+          extensions = [
+            pkgs.gh-dash
+            pkgs.gh-poi
+            pkgs.gh-stack
+          ];
+          gitCredentialHelper.enable = true;
+          settings.aliases = {
+            web = "repo view --web";
+          };
+        };
+
+        ghostty = {
+          enable = true;
+          settings = {
+            background-opacity = 0.85;
+            bold-is-bright = true;
+            clipboard-paste-protection = false;
+            confirm-close-surface = true;
+            copy-on-select = "clipboard";
+            cursor-click-to-move = false;
+            cursor-style = "block";
+            cursor-style-blink = false;
+            shell-integration-features = "no-cursor";
+            term = "kitty";
+            unfocused-split-opacity = 1.0;
+            window-decoration = false;
+            keybind = [
+              "ctrl+shift+,=unbind"
+              "ctrl+alt+shift+,=reload_config"
+            ];
+            # scrollbar = "system";
+          };
+        };
+
         git = {
           enable = true;
           signing = {
@@ -424,43 +511,8 @@ in
 
           ];
         };
-        gh = {
-          enable = true;
-          extensions = [
-            pkgs.gh-dash
-            pkgs.gh-poi
-            pkgs.gh-stack
-          ];
-          gitCredentialHelper.enable = true;
-          settings.aliases = {
-            web = "repo view --web";
-          };
-        };
 
         gpg.enable = true;
-
-        ghostty = {
-          enable = true;
-          settings = {
-            background-opacity = 0.85;
-            bold-is-bright = true;
-            clipboard-paste-protection = false;
-            confirm-close-surface = true;
-            copy-on-select = "clipboard";
-            cursor-click-to-move = false;
-            cursor-style = "block";
-            cursor-style-blink = false;
-            shell-integration-features = "no-cursor";
-            term = "kitty";
-            unfocused-split-opacity = 1.0;
-            window-decoration = false;
-            keybind = [
-              "ctrl+shift+,=unbind"
-              "ctrl+alt+shift+,=reload_config"
-            ];
-            # scrollbar = "system";
-          };
-        };
 
         hwatch.enable = true;
 
@@ -470,7 +522,37 @@ in
 
         jqp.enable = true;
 
+        keepassxc = {
+          enable = true;
+          autostart = false;
+          package = pkgs.keepassxc;
+        };
+
+        navi = {
+          enable = true;
+          settings.cheats.paths = [
+            "${inputs.navi-cheats-src}"
+            "${inputs.navi-tldr-pages-src}"
+          ];
+        };
+
+        nh = {
+          enable = true;
+          flake = "${config.home.homeDirectory}/.config/home-manager";
+        };
+
+        nix-index-database.comma.enable = true;
+
+        nix-index.enable = true;
+
         nix-init.enable = true;
+
+        nix-search-tv = {
+          enable = true;
+          settings = {
+            update_interval = "12h";
+          };
+        };
 
         noctalia = lib.mkIf config.customPackages.gui.enable {
           enable = true;
@@ -588,111 +670,6 @@ in
           enable = true;
         };
 
-        vicinae = {
-          inherit (config.customPackages.gui) enable;
-          package = pkgs.vicinae;
-          systemd.enable = true;
-          extensions = [
-            inputs.vicinae-extensions.packages.x86_64-linux.niri-monitors
-            (config.lib.vicinae.mkExtension {
-              name = "nix-find";
-              src = ../../dotfiles/vicinae/nix-find;
-            })
-          ];
-        };
-
-        tmux = {
-          enable = true;
-          newSession = true;
-          clock24 = true;
-          baseIndex = 1;
-          escapeTime = 1;
-          terminal = "tmux-256color";
-          focusEvents = true;
-          extraConfig = builtins.readFile ../../dotfiles/tmux/tmux.conf;
-          plugins = [
-            {
-              plugin = pkgs.tmuxPlugins.dotbar;
-              extraConfig = ''
-                set -ag update-environment " SSH_CLIENT SSH_CONNECTION"
-                run-shell 'set -- $SSH_CLIENT; client_ip=$1; client_source_port=$2; ssh_server_port=$3; if [ -z "$client_ip" ]; then set -- $SSH_CONNECTION; client_ip=$1; client_source_port=$2; ssh_server_port=$4; fi; tmux set -g @tmux-net-client-host "$client_ip"; tmux set -g @tmux-net-client-source-port "$client_source_port"; tmux set -g @tmux-net-ssh-server-port "$ssh_server_port"; tmux set -g @tmux-net-timeout "1"'
-                setw -g automatic-rename on
-                setw -g automatic-rename-format "#(${tmuxWindowLabel}/bin/tmux-window-label '#{pane_current_path}' '#{pane_current_command}')"
-                set -g @tmux-dotbar-session-text " #H "
-                set -g status-left-length 80
-                set -g @tmux-dotbar-status-left '#[bg=#0B0E14]#{?client_prefix,#[fg=#95E6CB]#[bg=#95E6CB]#[fg=#0B0E14]#[bold]#{?#{@tmux-net-client-host},󰌘 #H,#H}#[nobold]#[bg=#0B0E14]#[fg=#95E6CB],#[fg=#565B66] #{?#{@tmux-net-client-host},󰌘 #H,#H} }#[bg=#0B0E14]#[fg=#565B66]'
-                set -g @tmux-dotbar-window-status-format " #W "
-                set -g @tmux-dotbar-right true
-                set -g @tmux-dotbar-status-right-text " #(${tmuxNetStatus}/bin/tmux-net-status) "
-                set -g @tmux-dotbar-ssh-enabled true
-                set -g @tmux-dotbar-ssh-icon-only false
-              '';
-            }
-          ];
-        };
-
-        zoxide = {
-          enable = true;
-          enableBashIntegration = true;
-          options = [ "--cmd cd" ];
-        };
-
-        eza = {
-          enable = true;
-          enableBashIntegration = true;
-          icons = "auto";
-          git = true;
-          extraOptions = [
-            "--group-directories-first"
-            "--smart-group"
-          ];
-        };
-
-        starship = {
-          enable = true;
-          settings = builtins.fromTOML (builtins.readFile ../../dotfiles/starship/starship.toml);
-        };
-
-        keepassxc = {
-          enable = true;
-          autostart = false;
-          package = pkgs.keepassxc;
-        };
-
-        fzf = {
-          enable = true;
-          enableBashIntegration = true;
-          historyWidget.command = "";
-          changeDirWidget = {
-            options = [
-              "--preview '${pkgs.eza}/bin/eza --tree --color=always \"{}\" | head -200'"
-            ];
-            command = "fd --type d";
-          };
-          fileWidget = {
-            command = "fd --type file --hidden --no-ignore-vcs";
-            options = [
-              "--preview '${pkgs.bat}/bin/bat \"{}\" --style=changes,header-filename,numbers,snip,rule --paging always --force-colorization'"
-            ];
-          };
-        };
-
-        bat = {
-          enable = true;
-          extraPackages = with pkgs.bat-extras; [ batman ];
-          config = {
-            map-syntax = [
-              "*.conf:TOML"
-              "*.gdextension:TOML"
-              "*.kdl:java"
-              ".env.*:toml"
-              ".envrc:bash"
-              "justfile:make"
-              "u2f_keys:CSV"
-            ];
-          };
-        };
-
         readline = {
           enable = true;
           extraConfig = ''
@@ -741,36 +718,39 @@ in
           };
         };
 
-        navi = {
+        starship = {
           enable = true;
-          settings.cheats.paths = [
-            "${inputs.navi-cheats-src}"
-            "${inputs.navi-tldr-pages-src}"
+          settings = builtins.fromTOML (builtins.readFile ../../dotfiles/starship/starship.toml);
+        };
+
+        tmux = {
+          enable = true;
+          newSession = true;
+          clock24 = true;
+          baseIndex = 1;
+          escapeTime = 1;
+          terminal = "tmux-256color";
+          focusEvents = true;
+          extraConfig = builtins.readFile ../../dotfiles/tmux/tmux.conf;
+          plugins = [
+            {
+              plugin = pkgs.tmuxPlugins.dotbar;
+              extraConfig = ''
+                set -ag update-environment " SSH_CLIENT SSH_CONNECTION"
+                run-shell 'set -- $SSH_CLIENT; client_ip=$1; client_source_port=$2; ssh_server_port=$3; if [ -z "$client_ip" ]; then set -- $SSH_CONNECTION; client_ip=$1; client_source_port=$2; ssh_server_port=$4; fi; tmux set -g @tmux-net-client-host "$client_ip"; tmux set -g @tmux-net-client-source-port "$client_source_port"; tmux set -g @tmux-net-ssh-server-port "$ssh_server_port"; tmux set -g @tmux-net-timeout "1"'
+                setw -g automatic-rename on
+                setw -g automatic-rename-format "#(${tmuxWindowLabel}/bin/tmux-window-label '#{pane_current_path}' '#{pane_current_command}')"
+                set -g @tmux-dotbar-session-text " #H "
+                set -g status-left-length 80
+                set -g @tmux-dotbar-status-left '#[bg=#0B0E14]#{?client_prefix,#[fg=#95E6CB]#[bg=#95E6CB]#[fg=#0B0E14]#[bold]#{?#{@tmux-net-client-host},󰌘 #H,#H}#[nobold]#[bg=#0B0E14]#[fg=#95E6CB],#[fg=#565B66] #{?#{@tmux-net-client-host},󰌘 #H,#H} }#[bg=#0B0E14]#[fg=#565B66]'
+                set -g @tmux-dotbar-window-status-format " #W "
+                set -g @tmux-dotbar-right true
+                set -g @tmux-dotbar-status-right-text " #(${tmuxNetStatus}/bin/tmux-net-status) "
+                set -g @tmux-dotbar-ssh-enabled true
+                set -g @tmux-dotbar-ssh-icon-only false
+              '';
+            }
           ];
-        };
-
-        wallust = {
-          enable = true;
-        };
-
-        nix-index-database.comma.enable = true;
-        nix-index.enable = true;
-
-        yazi = {
-          enable = true;
-          shellWrapperName = "y";
-        };
-
-        nh = {
-          enable = true;
-          flake = "${config.home.homeDirectory}/.config/home-manager";
-        };
-
-        nix-search-tv = {
-          enable = true;
-          settings = {
-            update_interval = "12h";
-          };
         };
 
         uv = {
@@ -779,32 +759,62 @@ in
             python-preference = "managed";
           };
         };
+
+        vicinae = {
+          inherit (config.customPackages.gui) enable;
+          package = pkgs.vicinae;
+          systemd.enable = true;
+          extensions = [
+            inputs.vicinae-extensions.packages.x86_64-linux.niri-monitors
+            (config.lib.vicinae.mkExtension {
+              name = "nix-find";
+              src = ../../dotfiles/vicinae/nix-find;
+            })
+          ];
+        };
+
+        wallust = {
+          enable = true;
+        };
+
+        yazi = {
+          enable = true;
+          shellWrapperName = "y";
+        };
+
+        zoxide = {
+          enable = true;
+          enableBashIntegration = true;
+          options = [ "--cmd cd" ];
+        };
+        # keep-sorted end
       };
 
       # Home shell aliases
       home.shellAliases = {
-        noctalia-restart = "pkill -x noctalia || true; noctalia --daemon";
-        noctalia-reload = "noctalia msg config-reload";
-        onefetch = "onefetch -E --nerd-fonts --no-color-palette";
+        # keep-sorted start
         cat = "bat";
-        watch = "hwatch";
         cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
-        fm = "frogmouth";
-        df = "duf --hide special";
-        open = "xdg-open";
-        nshell = ''f(){ [ $# -gt 0 ] || { echo "usage: nshell <package> [nix args...]" >&2; return 1; }; nix shell "nixpkgs#$1" "''${@:2}"; }; f'';
-        venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
-        rsync = "rsync --info=progress2";
-        plasma-restart = "systemctl restart --user plasma-plasmashell";
         dcup = "docker compose up --remove-orphans";
         dcview = "docker compose config | bat -l yml";
+        df = "duf --hide special";
         dk = "dragon-drop --keep";
         dx = "dragon-drop --and-exit";
         ec = ''f(){ if [ -n "''${DISPLAY:-}''${WAYLAND_DISPLAY:-}" ]; then emacsclient --no-wait --reuse-frame --alternate-editor "" "$@"; else emacsclient -nw --alternate-editor "" "$@"; fi; }; f'';
-        cx = "codex resume";
+        fm = "frogmouth";
         grep = "grep --color=auto";
+        noctalia-reload = "noctalia msg config-reload";
+        noctalia-restart = "pkill -x noctalia || true; noctalia --daemon";
+        nshell = ''f(){ [ $# -gt 0 ] || { echo "usage: nshell <package> [nix args...]" >&2; return 1; }; nix shell "nixpkgs#$1" "''${@:2}"; }; f'';
+        onefetch = "onefetch -E --nerd-fonts --no-color-palette";
+        open = "xdg-open";
+        plasma-restart = "systemctl restart --user plasma-plasmashell";
         q = "qalc";
+        rsync = "rsync --info=progress2";
         tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
+        venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
+        watch = "hwatch";
+        # keep-sorted end
       };
 
       nix = {
@@ -812,11 +822,11 @@ in
         settings = {
           substituters = [
             "https://cache.nixos.org/"
-            "https://jgalabs-homelab.cachix.org"
+            "https://jakob1379.cachix.org"
           ];
           trusted-public-keys = [
             "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-            "jgalabs-homelab.cachix.org-1:STDTFhtj7rW1eWuCT75Ns0UDZqYu0BUTYsXeYHlbhwE="
+            "jakob1379.cachix.org-1:BGOTkTeW2DuuYzV6PJ1VlLwGNYRgPLHfKukS6XyxDm0="
           ];
           max-jobs = 1;
           experimental-features = [

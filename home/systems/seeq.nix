@@ -33,10 +33,6 @@ in
   };
 
   programs = {
-    codex = {
-      enable = true;
-    };
-
     emacs.package = lib.mkForce pkgs.emacs31-nox;
   };
 

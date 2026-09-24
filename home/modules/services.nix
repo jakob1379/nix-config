@@ -166,6 +166,7 @@ in
     let
       cfg = config.customServices;
       coreServices = {
+        # keep-sorted start block=yes newline_separated=yes
         emacs = {
           startWithUserSession = false;
           enable = true;
@@ -183,14 +184,20 @@ in
           pinentry.program = "pinentry-gnome3";
         };
 
+        home-manager.autoExpire.enable = true;
+
         ssh-agent = {
           enable = true;
         };
-
-        home-manager.autoExpire.enable = true;
+        # keep-sorted end
       };
 
       guiServices = {
+        # keep-sorted start block=yes newline_separated=yes
+        easyeffects.enable = true;
+
+        mpris-proxy.enable = true;
+
         udiskie = {
           enable = true;
           tray = "auto";
@@ -204,9 +211,7 @@ in
         waytorandr = {
           enable = true;
         };
-
-        easyeffects.enable = true;
-        mpris-proxy.enable = true;
+        # keep-sorted end
       };
     in
     {
