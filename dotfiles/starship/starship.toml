@@ -2,10 +2,8 @@
 add_newline = false
 palette = "current"
 format = """
-[](fg:plum)\
-$os\
+[](fg:blush)\
 $container\
-[](fg:prev_bg bg:blush)\
 $directory\
 ([](fg:prev_bg bg:nix)\
 $nix_shell)\
@@ -22,6 +20,8 @@ $cmd_duration\
 [](fg:sky bg:prev_bg)\
 ${custom.root}\
 $username\
+$os\
+$hostname\
 [](fg:teal_blue bg:prev_bg)\
 $shell\
 [](fg:prev_bg)\
@@ -42,8 +42,8 @@ format = "[](fg:plum bg:prev_bg)[ $duration ]($style)"
 
 [container]
 symbol = "󱕖"
-style = "fg:white bg:plum"
-format = "[$symbol $name]($style)"
+style = "fg:white bg:blush"
+format = "[ $symbol $name]($style)"
 
 [custom.root]
 command = "printf '⚡'"
@@ -79,6 +79,11 @@ staged = "  ${count}"
 renamed = " »${count}"
 deleted = " ✘${count}"
 
+[hostname]
+ssh_only = false
+style = "fg:white bg:sky"
+format = "[ $hostname ]($style)"
+
 [nix_shell]
 symbol = ""
 style = "fg:white bg:nix"
@@ -91,7 +96,7 @@ format = "[ $symbol $version ]($style)"
 
 [os]
 disabled = false
-format = "[$symbol](fg:white bg:plum)"
+format = "[$symbol](fg:white bg:sky)"
 
 [os.symbols]
 Alpine = ""
