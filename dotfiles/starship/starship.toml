@@ -81,8 +81,8 @@ deleted = " ✘${count}"
 
 [hostname]
 ssh_only = false
-style = "fg:white bg:sky"
-format = "[ $hostname ]($style)"
+style = "fg:white bg:blush"
+format = "[](fg:blush bg:prev_bg)[ $hostname ]($style)"
 
 [nix_shell]
 symbol = ""
@@ -96,7 +96,7 @@ format = "[ $symbol $version ]($style)"
 
 [os]
 disabled = false
-format = "[$symbol](fg:white bg:sky)"
+format = "[](fg:nix bg:prev_bg)[ $symbol ](fg:white bg:nix)"
 
 [os.symbols]
 Alpine = ""
@@ -105,6 +105,7 @@ CentOS = ""
 Debian = ""
 Fedora = ""
 Linux = ""
+Mint = ""
 Macos = ""
 NixOS = ""
 Raspbian = ""
