@@ -153,7 +153,7 @@ in
                 flyline set-agent-mode \
                   --system-prompt "Be concise. Answer with a JSON array of at most 3 items with objects containing: command and description. Command will be a Bash command. " \
                   --trigger-prefix ': ' \
-                  --command '${lib.getExe pkgs.claude-code} --effort low --print'
+                  --command '${lib.getExe pkgs.claude-code} --model claude-opus-5-5 --effort medium --print'
               fi
             '')
           ];

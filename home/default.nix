@@ -3,7 +3,7 @@ let
   inherit (lib) mkHomeConfig;
 in
 {
-  "jsg@SEEQWS-001" = mkHomeConfig {
+  "jsg@seeqws-001" = mkHomeConfig {
     system = "x86_64-linux";
     username = "jsg";
     homeDirectory = "/home/jsg";
