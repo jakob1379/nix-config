@@ -845,6 +845,7 @@ in
 
       xdg = {
         configFile = {
+          "mimeapps.list".force = true;
           # The ghostty HM module writes the unit via xdg.configFile, which
           # bypasses HM's systemd handling, so its [Install] section is never
           # realised. Wire it up so the instance is warm before the first
