@@ -43,4 +43,12 @@ in
     inherit lib;
   };
 
+  "jsg@seeq" = mkHomeConfig {
+    system = "x86_64-linux";
+    username = "jsg";
+    homeDirectory = "/home/jsg";
+    extraModules = [ ./systems/seeq.nix ];
+    inherit lib;
+  };
+
 }

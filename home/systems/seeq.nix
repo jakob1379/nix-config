@@ -1,10 +1,11 @@
 {
   pkgs,
   lib,
-  inputs,
   system,
+  inputs,
   ...
 }:
+
 let
   packageSets = import ../modules/package-sets.nix {
     inherit
@@ -16,15 +17,21 @@ let
   };
 
   coderabbit-cli = inputs.numtide-llm-agents.packages.${system}.coderabbit-cli;
-  btopCudaWsl = pkgs.symlinkJoin {
-    name = "btop-cuda-wsl";
-    paths = [ pkgs.btop-cuda ];
-    buildInputs = [ pkgs.makeWrapper ];
-    postBuild = ''
-      wrapProgram $out/bin/btop \
-        --prefix LD_LIBRARY_PATH : /usr/lib/wsl/lib
-    '';
+  btopRocm = pkgs.btop.override {
+    rocmSupport = true;
   };
+  # hermesAgent = inputs.hermes-agent.packages.${system}.default;
+  # hermesAgentWithEspeak = pkgs.symlinkJoin {
+  #   name = "hermes-agent-with-espeak-ng";
+  #   paths = [ hermesAgent ];
+  #   nativeBuildInputs = [ pkgs.makeWrapper ];
+  #   postBuild = ''
+  #     for bin in hermes hermes-agent hermes-acp; do
+  #       wrapProgram "$out/bin/$bin" \
+  #         --suffix PATH : ${lib.makeBinPath [ pkgs.espeak-ng ]}
+  #     done
+  #   '';
+  # };
 in
 {
   customGit = {
@@ -32,40 +39,31 @@ in
     userEmail = "jakob1379@gmail.com";
   };
 
-  programs = {
-    emacs.package = lib.mkForce pkgs.emacs31-nox;
-  };
+  customServices.t3code.enable = true;
 
-  services.emacs = {
-    enable = lib.mkForce true;
-    startWithUserSession = lib.mkForce true;
-    socketActivation.enable = lib.mkForce false;
-    defaultEditor = lib.mkForce false;
-    client.enable = lib.mkForce false;
-  };
-
-  home = {
-    sessionVariables = {
-      EDITOR = "emacsclient -t";
-      VISUAL = "emacsclient -t";
-    };
+  customPackages = {
+    gui.enable = lib.mkForce true;
+    core.packages = lib.mkForce (builtins.filter (p: p != pkgs.btop) packageSets.core);
   };
 
   home.packages = lib.mkAfter (
     with pkgs;
     [
-      coderabbit-cli
+      clockify
+      adw-gtk3
+      cachix
       glab
-      btopCudaWsl
+      # hermesAgentWithEspeak
+      coderabbit-cli
+      btopRocm
+      # teams-for-linux
+      kdePackages.qt6ct
+      libsForQt5.qt5ct
+      nwg-look
     ]
   );
 
-  customServices.t3code.enable = true;
-
-  customPackages = {
-    core.packages = lib.mkForce (builtins.filter (p: p != pkgs.btop) packageSets.core);
+  customDotfiles = {
+    enableMediaControl = true;
   };
-
-  customSsh.enableKeepassxc = lib.mkForce false;
-
 }
