@@ -91,6 +91,10 @@ in
     with pkgs;
     [
       # keep-sorted start block=yes
+      (t3code.override {
+        enableCodex = false;
+        enableClaude = true;
+      })
       bun
       dive
       frogmouth
@@ -103,7 +107,6 @@ in
       nurl
       pandoc
       poppler-utils
-      t3code
       wakatime-cli
       # keep-sorted end
     ]
