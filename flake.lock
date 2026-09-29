@@ -474,11 +474,11 @@
     "open-code-review-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1790664051,
-        "narHash": "sha256-trT0a1RzqMW9KPVKi5tRYyctqWP5B+HcmkmUwfqP6rA=",
+        "lastModified": 1790672917,
+        "narHash": "sha256-t8pUUVNwMFK0XLg2yrRj5ry1fY2Uti7abFuARdSoIEI=",
         "owner": "alibaba",
         "repo": "open-code-review",
-        "rev": "01af4468c6a3c82f5a1355b4a3215e4ac3e18b30",
+        "rev": "a758d9cbfb689937c7857ad64b2dd66adb58c0c2",
         "type": "github"
       },
       "original": {
