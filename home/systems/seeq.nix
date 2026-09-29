@@ -23,16 +23,6 @@ in
     userEmail = "jakob1379@gmail.com";
   };
 
-  customServices.t3code.enable = true;
-
-  systemd.user.services.t3code.Service.ExecStart = lib.mkForce (
-    toString (
-      pkgs.writeShellScript "t3code-netbird" ''
-        exec ${pkgs.t3code}/bin/t3 serve --host "$(${pkgs.netbird}/bin/netbird status --json | ${pkgs.jq}/bin/jq -er .fqdn)"
-      ''
-    )
-  );
-
   customPackages = {
     gui.enable = lib.mkForce false;
     core.packages = lib.mkForce (builtins.filter (p: p != pkgs.btop) packageSets.core);
