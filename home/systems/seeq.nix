@@ -16,22 +16,6 @@ let
       ;
   };
 
-  coderabbit-cli = inputs.numtide-llm-agents.packages.${system}.coderabbit-cli;
-  btopRocm = pkgs.btop.override {
-    rocmSupport = true;
-  };
-  # hermesAgent = inputs.hermes-agent.packages.${system}.default;
-  # hermesAgentWithEspeak = pkgs.symlinkJoin {
-  #   name = "hermes-agent-with-espeak-ng";
-  #   paths = [ hermesAgent ];
-  #   nativeBuildInputs = [ pkgs.makeWrapper ];
-  #   postBuild = ''
-  #     for bin in hermes hermes-agent hermes-acp; do
-  #       wrapProgram "$out/bin/$bin" \
-  #         --suffix PATH : ${lib.makeBinPath [ pkgs.espeak-ng ]}
-  #     done
-  #   '';
-  # };
 in
 {
   customGit = {
@@ -50,24 +34,16 @@ in
   );
 
   customPackages = {
-    gui.enable = lib.mkForce true;
+    gui.enable = lib.mkForce false;
     core.packages = lib.mkForce (builtins.filter (p: p != pkgs.btop) packageSets.core);
   };
 
   home.packages = lib.mkAfter (
     with pkgs;
     [
-      clockify
-      adw-gtk3
       cachix
       glab
-      # hermesAgentWithEspeak
-      coderabbit-cli
-      btopRocm
-      # teams-for-linux
-      kdePackages.qt6ct
-      libsForQt5.qt5ct
-      nwg-look
+      btop-cuda
     ]
   );
 
