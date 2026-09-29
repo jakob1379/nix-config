@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { optionsUrl, parse, run, toMarkdown, withLinks } from "./nix.ts";
+import { commaCommand, optionsUrl, parse, run, toMarkdown, withLinks } from "./nix.ts";
 
 const B = "\x1b[1m";
 const b = "\x1b[22m";
@@ -134,4 +134,17 @@ test("run never overlaps processes", async () => {
   ]);
   assert.equal(await run("cat", [log]), "start\nend\nstart\nend\n");
   await run("rm", [log]);
+});
+
+test("commaCommand uses the main program, else the last attribute segment", () => {
+  const preview = [
+    `${B}ripgrep${b}`,
+    "",
+    `${B}main program${b}`,
+    "┌──────┐",
+    "│ $ rg │",
+    "└──────┘",
+  ].join("\n");
+  assert.equal(commaCommand(preview, "ripgrep"), ", rg");
+  assert.equal(commaCommand(`${B}black${b}`, "python3Packages.black"), ", black");
 });

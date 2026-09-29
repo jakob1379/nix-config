@@ -100,6 +100,11 @@ export function optionsUrl(entry: Entry): string | null {
   return `https://home-manager-options.extranix.com/?query=${query}&release=master`;
 }
 
+export function commaCommand(preview: string, attr: string): string {
+  const program = preview.replace(SGR, "").match(/^main program\n(?:.*\n)?\W*\$ (\S+)/m)?.[1];
+  return `, ${program ?? attr.split(".").pop()}`;
+}
+
 /** Inserts a `homepage/source` section right under the heading, above the fold. */
 export function withLinks(markdown: string, homepage: string, source: string): string {
   const links = [homepage.trim(), source.trim()].filter(Boolean).map((url) => `<${url}>`);

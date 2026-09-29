@@ -83,6 +83,18 @@ nix_find_preview() {
 }
 export -f nix_find_preview
 
+nix_find_comma() {
+	local attr prog
+	attr=$(nix_find_extract_pkgs "$1")
+	prog=$(nix-search-tv preview "$1" | awk '
+		/main program/ { f = 1; next }
+		f && /^$/ { exit }
+		f && match($0, /\$ [^ ]+/) { print substr($0, RSTART + 2, RLENGTH - 2); exit }
+	')
+	printf ', %q\n' "${prog:-${attr##*.}}"
+}
+export -f nix_find_comma
+
 # Build info command for fzf (receives {+} as space-separated args)
 # shellcheck disable=SC2016
 info_cmd='echo "nix-shell -p $(nix_find_extract_pkgs {+})"'
@@ -99,9 +111,10 @@ mapfile -t selections < <(
 			--preview-window=down:60%:wrap \
 			--preview 'nix_find_preview {}' \
 			--bind "enter:accept" \
+			--bind "alt-enter:become(nix_find_comma {})" \
 			--bind "alt-c:execute-silent(echo {} | awk -F'/ +' '{print \$2}' | tr -d ' ' | wl-copy 2>/dev/null || xclip -selection clipboard)" \
 			--bind "alt-l:toggle-preview" \
-			--header $'TAB mark • ENTER select • Alt-C copy • Alt-L toggle preview' \
+			--header $'TAB mark • ENTER nix-shell • Alt-Enter comma • Alt-C copy • Alt-L toggle preview' \
 			--info-command "$info_cmd"
 )
 status=$?
@@ -111,6 +124,11 @@ if ((status == 130)); then
 	exit 130
 elif ((${#selections[@]} == 0)); then
 	echo "No package selected." >&2
+	exit 0
+fi
+
+if [[ "${selections[0]}" == ,\ * ]]; then
+	printf '%s\n' "${selections[0]}"
 	exit 0
 fi
 

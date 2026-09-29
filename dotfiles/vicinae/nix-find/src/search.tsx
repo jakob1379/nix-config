@@ -9,7 +9,7 @@ import {
   type Image,
 } from "@vicinae/api";
 import { useEffect, useState } from "react";
-import { optionsUrl, parse, run, toMarkdown, withLinks, type Entry } from "./nix.ts";
+import { commaCommand, optionsUrl, parse, run, toMarkdown, withLinks, type Entry } from "./nix.ts";
 
 /**
  * The index is shown as its own logo so the whole row width stays with the
@@ -53,10 +53,12 @@ function useSearch(query: string) {
 
 function usePreview(entry: Entry | undefined) {
   const [markdown, setMarkdown] = useState("");
+  const [preview, setPreview] = useState("");
 
   useEffect(() => {
     if (!entry) {
       setMarkdown("");
+      setPreview("");
       return;
     }
     let cancelled = false;
@@ -64,16 +66,18 @@ function usePreview(entry: Entry | undefined) {
       run("nix-search-tv", [subcommand, entry.line]).catch(() => "");
     const options = optionsUrl(entry);
     Promise.all([resolve("preview"), options ?? resolve("homepage"), resolve("source")]).then(
-      ([preview, homepage, source]) =>
-        !cancelled &&
-        setMarkdown(withLinks(toMarkdown(preview, entry.index), homepage, source)),
+      ([preview, homepage, source]) => {
+        if (cancelled) return;
+        setPreview(preview);
+        setMarkdown(withLinks(toMarkdown(preview, entry.index), homepage, source));
+      },
     );
     return () => {
       cancelled = true;
     };
   }, [entry?.line]);
 
-  return markdown;
+  return { markdown, preview };
 }
 
 async function openResolved(subcommand: "homepage" | "source", entry: Entry) {
@@ -94,7 +98,7 @@ export default function Search() {
   const [showDetail, setShowDetail] = useState(true);
   const { entries, isLoading } = useSearch(query);
   const current = entries.find((entry) => entry.line === selected);
-  const markdown = usePreview(current);
+  const { markdown, preview } = usePreview(current);
 
   return (
     <List
@@ -119,6 +123,10 @@ export default function Search() {
               <Action.CopyToClipboard
                 title="Copy Nix-Shell Command"
                 content={`nix-shell -p ${entry.attr}`}
+              />
+              <Action.CopyToClipboard
+                title="Copy Comma Command"
+                content={commaCommand(preview, entry.attr)}
               />
               <Action
                 title={showDetail ? "Hide Preview" : "Show Preview"}
