@@ -3,6 +3,7 @@
   lib,
   system,
   inputs,
+  gui,
   ...
 }:
 
@@ -17,75 +18,76 @@ let
   };
 in
 {
-  core = with pkgs; [
-    # keep-sorted start block=yes
-    # applet symlinks off: they shadow coreutils/gnugrep/gnused on PATH
-    (busybox.override { enableAppletSymlinks = false; })
-    betterleaks
-    btop
-    dconf
-    duf
-    entr
-    gdu
-    git-filter-repo
-    glib
-    gnumake
-    hyperfine
-    imagemagick
-    isd
-    libqalculate
-    libsecret
-    nix-output-monitor
-    nix-prefetch-github
-    nix-search-cli
-    onefetch
-    python3Packages.keyring
-    rename
-    ripgrep
-    speedtest-go
-    tldr
-    unar
-    unixtools.ping
-    yq-go
-    # keep-sorted end
-  ];
-
-  gui = with pkgs; [
-    # keep-sorted start block=yes
-    (pkgs.writeShellApplication {
-      name = "screenshot-ocr";
-      runtimeInputs = [
-        pkgs.coreutils
-        pkgs.flameshot
-        pkgs.tesseract
-        pkgs.wl-clipboard
-      ];
-      text = builtins.readFile ../../bin/screenshot-ocr;
-    })
-    brave
-    dragon-drop
-    feh
-    flameshot
-    inputs.ai-usagebar.packages.${system}.default
-    libnotify
-    onlyoffice-desktopeditors
-    pika-backup
-    prettier
-    signal-desktop
-    spotify
-    stretchly
-    swaybg
-    tana
-    udiskie
-    variety
-    virt-manager
-    vlc
-    wdisplays
-    wifi-qr
-    xkill
-    xwayland-satellite
-    # keep-sorted end
-  ];
+  core =
+    with pkgs;
+    [
+      # keep-sorted start block=yes
+      # applet symlinks off: they shadow coreutils/gnugrep/gnused on PATH
+      (busybox.override { enableAppletSymlinks = false; })
+      betterleaks
+      btop
+      dconf
+      duf
+      entr
+      gdu
+      git-filter-repo
+      glib
+      gnumake
+      hyperfine
+      imagemagick
+      isd
+      libqalculate
+      libsecret
+      nix-output-monitor
+      nix-prefetch-github
+      nix-search-cli
+      onefetch
+      python3Packages.keyring
+      rename
+      ripgrep
+      speedtest-go
+      tldr
+      unar
+      unixtools.ping
+      yq-go
+      # keep-sorted end
+    ]
+    ++ lib.optionals gui [
+      # keep-sorted start block=yes
+      (pkgs.writeShellApplication {
+        name = "screenshot-ocr";
+        runtimeInputs = [
+          pkgs.coreutils
+          pkgs.flameshot
+          pkgs.tesseract
+          pkgs.wl-clipboard
+        ];
+        text = builtins.readFile ../../bin/screenshot-ocr;
+      })
+      brave
+      dragon-drop
+      feh
+      flameshot
+      inputs.ai-usagebar.packages.${system}.default
+      libnotify
+      onlyoffice-desktopeditors
+      pika-backup
+      prettier
+      signal-desktop
+      spotify
+      stretchly
+      swaybg
+      tana
+      udiskie
+      variety
+      virt-manager
+      vlc
+      wdisplays
+      wifi-qr
+      xkill
+      xwayland-satellite
+      # keep-sorted end
+    ];
 
   dev =
     with pkgs;
@@ -182,15 +184,6 @@ in
       text = builtins.readFile ../../bin/docker-volume-copy;
     })
     (pkgs.writeShellApplication {
-      name = "dragon-scp";
-      runtimeInputs = [
-        pkgs.openssh
-        pkgs.dragon-drop
-        pkgs.coreutils
-      ];
-      text = builtins.readFile ../../bin/dragon-scp;
-    })
-    (pkgs.writeShellApplication {
       name = "emacs-clean";
       runtimeInputs = [
         pkgs.bash
@@ -285,5 +278,16 @@ in
     })
     hsu
     # keep-sorted end
+  ]
+  ++ lib.optionals gui [
+    (pkgs.writeShellApplication {
+      name = "dragon-scp";
+      runtimeInputs = [
+        pkgs.openssh
+        pkgs.dragon-drop
+        pkgs.coreutils
+      ];
+      text = builtins.readFile ../../bin/dragon-scp;
+    })
   ];
 }

@@ -65,6 +65,7 @@ in
   config =
     let
       sshSocketDir = config.home.homeDirectory + "/.ssh/sockets";
+      gui = config.customPackages.gui.enable;
     in
     {
       home = {
@@ -250,7 +251,7 @@ in
 
         emacs = {
           enable = true;
-          package = pkgs.emacs31-pgtk;
+          package = if gui then pkgs.emacs31-pgtk else pkgs.emacs31-nox;
           extraPackages =
             epkgs: with epkgs; [
               treesit-grammars.with-all-grammars
@@ -405,7 +406,7 @@ in
         fd.enable = true;
 
         firefox = {
-          enable = true;
+          enable = gui;
           package = inputs."zen-browser".packages.${system}.zen-browser;
           configPath = ".mozilla/firefox";
           profiles.myuser = {
@@ -457,7 +458,7 @@ in
         };
 
         ghostty = {
-          enable = true;
+          enable = gui;
           settings = {
             background-opacity = 0.85;
             bold-is-bright = true;
@@ -531,7 +532,7 @@ in
         jqp.enable = true;
 
         keepassxc = {
-          enable = true;
+          enable = gui;
           autostart = false;
           package = pkgs.keepassxc;
         };
@@ -562,7 +563,7 @@ in
           };
         };
 
-        noctalia = lib.mkIf config.customPackages.gui.enable {
+        noctalia = lib.mkIf gui {
           enable = true;
           systemd.enable = false;
           # Upstream's critical-notification outline is 1px, invisible in practice.
@@ -770,7 +771,7 @@ in
         };
 
         vicinae = {
-          inherit (config.customPackages.gui) enable;
+          enable = gui;
           package = pkgs.vicinae;
           systemd.enable = true;
           extensions = [
@@ -782,9 +783,7 @@ in
           ];
         };
 
-        wallust = {
-          enable = true;
-        };
+        wallust.enable = gui;
 
         yazi = {
           enable = true;
@@ -850,10 +849,10 @@ in
         };
       };
 
-      qt.enable = true;
+      qt.enable = gui;
 
       xdg = {
-        configFile = {
+        configFile = lib.mkIf gui {
           "mimeapps.list".force = true;
           # The ghostty HM module writes the unit via xdg.configFile, which
           # bypasses HM's systemd handling, so its [Install] section is never
@@ -874,7 +873,7 @@ in
             X-GNOME-Autostart-enabled=true
           '';
         };
-        dataFile = {
+        dataFile = lib.mkIf gui {
           "applications/org.keepassxc.KeePassXC.desktop".text = ''
             [Desktop Entry]
             Name=KeePassXC
@@ -896,7 +895,7 @@ in
           '';
         };
         mimeApps = {
-          enable = true;
+          enable = gui;
           defaultApplications = {
             "application/x-directory" = [ "org.kde.dolphin.desktop" ];
             "application/xhtml+xml" = [ "zen.desktop" ];
@@ -908,11 +907,11 @@ in
           };
         };
         terminal-exec = {
-          enable = true;
+          enable = gui;
           settings.default = [ "com.mitchellh.ghostty.desktop" ];
         };
         autostart = {
-          enable = true;
+          enable = gui;
           entries = [ "${pkgs.netbird-ui}/share/applications/netbird.desktop" ];
         };
       };
