@@ -163,8 +163,32 @@ in
   config =
     let
       cfg = config.customServices;
-      coreServices = {
+      gui = config.customPackages.gui.enable;
+    in
+    {
+      systemd = {
+        user = {
+          startServices = true;
+
+          services = lib.mkMerge [
+            { emacs.Service.Environment = [ "COLORTERM=truecolor" ]; }
+            (lib.mkIf gui (cfg.storage.rclone.service or { }))
+            (lib.mkIf gui (cfg.wallpaper.varietyWallpaper.service or { }))
+            (lib.mkIf config.services.swayidle.enable {
+              swayidle.Service.ExecCondition = niriSessionExecCondition;
+            })
+          ];
+
+          paths = lib.mkMerge [
+            (lib.mkIf gui (cfg.wallpaper.varietyWallpaper.path or { }))
+          ];
+        };
+      };
+
+      services = {
         # keep-sorted start block=yes newline_separated=yes
+        easyeffects.enable = gui;
+
         emacs = {
           startWithUserSession = false;
           enable = true;
@@ -178,69 +202,28 @@ in
 
         gpg-agent = {
           enable = true;
-          pinentry =
-            if config.customPackages.gui.enable then
-              {
-                package = pkgs.pinentry-gnome3;
-                program = "pinentry-gnome3";
-              }
-            else
-              {
-                package = pkgs.pinentry-curses;
-                program = "pinentry-curses";
-              };
+          pinentry.package = if gui then pkgs.pinentry-gnome3 else pkgs.pinentry-curses;
+          pinentry.program = if gui then "pinentry-gnome3" else "pinentry-curses";
         };
 
         home-manager.autoExpire.enable = true;
 
-        ssh-agent = {
-          enable = true;
-        };
-        # keep-sorted end
-      };
+        mpris-proxy.enable = gui;
 
-      guiServices = {
-        # keep-sorted start block=yes newline_separated=yes
-        easyeffects.enable = true;
-
-        mpris-proxy.enable = true;
+        ssh-agent.enable = true;
 
         udiskie = {
-          enable = true;
+          enable = gui;
           tray = "auto";
         };
 
         unclutter = {
-          enable = true;
+          enable = gui;
           timeout = 5;
         };
 
-        waytorandr = {
-          enable = true;
-        };
+        waytorandr.enable = gui;
         # keep-sorted end
       };
-    in
-    {
-      systemd = {
-        user = {
-          startServices = true;
-
-          services = lib.mkMerge [
-            { emacs.Service.Environment = [ "COLORTERM=truecolor" ]; }
-            (lib.mkIf config.customPackages.gui.enable (cfg.storage.rclone.service or { }))
-            (lib.mkIf config.customPackages.gui.enable (cfg.wallpaper.varietyWallpaper.service or { }))
-            (lib.mkIf config.services.swayidle.enable {
-              swayidle.Service.ExecCondition = niriSessionExecCondition;
-            })
-          ];
-
-          paths = lib.mkMerge [
-            (lib.mkIf config.customPackages.gui.enable (cfg.wallpaper.varietyWallpaper.path or { }))
-          ];
-        };
-      };
-
-      services = coreServices // lib.optionalAttrs config.customPackages.gui.enable guiServices;
     };
 }

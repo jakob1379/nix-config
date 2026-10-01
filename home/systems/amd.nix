@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   system,
@@ -14,6 +15,7 @@ let
       system
       inputs
       ;
+    gui = config.customPackages.gui.enable;
   };
 
   coderabbit-cli = inputs.numtide-llm-agents.packages.${system}.coderabbit-cli;
