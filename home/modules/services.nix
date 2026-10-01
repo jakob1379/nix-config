@@ -178,8 +178,17 @@ in
 
         gpg-agent = {
           enable = true;
-          pinentry.package = pkgs.pinentry-gnome3;
-          pinentry.program = "pinentry-gnome3";
+          pinentry =
+            if config.customPackages.gui.enable then
+              {
+                package = pkgs.pinentry-gnome3;
+                program = "pinentry-gnome3";
+              }
+            else
+              {
+                package = pkgs.pinentry-curses;
+                program = "pinentry-curses";
+              };
         };
 
         home-manager.autoExpire.enable = true;

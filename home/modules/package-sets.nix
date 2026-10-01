@@ -53,6 +53,15 @@ in
   gui = with pkgs; [
     # keep-sorted start block=yes
     (pkgs.writeShellApplication {
+      name = "dragon-scp";
+      runtimeInputs = [
+        pkgs.openssh
+        pkgs.dragon-drop
+        pkgs.coreutils
+      ];
+      text = builtins.readFile ../../bin/dragon-scp;
+    })
+    (pkgs.writeShellApplication {
       name = "screenshot-ocr";
       runtimeInputs = [
         pkgs.coreutils
@@ -180,15 +189,6 @@ in
         pkgs.docker
       ];
       text = builtins.readFile ../../bin/docker-volume-copy;
-    })
-    (pkgs.writeShellApplication {
-      name = "dragon-scp";
-      runtimeInputs = [
-        pkgs.openssh
-        pkgs.dragon-drop
-        pkgs.coreutils
-      ];
-      text = builtins.readFile ../../bin/dragon-scp;
     })
     (pkgs.writeShellApplication {
       name = "emacs-clean";
