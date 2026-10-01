@@ -118,8 +118,6 @@ in
       dicts: with dicts; [
         da
         en
-        en-computers
-        en-science
       ]
     ))
     # Stable-named python that always has debugpy importable, so dape's
