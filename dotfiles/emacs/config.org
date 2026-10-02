@@ -958,6 +958,7 @@ Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Cor
    (nix-mode . eglot-ensure)
    (python-base-mode . eglot-ensure)
    (sh-mode . eglot-ensure)
+   (terraform-mode . eglot-ensure)
    (toml-mode . eglot-ensure)
    (typst-mode . eglot-ensure)
    (typescript-mode . eglot-ensure)
@@ -982,6 +983,7 @@ Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Cor
              ((typst-mode typst--markup-mode typst--code-mode) . ("tinymist"))
              (just-mode . ("just-lsp"))
              (sh-mode . ("bash-language-server" "start"))
+             (terraform-mode . ("nix" "run" "nixpkgs#tofu-ls" "--" "serve"))
              (typescript-mode . ("vtsls" "--stdio"))
              (nix-mode . ("nixd"))
              (markdown-mode . ("marksman" "server"))
@@ -1718,6 +1720,12 @@ necessarily superseded by the ssh config.
   ("\\.netdev\\'" . systemd-mode)
   ("\\.network\\'" . systemd-mode)
   ("\\.link\\'" . systemd-mode))
+#+END_SRC
+*** Terraform / OpenTofu
+#+BEGIN_SRC emacs-lisp
+(use-package terraform-mode
+  :defer t
+  :mode ("\\.\\(tf\\|tfvars\\|tofu\\|tofuvars\\)\\'" . terraform-mode))
 #+END_SRC
 *** Themes
 **** Doom Emacs theme
