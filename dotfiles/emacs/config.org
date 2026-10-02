@@ -983,7 +983,7 @@ Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Cor
              ((typst-mode typst--markup-mode typst--code-mode) . ("tinymist"))
              (just-mode . ("just-lsp"))
              (sh-mode . ("bash-language-server" "start"))
-             (terraform-mode . ("tofu-ls" "serve"))
+             (terraform-mode . ("nix" "run" "nixpkgs#tofu-ls" "--" "serve"))
              (typescript-mode . ("vtsls" "--stdio"))
              (nix-mode . ("nixd"))
              (markdown-mode . ("marksman" "server"))

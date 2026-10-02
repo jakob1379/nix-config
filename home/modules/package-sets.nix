@@ -143,7 +143,6 @@ in
     taplo
     texlab
     tinymist
-    tofu-ls
     ty
     vscode-langservers-extracted
     vtsls
