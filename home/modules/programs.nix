@@ -805,6 +805,7 @@ in
       # Home shell aliases
       home.shellAliases = {
         # keep-sorted start
+        ",," = ''f(){ p=$(${pkgs.comma}/bin/, -x "$1") && shift && sudo "$p" "$@"; }; f'';
         cat = "bat";
         cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
         dcup = "docker compose up --remove-orphans";
