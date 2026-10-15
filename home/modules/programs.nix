@@ -499,7 +499,7 @@ in
                 ui = true;
               };
               init.defaultBranch = "main";
-              core.editor = "emacsclient --create-frame --alternate-editor ''";
+              core.editor = "emacsclient --create-frame";
               pull.rebase = false;
               push.autoSetupRemote = true;
               # credential.helper = "libsecret"; # Keep your existing system helper
@@ -813,7 +813,7 @@ in
         df = "duf --hide special";
         dk = "dragon-drop --keep";
         dx = "dragon-drop --and-exit";
-        ec = ''f(){ if [ -n "''${DISPLAY:-}''${WAYLAND_DISPLAY:-}" ]; then emacsclient --no-wait --reuse-frame --alternate-editor "" "$@"; else emacsclient -nw --alternate-editor "" "$@"; fi; }; f'';
+        ec = ''f(){ if [ -n "''${DISPLAY:-}''${WAYLAND_DISPLAY:-}" ]; then emacsclient --no-wait --reuse-frame "$@"; else emacsclient -nw "$@"; fi; }; f'';
         fm = "frogmouth";
         grep = "grep --color=auto";
         noctalia-reload = "noctalia msg config-reload";
