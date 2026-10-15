@@ -814,19 +814,15 @@ in
         dk = "dragon-drop --keep";
         dx = "dragon-drop --and-exit";
         ec = ''f(){ if [ -n "''${DISPLAY:-}''${WAYLAND_DISPLAY:-}" ]; then emacsclient --no-wait --reuse-frame "$@"; else emacsclient -nw "$@"; fi; }; f'';
-        fm = "frogmouth";
         grep = "grep --color=auto";
         noctalia-reload = "noctalia msg config-reload";
         noctalia-restart = "pkill -x noctalia || true; noctalia --daemon";
-        nshell = ''f(){ [ $# -gt 0 ] || { echo "usage: nshell <package> [nix args...]" >&2; return 1; }; nix shell "nixpkgs#$1" "''${@:2}"; }; f'';
         onefetch = "onefetch -E --nerd-fonts --no-color-palette";
         open = "xdg-open";
         plasma-restart = "systemctl restart --user plasma-plasmashell";
         q = "qalc";
-        rsync = "rsync --info=progress2";
+        rsync = "rsync --partial -v --info=progress2";
         tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
-        venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
-        watch = "hwatch";
         # keep-sorted end
       };
 
