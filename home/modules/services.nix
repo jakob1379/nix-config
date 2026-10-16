@@ -220,6 +220,17 @@ in
           ];
         };
 
+        flameshot = {
+          enable = gui;
+          settings.General = {
+            contrastOpacity = 188;
+            copyPathAfterSave = true;
+            drawCircleCounterSize = 1;
+            savePath = "${config.home.homeDirectory}/Pictures";
+            savePathFixed = false;
+          };
+        };
+
         gpg-agent = {
           enable = true;
           pinentry.package = if gui then pkgs.pinentry-gnome3 else pkgs.pinentry-curses;
