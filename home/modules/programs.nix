@@ -172,7 +172,8 @@ in
                 flyline key bind Ctrl+w 'always=runBashCommand(__nix_find_widget)'
                 flyline key bind Alt+a  'always=runBashCommand(__rg_fuzzy_widget)'
                 flyline key bind Alt+u  'always=runBashCommand(up)'
-                flyline key bind Ctrl+g 'always=runBashCommand(__flyline_keys_widget)'
+                flyline key bind Alt+k  'always=runBashCommand(__flyline_keys_widget)'
+                flyline key bind Ctrl+g 'always=runBashCommand(_navi_widget)'
 
                 flyline set-agent-mode \
                   --system-prompt "Be concise. Answer with a JSON array of at most 3 items with objects containing: command and description. Command will be a Bash command. " \
