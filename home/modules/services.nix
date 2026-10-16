@@ -174,6 +174,26 @@ in
             { emacs.Service.Environment = [ "COLORTERM=truecolor" ]; }
             (lib.mkIf gui (cfg.storage.rclone.service or { }))
             (lib.mkIf gui (cfg.wallpaper.varietyWallpaper.service or { }))
+            (lib.mkIf (gui && config.programs.keepassxc.enable) {
+              keepassxc = {
+                Unit = {
+                  Description = "KeePassXC password manager";
+                  After = [
+                    "graphical-session.target"
+                    rcloneDropboxPrivateService
+                  ];
+                  PartOf = [ "graphical-session.target" ];
+                  Requires = [ rcloneDropboxPrivateService ];
+                };
+                Service = {
+                  ExecStartPre = "${pkgs.util-linux}/bin/mountpoint -q ${lib.escapeShellArg dropboxPrivateMountPath}";
+                  ExecStart = lib.getExe config.programs.keepassxc.package;
+                  Restart = "on-failure";
+                  RestartSec = 5;
+                };
+                Install.WantedBy = [ "graphical-session.target" ];
+              };
+            })
             (lib.mkIf config.services.swayidle.enable {
               swayidle.Service.ExecCondition = niriSessionExecCondition;
             })

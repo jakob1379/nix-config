@@ -860,39 +860,6 @@ in
           # Mod+Return instead of costing ~1.8s on the first launch.
           "systemd/user/graphical-session.target.wants/app-com.mitchellh.ghostty.service".source =
             "${config.programs.ghostty.package}/share/systemd/user/app-com.mitchellh.ghostty.service";
-          "autostart/org.keepassxc.KeePassXC.desktop".text = ''
-            [Desktop Entry]
-            Name=KeePassXC
-            Exec=keepassxc
-            TryExec=keepassxc
-            Icon=keepassxc
-            StartupNotify=false
-            Terminal=false
-            Type=Application
-            Version=1.5
-            X-GNOME-Autostart-enabled=true
-          '';
-        };
-        dataFile = lib.mkIf gui {
-          "applications/org.keepassxc.KeePassXC.desktop".text = ''
-            [Desktop Entry]
-            Name=KeePassXC
-            GenericName=Password Manager
-            Comment=Community-driven port of KeePass Password Safe
-            Exec=keepassxc %f
-            TryExec=keepassxc
-            Icon=keepassxc
-            StartupWMClass=keepassxc
-            StartupNotify=false
-            Terminal=false
-            Type=Application
-            Version=1.5
-            Categories=Utility;Security;Qt;
-            MimeType=application/x-keepass2;
-            SingleMainWindow=true
-            X-GNOME-SingleWindow=true
-            Keywords=security;privacy;password-manager;yubikey;password;keepass;
-          '';
         };
         mimeApps = {
           enable = gui;
