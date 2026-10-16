@@ -67,7 +67,6 @@ in
       brave
       dragon-drop
       feh
-      flameshot
       inputs.ai-usagebar.packages.${system}.default
       libnotify
       onlyoffice-desktopeditors

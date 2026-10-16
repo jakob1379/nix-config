@@ -153,16 +153,31 @@ in
                 # so wrap __fzf_cd__ to get something runBashCommand can call.
                 __fzf_cd_widget() { local out; out=$(__fzf_cd__) && eval "$out"; }
 
+                # `flyline key list` only prints an 80-col box table with
+                # wrapped cells; stitch each row's fragments back together.
+                __flyline_keys_widget() {
+                  flyline key list | awk -F'│' '
+                    function flush() {
+                      if (n && c[2] !~ /Key\(s\)/) { $0 = c[2] "\t" c[4] "\t" c[5] "\t" c[3]; gsub(/ +/, " "); print }
+                      n = 0; delete c
+                    }
+                    /^[├╰]/ || /Keybindings:/ { flush(); next }
+                    NF == 6 { n = 1; for (i = 2; i <= 5; i++) c[i] = c[i] substr($i, 2, length($i) - 2) }
+                    END { flush() }
+                  ' | column -t -s $'\t' | fzf --no-sort --prompt='keys> ' >/dev/null
+                }
+
                 flyline key bind Ctrl+t 'always=runBashCommand(fzf-file-widget)'
                 flyline key bind Alt+c  'always=runBashCommand(__fzf_cd_widget)'
                 flyline key bind Ctrl+w 'always=runBashCommand(__nix_find_widget)'
                 flyline key bind Alt+a  'always=runBashCommand(__rg_fuzzy_widget)'
                 flyline key bind Alt+u  'always=runBashCommand(up)'
+                flyline key bind Ctrl+g 'always=runBashCommand(__flyline_keys_widget)'
 
                 flyline set-agent-mode \
                   --system-prompt "Be concise. Answer with a JSON array of at most 3 items with objects containing: command and description. Command will be a Bash command. " \
                   --trigger-prefix ': ' \
-                  --command '${lib.getExe pkgs.claude-code} --model claude-opus-5-5 --effort medium --print'
+                  --command '${lib.getExe pkgs.claude-code} --model claude-opus-5-5 --effort low --print'
               fi
             '')
           ];
@@ -499,7 +514,7 @@ in
                 ui = true;
               };
               init.defaultBranch = "main";
-              core.editor = "emacsclient --create-frame --alternate-editor ''";
+              core.editor = "emacsclient --create-frame";
               pull.rebase = false;
               push.autoSetupRemote = true;
               # credential.helper = "libsecret"; # Keep your existing system helper
@@ -813,20 +828,16 @@ in
         df = "duf --hide special";
         dk = "dragon-drop --keep";
         dx = "dragon-drop --and-exit";
-        ec = ''f(){ if [ -n "''${DISPLAY:-}''${WAYLAND_DISPLAY:-}" ]; then emacsclient --no-wait --reuse-frame --alternate-editor "" "$@"; else emacsclient -nw --alternate-editor "" "$@"; fi; }; f'';
-        fm = "frogmouth";
+        ec = ''f(){ if [ -n "''${DISPLAY:-}''${WAYLAND_DISPLAY:-}" ]; then emacsclient --no-wait --reuse-frame "$@"; else emacsclient -nw "$@"; fi; }; f'';
         grep = "grep --color=auto";
         noctalia-reload = "noctalia msg config-reload";
         noctalia-restart = "pkill -x noctalia || true; noctalia --daemon";
-        nshell = ''f(){ [ $# -gt 0 ] || { echo "usage: nshell <package> [nix args...]" >&2; return 1; }; nix shell "nixpkgs#$1" "''${@:2}"; }; f'';
         onefetch = "onefetch -E --nerd-fonts --no-color-palette";
         open = "xdg-open";
         plasma-restart = "systemctl restart --user plasma-plasmashell";
         q = "qalc";
-        rsync = "rsync --info=progress2";
+        rsync = "rsync --partial -v --info=progress2";
         tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
-        venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
-        watch = "hwatch";
         # keep-sorted end
       };
 
@@ -866,39 +877,6 @@ in
           # Mod+Return instead of costing ~1.8s on the first launch.
           "systemd/user/graphical-session.target.wants/app-com.mitchellh.ghostty.service".source =
             "${config.programs.ghostty.package}/share/systemd/user/app-com.mitchellh.ghostty.service";
-          "autostart/org.keepassxc.KeePassXC.desktop".text = ''
-            [Desktop Entry]
-            Name=KeePassXC
-            Exec=keepassxc
-            TryExec=keepassxc
-            Icon=keepassxc
-            StartupNotify=false
-            Terminal=false
-            Type=Application
-            Version=1.5
-            X-GNOME-Autostart-enabled=true
-          '';
-        };
-        dataFile = lib.mkIf gui {
-          "applications/org.keepassxc.KeePassXC.desktop".text = ''
-            [Desktop Entry]
-            Name=KeePassXC
-            GenericName=Password Manager
-            Comment=Community-driven port of KeePass Password Safe
-            Exec=keepassxc %f
-            TryExec=keepassxc
-            Icon=keepassxc
-            StartupWMClass=keepassxc
-            StartupNotify=false
-            Terminal=false
-            Type=Application
-            Version=1.5
-            Categories=Utility;Security;Qt;
-            MimeType=application/x-keepass2;
-            SingleMainWindow=true
-            X-GNOME-SingleWindow=true
-            Keywords=security;privacy;password-manager;yubikey;password;keepass;
-          '';
         };
         mimeApps = {
           enable = gui;

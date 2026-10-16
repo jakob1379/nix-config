@@ -174,6 +174,26 @@ in
             { emacs.Service.Environment = [ "COLORTERM=truecolor" ]; }
             (lib.mkIf gui (cfg.storage.rclone.service or { }))
             (lib.mkIf gui (cfg.wallpaper.varietyWallpaper.service or { }))
+            (lib.mkIf (gui && config.programs.keepassxc.enable) {
+              keepassxc = {
+                Unit = {
+                  Description = "KeePassXC password manager";
+                  After = [
+                    "graphical-session.target"
+                    rcloneDropboxPrivateService
+                  ];
+                  PartOf = [ "graphical-session.target" ];
+                  Requires = [ rcloneDropboxPrivateService ];
+                };
+                Service = {
+                  ExecStartPre = "${pkgs.util-linux}/bin/mountpoint -q ${lib.escapeShellArg dropboxPrivateMountPath}";
+                  ExecStart = lib.getExe config.programs.keepassxc.package;
+                  Restart = "on-failure";
+                  RestartSec = 5;
+                };
+                Install.WantedBy = [ "graphical-session.target" ];
+              };
+            })
             (lib.mkIf config.services.swayidle.enable {
               swayidle.Service.ExecCondition = niriSessionExecCondition;
             })
@@ -190,14 +210,21 @@ in
         easyeffects.enable = gui;
 
         emacs = {
-          startWithUserSession = false;
+          startWithUserSession = true;
           enable = true;
           defaultEditor = true;
-          client.arguments = [
-            "--alternative-editor ''"
-            "--reuse-frame"
-            "--no-wait"
-          ];
+          client.enable = true;
+        };
+
+        flameshot = {
+          enable = gui;
+          settings.General = {
+            contrastOpacity = 188;
+            copyPathAfterSave = true;
+            drawCircleCounterSize = 1;
+            savePath = "${config.home.homeDirectory}/Pictures";
+            savePathFixed = false;
+          };
         };
 
         gpg-agent = {
