@@ -26,7 +26,7 @@ scoped verification of the fixes.
 | `open-code-review:delegate-review`   | correctness | bugs, security, error handling, concurrency  |
 | `superpowers:requesting-code-review` | correctness | bugs, plan alignment, tests, production risk |
 | `ponytail:ponytail-review`           | advisory    | over-engineering only                        |
-| `mattpocock-skills:code-review`      | advisory    | repo standards and spec compliance, not bugs |
+| `mattpocock-skills:code-review`      | advisory    | spec compliance, documented standards only   |
 
 Advisory findings may be accepted and fixed, but never block convergence. If a
 reviewer from another model family is available (e.g. a `codex` CLI), give it
@@ -52,8 +52,15 @@ one correctness seat — diversity buys more than seat count.
    / Important / Minor. Record for each finding: seats that raised it, severity,
    and verdict — fix, reject with a reason, or defer with a `ponytail:` comment.
    Agreement between correlated seats is weak evidence, not authority.
-5. **Fix.** Apply accepted fixes yourself. Never fix by adding an abstraction a
-   reviewer merely speculated about. Re-run the gate.
+5. **Fix.** Before fixing an accepted Critical or Important finding, make it
+   **red**: a test, or failing that a repro command, that fails on the pinned
+   code. The fix turns it green and the test stays in the suite, so the fix
+   keeps a guard. A claim you cannot make red keeps its severity, is marked
+   unverified, and is deferred with the exact check that would settle it (live
+   hardware, external system). Reproducibility is evidence, not impact. Apply
+   the smallest change that turns red to green; every changed line is the next
+   round's review surface. Never fix by adding an abstraction a reviewer merely
+   speculated about. Re-run the gate.
 6. **Rounds 2+: scoped re-review.** Write the fix diff (the head the last review
    saw → now) to a patch file. Dispatch fresh agents on the correctness seats
    only, each with the fix patch and the accepted findings, unattributed. Each
@@ -72,7 +79,10 @@ this loop (auto-fixing, asking the user, spawning reviewers); this block wins.
 > agents or invoke any other review skill or command; review directly. Review
 > only the given patch file, reading surrounding source for context. For each
 > finding give file:line, severity (Critical / Important / Minor), the claim,
-> and the evidence. List every file in the patch you did not review, and why.
+> and the evidence. For Critical or Important, include a command or test that
+> fails on the patched code when you can; otherwise say the claim is reasoned.
+> Report spec gaps and breaches of documented standards; leave generic code
+> smells out. List every file in the patch you did not review, and why.
 
 ## Rejections
 
@@ -106,8 +116,9 @@ Say so explicitly and list what is still open.
 
 ## Deliverable
 
-- A findings table — seat(s), file:line, severity, verdict, and the evidence
-  behind each rejection.
+- A findings table — seat(s), file:line, severity, verdict, the red test behind
+  each accepted Critical or Important fix, and the evidence behind each
+  rejection.
 - Gate results from the first and last run.
 - Coverage — files any seat skipped and why, and axes that did not run (no spec,
   no standards docs, no runnable checks).
