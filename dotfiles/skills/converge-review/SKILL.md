@@ -4,10 +4,9 @@ description:
   Orchestrate an independent multi-reviewer loop over the current changes using
   open-code-review, ponytail-review, superpowers requesting-code-review, and
   mattpocock code-review, gated by the project's own executed checks and fixing
-  between rounds until the fixes verify clean. Use when the user asks for a
-  converged review, a multi-reviewer review, a review loop, "review until
-  settled", or invokes /converge-review. Do not use for a single-pass review or
-  when only one reviewer was requested.
+  between rounds until the fixes verify clean. Manual only: invoke with
+  /converge-review.
+disable-model-invocation: true
 ---
 
 # Converge Review
