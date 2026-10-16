@@ -11,7 +11,7 @@ in
     inherit lib;
   };
 
-  "jsg@SEEQWS-002" = mkHomeConfig {
+  "jsg@seeqws-002" = mkHomeConfig {
     system = "x86_64-linux";
     username = "jsg";
     homeDirectory = "/home/jsg";
