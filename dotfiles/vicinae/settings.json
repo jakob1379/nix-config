@@ -31,6 +31,15 @@
       "preferences": {
         "monitoring": true
       }
+    },
+    "snippets": {
+      "preferences": {
+        "enabled": true,
+        "undo": true,
+        "layout": "",
+        "prePasteDelay": "0",
+        "keyDelay": "2"
+      }
     }
   }
 }
