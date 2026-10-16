@@ -153,16 +153,31 @@ in
                 # so wrap __fzf_cd__ to get something runBashCommand can call.
                 __fzf_cd_widget() { local out; out=$(__fzf_cd__) && eval "$out"; }
 
+                # `flyline key list` only prints an 80-col box table with
+                # wrapped cells; stitch each row's fragments back together.
+                __flyline_keys_widget() {
+                  flyline key list | awk -F'│' '
+                    function flush() {
+                      if (n && c[2] !~ /Key\(s\)/) { $0 = c[2] "\t" c[4] "\t" c[5] "\t" c[3]; gsub(/ +/, " "); print }
+                      n = 0; delete c
+                    }
+                    /^[├╰]/ || /Keybindings:/ { flush(); next }
+                    NF == 6 { n = 1; for (i = 2; i <= 5; i++) c[i] = c[i] substr($i, 2, length($i) - 2) }
+                    END { flush() }
+                  ' | column -t -s $'\t' | fzf --no-sort --prompt='keys> ' >/dev/null
+                }
+
                 flyline key bind Ctrl+t 'always=runBashCommand(fzf-file-widget)'
                 flyline key bind Alt+c  'always=runBashCommand(__fzf_cd_widget)'
                 flyline key bind Ctrl+w 'always=runBashCommand(__nix_find_widget)'
                 flyline key bind Alt+a  'always=runBashCommand(__rg_fuzzy_widget)'
                 flyline key bind Alt+u  'always=runBashCommand(up)'
+                flyline key bind Ctrl+g 'always=runBashCommand(__flyline_keys_widget)'
 
                 flyline set-agent-mode \
                   --system-prompt "Be concise. Answer with a JSON array of at most 3 items with objects containing: command and description. Command will be a Bash command. " \
                   --trigger-prefix ': ' \
-                  --command '${lib.getExe pkgs.claude-code} --model claude-opus-5-5 --effort medium --print'
+                  --command '${lib.getExe pkgs.claude-code} --model claude-opus-5-5 --effort low --print'
               fi
             '')
           ];
