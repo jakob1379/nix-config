@@ -210,14 +210,10 @@ in
         easyeffects.enable = gui;
 
         emacs = {
-          startWithUserSession = false;
+          startWithUserSession = true;
           enable = true;
           defaultEditor = true;
-          client.arguments = [
-            "--alternative-editor ''"
-            "--reuse-frame"
-            "--no-wait"
-          ];
+          client.enable = true;
         };
 
         flameshot = {

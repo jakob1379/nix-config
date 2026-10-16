@@ -514,7 +514,7 @@ in
                 ui = true;
               };
               init.defaultBranch = "main";
-              core.editor = "emacsclient --create-frame --alternate-editor ''";
+              core.editor = "emacsclient --create-frame";
               pull.rebase = false;
               push.autoSetupRemote = true;
               # credential.helper = "libsecret"; # Keep your existing system helper
@@ -803,6 +803,10 @@ in
         yazi = {
           enable = true;
           shellWrapperName = "y";
+          theme.flavor = {
+            dark = "";
+            light = "";
+          };
         };
 
         zoxide = {
@@ -816,6 +820,7 @@ in
       # Home shell aliases
       home.shellAliases = {
         # keep-sorted start
+        ",," = ''f(){ p=$(${pkgs.comma}/bin/, -x "$1") && shift && sudo "$p" "$@"; }; f'';
         cat = "bat";
         cdd = ''f(){ [ -d "$1" ] && cd "$1" || { [ -f "$1" ] && cd "$(dirname "$1")"; } || echo "No such file or directory"; }; f'';
         dcup = "docker compose up --remove-orphans";
@@ -823,20 +828,16 @@ in
         df = "duf --hide special";
         dk = "dragon-drop --keep";
         dx = "dragon-drop --and-exit";
-        ec = ''f(){ if [ -n "''${DISPLAY:-}''${WAYLAND_DISPLAY:-}" ]; then emacsclient --no-wait --reuse-frame --alternate-editor "" "$@"; else emacsclient -nw --alternate-editor "" "$@"; fi; }; f'';
-        fm = "frogmouth";
+        ec = ''f(){ if [ -n "''${DISPLAY:-}''${WAYLAND_DISPLAY:-}" ]; then emacsclient --no-wait --reuse-frame "$@"; else emacsclient -nw "$@"; fi; }; f'';
         grep = "grep --color=auto";
         noctalia-reload = "noctalia msg config-reload";
         noctalia-restart = "pkill -x noctalia || true; noctalia --daemon";
-        nshell = ''f(){ [ $# -gt 0 ] || { echo "usage: nshell <package> [nix args...]" >&2; return 1; }; nix shell "nixpkgs#$1" "''${@:2}"; }; f'';
         onefetch = "onefetch -E --nerd-fonts --no-color-palette";
         open = "xdg-open";
         plasma-restart = "systemctl restart --user plasma-plasmashell";
         q = "qalc";
-        rsync = "rsync --info=progress2";
+        rsync = "rsync --partial -v --info=progress2";
         tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
-        venv = ''[ -n "$VIRTUAL_ENV" ] && deactivate; . .venv/bin/activate'';
-        watch = "hwatch";
         # keep-sorted end
       };
 
@@ -869,6 +870,7 @@ in
       xdg = {
         configFile = lib.mkIf gui {
           "mimeapps.list".force = true;
+          "yazi/theme.toml".force = true;
           # The ghostty HM module writes the unit via xdg.configFile, which
           # bypasses HM's systemd handling, so its [Install] section is never
           # realised. Wire it up so the instance is warm before the first

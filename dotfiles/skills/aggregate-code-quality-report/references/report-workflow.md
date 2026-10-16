@@ -16,8 +16,8 @@
 Assume:
 
 - Execution starts at the repository root in a clean clone or clean worktree.
-- No previous scanner artifacts, `.pyscn/`, `.desloppify/`, or HTML report
-  exist.
+- No previous scanner artifacts, `.pyscn/`, `.desloppify/`, `graphify-out/`, or
+  HTML report exist.
 - `git`, `uv`, and network access for installing scanner packages are available.
 - Production source must remain unchanged. Scanner state and report artifacts
   are allowed.
@@ -29,8 +29,8 @@ Create:
 - A standalone static report at `scanner-aggregate-report.html`.
 - Fresh supporting artifacts under `.scanner-report-artifacts/`.
 - An offline-useful HTML document with no external runtime dependencies.
-- Separate lanes for Skylos, PySCN, AI Slop Detector, Desloppify, and Ponytail
-  Audit ultra.
+- Separate lanes for Skylos, PySCN, AI Slop Detector, Desloppify, Graphify, and
+  Ponytail Audit ultra.
 
 Apply this rule throughout: scanner labels are leads, not conclusions. Validate
 findings against current source, reconcile overlapping signals, and rank risks
@@ -167,7 +167,40 @@ Report separately, when available:
 Explain that Desloppify's scoring model is incompatible with other scanner
 scores; never compare its strict score directly without that qualification.
 
-### 4.5 Ponytail Audit ultra
+### 4.5 Graphify
+
+Invoke `$graphify . --no-viz` to build a structural knowledge graph of the
+repository. If the named skill is unavailable, bootstrap with
+`uvx --from graphifyy graphify` and follow the same pipeline, disclosing the
+fallback.
+
+Run both extraction passes and keep the LLM inside the host session:
+
+- Unset `GEMINI_API_KEY` and `GOOGLE_API_KEY` for every graphify command so no
+  source is sent to an external LLM.
+- Run AST extraction for code and semantic extraction for docs, papers, and
+  images with the skill's `general-purpose` subagents. Record the subagent
+  count, chunk count, failed or missing chunks, and token totals.
+- If semantic extraction fails for more than half the chunks, report the lane as
+  AST-only and disclose which files are not represented.
+- Do not run `graphify hook install`, `graphify claude install`, `--watch`,
+  `--mcp`, Neo4j/FalkorDB pushes, or any step that edits repository files
+  outside `graphify-out/`.
+
+Copy `graphify-out/graph.json` and `graphify-out/GRAPH_REPORT.md` to
+`.scanner-report-artifacts/graphify/`. Extract node/edge/community counts, god
+nodes, low-cohesion communities, and surprising cross-community connections.
+Count edges by `EXTRACTED`, `INFERRED`, and `AMBIGUOUS` and report them
+separately; label every LLM-derived edge as such in the report.
+
+Treat `INFERRED` and `AMBIGUOUS` edges as weaker than `EXTRACTED` edges; never
+let them alone corroborate another tool. Treat god nodes and surprising
+connections as coupling leads, not defects. Validate each against current source
+before it corroborates a PySCN architecture or Ponytail finding. Keep this lane
+separate and do not assign operational severity unless independent validated
+evidence establishes actual risk.
+
+### 4.6 Ponytail Audit ultra
 
 Invoke `$ponytail:ponytail-audit ultra` as a read-only whole-repository
 over-engineering audit. If the named skill is unavailable, perform the same
@@ -266,6 +299,8 @@ Never average tool scores. Compare the tools by purpose:
 - PySCN: complexity, duplication, maintainability, architecture.
 - Slop Detector: broad density, inflation, churn, coverage, dependency sanity.
 - Desloppify: mechanical and subjective health backlog plus execution state.
+- Graphify: structural coupling, god nodes, module communities, cross-module
+  bridges.
 - Ponytail Audit: deletion, simplification, YAGNI, stdlib/native replacement.
 
 ## 6. Generate the HTML report
@@ -283,6 +318,7 @@ Create these tabs:
 - PySCN
 - Slop Detector
 - Desloppify
+- Graphify
 - Ponytail Audit
 - Raw Sources
 
