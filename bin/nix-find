@@ -69,17 +69,88 @@ nix_find_homepage() {
 }
 export -f nix_find_homepage
 
+# Helper: .override arguments as "f name" (has a default, i.e. a feature flag)
+# or "d name" (dependency), after a "p file:line" line from meta.position;
+# Nix cannot expose default values, so the preview reads them from that file
+nix_find_overrides() {
+	[[ "$1" == nixpkgs/* ]] || return 0
+	# shellcheck disable=SC2016
+	nix eval --raw "nixpkgs#$(nix_find_extract_pkgs "$1")" --apply '
+		p: let a = p.override.__functionArgs; in
+		"p ${p.meta.position or ""}\n"
+		+ builtins.concatStringsSep "" (map (n: (if a.${n} then "f " else "d ") + n + "\n") (builtins.attrNames a))
+	' 2>/dev/null
+}
+export -f nix_find_overrides
+
 # Helper: preview with a homepage/source section under the title, so it
-# stays above the fold for packages with long descriptions
+# stays above the fold for packages with long descriptions, and the override
+# arguments in a right-hand column (stacked below when the pane is too narrow).
+# awk runs bytewise so widths count UTF-8 lead bytes and skip ANSI codes.
+# Flag defaults are the source text of "name ? default," formal lines, coloured
+# by syntactic type; shortcut: one-line defaults in nixfmt layout only.
 nix_find_preview() {
 	local preview rest=""
 	preview=$(nix-search-tv preview "$1")
 	[[ "$preview" == *$'\n'* ]] && rest="${preview#*$'\n'}"
-	printf '%s\n\n\033[1mhomepage/source\033[22m\n%s\n%s\n\n%s\n' \
+	nix_find_overrides "$1" | NIX_FIND_LEFT=$(printf '%s\n\n\033[1mhomepage/source\033[22m\n%s\n%s\n\n%s' \
 		"${preview%%$'\n'*}" \
 		"$(nix_find_homepage "$1")" \
 		"$(nix-search-tv source "$1")" \
-		"$rest"
+		"$rest") LC_ALL=C awk -v cols="${FZF_PREVIEW_COLUMNS:-0}" '
+		function vis(s) { gsub(/\033\[[0-9;]*m/, "", s); gsub(/[\200-\277]/, "", s); return length(s) }
+		function wrap(s,   out, w, k, sp, spw) {
+			out = ""; w = 0; sp = 0
+			while (s != "") {
+				if (match(s, /^\033\[[0-9;]*m/)) k = 0
+				else { match(s, /^.[\200-\277]*/); k = 1 }
+				if (k && w == lw) {
+					if (sp) { W[++m] = substr(out, 1, sp); out = substr(out, sp + 2); w -= spw + 1 }
+					else { W[++m] = out; out = ""; w = 0 }
+					sp = 0
+				}
+				if (k && substr(s, 1, 1) == " ") { sp = length(out); spw = w }
+				out = out substr(s, 1, RLENGTH); w += k; s = substr(s, RLENGTH + 1)
+			}
+			W[++m] = out
+		}
+		function typed(v,   c) {
+			if (vis(v) > 30) v = substr(v, 1, 29) "…"
+			c = v ~ /^(true|false)$/ ? (v == "true" ? 32 : 31) : v == "null" ? 90 : v ~ /^"/ || index(v, "\047\047") == 1 ? 33 \
+				: v ~ /^-?[0-9]/ ? 35 : v ~ /^[[{(]/ ? 36 : 34
+			return "\033[" c "m" v "\033[39m"
+		}
+		$1 == "p" { file = $2; sub(/:[0-9]+$/, "", file) }
+		$1 == "f" { f[++nflags] = $2; if (length($2) > nw) nw = length($2) }
+		$1 == "d" { d[++ndeps] = $2 }
+		END {
+			if (file != "") while ((getline line < file) > 0) {
+				if (line ~ /^[ \t]*}[ \t]*:/) break
+				if (match(line, /^[ \t]*[A-Za-z_][A-Za-z0-9_-]*[ \t]*\?/)) {
+					k = substr(line, 1, RLENGTH); gsub(/[ \t?]/, "", k)
+					v = substr(line, RLENGTH + 1); sub(/^[ \t]+/, "", v); sub(/,?[ \t]*(#.*)?$/, "", v)
+					if (!(k in def)) def[k] = v == "" ? "…" : v
+				}
+			}
+			if (nflags) {
+				R[++r] = "\033[1moverride flags\033[22m"
+				for (i = 1; i <= nflags; i++) R[++r] = (f[i] in def) ? sprintf("%-" nw "s  %s", f[i], typed(def[f[i]])) : f[i]
+			}
+			if (nflags && ndeps) R[++r] = ""
+			if (ndeps) { R[++r] = "\033[1moverride deps\033[22m"; for (i = 1; i <= ndeps; i++) R[++r] = "\033[2m" d[i] "\033[22m" }
+			for (i = 1; i <= r; i++) if (vis(R[i]) > rw) rw = vis(R[i])
+			n = split(ENVIRON["NIX_FIND_LEFT"], L, "\n")
+			lw = cols - rw - 4
+			if (!r || lw < 50) {
+				for (i = 1; i <= n; i++) print L[i]
+				if (r) { print ""; for (i = 1; i <= r; i++) print R[i] }
+				exit
+			}
+			for (i = 1; i <= n; i++) wrap(L[i])
+			for (i = 1; i <= m || i <= r; i++)
+				printf "%s%s\033[0m \033[2m│\033[22m %s\n", W[i], sprintf("%" (lw - vis(W[i])) "s", ""), R[i]
+		}
+	'
 }
 export -f nix_find_preview
 
