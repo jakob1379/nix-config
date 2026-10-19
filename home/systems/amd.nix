@@ -55,6 +55,7 @@ in
       glab
       # hermesAgentWithEspeak
       coderabbit-cli
+      inputs.solidcraft.packages.${system}.default
       btopRocm
       # teams-for-linux
       kdePackages.qt6ct

@@ -77,6 +77,10 @@
       url = "github:youwen5/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    solidcraft = {
+      url = "github:tangency-labs/solidcraft";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
