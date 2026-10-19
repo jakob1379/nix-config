@@ -18,7 +18,6 @@ let
     gui = config.customPackages.gui.enable;
   };
 
-  coderabbit-cli = inputs.numtide-llm-agents.packages.${system}.coderabbit-cli;
   btopRocm = pkgs.btop.override {
     rocmSupport = true;
   };
@@ -54,7 +53,6 @@ in
       cachix
       glab
       # hermesAgentWithEspeak
-      coderabbit-cli
       inputs.solidcraft.packages.${system}.default
       btopRocm
       # teams-for-linux
