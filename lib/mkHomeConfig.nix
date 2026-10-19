@@ -24,7 +24,6 @@ inputs.home-manager.lib.homeManagerConfiguration {
     overlays = [
       (import ../overlays/tana.nix)
       inputs.flyline.overlays.default
-      (import ../overlays/flyline-glibc-tls.nix)
       (_: _: inputs.nixpkgs.lib.getAttrs fromSmall smallPkgs)
       (import ../overlays/t3code-native-addons.nix)
       (import ../overlays/claude-code.nix)
