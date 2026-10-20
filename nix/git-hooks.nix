@@ -1,4 +1,12 @@
 { lib, pkgs }:
+let
+  # toml-sort 0.24.4 gradle test breaks on tomlkit 0.15 ("Inline tables cannot contain a table"); patch only while nixpkgs still ships it unpatched
+  tomlSort =
+    if pkgs.toml-sort.version == "0.24.4" && (pkgs.toml-sort.disabledTests or [ ]) == [ ] then
+      pkgs.toml-sort.overridePythonAttrs { disabledTests = [ "gradle-version-catalog" ]; }
+    else
+      lib.warn "toml-sort fixed upstream: remove tomlSort patch in nix/git-hooks.nix" pkgs.toml-sort;
+in
 {
   src = ../.;
   package = pkgs.prek;
@@ -78,7 +86,7 @@
     toml-sort-fix = {
       enable = true;
       name = "toml-sort-fix";
-      entry = "${lib.getExe pkgs.toml-sort} --in-place";
+      entry = "${lib.getExe tomlSort} --in-place";
       files = "\\.toml$";
       types = [ "toml" ];
     };
