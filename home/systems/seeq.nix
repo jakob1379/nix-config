@@ -20,6 +20,8 @@ let
 
 in
 {
+  imports = [ ../modules/hindsight.nix ];
+
   customGit = {
     userName = "Jakob Stender Guldberg";
     userEmail = "jakob1379@gmail.com";
