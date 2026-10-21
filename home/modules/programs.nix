@@ -853,6 +853,7 @@ in
         open = "xdg-open";
         plasma-restart = "systemctl restart --user plasma-plasmashell";
         q = "qalc";
+        rm = "rm -I";
         rsync = "rsync --partial -v --info=progress2";
         tldr = ''tldr_wrapper() { tldr "$1" || man "$1" | bat -l man -p; } && tldr_wrapper'';
         # keep-sorted end
