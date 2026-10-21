@@ -189,6 +189,8 @@ in
                 flyline key bind Alt+k  'always=runBashCommand(__flyline_keys_widget)'
                 flyline key bind Ctrl+g 'always=runBashCommand(_navi_widget)'
 
+                flyline set-cursor --interpolate none --effect none
+
                 flyline set-agent-mode \
                   --system-prompt "Be concise. Answer with a JSON array of at most 3 items with objects containing: command and description. Command will be a Bash command. " \
                   --trigger-prefix ': ' \
