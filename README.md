@@ -36,6 +36,7 @@ nix flake show
 - `nixos/` — NixOS hosts, shared defaults, user modules
 - `dotfiles/` — editor, shell, browser, terminal, and desktop configs
 - `bin/` — custom helper commands wrapped into packages
+- `tests/` — end-to-end check for `bin/nix-find`, run by `nix flake check`
 - `scripts/` — supporting scripts for desktop, wallpaper, SSH, and shell
   workflows
 - `lib/` — shared helpers used by flake outputs
