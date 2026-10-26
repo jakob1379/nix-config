@@ -4,6 +4,29 @@
   lib,
   ...
 }:
+let
+  # nixpkgs evdi skips modules_install, so kmodigest never writes evdi.ko.cer and the modules aggregator fails; sign it ourselves until upstream does
+  upstreamEvdi = config.boot.kernelPackages.evdi;
+  evdi =
+    if !lib.hasInfix "install -Dm755 module/evdi.ko" upstreamEvdi.installPhase then
+      lib.warn "evdi signing fixed upstream: remove evdi patch in nixos/common.nix" upstreamEvdi
+    else
+      upstreamEvdi.overrideAttrs (old: {
+        postInstall = (old.postInstall or "") + ''
+          ${lib.getExe pkgs.buildPackages.kmodigest} $out/lib/modules/${config.boot.kernelPackages.kernel.modDirVersion}/kernel/drivers/gpu/drm/evdi/evdi.ko
+        '';
+      });
+  # upstream hplip bug in our pinned nixpkgs: preFixup expands $makeWrapperArgs as a scalar under structuredAttrs; same fix as nixpkgs master
+  hplip =
+    if lib.hasInfix "$makeWrapperArgs " pkgs.hplip.preFixup then
+      pkgs.hplip.overrideAttrs (old: {
+        preFixup =
+          lib.replaceStrings [ "$makeWrapperArgs " ] [ "\"\${makeWrapperArgs[@]}\" " ]
+            old.preFixup;
+      })
+    else
+      lib.warn "hplip wrapper fixed upstream: remove hplip patch in nixos/common.nix" pkgs.hplip;
+in
 {
   # Disable screenreader
   services.orca.enable = false;
@@ -37,19 +60,12 @@
   # Locale support (hosts may override defaultLocale)
   i18n.supportedLocales = [
     "en_US.UTF-8/UTF-8"
+    "en_DK.UTF-8/UTF-8"
     "da_DK.UTF-8/UTF-8"
   ];
   i18n.extraLocaleSettings =
     let
-      defaultLocale =
-        if
-          lib.hasAttr "i18n" config
-          && lib.hasAttr "defaultLocale" config.i18n
-          && config.i18n.defaultLocale != null
-        then
-          config.i18n.defaultLocale
-        else
-          "en_US.UTF-8";
+      defaultLocale = "en_US.UTF-8";
     in
     {
       LC_ADDRESS = defaultLocale;
@@ -60,7 +76,7 @@
       LC_NUMERIC = defaultLocale;
       LC_PAPER = defaultLocale;
       LC_TELEPHONE = defaultLocale;
-      LC_TIME = defaultLocale;
+      LC_TIME = "en_DK.UTF-8";
     };
 
   # X / Plasma defaults
@@ -82,32 +98,7 @@
   # Common services
   services.fwupd.enable = true;
   services.udisks2.enable = true;
-  services.tailscale.enable = true;
-  systemd.services.tailscale-disconnect-at-boot = {
-    description = "Keep Tailscale disconnected after daemon startup";
-    after = [ "tailscaled.service" ];
-    wants = [ "tailscaled.service" ];
-    wantedBy = [ "multi-user.target" ];
-    path = [
-      config.services.tailscale.package
-      pkgs.coreutils
-      pkgs.jq
-    ];
-    serviceConfig.Type = "oneshot";
-    script = ''
-      state=""
-      for ((attempt = 0; attempt < 20; attempt++)); do
-        if state="$(tailscale status --json --peers=false | jq --raw-output '.BackendState')"; then
-          break
-        fi
-        sleep 0.5
-      done
 
-      if [[ "$state" == "Running" ]]; then
-        tailscale down --accept-risk=all
-      fi
-    '';
-  };
   services.netbird = {
     ui.enable = true;
     enable = true;
@@ -118,9 +109,15 @@
   hardware.graphics.enable = true;
 
   # Virtualisation
+  virtualisation.podman = {
+    enable = true;
+    extraPackages = [ pkgs.podman-compose ];
+  };
+
   virtualisation.docker.enable = true;
   virtualisation.libvirtd.enable = true;
   programs.dconf.enable = true; # virt-manager/other tools
+  programs.gnome-disks.enable = true;
 
   services.avahi = {
     enable = true;
@@ -217,11 +214,11 @@
   };
   # Boot & kernel defaults (shared)
   boot = {
-    extraModulePackages = [ config.boot.kernelPackages.evdi ];
+    extraModulePackages = [ evdi ];
     initrd.kernelModules = [ "evdi" ];
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
-    kernelPackages = pkgs.linuxKernel.packages.linux_7_0;
+    kernelPackages = pkgs.linuxKernel.packages.linux_7_2;
     kernelModules = [ ];
     kernelParams = [
       "acpi_backlight=native"

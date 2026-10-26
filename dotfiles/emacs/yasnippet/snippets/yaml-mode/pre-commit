@@ -91,10 +91,10 @@ repos:
         files: \\.toml\$
 
   # Secret scanning
-  - repo: https://github.com/gitleaks/gitleaks
+  - repo: https://github.com/betterleaks/betterleaks
     rev: main
     hooks:
-      - id: gitleaks
+      - id: betterleaks
 
   # Conventional commit message enforcement
   - repo: https://github.com/commitizen-tools/commitizen

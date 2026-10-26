@@ -1,3 +1,9 @@
+## graphify
+
+**graphify** (`~/.claude/skills/graphify/SKILL.md`) - any input to knowledge
+graph. Trigger: `/graphify` When the user types `/graphify`, use the installed
+graphify skill or instructions before doing anything else.
+
 ## Hard truths
 
 Speak to me like I’m a founder, creator, or leader with massive potential but
@@ -70,10 +76,9 @@ unchanged, your tests are bad.
 
 - Use conventional commits
 - DO NOT ADD COMMENTS unless asked
-- Follow existing codebase conventions
 - Check what libraries/frameworks are already in use
 - Mimic existing code style, naming conventions, typing
 - Never assume a non-standard library is available
 - Never expose or log secrets and keys
-- Do not add noqa without direct permission - uvx ruff-explain gives details on
-  solutions
+- Do not add noqa without direct permission - `ruff rule <RULE_NUMBER>` gives
+  details

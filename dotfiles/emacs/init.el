@@ -48,21 +48,36 @@
 (defvar me/config-org-file (expand-file-name "config.org" user-emacs-directory))
 (defvar me/config-el-file (expand-file-name "config.el" user-emacs-directory))
 
+(defun me/file-symlink-newer-than-file-p (file other)
+  "Return non-nil when FILE's symlink mtime is newer than OTHER."
+  (let ((file-attrs (file-attributes file))
+        (other-attrs (file-attributes other)))
+    (and file-attrs
+         (or (not other-attrs)
+             (time-less-p (file-attribute-modification-time other-attrs)
+                          (file-attribute-modification-time file-attrs))))))
+
 ;; add the readthedocs theme as safe
 (setq org-safe-remote-resources
-      '("\\`https://fniessen\\.github\\.io/org-html-themes/org/theme-readtheorg\\.setup\\'"))
+      '("\\`https://fniessen\\.github\\.io/org-html-themes/org/readtheorg\\.setup\\'"
+        "\\`https://fniessen\\.github\\.io/org-html-themes/org/theme-readtheorg\\.setup\\'"))
 
 ;; Load the tangled config directly when it is current. Fall back to Org only
 ;; when the literate source has changed or no tangled file exists yet.
 (cond
  ((and (file-readable-p me/config-el-file)
        (or (not (file-readable-p me/config-org-file))
-           (not (file-newer-than-file-p me/config-org-file me/config-el-file))))
+           (not (me/file-symlink-newer-than-file-p me/config-org-file me/config-el-file))))
   (load-file me/config-el-file))
 ((file-readable-p me/config-org-file)
   (require 'org)
   (require 'ob-tangle)
-  (org-babel-load-file me/config-org-file))
+  ;; Not `org-babel-load-file': its own staleness check uses
+  ;; `file-newer-than-file-p', which follows the home-manager symlink to a
+  ;; store file with an epoch mtime and so never re-tangles.
+  (org-babel-tangle-file me/config-org-file me/config-el-file
+                         (rx string-start (or "emacs-lisp" "elisp") string-end))
+  (load-file me/config-el-file))
  (t
   (user-error "Cannot find readable Emacs config: %s or %s"
               me/config-el-file

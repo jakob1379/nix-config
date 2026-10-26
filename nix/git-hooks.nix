@@ -1,4 +1,12 @@
 { lib, pkgs }:
+let
+  # toml-sort 0.24.4 gradle test breaks on tomlkit 0.15 ("Inline tables cannot contain a table"); patch only while nixpkgs still ships it unpatched
+  tomlSort =
+    if pkgs.toml-sort.version == "0.24.4" && (pkgs.toml-sort.disabledTests or [ ]) == [ ] then
+      pkgs.toml-sort.overridePythonAttrs { disabledTests = [ "gradle-version-catalog" ]; }
+    else
+      lib.warn "toml-sort fixed upstream: remove tomlSort patch in nix/git-hooks.nix" pkgs.toml-sort;
+in
 {
   src = ../.;
   package = pkgs.prek;
@@ -9,6 +17,12 @@
   ];
 
   hooks = {
+    betterleaks = {
+      enable = true;
+      name = "betterleaks";
+      entry = "${lib.getExe pkgs.betterleaks} git --pre-commit --redact --staged --verbose";
+      pass_filenames = false;
+    };
     check-added-large-files.enable = true;
     check-case-conflicts.enable = true;
     check-executables-have-shebangs.enable = true;
@@ -26,6 +40,7 @@
       name = "codespell";
       entry = "${lib.getExe pkgs.codespell} --write-changes";
       types = [ "text" ];
+      excludes = [ "(^|/)package-lock\\.json$" ];
     };
     deadnix.enable = true;
     detect-private-keys.enable = true;
@@ -37,11 +52,11 @@
     };
     end-of-file-fixer.enable = true;
     fix-byte-order-marker.enable = true;
-    gitleaks = {
+    keep-sorted = {
       enable = true;
-      name = "gitleaks";
-      entry = "${lib.getExe pkgs.gitleaks} protect --verbose --redact --staged";
-      pass_filenames = false;
+      name = "keep-sorted";
+      entry = lib.getExe pkgs.keep-sorted;
+      types = [ "text" ];
     };
     mixed-line-endings = {
       enable = true;
@@ -71,7 +86,7 @@
     toml-sort-fix = {
       enable = true;
       name = "toml-sort-fix";
-      entry = "${lib.getExe pkgs.toml-sort} --in-place";
+      entry = "${lib.getExe tomlSort} --in-place";
       files = "\\.toml$";
       types = [ "toml" ];
     };

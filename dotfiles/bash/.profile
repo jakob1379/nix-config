@@ -6,7 +6,10 @@ if [ -z "$INSIDE_EMACS" ]; then
   else
     # If not inside Emacs or a dumb terminal, start tmux if appropriate
     if [ -z "$TMUX" ] && [ -n "$PS1" ] && [ "$TERM" != "dumb" ]; then
-      tmux attach || tmux new || echo "Unable to start or attach to tmux session."
+      # one session per client, grouped on "main": shared windows, own size
+      tmux has-session -t main 2>/dev/null || tmux new-session -d -s main
+      tmux new-session -t main -s "ssh-$$" \; set-option -t "ssh-$$" destroy-unattached on ||
+        echo "Unable to start or attach to tmux session."
     fi
   fi
 fi

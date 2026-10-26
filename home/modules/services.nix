@@ -1,9 +1,7 @@
 {
   config,
-  inputs,
   pkgs,
   lib,
-  system,
   ...
 }:
 
@@ -53,33 +51,9 @@ let
   rcloneDropboxPrivateService = "rclone-mount-dropbox-private.service";
   dropboxPrivateMountPath = "${config.home.homeDirectory}/dropbox-private";
   varietyWallpaperPointerFile = "${config.xdg.configHome}/variety/wallpaper/wallpaper.jpg.txt";
-  niriWindowBorderRulesFile = "${config.xdg.configHome}/niri/generated/window-border-rules.kdl";
-  noctaliaPackage = inputs.noctalia.packages.${system}.default;
+  noctaliaPackage = pkgs.noctalia;
 
   niriSessionExecCondition = "${pkgs.bash}/bin/bash -lc ${lib.escapeShellArg "${pkgs.coreutils}/bin/printenv XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP 2>/dev/null | ${pkgs.gnugrep}/bin/grep -qi niri"}";
-
-  niriWindowBorderRulesSyncScript = pkgs.writeShellApplication {
-    name = "sync-niri-window-border-rules";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.diffutils
-      pkgs.niri
-      pkgs.procps
-      pkgs.python3
-    ];
-    text = builtins.readFile ../../scripts/niri/sync-window-border-rules.sh;
-  };
-
-  niriWindowBorderRulesWatchScript = pkgs.writeShellApplication {
-    name = "watch-niri-window-border-rules";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.jq
-      pkgs.niri
-      pkgs.procps
-    ];
-    text = builtins.readFile ../../scripts/niri/watch-window-border-rules.sh;
-  };
 
   varietyWallpaperStateSyncScript = pkgs.writeShellApplication {
     name = "sync-variety-wallpaper-state";
@@ -93,77 +67,24 @@ let
 
   varietyWallpaperStateSyncCommand =
     "${varietyWallpaperStateSyncScript}/bin/sync-variety-wallpaper-state "
-    + lib.escapeShellArg "${pkgs.variety}/bin/variety";
-
-  niriWindowBorderRulesWatchCommand =
-    "${niriWindowBorderRulesWatchScript}/bin/watch-niri-window-border-rules "
-    + "${lib.escapeShellArg "${niriWindowBorderRulesSyncScript}/bin/sync-niri-window-border-rules"} "
-    + "${lib.escapeShellArg niriWindowBorderRulesFile}";
+    + lib.escapeShellArg "${pkgs.variety}/bin/variety"
+    + " "
+    + lib.escapeShellArg varietyWallpaperPointerFile;
 
 in
 {
   config =
     let
-      coreServices = {
-        emacs = {
-          package = pkgs.emacs31-pgtk;
-          startWithUserSession = false;
-          enable = true;
-          defaultEditor = true;
-          client.arguments = [
-            "--alternative-editor ''"
-            "--reuse-frame"
-            "--no-wait"
-          ];
-        };
-
-        gpg-agent = {
-          enable = true;
-          pinentry.package = pkgs.pinentry-gtk2;
-          pinentry.program = "pinentry-gtk-2";
-        };
-
-        ssh-agent = {
-          enable = true;
-        };
-
-        home-manager.autoExpire.enable = true;
-      };
-
-      guiServices = {
-        udiskie = {
-          enable = true;
-          tray = "auto";
-        };
-
-        unclutter = {
-          enable = true;
-          timeout = 5;
-        };
-
-        waytorandr = {
-          enable = true;
-        };
-
-        easyeffects.enable = true;
-        mpris-proxy.enable = true;
-      };
+      gui = config.customPackages.gui.enable;
     in
     {
-      home.activation.ensureNiriWindowBorderRulesFile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        target_file="${niriWindowBorderRulesFile}"
-        ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target_file")"
-        if [ ! -f "$target_file" ]; then
-          ${pkgs.coreutils}/bin/touch "$target_file"
-        fi
-      '';
-
       systemd = {
         user = {
           startServices = true;
 
           services = lib.mkMerge [
-            (lib.mkIf config.customPackages.gui.enable {
+            { emacs.Service.Environment = [ "COLORTERM=truecolor" ]; }
+            (lib.mkIf gui {
               rclone-mount-dropbox-private = createRcloneMountService { name = "dropbox-private"; };
 
               variety = {
@@ -200,21 +121,25 @@ in
                   WantedBy = [ "graphical-session.target" ];
                 };
               };
-
-              "niri-window-border-rules" = {
+            })
+            (lib.mkIf (gui && config.programs.keepassxc.enable) {
+              keepassxc = {
                 Unit = {
-                  Description = "Sync per-window hashed border rules for Niri";
-                  After = [ "graphical-session.target" ];
-                };
-                Install = {
-                  WantedBy = [ "graphical-session.target" ];
+                  Description = "KeePassXC password manager";
+                  After = [
+                    "graphical-session.target"
+                    rcloneDropboxPrivateService
+                  ];
+                  PartOf = [ "graphical-session.target" ];
+                  Requires = [ rcloneDropboxPrivateService ];
                 };
                 Service = {
-                  ExecCondition = niriSessionExecCondition;
-                  ExecStart = niriWindowBorderRulesWatchCommand;
-                  Restart = "always";
-                  RestartSec = 2;
+                  ExecStartPre = "${pkgs.util-linux}/bin/mountpoint -q ${lib.escapeShellArg dropboxPrivateMountPath}";
+                  ExecStart = lib.getExe config.programs.keepassxc.package;
+                  Restart = "on-failure";
+                  RestartSec = 5;
                 };
+                Install.WantedBy = [ "graphical-session.target" ];
               };
             })
             (lib.mkIf config.services.swayidle.enable {
@@ -223,7 +148,7 @@ in
           ];
 
           paths = lib.mkMerge [
-            (lib.mkIf config.customPackages.gui.enable {
+            (lib.mkIf gui {
               "variety-wallpaper-sync" = {
                 Unit = {
                   Description = "Watch Variety wallpaper pointer for Noctalia and terminal colors";
@@ -246,6 +171,52 @@ in
         };
       };
 
-      services = coreServices // lib.optionalAttrs config.customPackages.gui.enable guiServices;
+      services = {
+        # keep-sorted start block=yes newline_separated=yes
+        easyeffects.enable = gui;
+
+        emacs = {
+          startWithUserSession = true;
+          enable = true;
+          defaultEditor = true;
+          client.enable = true;
+        };
+
+        flameshot = {
+          enable = gui;
+          settings.General = {
+            contrastOpacity = 188;
+            copyPathAfterSave = true;
+            drawCircleCounterSize = 1;
+            savePath = "${config.home.homeDirectory}/Pictures";
+            savePathFixed = false;
+          };
+        };
+
+        gpg-agent = {
+          enable = true;
+          pinentry.package = if gui then pkgs.pinentry-gnome3 else pkgs.pinentry-curses;
+          pinentry.program = if gui then "pinentry-gnome3" else "pinentry-curses";
+        };
+
+        home-manager.autoExpire.enable = true;
+
+        mpris-proxy.enable = gui;
+
+        ssh-agent.enable = true;
+
+        udiskie = {
+          enable = gui;
+          tray = "auto";
+        };
+
+        unclutter = {
+          enable = gui;
+          timeout = 5;
+        };
+
+        waytorandr.enable = gui;
+        # keep-sorted end
+      };
     };
 }

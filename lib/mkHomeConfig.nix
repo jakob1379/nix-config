@@ -7,13 +7,26 @@
   lib,
 }:
 
+let
+  # packages tracked on nixos-unstable-small instead of nixos-unstable
+  fromSmall = [
+    "t3code"
+    "claude-code"
+  ];
+  config.allowUnfreePredicate = lib.allowUnfreePredicate;
+  # legacyPackages would carry nixos-unstable-small's own config, dropping the
+  # unfree predicate; re-import so both channels share it.
+  smallPkgs = import inputs.nixpkgs-small { inherit system config; };
+in
 inputs.home-manager.lib.homeManagerConfiguration {
   pkgs = import inputs.nixpkgs {
-    inherit system;
-    config.allowUnfreePredicate = lib.allowUnfreePredicate;
+    inherit system config;
     overlays = [
-      (import ../overlays/t3code.nix)
       (import ../overlays/tana.nix)
+      inputs.flyline.overlays.default
+      (_: _: inputs.nixpkgs.lib.getAttrs fromSmall smallPkgs)
+      (import ../overlays/t3code-native-addons.nix)
+      (import ../overlays/claude-code.nix)
     ];
   };
   modules = [

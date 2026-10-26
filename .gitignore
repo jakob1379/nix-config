@@ -84,7 +84,6 @@ __pycache__/
 /package.json
 /package-lock.json
 /.pre-commit-config.yaml
-/flake.lock
 .aider*
 .aider.*
 .codex
@@ -92,6 +91,8 @@ __pycache__/
 .droid
 result
 /dotfiles/noctalia/colors.json
-/.opencode/
 .desloppify/
-.ooc
+
+# Vicinae extension build artifacts
+dotfiles/vicinae/*/node_modules/
+dotfiles/vicinae/*/vicinae-env.d.ts

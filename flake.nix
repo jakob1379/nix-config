@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-small.url = "github:nixos/nixpkgs/nixos-unstable-small";
     flake-utils.url = "github:numtide/flake-utils";
     git-hooks = {
       url = "github:cachix/git-hooks.nix";
@@ -16,12 +17,16 @@
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    noctalia = {
-      url = "github:noctalia-dev/noctalia";
+    ai-usagebar = {
+      url = "github:akitaonrails/ai-usagebar";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     waytorandr = {
       url = "github:jakob1379/waytorandr";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    flyline = {
+      url = "github:HalFrgrd/flyline";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     hermes-agent = {
@@ -40,16 +45,40 @@
       url = "github:denisidoro/navi-tldr-pages";
       flake = false;
     };
-    oh-my-opencode-slim-src = {
-      url = "github:alvinunreal/oh-my-opencode-slim";
+    claude-code-src = {
+      url = "github:anthropics/claude-code";
       flake = false;
     };
-    agent-browser-src = {
-      url = "github:vercel-labs/agent-browser";
+    cursor-plugins-src = {
+      url = "github:cursor/plugins";
       flake = false;
+    };
+    mattpocock-skills-src = {
+      url = "github:mattpocock/skills";
+      flake = false;
+    };
+    open-code-review-src = {
+      url = "github:alibaba/open-code-review";
+      flake = false;
+    };
+    ponytail-src = {
+      url = "github:DietrichGebert/ponytail";
+      flake = false;
+    };
+    superpowers-src = {
+      url = "github:obra/superpowers";
+      flake = false;
+    };
+    vicinae-extensions = {
+      url = "github:vicinaehq/extensions";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     zen-browser = {
       url = "github:youwen5/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    solidcraft = {
+      url = "github:tangency-labs/solidcraft";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -90,11 +119,26 @@
         default =
           let
             inherit (self.checks.${pkgs.stdenv.hostPlatform.system}) pre-commit-check;
+            inherit (pre-commit-check.config) configFile installStages package;
+            git = pkgs.lib.getExe pkgs.git;
+            prek = pkgs.lib.getExe package;
+            hookStages = pkgs.lib.concatStringsSep " " (pkgs.lib.remove "manual" installStages);
           in
           pkgs.mkShell {
             packages = (generalPackages pkgs) ++ pre-commit-check.enabledPackages;
             shellHook = ''
               ${pre-commit-check.shellHook}
+              common_dir=$(${git} rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+              if [ -n "$common_dir" ] && {
+                [ "$(${git} config --local core.hooksPath)" != "$common_dir/hooks" ] \
+                  || ! grep -qF -- '--config="${configFile}"' "$common_dir/hooks/pre-commit" 2>/dev/null
+              }; then
+                ${git} config --local --unset-all core.hooksPath || true
+                for stage in ${hookStages}; do
+                  ${prek} install -f -c ${configFile} -t "$stage"
+                done
+                ${git} config --local core.hooksPath "$common_dir/hooks"
+              fi
               export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
               export PS1="(dotfiles-shell 🫥) $PS1"
             '';

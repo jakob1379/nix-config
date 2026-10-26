@@ -26,6 +26,17 @@
     ];
   };
 
+  seeq = nixpkgs.lib.nixosSystem {
+    system = "x86_64-linux";
+    specialArgs = { inherit inputs; };
+    modules = [
+      ./hosts/seeq
+      {
+        nixpkgs.config.allowUnfreePredicate = lib.allowUnfreePredicate;
+      }
+    ];
+  };
+
   ku = nixpkgs.lib.nixosSystem {
     system = "x86_64-linux";
     specialArgs = { inherit inputs; };

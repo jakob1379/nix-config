@@ -2,77 +2,100 @@
   pkgs,
   lib,
   system,
+  inputs,
+  gui,
   ...
 }:
 
+let
+  hsu = pkgs.writeShellApplication {
+    name = "hsu";
+    runtimeInputs = [
+      pkgs.gh
+      pkgs.nh
+    ];
+    text = builtins.readFile ../../bin/hm-switch-update;
+  };
+in
 {
-  core = with pkgs; [
-    btop
-    git-filter-repo
-    busybox
-    dconf
-    duf
-    entr
-    gdu
-    betterleaks
-    glib
-    gnumake
-    unixtools.ping
-    hyperfine
-    imagemagick
-    isd
-    libqalculate
-    libsecret
-    nix-output-monitor
-    nix-prefetch-github
-    nix-search-cli
-    onefetch
-    python3Packages.keyring
-    rename
-    ripgrep
-    speedtest-go
-    tldr
-    unar
-    yq-go
-  ];
-
-  gui = with pkgs; [
-    brave
-    tana
-    xwayland-satellite
-    wdisplays
-    wifi-qr
-    feh
-    flameshot
-    (pkgs.writeShellApplication {
-      name = "screenshot-ocr";
-      runtimeInputs = [
-        pkgs.coreutils
-        pkgs.flameshot
-        pkgs.tesseract
-        pkgs.wl-clipboard
-      ];
-      text = builtins.readFile ../../bin/screenshot-ocr;
-    })
-    swaybg
-    libnotify
-    prettier
-    onlyoffice-desktopeditors
-    pika-backup
-    signal-desktop
-    spotify
-    stretchly
-    udiskie
-    variety
-    virt-manager
-    vlc
-    dragon-drop
-    xkill
-  ];
+  core =
+    with pkgs;
+    [
+      # keep-sorted start block=yes
+      # applet symlinks off: they shadow coreutils/gnugrep/gnused on PATH
+      (busybox.override { enableAppletSymlinks = false; })
+      betterleaks
+      btop
+      dconf
+      duf
+      entr
+      gdu
+      git-filter-repo
+      glib
+      gnumake
+      hyperfine
+      imagemagick
+      isd
+      libqalculate
+      libsecret
+      nix-output-monitor
+      nix-prefetch-github
+      nix-search-cli
+      onefetch
+      python3Packages.keyring
+      rename
+      ripgrep
+      speedtest-go
+      tldr
+      unar
+      unixtools.ping
+      yq-go
+      # keep-sorted end
+    ]
+    ++ lib.optionals gui [
+      # keep-sorted start block=yes
+      (pkgs.writeShellApplication {
+        name = "screenshot-ocr";
+        runtimeInputs = [
+          pkgs.coreutils
+          pkgs.flameshot
+          pkgs.tesseract
+          pkgs.wl-clipboard
+        ];
+        text = builtins.readFile ../../bin/screenshot-ocr;
+      })
+      brave
+      dragon-drop
+      feh
+      inputs.ai-usagebar.packages.${system}.default
+      libnotify
+      onlyoffice-desktopeditors
+      pika-backup
+      prettier
+      signal-desktop
+      spotify
+      stretchly
+      swaybg
+      tana
+      udiskie
+      variety
+      virt-manager
+      vlc
+      wdisplays
+      wifi-qr
+      xkill
+      xwayland-satellite
+      # keep-sorted end
+    ];
 
   dev =
     with pkgs;
     [
+      # keep-sorted start block=yes
+      (t3code.override {
+        enableCodex = false;
+        enableClaude = true;
+      })
       bun
       dive
       frogmouth
@@ -85,29 +108,34 @@
       nurl
       pandoc
       poppler-utils
-      t3code
       wakatime-cli
+      # keep-sorted end
     ]
     ++ lib.optionals (system != "aarch64-linux") [ jdk ];
 
   emacs = with pkgs; [
-    autotools-language-server
-    just-lsp
+    # keep-sorted start block=yes
     (aspellWithDicts (
       dicts: with dicts; [
         da
         en
-        en-computers
-        en-science
       ]
     ))
+    # Stable-named python that always has debugpy importable, so dape's
+    # adapter works regardless of which project venv is active.
+    (writeShellScriptBin "python-dap" ''
+      exec ${python3.withPackages (ps: [ ps.debugpy ])}/bin/python "$@"
+    '')
+    autotools-language-server
     bash-language-server
     hunspell
     ispell
+    just-lsp
     marksman
     nixd
     powershell
     python3
+    python3Packages.jedi-language-server
     rassumfrassum
     ripgrep
     ruff
@@ -119,18 +147,11 @@
     vtsls
     wl-clipboard-rs
     yaml-language-server
+    # keep-sorted end
   ];
 
   scripts = [
-    (pkgs.writeShellApplication {
-      name = "nb-peers";
-      runtimeInputs = [
-        pkgs.jq
-        pkgs.netbird
-      ];
-      text = builtins.readFile ../../bin/nb-peers;
-    })
-
+    # keep-sorted start block=yes
     (pkgs.writeShellApplication {
       name = "bak";
       runtimeInputs = [
@@ -145,28 +166,6 @@
       text = builtins.readFile ../../bin/bathelp;
     })
     (pkgs.writeShellApplication {
-      name = "docker-volume-copy";
-      runtimeInputs = [
-        pkgs.docker
-      ];
-      text = builtins.readFile ../../bin/docker-volume-copy;
-    })
-    (pkgs.writeShellApplication {
-      name = "ooc";
-      runtimeInputs = [
-        pkgs.bash
-        pkgs.coreutils
-        pkgs.gnugrep
-        pkgs.gnused
-        pkgs.opencode
-        pkgs.util-linux
-      ];
-      text = lib.concatStringsSep "\n" [
-        (builtins.readFile ../../bin/lib/session-wrapper-common.sh)
-        (builtins.readFile ../../bin/ooc)
-      ];
-    })
-    (pkgs.writeShellApplication {
       name = "docker-compose-deps";
       runtimeInputs = with pkgs; [
         docker-compose
@@ -177,13 +176,11 @@
       text = builtins.readFile ../../bin/docker-compose-deps;
     })
     (pkgs.writeShellApplication {
-      name = "dragon-scp";
+      name = "docker-volume-copy";
       runtimeInputs = [
-        pkgs.openssh
-        pkgs.dragon-drop
-        pkgs.coreutils
+        pkgs.docker
       ];
-      text = builtins.readFile ../../bin/dragon-scp;
+      text = builtins.readFile ../../bin/docker-volume-copy;
     })
     (pkgs.writeShellApplication {
       name = "emacs-clean";
@@ -194,44 +191,6 @@
         pkgs.coreutils
       ];
       text = builtins.readFile ../../bin/emacs-clean;
-    })
-    (pkgs.writeShellApplication {
-      name = "hs";
-      runtimeInputs = [
-        pkgs.home-manager
-        pkgs.nix-output-monitor
-      ];
-      text = builtins.readFile ../../bin/hm-switch;
-    })
-    (pkgs.writeShellApplication {
-      name = "hsu";
-      runtimeInputs = [
-        pkgs.gh
-        pkgs.home-manager
-        pkgs.nix-output-monitor
-      ];
-      text = builtins.readFile ../../bin/hm-switch-update;
-    })
-    (pkgs.writeShellApplication {
-      name = "nix-find";
-      runtimeInputs = [
-        pkgs.nix-search-tv
-        pkgs.fzf
-        pkgs.busybox
-        pkgs.wl-clipboard
-        pkgs.xclip
-      ];
-      text = builtins.readFile ../../bin/nix-find;
-    })
-    (pkgs.writeShellApplication {
-      name = "rg-fuzzy";
-      runtimeInputs = [
-        pkgs.ripgrep
-        pkgs.fzf
-        pkgs.bat
-        pkgs.wl-clipboard
-      ];
-      text = builtins.readFile ../../bin/rg-fuzzy;
     })
     (pkgs.writeShellApplication {
       name = "git-worktree-cd";
@@ -245,14 +204,57 @@
       text = builtins.readFile ../../bin/git-worktree-cd;
     })
     (pkgs.writeShellApplication {
-      name = "update-all";
+      name = "hs";
       runtimeInputs = [
-        pkgs.gh
         pkgs.home-manager
         pkgs.nix-output-monitor
-        pkgs.uv
       ];
-      text = builtins.readFile ../../bin/update-all;
+      text = builtins.readFile ../../bin/hm-switch;
+    })
+    (pkgs.writeShellApplication {
+      name = "icat";
+      runtimeInputs = [ pkgs.kitty ];
+      text = ''
+        exec kitty +kitten icat "$@"
+      '';
+    })
+    (pkgs.writeShellApplication {
+      name = "nb-peers";
+      runtimeInputs = [
+        pkgs.jq
+        pkgs.netbird
+      ];
+      text = builtins.readFile ../../bin/nb-peers;
+    })
+    (pkgs.writeShellApplication {
+      name = "nix-find";
+      runtimeInputs = [
+        pkgs.nix-search-tv
+        pkgs.fzf
+        pkgs.busybox
+        pkgs.wl-clipboard
+        pkgs.xclip
+      ];
+      text = builtins.readFile ../../bin/nix-find;
+    })
+    (pkgs.writeShellApplication {
+      name = "noqa-stats";
+      runtimeInputs = [
+        pkgs.coreutils
+        pkgs.gawk
+        pkgs.ripgrep
+      ];
+      text = builtins.readFile ../../bin/noqa-stats;
+    })
+    (pkgs.writeShellApplication {
+      name = "rg-fuzzy";
+      runtimeInputs = [
+        pkgs.ripgrep
+        pkgs.fzf
+        pkgs.bat
+        pkgs.wl-clipboard
+      ];
+      text = builtins.readFile ../../bin/rg-fuzzy;
     })
     (pkgs.writeShellApplication {
       name = "up";
@@ -263,32 +265,28 @@
       text = builtins.readFile ../../bin/up;
     })
     (pkgs.writeShellApplication {
-      name = "icat";
-      runtimeInputs = [ pkgs.kitty ];
-      text = ''
-        exec kitty +kitten icat "$@"
-      '';
-    })
-    (pkgs.writeShellApplication {
-      name = "noqa-stats";
+      name = "update-all";
       runtimeInputs = [
-        pkgs.gum
-        pkgs.gnugrep
-        pkgs.ripgrep
+        hsu
+        pkgs.coreutils
+        pkgs.nh
+        pkgs.nix
+        pkgs.uv
       ];
-      text = builtins.readFile ../../bin/noqa-stats;
+      text = builtins.readFile ../../bin/update-all;
     })
+    hsu
+    # keep-sorted end
+  ]
+  ++ lib.optionals gui [
     (pkgs.writeShellApplication {
-      name = "display-mode-picker";
-      runtimeInputs = with pkgs; [
-        coreutils
-        jq
-        libnotify
-        niri
-        vicinae
-        wl-mirror
+      name = "dragon-scp";
+      runtimeInputs = [
+        pkgs.openssh
+        pkgs.dragon-drop
+        pkgs.coreutils
       ];
-      text = builtins.readFile ../../bin/display-mode-picker;
+      text = builtins.readFile ../../bin/dragon-scp;
     })
   ];
 }

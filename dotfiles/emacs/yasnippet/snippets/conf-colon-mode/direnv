@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: direnv
+# key: direnv
+# --
+
+# source_up
+use flake path:.
+VIRTUAL_ENV=".venv"
+layout python
+dotenv_if_exists .env.local

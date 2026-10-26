@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   system,
@@ -14,24 +15,24 @@ let
       system
       inputs
       ;
+    gui = config.customPackages.gui.enable;
   };
 
-  coderabbit-cli = inputs.numtide-llm-agents.packages.${system}.coderabbit-cli;
   btopRocm = pkgs.btop.override {
     rocmSupport = true;
   };
-  hermesAgent = inputs.hermes-agent.packages.${system}.default;
-  hermesAgentWithEspeak = pkgs.symlinkJoin {
-    name = "hermes-agent-with-espeak-ng";
-    paths = [ hermesAgent ];
-    nativeBuildInputs = [ pkgs.makeWrapper ];
-    postBuild = ''
-      for bin in hermes hermes-agent hermes-acp; do
-        wrapProgram "$out/bin/$bin" \
-          --suffix PATH : ${lib.makeBinPath [ pkgs.espeak-ng ]}
-      done
-    '';
-  };
+  # hermesAgent = inputs.hermes-agent.packages.${system}.default;
+  # hermesAgentWithEspeak = pkgs.symlinkJoin {
+  #   name = "hermes-agent-with-espeak-ng";
+  #   paths = [ hermesAgent ];
+  #   nativeBuildInputs = [ pkgs.makeWrapper ];
+  #   postBuild = ''
+  #     for bin in hermes hermes-agent hermes-acp; do
+  #       wrapProgram "$out/bin/$bin" \
+  #         --suffix PATH : ${lib.makeBinPath [ pkgs.espeak-ng ]}
+  #     done
+  #   '';
+  # };
 in
 {
   customGit = {
@@ -48,10 +49,12 @@ in
     with pkgs;
     [
       clockify
+      slack
       adw-gtk3
+      cachix
       glab
-      hermesAgentWithEspeak
-      coderabbit-cli
+      # hermesAgentWithEspeak
+      inputs.solidcraft.packages.${system}.default
       btopRocm
       # teams-for-linux
       kdePackages.qt6ct
@@ -59,14 +62,6 @@ in
       nwg-look
     ]
   );
-
-  programs = {
-    codex = {
-      enable = true;
-    };
-  };
-
-  services.tailscale-systray.enable = false;
 
   customDotfiles = {
     enableMediaControl = true;

@@ -1,0 +1,6 @@
+---
+interface:
+  display_name: Aggregate Code Quality Report
+  short_description: Build a validated offline scanner report
+  default_prompt: Use $aggregate-code-quality-report to generate a fresh, source-validated
+    aggregate code-quality report for this repository.

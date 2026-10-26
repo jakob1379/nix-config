@@ -15,7 +15,7 @@ jobs:
       - uses: cachix/install-nix-action@v25
       - uses: cachix/cachix-action@v14
         with:
-          name: jgalabs-homelab
+          name: jakob1379
           authToken: ${{ secrets.CACHIX_TOKEN }}
       - name: Build home-manager configuration ${{ matrix.config }}
         run: nix build .#homeConfigurations."${{ matrix.config }}".activationPackage

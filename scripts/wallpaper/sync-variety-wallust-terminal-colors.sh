@@ -2,15 +2,31 @@
 set -eu
 
 variety_bin="${1:-variety}"
+wallpaper_pointer_file="${2:-}"
 
 attempts=0
 wallpaper_path=""
 
+read_pointer_wallpaper() {
+  local pointer_file="$1"
+  local path=""
+
+  if [ -n "$pointer_file" ] && [ -r "$pointer_file" ]; then
+    IFS= read -r path < "$pointer_file" || true
+  fi
+
+  printf '%s' "$path"
+}
+
 while [ "$attempts" -lt 30 ]; do
-  if wallpaper_path="$("$variety_bin" --get 2>/dev/null)"; then
-    :
-  else
-    wallpaper_path=""
+  wallpaper_path="$(read_pointer_wallpaper "$wallpaper_pointer_file")"
+
+  if [ -z "$wallpaper_path" ]; then
+    if wallpaper_path="$("$variety_bin" --get 2>/dev/null)"; then
+      :
+    else
+      wallpaper_path=""
+    fi
   fi
 
   if [ -n "$wallpaper_path" ] && [ -r "$wallpaper_path" ]; then
@@ -22,7 +38,7 @@ while [ "$attempts" -lt 30 ]; do
 done
 
 if [ -z "$wallpaper_path" ] || [ ! -r "$wallpaper_path" ]; then
-  printf 'sync-variety-wallpaper-state: no readable wallpaper returned by %s --get after %s attempts\n' "$variety_bin" "$attempts" >&2
+  printf 'sync-variety-wallpaper-state: no readable wallpaper found from %s or %s --get after %s attempts\n' "${wallpaper_pointer_file:-<no pointer file>}" "$variety_bin" "$attempts" >&2
   exit 1
 fi
 

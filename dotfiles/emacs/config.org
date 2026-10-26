@@ -46,33 +46,6 @@ The config is divided into sensible sections (hopefully) to segregate mode-speci
 #+END_SRC
 ** Early init
 Early startup settings live in =~/.emacs.d/early-init.el= so they are applied before package and frame initialization. Keeping them in this file was too late for package startup and would also make tangling try to rewrite Home Manager's symlinked early-init file.
-** Straight
-Straight is a package manager for Emacs making it easier to fetch packages from anywhere.
-
-We want it to integrate nicely with use-package
-#+BEGIN_SRC emacs-lisp
-(setq straight-cache-autoloads t
-      straight-check-for-modifications '(check-on-save)
-      straight-vc-git-auto-fast-forward nil
-      straight-vc-git-default-clone-depth 1
-      straight-vc-git-default-protocol 'https
-      use-package-compute-statistics nil
-      vc-follow-symlinks t
-      straight-use-package-by-default t
-      )
-#+END_SRC
-** Defer Compilations
-
-#+BEGIN_SRC emacs-lisp
-(setq native-comp-deferred-compilation t)
-#+END_SRC
-** Low-hanging Speedup Fruits
-Resizing the Emacs frame can be a terribly expensive part of changing the font. By inhibiting this,
-we easily halve startup times with fonts that are larger than the system default.
-
-#+BEGIN_SRC emacs-lisp
-(setq frame-inhibit-implied-resize t)
-#+END_SRC
 ** Deferred startup helpers
 #+BEGIN_SRC emacs-lisp
 (defun me/run-after-startup-idle (seconds function)
@@ -82,56 +55,6 @@ we easily halve startup times with fonts that are larger than the system default
                   (list 'run-with-idle-timer seconds nil
                         (list 'quote function)))))
 #+END_SRC
-** Reduce GC
-Following [[https://github.com/hlissner/doom-emacs/blob/develop/docs/faq.org#how-does-doom-start-up-so-quickly][Doom-Emacs FAQ]], we max the garbage collection threshold on startup, and reset it to the original value after.
-
-#+BEGIN_SRC emacs-lisp
-;; max memory available for gc on startup
-(defvar me/gc-cons-threshold 16777216)
-
-(setq gc-cons-threshold most-positive-fixnum
-      gc-cons-percentage 0.6)
-
-(add-hook 'emacs-startup-hook
-          (lambda ()
-            (setq gc-cons-threshold me/gc-cons-threshold
-                  gc-cons-percentage 0.1)))
-
-;; max memory available for gc when opening minibuffer
-(defun me/defer-garbage-collection-h ()
-  (setq gc-cons-threshold most-positive-fixnum))
-
-(defun me/restore-garbage-collection-h ()
-  ;; Defer it so that commands launched immediately after will enjoy the
-  ;; benefits.
-  (run-at-time
-   1 nil (lambda () (setq gc-cons-threshold me/gc-cons-threshold))))
-
-(add-hook 'minibuffer-setup-hook #'me/defer-garbage-collection-h)
-(add-hook 'minibuffer-exit-hook #'me/restore-garbage-collection-h)
-(setq garbage-collection-messages t)
-#+END_SRC
-** Temporarily avoid special handling of files
-
-This script temporarily disables file name handlers during the startup of Emacs to speed up the
-process. Once Emacs has finished starting up, it restores the file name handlers to their original
-state.
-#+BEGIN_SRC emacs-lisp
-(defvar me/-file-name-handler-alist file-name-handler-alist)
-(setq file-name-handler-alist nil)
-(add-hook 'emacs-startup-hook
-          (lambda ()
-            (setq file-name-handler-alist me/-file-name-handler-alist)))
-#+END_SRC
-** Disable =site-run-file=
-#+BEGIN_SRC emacs-lisp
-(setq site-run-file nil)
-#+END_SRC
-** Don't compact font caches
-#+BEGIN_SRC emacs-lisp
-(setq inhibit-compacting-font-caches t)
-#+END_SRC
-
 ** Use the garbage collector magic hack
 #+BEGIN_SRC emacs-lisp
 (use-package gcmh
@@ -189,6 +112,7 @@ state.
 (electric-pair-mode 1)
 (global-auto-revert-mode 1)                         ;; refresh a buffer if changed on disk
 (global-display-fill-column-indicator-mode 1)       ;; Show this indicator > | <
+(set-face-attribute 'fill-column-indicator nil :foreground "grey90")
 (global-display-line-numbers-mode 1)                ;; show the left column with line numbers
 (global-font-lock-mode t)                           ;; always highlight code
 (global-so-long-mode 1)
@@ -196,7 +120,7 @@ state.
 (menu-bar-mode 1)
 (save-place-mode 1)                                 ;; continue where you left off
 (tool-bar-mode 0)                                   ;; it's not used anyways
-;; (windmove-default-keybindings)
+(windmove-default-keybindings)                      ;; long live easy pane navigation <3
 #+END_SRC
 ** UTF-8 by Default
 Emacs is very conservative about assuming encoding. Everything is UTF-8 these days, let's have that as the default.
@@ -248,6 +172,25 @@ Emacs is very conservative about assuming encoding. Everything is UTF-8 these da
 (global-set-key [C-mouse-5]     'text-scale-decrease)
 (global-set-key [C-tab]         'other-window)
 (global-set-key [f10]           'treemacs)
+
+(defun my/forward-sexp-or-string (&optional arg)
+  "Like `forward-sexp', but jump out of a string when point is inside one."
+  (interactive "^p")
+  (let ((ppss (syntax-ppss)))
+    (if (nth 3 ppss)
+        (goto-char (scan-sexps (nth 8 ppss) 1))
+      (forward-sexp arg))))
+
+(defun my/backward-sexp-or-string (&optional arg)
+  "Like `backward-sexp', but jump to the opening quote when inside a string."
+  (interactive "^p")
+  (let ((ppss (syntax-ppss)))
+    (if (nth 3 ppss)
+        (goto-char (nth 8 ppss))
+      (backward-sexp arg))))
+
+(global-set-key (kbd "C-M-<right>") 'my/forward-sexp-or-string)
+(global-set-key (kbd "C-M-<left>")  'my/backward-sexp-or-string)
 #+END_SRC
 ** Ansi colors decoding/rendering
 #+BEGIN_SRC emacs-lisp
@@ -256,13 +199,6 @@ Emacs is very conservative about assuming encoding. Everything is UTF-8 these da
   (interactive)
   (ansi-color-apply-on-region (point-min) (point-max)))
 
-#+END_SRC
-** Extra Garbage Collection (disabled)
-#+BEGIN_SRC emacs-lisp
-;; (add-function :after after-focus-change-function
-;;               (defun me/garbage-collect-maybe ()
-;;                 (unless (frame-focus-state)
-;;                   (garbage-collect))))
 #+END_SRC
 ** non-ASCII characters
 #+BEGIN_SRC emacs-lisp
@@ -392,9 +328,6 @@ Corfu is a small CAPF UI. Eglot publishes LSP completions through CAPF, so the e
   :init
   (when (boundp 'treesit-enabled-modes)
     (setq treesit-enabled-modes t))
-  (when (boundp 'treesit-auto-install-grammar)
-    ;; Grammars are provided by Nix; ask before compiling/downloading any gap.
-    (setq treesit-auto-install-grammar 'ask))
   (when (boundp 'completion-eager-update)
     (setq completion-eager-update t))
   (when (boundp 'completion-eager-display)
@@ -732,7 +665,6 @@ highlights uncommitted changes on the left side of the window
 
 #+BEGIN_SRC emacs-lisp
 (use-package helm
-  :after all-the-icons
   :defer t
   :bind (("M-x"     . helm-M-x) ;; Evaluate functions
          ("C-x C-f" . helm-find-files) ;; Open or create files
@@ -740,6 +672,10 @@ highlights uncommitted changes on the left side of the window
          ("C-x C-r" . helm-recentf) ;; Select recently saved files
          ("C-c i"   . helm-imenu) ;; Select document heading
          ("M-y"     . helm-show-kill-ring)
+         ("C-c a p" . helm-do-grep-ag-project) ;; Ripgrep the whole project
+         ("C-c a d" . helm-do-grep-ag) ;; Ripgrep from `default-directory'
+         ("C-x C-d" . helm-browse-project) ;; Fuzzy-find files in the project
+         ("C-x r p" . helm-projects-history) ;; Jump between known projects
          :map helm-map
          ;; ("<tab>" . helm-execute-persistent-action)
          )
@@ -753,8 +689,14 @@ highlights uncommitted changes on the left side of the window
   (helm-move-to-line-cycle-in-source t) ;; move to end or beginning of source when reaching top or bottom of source.
   (helm-split-window-in-side-p t) ;; open helm buffer inside current window, not occupy whole other window
   (helm-M-x-show-short-doc t)
-  (helm-M-x-fuzzy-match t)
   (helm-candidate-number-limit 20)
+  ;; Fuzzy narrowing. `helm-grep-ag-command' is deliberately unset: helm already
+  ;; defaults it to ripgrep whenever rg is on PATH (helm-grep.el).
+  (helm-M-x-fuzzy-match t)
+  (helm-buffers-fuzzy-matching t)
+  (helm-recentf-fuzzy-match t)
+  (helm-imenu-fuzzy-match t)
+  (helm-apropos-fuzzy-match t)
   :config
   ;; (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
   (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
@@ -773,18 +715,23 @@ highlights uncommitted changes on the left side of the window
   (helm-autoresize-mode))
 
 #+END_SRC
-**** Helm ripgrep search
+**** Ripgrep search
+
+Standalone transient UI (=M-x rg-menu=) with a =wgrep=-editable results buffer. Separate
+tool from helm's live-narrowing session above, which needs no package at all.
 
 #+BEGIN_SRC emacs-lisp
-(use-package helm-ag
-  :defer t
-  :custom
-  (helm-ag-base-command "rg --color=never --line-number --with-filename --no-heading --ignore-case")
-  :bind
-  ("C-c a a" . helm-do-ag)
-  ("C-c a p" . helm-do-ag-project-root)
-  ("C-c a g" . helm-do-grep-ag)
-  )
+(use-package rg
+  :defer t)
+#+END_SRC
+**** Git-aware project browsing
+
+No bindings needed: =helm-browse-project= requires this at call time and upgrades itself to
+show branches, status and stash alongside the file list.
+
+#+BEGIN_SRC emacs-lisp
+(use-package helm-ls-git
+  :defer t)
 #+END_SRC
 *** Helpful
 [[https://github.com/Wilfred/helpful][helpful]] makes a better Emacs =*help*= buffer, with colors and contextual information.
@@ -927,65 +874,69 @@ Deleting a whitespace character will delete all whitespace until the next non-wh
   :mode (("justfile\\'" . just-mode)
          ("Justfile\\'" . just-mode)))
 #+END_SRC
-*** LaTeX
+*** LaTeX / AUCTeX
+AUCTeX registers the =.tex= → =LaTeX-mode= remap itself from its autoloads, so no =:mode= is
+needed here. Nothing below loads at startup: every hook and key target is an autoload, so
+=tex.el=, =tex-fold.el=, =reftex.el= and =cdlatex.el= arrive with the first =.tex= buffer.
+
+The package is declared as =tex= with =:straight auctex= rather than as =auctex=: =tex.el= is
+the feature that actually gets loaded when a =.tex= buffer opens, which is what makes =:config=
+run while still deferring ([[https://github.com/jwiegley/use-package/issues/379#issuecomment-246161500][use-package#379]]). =TeX-after-compilation-finished-functions= must live in
+=:config= because it is a plain =defvar=, not a =defcustom= — =:custom= silently drops it.
+
 #+BEGIN_SRC emacs-lisp
-(use-package latex
+(use-package tex
   :defer t
-  :straight (:type built-in)
-  :mode ("\\.tex\\'$" . latex-mode)
+  :straight auctex
   :custom
-  (LaTeX-electric-left-right-brace t)
-  (TeX-PDF-mode t)
-  (TeX-auto-save t)
-  (TeX-electric-math (cons "$" "$"))
-  (TeX-parse-self t)
-  (TeX-source-correlate-method 'synctax)
-  (TeX-source-correlate-mode t)
-  (TeX-source-correlate-start-server nil)
-  (TeX-syntactic-comment t)
-  (reftex-plug-into-AUCTeX t)
-  (TeX-view-program-list
-   '(("DVI Viewer" "open %o")
-     ("PDF Viewer" "open %o")
-     ("HTML Viewer" "open %o")))
-  :hook
-  (latex-mode . (lambda ()
-                  (tool-bar-mode 1)))
-  )
-
-;; AUCTeX configuration
-(use-package auctex
-  :defer t
-  :mode ("\\.tex\\'" . latex-mode)
-  :custom
-  ;; Enable parsing
   (TeX-auto-save t)
   (TeX-parse-self t)
-  ;; Default PDF viewer
-  (TeX-view-program-selection '((output-pdf "PDF Viewer")))
-  ;; Use pdf-tools to open PDF files
-  (TeX-view-program-list '(("PDF Viewer" "pdf-tools %o")))
-  ;; Enable TeX-fold-mode automatically in TeX/LaTeX mode
-  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-  ;; Configure RefTeX with AUCTeX
-  (reftex-plug-into-AUCTeX t)
-  :hook
-  (TeX-mode-hook . (lambda () (TeX-fold-mode 1)))
-  ;; Enable RefTeX in AUCTeX
-  (LaTeX-mode-hook . turn-on-reftex)
-  ;; Configure RefTeX with AUCTeX
-  (LaTeX-mode-hook . reftex-plug-into-AUCTeX)
-  )
-
-;; LaTeX completion via cape and auctex
-;; Note: AUCTeX provides its own completion via TeX-complete-symbol
-;; which works with corfu through completion-at-point-functions
+  (TeX-save-query nil)                    ;; don't ask before compiling
+  (TeX-source-correlate-method 'synctex)
+  (TeX-source-correlate-start-server t)   ;; inverse search from the PDF
+  (TeX-electric-math nil)                 ;; cdlatex owns $
+  (TeX-electric-sub-and-superscript nil)  ;; cdlatex owns _ and ^
+  (LaTeX-electric-left-right-brace nil)   ;; electric-pair-mode owns braces
+  (TeX-view-program-selection '((output-pdf "PDF Tools")))
+  (preview-auto-cache-preamble t)
+  ;; Sectioning size. The number is a *cumulative* scale from
+  ;; `font-latex-sectioning-5-face' upward, so 1.1 gives
+  ;; subsubsection 1.1, subsection 1.21, section 1.331, chapter 1.46, part 1.61.
+  ;; Must go through :custom — it has a :set handler, so setq is a no-op.
+  ;; Colour comes from the theme, which restyles each level individually.
+  (font-latex-fontify-sectioning 1.1)
+  ;; \title is in font-latex's "textual" class, which has no size. Promote it
+  ;; to the largest sectioning face; the textual class still supplies colour.
+  (font-latex-user-keyword-classes
+   '(("documenttitle" (("title" "{")) font-latex-sectioning-0-face command)))
+  ;; AUCTeX fills prettify-symbols-alist with ~725 entries (\alpha -> α);
+  ;; unprettify-at-point keeps the raw macro editable under the cursor.
+  (prettify-symbols-unprettify-at-point 'right-edge)
+  :config
+  ;; plain defvar hook: re-render the PDF in pdf-tools after each compile
+  (add-hook 'TeX-after-compilation-finished-functions
+            #'TeX-revert-document-buffer)
+  :hook ((LaTeX-mode . TeX-source-correlate-mode)
+         (LaTeX-mode . TeX-fold-mode)
+         (LaTeX-mode . prettify-symbols-mode)
+         (LaTeX-mode . turn-on-reftex)))
 
 (use-package reftex
+  :straight (:type built-in)
   :defer t
+  :commands (turn-on-reftex reftex-mode)
   :custom
+  (reftex-plug-into-AUCTeX t)
   (reftex-cite-prompt-optional-args t)) ; Prompt for empty optional arguments in cite
 
+;; TAB stays with yasnippet; cdlatex tabbing moves to C-<tab>.
+(use-package cdlatex
+  :defer t
+  :commands (turn-on-cdlatex cdlatex-mode)
+  :hook (LaTeX-mode . turn-on-cdlatex)
+  :bind (:map cdlatex-mode-map
+              ("TAB" . nil)
+              ("C-<tab>" . cdlatex-tab)))
 #+END_SRC
 *** Eglot
 Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Corfu, Xref for definitions/references, Eldoc for hover/signatures, Imenu for symbols, and Flymake for diagnostics.
@@ -1002,15 +953,16 @@ Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Cor
   ((conf-toml-mode . eglot-ensure)
    (css-mode . eglot-ensure)
    (just-mode . eglot-ensure)
-   (latex-mode . eglot-ensure)
+   (LaTeX-mode . eglot-ensure)
    (markdown-mode . eglot-ensure)
    (nix-mode . eglot-ensure)
    (python-base-mode . eglot-ensure)
    (sh-mode . eglot-ensure)
+   (terraform-mode . eglot-ensure)
    (toml-mode . eglot-ensure)
    (typst-mode . eglot-ensure)
    (typescript-mode . eglot-ensure)
-   (yaml-mode . eglot-ensure))
+   (yaml-ts-mode . eglot-ensure))
   :bind
   (:map eglot-mode-map
         ("C-M-<mouse-2>" . eglot-code-actions-at-mouse)
@@ -1031,24 +983,76 @@ Eglot replaces the lsp-mode stack and uses native Emacs interfaces: CAPF for Cor
              ((typst-mode typst--markup-mode typst--code-mode) . ("tinymist"))
              (just-mode . ("just-lsp"))
              (sh-mode . ("bash-language-server" "start"))
+             (terraform-mode . ("nix" "run" "nixpkgs#tofu-ls" "--" "serve"))
              (typescript-mode . ("vtsls" "--stdio"))
              (nix-mode . ("nixd"))
              (markdown-mode . ("marksman" "server"))
-             (python-base-mode . ("rass" "python"))))
+             (python-base-mode
+              ;; jedi LAST: rass gives hover/rename/documentSymbol to the first
+              ;; server supporting them and everything else to the primary, so
+              ;; ty must stay first. Jedi is here only for refactor.extract.
+              . ("rass" "--" "ty" "server" "--" "ruff" "server"
+                 "--" "jedi-language-server"
+                 :initializationOptions
+                 ;; rass eats the :rass key and merges the overlay whose key
+                 ;; regex-matches the server name; others just get {}.
+                 ;; ponytail: jedi's completions get concatenated with ty's, so
+                 ;; candidates double up. Upgrade path is a rass preset with a
+                 ;; logic class routing only codeAction to jedi.
+                 (:rass
+                  (:jedi
+                   (:diagnostics (:enable :json-false)
+                    :codeAction (:nameExtractFunction "extracted_function"
+                                 :nameExtractVariable "extracted_variable"))))))
+           ))
     (add-to-list 'eglot-server-programs server))
-  (add-to-list 'eglot-server-programs '(yaml-mode . ("yaml-language-server" "--stdio"))))
+  (add-to-list 'eglot-server-programs
+               '((yaml-mode yaml-ts-mode) . ("yaml-language-server" "--stdio")))
+  (let ((schemas (make-hash-table :test 'equal)))
+    (puthash "https://gitlab.com/gitlab-org/gitlab/-/raw/master/app/assets/javascripts/editor/schema/ci.json"
+             [".gitlab-ci.yml" ".gitlab-ci.yaml" "**/.gitlab-ci.yml" "**/.gitlab-ci.yaml"]
+             schemas)
+    (setq-default eglot-workspace-configuration
+                  `(:yaml (:schemas ,schemas
+                           :schemaStore (:enable t)
+                           :validate t
+                           :completion t
+                           :hover t)))))
 #+END_SRC
 **** Dape
-Dape replaces dap-mode without depending on lsp-mode.
+Dape replaces dap-mode without depending on lsp-mode. The debugpy adapter runs
+from the nix-provided =python-dap= wrapper (which always has debugpy), while the
+debuggee runs on the project's own python (pyvenv/direnv); debugpy injects itself
+into the debuggee, so projects never need debugpy in their venv.
 #+BEGIN_SRC emacs-lisp
 (use-package dape
   :defer t
   :bind (("C-c d d" . dape)
          ("C-c d b" . dape-breakpoint-toggle)
+         ("C-c d B" . dape-breakpoint-remove-all)
+         ("C-c d e" . dape-breakpoint-expression)
          ("C-c d c" . dape-continue)
          ("C-c d n" . dape-next)
          ("C-c d i" . dape-step-in)
-         ("C-c d o" . dape-step-out)))
+         ("C-c d o" . dape-step-out)
+         ("C-c d r" . dape-restart)
+         ("C-c d q" . dape-quit)
+         ("C-c d w" . dape-watch-dwim)
+         ("C-c d R" . dape-repl))
+  :custom
+  (dape-buffer-window-arrangement 'right)
+  :config
+  (defun jsg/dape-python ()
+    "Python for the debuggee: active venv if any, else the nix debug python."
+    (or (executable-find "python") "python-dap"))
+  (dolist (key '(debugpy debugpy-module))
+    (setf (plist-get (alist-get key dape-configs) 'command) "python-dap"
+          (plist-get (alist-get key dape-configs) :python) 'jsg/dape-python))
+  (setf (alist-get 'debugpy-pytest dape-configs)
+        (thread-first (alist-get 'debugpy-module dape-configs)
+                      copy-sequence
+                      (plist-put :module "pytest")
+                      (plist-put :args [dape-buffer-default]))))
 #+END_SRC
 *** Magit
 Magit is an amazing git client that can do 90% of what git can, this covers almost all regular
@@ -1085,6 +1089,12 @@ tasks.
   :hook (magit-status-mode . turn-on-magit-gitflow)
   )
 #+END_SRC
+*** HTML
+#+BEGIN_SRC emacs-lisp
+(use-package web-mode
+  :straight (:host github :repo "fxbois/web-mode")
+  :mode "\\.html?\\'")
+#+END_SRC
 *** Makefile / cMakefile
 Makefile modes comes with Emacs, but we still want to use it and be able to configure it
 #+begin_src emacs-lisp
@@ -1116,6 +1126,9 @@ Makefile modes comes with Emacs, but we still want to use it and be able to conf
 
 #+END_SRC
 *** Markdown
+
+**** Markdown mode
+
 #+BEGIN_SRC emacs-lisp
 (use-package markdown-mode
   :defer t
@@ -1123,7 +1136,9 @@ Makefile modes comes with Emacs, but we still want to use it and be able to conf
   :bind
   (("M-<right>" . markdown-demote)
    ("M-<left>" . markdown-promote)
-   ("M-<return>" . markdown-insert-header-dwim))
+   ("M-<return>" . markdown-insert-header-dwim)
+   :map markdown-mode-map
+   ("C-c m m" . markdown-mermaid-preview))
 
   :mode
   (("README\\.md\\'" . gfm-mode)
@@ -1170,6 +1185,15 @@ Makefile modes comes with Emacs, but we still want to use it and be able to conf
   :defer t
   )
 #+end_src
+**** Render mermaid blocks
+#+BEGIN_SRC emacs-lisp
+(use-package markdown-mermaid
+  :straight (:host github :repo "pasunboneleve/markdown-mermaid" :files ("markdown-mermaid.el"))
+  :defer t
+  :commands (markdown-mermaid-preview))
+#+END_SRC
+
+
 *** Mermaid Diagrams
 #+BEGIN_SRC emacs-lisp
 (use-package mermaid-mode
@@ -1212,6 +1236,105 @@ Makefile modes comes with Emacs, but we still want to use it and be able to conf
 (use-package nix-mode
   :defer t
   :mode (rx ".nix" eos))
+#+END_SRC
+**** Flake-aware attribute completion
+=nixd= completes NixOS/home-manager /option/ paths, but not the values behind a
+flake input: =inputs.foo= is a module argument bound at eval time, so no amount
+of static analysis reaches it. This asks Nix itself, via =builtins.getFlake= and
+=builtins.attrNames=.
+
+Everything runs through an async =nix eval=, so a cold lookup never blocks
+typing --- the CAPF returns nil, and the sentinel refires completion once the
+answer lands. Measured worst-case block: 5.7ms. Results are cached per
+=(flake-root . attr-path)=, and the flake's top-level attrs are fetched when a
+Nix file is opened, so =inputs.= is usually warm before you finish typing it.
+
+The root guard matters more than it looks: without it, every =config.= and
+=pkgs.= prefix spends ~1.3s discovering that module arguments are not flake
+attributes.
+
+#+BEGIN_SRC emacs-lisp
+(defvar nix-flake--cache (make-hash-table :test 'equal)
+  "Maps (ROOT . PATH) to a list of attr names, or the symbol `none'.")
+(defvar nix-flake--pending (make-hash-table :test 'equal))
+
+(defun nix-flake--expr (root path)
+  ;; ponytail: bare attr paths only; quoted keys ("foo.bar") would need escaping
+  (format "with builtins; let v = (getFlake \"%s\")%s; in \
+if isAttrs v then concatStringsSep \"\\n\" (attrNames v) else \"\""
+          root (if (string-empty-p path) "" (concat "." path))))
+
+(defun nix-flake--fetch (root path)
+  "Kick off an async `nix eval' for ROOT/PATH.  Return immediately."
+  (let ((key (cons root path)))
+    (unless (gethash key nix-flake--pending)
+      (puthash key t nix-flake--pending)
+      (let ((out (generate-new-buffer " *nix-flake-eval*"))
+            (src (current-buffer))
+            (pt  (point)))
+        (make-process
+         :name "nix-flake-eval" :buffer out :noquery t :connection-type 'pipe
+         :command (list "nix" "eval" "--impure" "--raw"
+                        "--no-warn-dirty" "--quiet" "--expr"
+                        (nix-flake--expr root path))
+         :sentinel
+         (lambda (proc _event)
+           (when (memq (process-status proc) '(exit signal))
+             (let* ((ok (and (eq (process-status proc) 'exit)
+                             (zerop (process-exit-status proc))))
+                    (text (with-current-buffer out (buffer-string))))
+               (kill-buffer out)
+               (remhash key nix-flake--pending)
+               (puthash key (if ok (split-string text "\n" t) 'none)
+                        nix-flake--cache)
+               (when (and ok (buffer-live-p src))
+                 (with-current-buffer src
+                   (when (and (= (point) pt)
+                              (not (bound-and-true-p completion-in-region-mode)))
+                     (ignore-errors (completion-at-point)))))))))))))
+
+(defun nix-flake--get (root path)
+  "Cached attr names for ROOT/PATH, or nil while an async fetch runs."
+  (or (gethash (cons root path) nix-flake--cache)
+      (progn (nix-flake--fetch root path) nil)))
+
+(defun nix-flake-capf ()
+  "Complete flake-rooted Nix attribute paths.  Never blocks."
+  (when-let* ((dir (locate-dominating-file default-directory "flake.nix"))
+              (root (expand-file-name dir))
+              (beg (save-excursion (skip-chars-backward "a-zA-Z0-9'_.-") (point)))
+              ((< beg (point)))
+              (full (buffer-substring-no-properties beg (point)))
+              (dot (string-match-p "\\.[^.]*\\'" full))
+              (parent (substring full 0 dot))
+              (roots (nix-flake--get root ""))
+              ((consp roots))
+              ((member (car (split-string parent "\\." t)) roots))
+              (names (nix-flake--get root parent))
+              ((consp names)))
+    (list (+ beg dot 1) (point) names :exclusive 'no)))
+
+(defun nix-flake-prewarm ()
+  "Warm the flake attr cache in the background when opening a Nix file."
+  (when-let* ((dir (locate-dominating-file default-directory "flake.nix"))
+              (root (expand-file-name dir)))
+    (nix-flake--get root "")
+    (nix-flake--get root "inputs")))
+
+(defun nix-flake-invalidate ()
+  "Drop every cached flake attr set."
+  (interactive)
+  (clrhash nix-flake--cache))
+
+(defun me/nix-flake-capf-enable ()
+  (when (derived-mode-p 'nix-mode)
+    (nix-flake-prewarm)
+    (add-hook 'completion-at-point-functions #'nix-flake-capf -10 t)))
+
+(add-hook 'nix-mode-hook #'me/nix-flake-capf-enable)
+;; Depth 90: `me/eglot-capf-with-snippets' overwrites the buffer-local CAPF
+;; list, so this has to re-add afterwards.
+(add-hook 'eglot-managed-mode-hook #'me/nix-flake-capf-enable 90)
 #+END_SRC
 **** nicely format nix stuff
 #+BEGIN_SRC emacs-lisp
@@ -1436,12 +1559,6 @@ We want to be able to view PDFs in Emacs
   :mode
   ("\\.ps1" . powershell-mode))
 #+END_SRC
-*** Projectile
-#+BEGIN_SRC emacs-lisp
-(use-package projectile
-  :defer t
-  :commands (projectile-project-root projectile-find-file projectile-switch-project))
-#+END_SRC
 *** Python
 Since I am doing a lot of python, many modes and other things related to python has been bundled in this section
 **** Python mode
@@ -1604,6 +1721,12 @@ necessarily superseded by the ssh config.
   ("\\.network\\'" . systemd-mode)
   ("\\.link\\'" . systemd-mode))
 #+END_SRC
+*** Terraform / OpenTofu
+#+BEGIN_SRC emacs-lisp
+(use-package terraform-mode
+  :defer t
+  :mode ("\\.\\(tf\\|tfvars\\|tofu\\|tofuvars\\)\\'" . terraform-mode))
+#+END_SRC
 *** Themes
 **** Doom Emacs theme
 #+begin_src emacs-lisp
@@ -1625,9 +1748,24 @@ necessarily superseded by the ssh config.
           (message "Failed to load fallback %s theme: %s" fallback fallback-err)
           (mapc #'disable-theme custom-enabled-themes)))))))
 
-(if (>= emacs-major-version 31)
-    (me/load-theme-safely 'modus-vivendi)
-  (me/load-theme-safely 'doom-xcode 'modus-vivendi))
+;; Emacs 31 defines `gnus-group-news-low' as inheriting `gnus-group-news-low-empty',
+;; and doom-themes makes the -empty face inherit back. Once gnus is loaded that
+;; cycle aborts `face-spec-recalc', which runs for every new frame -- so corfu's
+;; child frame dies. Inline the colours the -empty face contributed and drop the
+;; inherit; appearance is unchanged, the cycle is gone in either load order.
+;; Set before gnus loads: `custom-declare-face' is a no-op when the face already
+;; has a `face-defface-spec', so this replaces gnus's cyclic declaration outright.
+(face-spec-set
+ 'gnus-group-news-low
+ '((((class color) (background dark))  (:foreground "DarkTurquoise" :weight bold))
+   (((class color) (background light)) (:foreground "DarkGreen" :weight bold))
+   (t (:weight bold)))
+ 'face-defface-spec)
+
+;; (if (>= emacs-major-version 31)
+;;     (me/load-theme-safely 'doom-snazmodus-vivendi)
+(me/load-theme-safely 'doom-snazzy 'doom-xcode)
+;; )
 #+end_src
 **** Snazzy
 #+BEGIN_SRC emacs-lisp
@@ -1781,31 +1919,50 @@ simple package that enable titlecasing
   :bind ("C-c w t" . why-this)
   :config ())
 #+end_src
-*** YAML mode
-#+BEGIN_SRC emacs-lisp
-(use-package yaml-mode
-  :defer t
-  :mode
-  ("\\.yml\\'" . yaml-mode)
-  ("\\.yaml\\'" . yaml-mode))
-#+END_SRC
 *** Yasnippet
 Yasnippet is one of the main reasons I have a hard time moving away. The ease of creating new
 snippets for common operations instead of macros, allows it to be portable and powerful.
+
+=yas-global-mode= rather than a hook list: =yas-expand-snippet= asserts that =yas-minor-mode= is
+live in the current buffer, and =conf-mode= derives from neither =prog-mode= nor =text-mode=, so
+the conf-*/direnv snippet dirs were unreachable.
 
 #+begin_src emacs-lisp
 (use-package yasnippet
   :delight yas
   :defer t
   :commands (yas-minor-mode yas-global-mode yas-expand)
-  :hook ((prog-mode text-mode org-mode) . yas-minor-mode)
+  :hook (after-init . yas-global-mode)
+  :init
+  ;; Set before load: the defcustom's setter triggers a redundant `yas-reload-all'.
+  (setq yas-snippet-dirs '("~/.config/home-manager/dotfiles/emacs/yasnippet/snippets"))
   :custom
-  (yas-prompt-functions '(yas-completing-prompt))
-  (yas-snippet-dirs '("~/.config/home-manager/dotfiles/emacs/yasnippet/snippets")))
+  (yas-prompt-functions '(yas-completing-prompt)))
+
+;; Registers itself through its own autoloaded `eval-after-load'.
 (use-package yasnippet-snippets
+  :after yasnippet)
+#+end_src
+
+**** Snippets in Corfu
+Bridges yasnippet into CAPF so snippets show up in the Corfu popup while typing, annotated and
+previewable through =corfu-popupinfo=.
+
+#+begin_src emacs-lisp
+(use-package yasnippet-capf
   :after yasnippet
-  :defer t
+  :custom
+  ;; Default nil scans unbounded on every keystroke.
+  (yasnippet-capf-max-search-distance 500)
+  :init
+  (add-hook 'completion-at-point-functions #'yasnippet-capf 50)
   :config
-  (yasnippet-snippets-initialize)
-  )
+  ;; Eglot's CAPF is exclusive, so a global fallback never fires in the modes
+  ;; hooked to `eglot-ensure'. Merge the two instead of chaining them.
+  (defun me/eglot-capf-with-snippets ()
+    (when (eglot-managed-p)
+      (setq-local completion-at-point-functions
+                  (list (cape-capf-super #'eglot-completion-at-point #'yasnippet-capf)
+                        t))))
+  (add-hook 'eglot-managed-mode-hook #'me/eglot-capf-with-snippets))
 #+end_src

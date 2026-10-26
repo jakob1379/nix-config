@@ -11,6 +11,8 @@ let
     builtins.elem (pkg.pname or "") [
       "clockify"
       "zen-browser"
+      "claude-code"
+      "slack"
     ];
   generalPackages =
     pkgs: with pkgs; [
