@@ -12,6 +12,7 @@ let
       "clockify"
       "zen-browser"
       "claude-code"
+      "slack"
     ];
   generalPackages =
     pkgs: with pkgs; [

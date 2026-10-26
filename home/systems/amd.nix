@@ -49,6 +49,7 @@ in
     with pkgs;
     [
       clockify
+      slack
       adw-gtk3
       cachix
       glab
