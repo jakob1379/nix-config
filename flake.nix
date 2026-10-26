@@ -104,6 +104,20 @@
             inherit (nixpkgs) lib;
           }
         );
+        nix-find =
+          pkgs.runCommand "nix-find-test"
+            {
+              nativeBuildInputs = [
+                pkgs.git
+                pkgs.jq
+                pkgs.nix
+                pkgs.procps
+              ];
+            }
+            ''
+              bash ${./tests/nix-find.sh} ${./bin/nix-find}
+              touch $out
+            '';
       });
       formatter = forAllSystems (
         pkgs:
