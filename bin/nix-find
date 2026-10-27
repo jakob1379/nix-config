@@ -164,10 +164,10 @@ nix_find_abort() {
 	exit 130
 }
 
-# Helper: index the enclosing flake's inputs as nix-search-tv options_file indexes, cached per flake.lock
-nix_find_index_inputs() {
-	local root=$PWD git cache tmp locked system names input files file index nst fns fresh=false
-	local global=${XDG_CONFIG_HOME:-$HOME/.config}/nix-search-tv/config.json
+# Helper: set $root to the enclosing flake and $cache to its input indexes, keyed on flake.lock
+nix_find_locate() {
+	local git fns
+	root=$PWD
 	until [[ -f $root/flake.nix ]]; do
 		[[ $root == / || -e $root/.git ]] && return 1
 		root=$(dirname "$root")
@@ -186,53 +186,58 @@ nix_find_index_inputs() {
 		uname -m
 		printf '%s' "$nix_find_expr"
 	} | sha256sum | cut -c1-32)
+}
 
-	if [[ ! -d $cache ]]; then
-		echo "nix-find: indexing inputs of $root/flake.lock" >&2
-		mkdir -p "${cache%/*}"
-		tmp=
-		trap 'nix_find_abort "$tmp"' INT TERM HUP
-		tmp=$(mktemp -d "$cache.XXXXXX") || {
-			trap - INT TERM HUP
-			return 1
-		}
-		mkdir -p "$tmp/inputs" "$tmp/eval" || {
-			rm -rf "${tmp:?}"
-			trap - INT TERM HUP
-			return 1
-		}
-		if ! locked=$(cd "$root" && timeout -k 10 120 nix flake metadata --json --no-write-lock-file . 2>"$tmp/eval/inputs.err" |
-			jq -er 'select(.locked.narHash) | "path:\(.path)?narHash=\(.locked.narHash)" + if .locked.dir then "&dir=\(.locked.dir | @uri)" else "" end') ||
-			! system=$(nix config show system 2>>"$tmp/eval/inputs.err") ||
-			! names=$(nix_find_eval inputs "$locked" "$system" "" --raw 2>"$tmp/eval/inputs.err"); then
-			nix_find_warn "cannot evaluate $root" "$tmp/eval/inputs.err"
-			rm -rf "${tmp:?}"
-			trap - INT TERM HUP
-			return 1
-		fi
-		while read -r input; do
-			[[ -n $input ]] || continue
-			[[ $input =~ ^[[:alnum:]_][[:alnum:]_.+-]*$ ]] || {
-				printf 'nix-find: skipped input %q: unsafe name\n' "$input" >&2
-				continue
-			}
-			while (($(jobs -rp | wc -l) >= 4)); do wait -n; done
-			nix_find_index_input "$locked" "$system" "$input" "$tmp" &
-		done <<<"$names"
-		wait
-		files=("$tmp"/inputs/*.json)
-		if [[ -e $tmp/skipped && ! -e ${files[0]} ]]; then
-			echo "nix-find: nothing indexed, retrying on the next run" >&2
-			rm -rf "${tmp:?}"
-			trap - INT TERM HUP
-			return 1
-		fi
-		[[ -e $tmp/skipped ]] && echo "nix-find: if that was a network error, rm -rf $cache to retry" >&2
-		rm -rf "${tmp:?}/eval" "${tmp:?}/skipped"
-		if mv -T "$tmp" "$cache" 2>/dev/null; then fresh=true; else rm -rf "${tmp:?}"; fi
+# Helper: index $root's inputs as nix-search-tv options_file indexes into $cache
+nix_find_build() {
+	local tmp locked system names input files
+	mkdir -p "${cache%/*}"
+	tmp=
+	trap 'nix_find_abort "$tmp"' INT TERM HUP
+	tmp=$(mktemp -d "$cache.XXXXXX") || {
 		trap - INT TERM HUP
+		return 1
+	}
+	mkdir -p "$tmp/inputs" "$tmp/eval" || {
+		rm -rf "${tmp:?}"
+		trap - INT TERM HUP
+		return 1
+	}
+	if ! locked=$(cd "$root" && timeout -k 10 120 nix flake metadata --json --no-write-lock-file . 2>"$tmp/eval/inputs.err" |
+		jq -er 'select(.locked.narHash) | "path:\(.path)?narHash=\(.locked.narHash)" + if .locked.dir then "&dir=\(.locked.dir | @uri)" else "" end') ||
+		! system=$(nix config show system 2>>"$tmp/eval/inputs.err") ||
+		! names=$(nix_find_eval inputs "$locked" "$system" "" --raw 2>"$tmp/eval/inputs.err"); then
+		nix_find_warn "cannot evaluate $root" "$tmp/eval/inputs.err"
+		rm -rf "${tmp:?}"
+		trap - INT TERM HUP
+		return 1
 	fi
+	while read -r input; do
+		[[ -n $input ]] || continue
+		[[ $input =~ ^[[:alnum:]_][[:alnum:]_.+-]*$ ]] || {
+			printf 'nix-find: skipped input %q: unsafe name\n' "$input" >&2
+			continue
+		}
+		while (($(jobs -rp | wc -l) >= 4)); do wait -n; done
+		nix_find_index_input "$locked" "$system" "$input" "$tmp" &
+	done <<<"$names"
+	wait
+	files=("$tmp"/inputs/*.json)
+	if [[ -e $tmp/skipped && ! -e ${files[0]} ]]; then
+		echo "nix-find: nothing indexed, retrying on the next run" >&2
+		rm -rf "${tmp:?}"
+		trap - INT TERM HUP
+		return 1
+	fi
+	[[ -e $tmp/skipped ]] && echo "nix-find: if that was a network error, rm -rf $cache to retry" >&2
+	rm -rf "${tmp:?}/eval" "${tmp:?}/skipped"
+	if mv -T "$tmp" "$cache" 2>/dev/null; then fresh=true; else rm -rf "${tmp:?}"; fi
+	trap - INT TERM HUP
+}
 
+# Helper: point nix-search-tv at the input indexes in $cache, rebuilding its own index of them when $fresh
+nix_find_link() {
+	local files file index nst global=${XDG_CONFIG_HOME:-$HOME/.config}/nix-search-tv/config.json
 	files=("$cache"/inputs/*.json)
 	[[ -e ${files[0]} ]] || return 1
 	nst=$(jq -r '.cache_dir // empty' "$global" 2>/dev/null) || :
@@ -253,11 +258,26 @@ nix_find_index_inputs() {
 	fi
 	export NIX_FIND_CONFIG=$cache/config NIX_FIND_REFS=$cache/refs
 }
-nix_find_index_inputs || :
+fresh=false pending=false
+if nix_find_locate; then
+	if [[ -d $cache ]]; then
+		nix_find_link || :
+	elif [[ $interactive == true ]]; then
+		pending=true
+		export NIX_FIND_CONFIG=$cache/config NIX_FIND_REFS=$cache/refs
+	else
+		echo "nix-find: indexing inputs of $root/flake.lock" >&2
+		nix_find_build && nix_find_link || :
+	fi
+fi
 
-# Helper: nix-search-tv, seeing the input indexes when inside a flake
+# Helper: nix-search-tv, seeing the input indexes once they exist
 nix_find_nst() {
-	nix-search-tv "$1" ${NIX_FIND_CONFIG:+--config "$NIX_FIND_CONFIG"} "${@:2}"
+	if [[ -f ${NIX_FIND_CONFIG:-} ]]; then
+		nix-search-tv "$1" --config "$NIX_FIND_CONFIG" "${@:2}"
+	else
+		nix-search-tv "$@"
+	fi
 }
 export -f nix_find_nst
 
@@ -387,13 +407,53 @@ nix_find_comma() {
 }
 export -f nix_find_comma
 
+# Helper: fzf info line; a spinner and what is still loading, then the shell command for the selection
+nix_find_info() {
+	local frames=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏) status
+	if status=$(cat "$NIX_FIND_STATUS" 2>/dev/null); then
+		printf '\033[33m%s\033[0m %s  ' "${frames[${EPOCHREALTIME/./} / 100000 % 10]}" "$status"
+	fi
+	nix_find_command "$@"
+}
+export -f nix_find_info
+
 # Build info command for fzf (receives {+} as space-separated args)
-info_cmd='nix_find_command {+}'
+info_cmd='nix_find_info {+}'
+
+# Helper: keep nix-search-tv entries, sending its progress and failure lines to the info line and stderr
+nix_find_entries() {
+	awk -v status="$NIX_FIND_STATUS" '/^[^\/ ]+\/ [^ ]+$/ { print; fflush(); next }
+		{ print > status; close(status); print > "/dev/stderr" }'
+}
+
+# Helper: fzf's input; on a fresh flake.lock it then indexes the inputs and appends them, so fzf opens without waiting
+nix_find_list() {
+	echo "loading packages…" >"$NIX_FIND_STATUS"
+	nix_find_nst print "${queries[@]}" | nix_find_entries || :
+	if $pending; then
+		echo "indexing inputs of $root/flake.lock…" >"$NIX_FIND_STATUS"
+		nix_find_build && nix_find_link && nix_find_nst print "${queries[@]}" | nix_find_entries | grep '^inputs\.'
+	fi
+	rm -f "$NIX_FIND_STATUS"
+}
+
+run=$(mktemp -d)
+export NIX_FIND_STATUS=$run/status
+exec {list}< <(nix_find_list 2>"$run/log")
+indexer=$!
+# Leaving fzf early aborts the indexing and drops its partial index
+nix_find_stop() {
+	kill -TERM "$indexer" 2>/dev/null || :
+	wait "$indexer" 2>/dev/null || :
+	exec {list}<&-
+	grep -v '^Indexing ' "$run/log" >&2 || :
+	rm -rf "${run:?}"
+}
+trap 'nix_find_stop; exit 130' INT TERM HUP
 
 # Interactive mode
 mapfile -t selections < <(
-	nix_find_nst print "${queries[@]}" \
-		| fzf \
+	fzf <&"$list" \
 			--ansi \
 			--multi \
 			--query="${queries[*]}" \
@@ -409,6 +469,8 @@ mapfile -t selections < <(
 			--info-command "$info_cmd"
 )
 status=$?
+trap - INT TERM HUP
+nix_find_stop
 
 if ((status == 130)); then
 	echo "Selection cancelled." >&2

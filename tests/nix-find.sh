@@ -12,7 +12,8 @@ stub() {
 	chmod +x "$work/bin/$1"
 }
 # shellcheck disable=SC2016
-stub fzf 'cat >/dev/null
+stub fzf '[[ -z ${FZF_STARTED:-} ]] || touch "$FZF_STARTED"
+cat >/dev/null
 if [[ -z ${ALT_ENTER:-} ]]; then
 	printf "%s\n" "$SELECTION"
 	exit
@@ -110,13 +111,17 @@ before=$(grep -c 'flake metadata' "$work/nix.log")
 	exit 1
 }
 (cd "$work/flake" && SELECTION=x PATH=$work/bin:$PATH XDG_CACHE_HOME=$work/abortcache XDG_CONFIG_HOME=$work/config \
-	SEEN_CONFIG=$work/seen-config NIX_LOG=$work/abort.log SLOW_PLAN=1 SLOW_PIDS=$work/slow.pids \
+	SEEN_CONFIG=$work/seen-config NIX_LOG=$work/abort.log SLOW_PLAN=1 SLOW_PIDS=$work/slow.pids FZF_STARTED=$work/fzf.started \
 	exec "$BASH" -euo pipefail "$script" >/dev/null 2>&1) &
 pid=$!
 for _ in {1..100}; do
 	[[ -s $work/slow.pids ]] && break
 	sleep 0.1
 done
+[[ -e $work/fzf.started ]] || {
+	echo "FAIL: fzf waited for the input indexing instead of opening at once" >&2
+	exit 1
+}
 aborted_at=$SECONDS
 kill -TERM "$pid"
 wait "$pid" && rc=0 || rc=$?
