@@ -16,16 +16,6 @@ let
           ${lib.getExe pkgs.buildPackages.kmodigest} $out/lib/modules/${config.boot.kernelPackages.kernel.modDirVersion}/kernel/drivers/gpu/drm/evdi/evdi.ko
         '';
       });
-  # upstream hplip bug in our pinned nixpkgs: preFixup expands $makeWrapperArgs as a scalar under structuredAttrs; same fix as nixpkgs master
-  hplip =
-    if lib.hasInfix "$makeWrapperArgs " pkgs.hplip.preFixup then
-      pkgs.hplip.overrideAttrs (old: {
-        preFixup =
-          lib.replaceStrings [ "$makeWrapperArgs " ] [ "\"\${makeWrapperArgs[@]}\" " ]
-            old.preFixup;
-      })
-    else
-      lib.warn "hplip wrapper fixed upstream: remove hplip patch in nixos/common.nix" pkgs.hplip;
 in
 {
   # Disable screenreader
