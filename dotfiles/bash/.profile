@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Auto-start tmux for remote SSH sessions if the shell is interactive
 if [ -z "$INSIDE_EMACS" ]; then
   # If it's a TRAMP connection (TERM is "dumb"), do not proceed with tmux
