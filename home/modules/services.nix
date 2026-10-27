@@ -73,25 +73,20 @@ let
 
 in
 {
-  options = {
-    customServices = {
-      storage = lib.mkOption {
-        type = lib.types.attrs;
-        default = {
-          rclone = {
-            service = {
-              rclone-mount-dropbox-private = createRcloneMountService { name = "dropbox-private"; };
-            };
-          };
-        };
-        description = "Systemd services for storage mounts.";
-      };
+  config =
+    let
+      gui = config.customPackages.gui.enable;
+    in
+    {
+      systemd = {
+        user = {
+          startServices = true;
 
-      wallpaper = lib.mkOption {
-        type = lib.types.attrs;
-        default = {
-          varietyWallpaper = {
-            service = {
+          services = lib.mkMerge [
+            { emacs.Service.Environment = [ "COLORTERM=truecolor" ]; }
+            (lib.mkIf gui {
+              rclone-mount-dropbox-private = createRcloneMountService { name = "dropbox-private"; };
+
               variety = {
                 Unit = {
                   Description = "Variety wallpaper changer";
@@ -126,54 +121,7 @@ in
                   WantedBy = [ "graphical-session.target" ];
                 };
               };
-            };
-
-            path = {
-              "variety-wallpaper-sync" = {
-                Unit = {
-                  Description = "Watch Variety wallpaper pointer for Noctalia and terminal colors";
-                  After = [ rcloneDropboxPrivateService ];
-                  Wants = [
-                    "variety-wallpaper-sync.service"
-                    rcloneDropboxPrivateService
-                  ];
-                  Requires = [ rcloneDropboxPrivateService ];
-                };
-                Install = {
-                  WantedBy = [ "graphical-session.target" ];
-                };
-                Path = {
-                  PathChanged = varietyWallpaperPointerFile;
-                };
-              };
-            };
-          };
-        };
-        description = "Systemd services for wallpaper state.";
-      };
-
-      desktop = lib.mkOption {
-        type = lib.types.attrs;
-        default = { };
-        description = "Systemd services for desktop integration.";
-      };
-    };
-  };
-
-  config =
-    let
-      cfg = config.customServices;
-      gui = config.customPackages.gui.enable;
-    in
-    {
-      systemd = {
-        user = {
-          startServices = true;
-
-          services = lib.mkMerge [
-            { emacs.Service.Environment = [ "COLORTERM=truecolor" ]; }
-            (lib.mkIf gui (cfg.storage.rclone.service or { }))
-            (lib.mkIf gui (cfg.wallpaper.varietyWallpaper.service or { }))
+            })
             (lib.mkIf (gui && config.programs.keepassxc.enable) {
               keepassxc = {
                 Unit = {
@@ -200,7 +148,25 @@ in
           ];
 
           paths = lib.mkMerge [
-            (lib.mkIf gui (cfg.wallpaper.varietyWallpaper.path or { }))
+            (lib.mkIf gui {
+              "variety-wallpaper-sync" = {
+                Unit = {
+                  Description = "Watch Variety wallpaper pointer for Noctalia and terminal colors";
+                  After = [ rcloneDropboxPrivateService ];
+                  Wants = [
+                    "variety-wallpaper-sync.service"
+                    rcloneDropboxPrivateService
+                  ];
+                  Requires = [ rcloneDropboxPrivateService ];
+                };
+                Install = {
+                  WantedBy = [ "graphical-session.target" ];
+                };
+                Path = {
+                  PathChanged = varietyWallpaperPointerFile;
+                };
+              };
+            })
           ];
         };
       };
