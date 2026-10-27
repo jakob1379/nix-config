@@ -232,6 +232,7 @@ in
         pkgs.nix-search-tv
         pkgs.fzf
         pkgs.busybox
+        pkgs.jq
         pkgs.wl-clipboard
         pkgs.xclip
       ];

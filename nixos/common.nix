@@ -4,29 +4,6 @@
   lib,
   ...
 }:
-let
-  # nixpkgs evdi skips modules_install, so kmodigest never writes evdi.ko.cer and the modules aggregator fails; sign it ourselves until upstream does
-  upstreamEvdi = config.boot.kernelPackages.evdi;
-  evdi =
-    if !lib.hasInfix "install -Dm755 module/evdi.ko" upstreamEvdi.installPhase then
-      lib.warn "evdi signing fixed upstream: remove evdi patch in nixos/common.nix" upstreamEvdi
-    else
-      upstreamEvdi.overrideAttrs (old: {
-        postInstall = (old.postInstall or "") + ''
-          ${lib.getExe pkgs.buildPackages.kmodigest} $out/lib/modules/${config.boot.kernelPackages.kernel.modDirVersion}/kernel/drivers/gpu/drm/evdi/evdi.ko
-        '';
-      });
-  # upstream hplip bug in our pinned nixpkgs: preFixup expands $makeWrapperArgs as a scalar under structuredAttrs; same fix as nixpkgs master
-  hplip =
-    if lib.hasInfix "$makeWrapperArgs " pkgs.hplip.preFixup then
-      pkgs.hplip.overrideAttrs (old: {
-        preFixup =
-          lib.replaceStrings [ "$makeWrapperArgs " ] [ "\"\${makeWrapperArgs[@]}\" " ]
-            old.preFixup;
-      })
-    else
-      lib.warn "hplip wrapper fixed upstream: remove hplip patch in nixos/common.nix" pkgs.hplip;
-in
 {
   # Disable screenreader
   services.orca.enable = false;
@@ -214,7 +191,7 @@ in
   };
   # Boot & kernel defaults (shared)
   boot = {
-    extraModulePackages = [ evdi ];
+    extraModulePackages = [ config.boot.kernelPackages.evdi ];
     initrd.kernelModules = [ "evdi" ];
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
