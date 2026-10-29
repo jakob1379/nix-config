@@ -82,3 +82,31 @@ unchanged, your tests are bad.
 - Never expose or log secrets and keys
 - Do not add noqa without direct permission - `ruff rule <RULE_NUMBER>` gives
   details
+
+## Nix: patching upstream
+
+When patching or overriding a broken upstream package, guard the patch on the
+broken state and `lib.warn` once it is gone, so stale patches surface on the
+next build instead of rotting:
+
+```nix
+pkg =
+  if upstream.pkg.src.outputHash == "<known-bad-hash>" then
+    upstream.pkg.overrideAttrs (old: { /* fix */ })
+  else
+    lib.warn "pkg fixed upstream: remove patch in <file>" upstream.pkg;
+```
+
+Then drop the patch in a `chore: drop <x> patch, fixed upstream` commit.
+
+## Nix: fetcher hashes
+
+Get fetcher expressions and hashes with `nurl` (installed); never guess hashes
+or do `lib.fakeHash` round-trips. Always pass a ref (tag/rev):
+
+```bash
+nurl https://github.com/langchain-ai/openwiki v0.7.2
+# fetchFromGitHub { owner = "langchain-ai"; repo = "openwiki"; tag = "v0.7.2"; hash = "sha256-..."; }
+```
+
+Unknown ref: list tags first with `git ls-remote --tags <url>`.
