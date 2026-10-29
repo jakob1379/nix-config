@@ -125,6 +125,9 @@ environment {
 // Settings that influence how windows are positioned and sized.
 // Find more information on the wiki:
 // https://yalter.github.io/niri/Configuration:-Layout
+workspace "1"
+workspace "2"
+
 layout {
     // Set gaps around windows in logical pixels.
     gaps 5
@@ -284,6 +287,10 @@ layout {
 // This line starts waybar, a commonly used bar for Wayland compositors.
 // spawn-at-startup "waybar"
 spawn-at-startup "noctalia" "--daemon"
+spawn-at-startup "spotify"
+spawn-at-startup "zen"
+spawn-at-startup "t3code-desktop"
+spawn-at-startup "ghostty"
 spawn-sh-at-startup "systemctl --user import-environment DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE NIRI_SOCKET; dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE NIRI_SOCKET; systemctl --user start emacs.service"
 
 // To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:
@@ -368,6 +375,18 @@ window-rule {
     open-floating true
     default-column-width { fixed 1080; }
     default-window-height { fixed 920; }
+}
+
+window-rule {
+    match at-startup=true app-id=r#"(?i)^spotify$"#
+    match at-startup=true app-id=r#"^zen$"#
+    open-on-workspace "1"
+}
+
+window-rule {
+    match at-startup=true app-id=r#"(?i)^t3.?code"#
+    match at-startup=true app-id=r#"^com\.mitchellh\.ghostty$"#
+    open-on-workspace "2"
 }
 
 debug {
