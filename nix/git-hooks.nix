@@ -82,7 +82,10 @@
       files = "\\.toml$";
       types = [ "toml" ];
     };
-    trim-trailing-whitespace.enable = true;
+    trim-trailing-whitespace = {
+      enable = true;
+      excludes = [ "\\.patch$" ];
+    };
     check-github-workflows = {
       enable = true;
       after = [ "yamlfix" ];
