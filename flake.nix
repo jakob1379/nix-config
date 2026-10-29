@@ -45,8 +45,8 @@
       url = "github:denisidoro/navi-tldr-pages";
       flake = false;
     };
-    claude-code-src = {
-      url = "github:anthropics/claude-code";
+    claude-plugins-src = {
+      url = "github:anthropics/claude-plugins-official";
       flake = false;
     };
     cursor-plugins-src = {
