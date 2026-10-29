@@ -7,20 +7,6 @@
   ...
 }:
 let
-  zenUpstream = inputs."zen-browser".packages.${system};
-  # upstream zen-browser-flake pins a stale hash for the 1.23.3b tarball; patch only applies while that bad hash is still there
-  zenBrowser =
-    if
-      zenUpstream.zen-browser-unwrapped.src.outputHash
-      == "sha256-d9cHicsaxIhxd0FpzxdQdy6J62cfSiWHJO9F1pyIbxU="
-    then
-      zenUpstream.zen-browser.override {
-        zen-browser-unwrapped = zenUpstream.zen-browser-unwrapped.overrideAttrs (old: {
-          src = old.src.overrideAttrs { outputHash = "sha256-uyBF0+IWVNQP6EElAJLurf0sH8gx7vtQkiJ3PIvcoUk="; };
-        });
-      }
-    else
-      lib.warn "zen-browser hash fixed upstream: remove zenBrowser patch in home/modules/programs.nix" zenUpstream.zen-browser;
   tmuxNetStatus = pkgs.writeShellApplication {
     name = "tmux-net-status";
     runtimeInputs = [
@@ -439,7 +425,7 @@ in
 
         firefox = {
           enable = gui;
-          package = zenBrowser;
+          package = inputs."zen-browser".packages.${system}.zen-browser;
           configPath = ".mozilla/firefox";
           profiles.myuser = {
             isDefault = true;
