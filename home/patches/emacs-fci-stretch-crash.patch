@@ -1,0 +1,23 @@
+--- a/src/xdisp.c
++++ b/src/xdisp.c
+@@ -24560,10 +24560,12 @@
+ 	  const bool saved_box_start = it->start_of_box_run_p;
+ 	  Lisp_Object save_object = it->object;
+ 	  const int saved_face_id = it->face_id;
++	  const enum display_element_type saved_what = it->what;
+ 
+ 	  it->face_id = extend_face_id;
+ 	  it->avoid_cursor_p = true;
+ 	  it->object = Qnil;
++	  it->what = IT_CHARACTER;
+ 
+ 	  const int stretch_height = it->ascent + it->descent;
+ 	  const int stretch_ascent =
+@@ -24629,6 +24631,7 @@
+ 	  it->start_of_box_run_p = saved_box_start;
+ 	  it->object = save_object;
+ 	  it->face_id = saved_face_id;
++	  it->what = saved_what;
+ 	}
+       if (it->glyph_row->reversed_p)
+ 	{

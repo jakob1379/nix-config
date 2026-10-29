@@ -7,6 +7,14 @@
   ...
 }:
 let
+  # GUI extend_face_to_end_of_line leaves it->what stale, so the fill-column indicator segfaults after a stretch at a word-wrap point
+  emacsPgtk =
+    if pkgs.emacs31-pgtk.version == "31.1" then
+      pkgs.emacs31-pgtk.overrideAttrs (old: {
+        patches = (old.patches or [ ]) ++ [ ../patches/emacs-fci-stretch-crash.patch ];
+      })
+    else
+      lib.warn "emacs31-pgtk is no longer 31.1: check the fill-column-indicator crash fix landed upstream, then remove emacsPgtk patch in home/modules/programs.nix" pkgs.emacs31-pgtk;
   tmuxNetStatus = pkgs.writeShellApplication {
     name = "tmux-net-status";
     runtimeInputs = [
@@ -269,7 +277,7 @@ in
 
         emacs = {
           enable = true;
-          package = if gui then pkgs.emacs31-pgtk else pkgs.emacs31-nox;
+          package = if gui then emacsPgtk else pkgs.emacs31-nox;
           extraPackages =
             epkgs: with epkgs; [
               treesit-grammars.with-all-grammars
