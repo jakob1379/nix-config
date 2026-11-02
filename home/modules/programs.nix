@@ -803,6 +803,7 @@ in
           systemd.enable = true;
           extensions = [
             inputs.vicinae-extensions.packages.x86_64-linux.niri-monitors
+            inputs.vicinae-extensions.packages.x86_64-linux.html-symbol-finder
             (config.lib.vicinae.mkExtension {
               name = "nix-find";
               src = ../../dotfiles/vicinae/nix-find;
