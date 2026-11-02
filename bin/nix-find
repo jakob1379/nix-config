@@ -36,8 +36,23 @@ let
   ref = if locked.type == "path" then "path:${src}"
     else builtins.flakeRefToString (removeAttrs locked
       ([ "lastModified" "revCount" ] ++ (if locked ? rev then [ "narHash" ] else [ ])));
+  # shortcut: only github and gitlab inputs get browsable links, others keep the flake ref or store path; add a forge here if one shows up
+  web = {
+    github = "https://github.com/${locked.owner}/${locked.repo}/tree/${locked.rev}";
+    gitlab = "https://${locked.host or "gitlab.com"}/${locked.owner}/${locked.repo}/-/tree/${locked.rev}";
+  }.${locked.type} or null;
+  link = fallback: file:
+    let
+      rel = lib.removePrefix "${src}" file;
+      m = builtins.match "/?([^:,]*)(:([0-9]+))?.*" rel;
+    in
+    if web == null then fallback
+    else if rel == file || m == null then web
+    else web + "/" + builtins.elemAt m 0
+      + lib.optionalString (builtins.elemAt m 2 != null) "#L${builtins.elemAt m 2}";
   # shortcut: only the `default` module, since sibling modules (nixos-hardware) cannot be evaluated together; evaluate them one by one if an input needs it
-  doc = eval: (pkgs.nixosOptionsDoc { inherit (eval) options; warningsAreErrors = false; }).optionsNix;
+  doc = eval: lib.mapAttrs (_: opt: opt // { declarations = map (d: link d d) opt.declarations or [ ]; })
+    (pkgs.nixosOptionsDoc { inherit (eval) options; warningsAreErrors = false; }).optionsNix;
   ownOptions = mkEval: attr: module:
     removeAttrs (doc (mkEval [ { _file = "${ref}#${attr}"; imports = [ module ]; } ]))
       (builtins.attrNames (doc (mkEval [ ])));
@@ -59,7 +74,8 @@ let
     value = {
       description = if describe then orEmpty (src.packages.${system}.${name}.meta.description or "") else "";
       type = "package";
-      declarations = [ "${ref}#${name}" ];
+      declarations = [ (link "${ref}#${name}"
+        (if describe then orEmpty (src.packages.${system}.${name}.meta.position or "") else "")) ];
     };
   }) (builtins.attrNames src.packages.${system}));
 in
