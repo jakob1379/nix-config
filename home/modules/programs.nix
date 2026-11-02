@@ -489,6 +489,7 @@ in
             background-opacity = 0.85;
             bold-is-bright = true;
             clipboard-paste-protection = false;
+            command = "bash --login";
             confirm-close-surface = true;
             copy-on-select = "clipboard";
             cursor-click-to-move = false;
