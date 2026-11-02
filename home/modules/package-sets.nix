@@ -16,6 +16,12 @@ let
     ];
     text = builtins.readFile ../../bin/hm-switch-update;
   };
+  # gtk2 is marked broken; no onlyoffice ELF links it (main binary uses gtk3), it is a dead buildInput
+  onlyoffice =
+    if (lib.functionArgs pkgs.onlyoffice-desktopeditors.override) ? gtk2 then
+      pkgs.onlyoffice-desktopeditors.override { gtk2 = null; }
+    else
+      lib.warn "onlyoffice-desktopeditors no longer takes gtk2: remove onlyoffice override in home/modules/package-sets.nix" pkgs.onlyoffice-desktopeditors;
 in
 {
   core =
@@ -69,7 +75,7 @@ in
       feh
       inputs.ai-usagebar.packages.${system}.default
       libnotify
-      onlyoffice-desktopeditors
+      onlyoffice
       pika-backup
       prettier
       signal-desktop
