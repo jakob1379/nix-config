@@ -384,7 +384,7 @@ window-rule {
 }
 
 window-rule {
-    match at-startup=true app-id=r#"(?i)^t3.?code"#
+    match at-startup=true app-id=r#"^com\.t3tools\.T3Code$"#
     match at-startup=true app-id=r#"^com\.mitchellh\.ghostty$"#
     open-on-workspace "2"
 }
