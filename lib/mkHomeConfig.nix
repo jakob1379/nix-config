@@ -27,6 +27,7 @@ inputs.home-manager.lib.homeManagerConfiguration {
       (import ../overlays/flyline.nix)
       (_: _: inputs.nixpkgs.lib.getAttrs fromSmall smallPkgs)
       (import ../overlays/t3code-native-addons.nix)
+      (import ../overlays/t3code-preview-browser.nix)
       (import ../overlays/claude-code.nix)
     ];
   };
