@@ -54,7 +54,7 @@ in
       cachix
       glab
       # hermesAgentWithEspeak
-      inputs.solidcraft.packages.${system}.default
+      solidcraft
       btopRocm
       # teams-for-linux
       kdePackages.qt6ct

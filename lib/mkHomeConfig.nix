@@ -29,6 +29,7 @@ inputs.home-manager.lib.homeManagerConfiguration {
       (import ../overlays/t3code-native-addons.nix)
       (import ../overlays/t3code-preview-browser.nix)
       (import ../overlays/claude-code.nix)
+      (import ../overlays/solidcraft.nix inputs)
     ];
   };
   modules = [
