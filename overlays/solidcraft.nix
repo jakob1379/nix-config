@@ -1,26 +1,36 @@
 inputs: final: _:
 
 let
+  inherit (final) lib;
   upstream = inputs.solidcraft.packages.${final.stdenv.hostPlatform.system}.default;
-  cargoLock = builtins.readFile "${inputs.solidcraft}/Cargo.lock";
+  lockFile = "${inputs.solidcraft}/Cargo.lock";
   flake = builtins.readFile "${inputs.solidcraft}/flake.nix";
-  solidcoreRev = "8ddce901671f1cebd9214a31d21895d725e886c8";
+  revHashes = {
+    "8ddce901671f1cebd9214a31d21895d725e886c8" = "sha256-SziXzxkQXY29PBOG7Ct3W8dex4RUWfAEczFUakB0k50=";
+    "f5e8e9a29e0c9b7cf6c4040a5bc8878382b3c62f" = "sha256-5LUUk4lmC3igIXyHnmJEXj17je0gEH9AoB0iTd5z0A0=";
+  };
+  gitDeps = lib.filter (p: lib.hasPrefix "git+" (p.source or "")) (lib.importTOML lockFile).package;
   broken =
-    final.lib.hasInfix "git+https://github.com/tangency-labs/solidcore" cargoLock
-    && !final.lib.hasInfix "outputHashes" flake
-    && !final.lib.hasInfix "allowBuiltinFetchGit" flake;
+    gitDeps != [ ] && !lib.hasInfix "outputHashes" flake && !lib.hasInfix "allowBuiltinFetchGit" flake;
+  hashFor =
+    p:
+    let
+      rev = lib.last (lib.splitString "#" p.source);
+    in
+    revHashes.${rev}
+      or (throw "solidcraft: no hash for ${p.name}-${p.version} at ${p.source}; add `nurl -f fetchgit <repo> ${rev}` to revHashes in overlays/solidcraft.nix");
 in
 {
   solidcraft =
     if !broken then
-      final.lib.warn "solidcraft vendors solidcore upstream: drop overlays/solidcraft.nix" upstream
-    else if final.lib.hasInfix solidcoreRev cargoLock then
+      lib.warn "solidcraft vendors its git deps upstream: drop overlays/solidcraft.nix" upstream
+    else
       upstream.overrideAttrs {
         cargoDeps = final.rustPlatform.importCargoLock {
-          lockFile = "${inputs.solidcraft}/Cargo.lock";
-          outputHashes."solidcore-1.0.1" = "sha256-SziXzxkQXY29PBOG7Ct3W8dex4RUWfAEczFUakB0k50=";
+          inherit lockFile;
+          outputHashes = lib.listToAttrs (
+            map (p: lib.nameValuePair "${p.name}-${p.version}" (hashFor p)) gitDeps
+          );
         };
-      }
-    else
-      throw "solidcraft: solidcore rev in Cargo.lock moved off ${solidcoreRev}; re-hash with `nurl https://github.com/tangency-labs/solidcore <rev>` in overlays/solidcraft.nix";
+      };
 }
