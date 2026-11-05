@@ -29,6 +29,7 @@
     layout = "us";
     variant = "";
   };
+  console.keyMap = lib.mkForce "us";
 
   users.users.jsg.extraGroups = [
     "netbird"
@@ -95,6 +96,7 @@
         extraBackupArgs = [
           "--one-file-system" # never descend into dropbox/onedrive/other fuse mounts
           "--exclude-caches" # honour CACHEDIR.TAG
+          "--retry-lock 3h" # wait out a running weekly prune instead of failing
         ];
 
         exclude = [
@@ -154,6 +156,7 @@
         createWrapper = false;
 
         pruneOpts = [
+          "--retry-lock 3h"
           "--keep-last 24" # every snapshot of the last ~4 days
           "--keep-daily 14"
           "--keep-weekly 8"
