@@ -20,18 +20,6 @@
       description = "Emacs dotfiles.";
     };
 
-    enableMediaControl = lib.mkEnableOption "media control dotfiles";
-    mediaControl = lib.mkOption {
-      type = lib.types.attrs;
-      default = {
-        ".config/pipewire/media-session.d/bluez-monitor.conf".text = ''
-          properties = {
-            bluez5.msbc-support = true;
-                      }
-        '';
-      };
-      description = "Media control dotfiles.";
-    };
   };
 
   config =
@@ -42,7 +30,6 @@
       home = {
         file = lib.mkMerge [
           (lib.mkIf cfg.enableEmacs cfg.emacs)
-          (lib.mkIf cfg.enableMediaControl cfg.mediaControl)
           (lib.mkIf config.customPackages.gui.enable {
             ".local/share/bash-completion/completions/noctalia".source =
               ../../scripts/completions/noctalia-completions.sh;

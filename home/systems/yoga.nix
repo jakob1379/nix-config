@@ -33,8 +33,4 @@ in
   };
 
   home.packages = lib.mkAfter [ btopCuda ];
-
-  customDotfiles = {
-    enableMediaControl = true;
-  };
 }

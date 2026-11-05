@@ -50,10 +50,6 @@ in
     ]
   );
 
-  customDotfiles = {
-    enableMediaControl = true;
-  };
-
   home.file.".config/niri/config.kdl".source =
     let
       from = [
