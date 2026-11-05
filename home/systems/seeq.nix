@@ -38,8 +38,4 @@ in
       btop-cuda
     ]
   );
-
-  customDotfiles = {
-    enableMediaControl = true;
-  };
 }

@@ -62,8 +62,4 @@ in
       nwg-look
     ]
   );
-
-  customDotfiles = {
-    enableMediaControl = true;
-  };
 }
