@@ -165,7 +165,10 @@
         ];
 
         runCheck = true;
-        checkOpts = [ "--with-cache" ];
+        checkOpts = [
+          "--retry-lock 3h"
+          "--with-cache"
+        ];
 
         timerConfig = {
           OnCalendar = "Sun *-*-* 03:00:00";
