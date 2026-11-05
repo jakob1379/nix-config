@@ -17,13 +17,6 @@
   programs.fuse.userAllowOther = true;
   i18n.defaultLocale = "en_US.UTF-8";
 
-  # PM Software vikunja
-  services.vikunja = {
-    enable = true;
-    frontendScheme = "http";
-    frontendHostname = "localhost";
-  };
-
   # programs.gnupg.agent = {
   #   enable = false;
   #   enableSSHSupport = true;
@@ -33,7 +26,7 @@
   services.pcscd.enable = true;
 
   services.xserver.xkb = {
-    layout = "dk";
+    layout = "us";
     variant = "";
   };
 
@@ -60,7 +53,7 @@
   # services.fprintd.tod.enable = true;
   # services.fprintd.tod.driver = pkgs.libfprint-2-tod1-goodix;
 
-  system.stateVersion = lib.mkForce "25.05";
+  system.stateVersion = lib.mkForce "26.05";
 
   # Backups: restic to OneDrive. restic has no native OneDrive backend, so it
   # tunnels through rclone. Two root-owned secrets live outside this repo:
@@ -178,12 +171,4 @@
         };
       };
     };
-
-  services.desktopManager.gnome.enable = true;
-
-  # To disable installing GNOME's suite of applications
-  # and only be left with GNOME shell.
-  services.gnome.core-apps.enable = false;
-  services.gnome.core-developer-tools.enable = false;
-  services.gnome.games.enable = false;
 }

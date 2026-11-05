@@ -21,23 +21,11 @@ let
   btopRocm = pkgs.btop.override {
     rocmSupport = true;
   };
-  # hermesAgent = inputs.hermes-agent.packages.${system}.default;
-  # hermesAgentWithEspeak = pkgs.symlinkJoin {
-  #   name = "hermes-agent-with-espeak-ng";
-  #   paths = [ hermesAgent ];
-  #   nativeBuildInputs = [ pkgs.makeWrapper ];
-  #   postBuild = ''
-  #     for bin in hermes hermes-agent hermes-acp; do
-  #       wrapProgram "$out/bin/$bin" \
-  #         --suffix PATH : ${lib.makeBinPath [ pkgs.espeak-ng ]}
-  #     done
-  #   '';
-  # };
 in
 {
   customGit = {
     userName = "Jakob Stender Guldberg";
-    userEmail = "jakob1379@gmail.com";
+    userEmail = "jsg@seeqdx.com";
   };
 
   customPackages = {
@@ -53,10 +41,9 @@ in
       adw-gtk3
       cachix
       glab
-      # hermesAgentWithEspeak
       solidcraft
       btopRocm
-      # teams-for-linux
+      teams-for-linux
       kdePackages.qt6ct
       libsForQt5.qt5ct
       nwg-look
@@ -66,4 +53,24 @@ in
   customDotfiles = {
     enableMediaControl = true;
   };
+
+  home.file.".config/niri/config.kdl".source =
+    let
+      from = [
+        ''layout "dk,dk,us"''
+        ''variant "nodeadkeys,,"''
+      ];
+      shared = builtins.readFile ../../dotfiles/niri/config.kdl;
+    in
+    assert lib.assertMsg (lib.all (
+      s: lib.hasInfix s shared
+    ) from) "niri xkb lines changed: update the us override in home/systems/seeqdx-666.nix";
+    lib.mkForce (
+      pkgs.writeText "niri-config.kdl" (
+        builtins.replaceStrings from [
+          ''layout "us"''
+          ''variant ""''
+        ] shared
+      )
+    );
 }
