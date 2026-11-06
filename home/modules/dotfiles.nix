@@ -44,6 +44,7 @@
         sessionVariables = {
           MANPAGER = "${pkgs.coreutils}/bin/env BATMAN_IS_BEING_MANPAGER=yes ${pkgs.bat-extras.batman}/bin/batman";
           MANROFFOPT = "-c";
+          NH_SHOW_ACTIVATION_LOGS = "1";
           NIX_BUILD_CORES = "$(${pkgs.busybox}/bin/nproc --ignore=1)";
           PAGER = "${pkgs.bat}/bin/bat -p";
           SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
