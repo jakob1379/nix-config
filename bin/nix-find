@@ -50,13 +50,25 @@ let
     else if rel == file || m == null then web
     else web + "/" + builtins.elemAt m 0
       + lib.optionalString (builtins.elemAt m 2 != null) "#L${builtins.elemAt m 2}";
-  # shortcut: only the `default` module, since sibling modules (nixos-hardware) cannot be evaluated together; evaluate them one by one if an input needs it
   doc = eval: lib.mapAttrs (_: opt: opt // { declarations = map (d: link d d) opt.declarations or [ ]; })
     (pkgs.nixosOptionsDoc { inherit (eval) options; warningsAreErrors = false; }).optionsNix;
   ownOptions = mkEval: attr: module:
     removeAttrs (doc (mkEval [ { _file = "${ref}#${attr}"; imports = [ module ]; } ]))
       (builtins.attrNames (doc (mkEval [ ])));
-  homeModules = if src ? homeManagerModules.default then "homeManagerModules" else "homeModules";
+  homeModules = if src ? homeModules then "homeModules" else "homeManagerModules";
+  safeNames = attr: let try = builtins.tryEval (src.${attr} or { }); in
+    builtins.filter (name: builtins.match "[[:alnum:]_][[:alnum:]_.+-]*" name != null)
+      (builtins.attrNames (if try.success && builtins.isAttrs try.value then try.value else { }));
+  names = prefix: attr: map (name: "${prefix}.${name}") (safeNames attr);
+  modules = prefix: attr:
+    let
+      safe = safeNames attr;
+      named = builtins.filter (name: name != "default") safe;
+      # shortcut: past 16 modules (nixos-hardware) only `default` is indexed, as each module costs two NixOS evals; share the baseline eval if one such input matters
+      picked = if builtins.length safe > 16 then builtins.filter (name: name == "default") safe
+        else if named != [ ] then named else safe;
+    in
+    map (name: "${prefix}.${name}") picked;
   # shortcut: ignores which indexes are enabled, check the config if one is ever turned off
   indexed = src ? lib.nixosSystem && src ? legacyPackages && !(src ? packages)
     || builtins.match "(.*[:/])?(nixos/nixpkgs|nix-community/nur)(\\.git)?([/?#].*)?" (lower ref) != null;
@@ -66,8 +78,8 @@ let
     [ "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z" ];
   # shortcut: overlay-only inputs (emacs-overlay, rust-overlay) index nothing; diff the attrs the overlay adds to nixpkgs if one matters
   kinds = (if src ? packages.${system} then [ "packages" ] else [ ])
-    ++ (if src ? nixosModules.default && has "nixpkgs" then [ "nixos" ] else [ ])
-    ++ (if src ? ${homeModules}.default && has "home-manager" && has "nixpkgs" then [ "home" ] else [ ]);
+    ++ (if has "nixpkgs" then modules "nixos" "nixosModules" ++ names "host" "nixosConfigurations" else [ ])
+    ++ (if has "home-manager" && has "nixpkgs" then modules "home" homeModules else [ ]);
   orEmpty = value: let try = builtins.tryEval value; in if try.success then try.value else "";
   packageEntries = describe: builtins.listToAttrs (map (name: {
     name = "packages.${name}";
@@ -78,23 +90,31 @@ let
         (if describe then orEmpty (src.packages.${system}.${name}.meta.position or "") else "")) ];
     };
   }) (builtins.attrNames src.packages.${system}));
-in
-{
+  parts = builtins.match "([^.]+)\\.(.*)" kind;
+  outputs = {
   inputs = let roots = lock.nodes.root.inputs or { }; in builtins.concatStringsSep "\n" (builtins.filter (name:
     builtins.isString roots.${name} && lock.nodes.${roots.${name}}.flake or true) (builtins.attrNames roots));
 
-  plan = let wanted = if homeManager then builtins.filter (kind: kind == "nixos") kinds else kinds;
+  plan = let wanted = if homeManager then builtins.filter (kind: builtins.substring 0 6 kind == "nixos.") kinds else kinds;
     in if !indexed && wanted != [ ] then toString ([ ref ] ++ wanted) else "";
 
   packages = packageEntries true;
 
   packageNames = packageEntries false;
 
-  nixos = ownOptions (mods: lib.nixosSystem {
+  nixos = name: ownOptions (mods: lib.nixosSystem {
     modules = mods ++ [ { nixpkgs.hostPlatform = system; system.stateVersion = lib.trivial.release; } ];
-  }) "nixosModules.default" src.nixosModules.default;
+  }) "nixosModules.${name}" src.nixosModules.${name};
 
-  home = let hm = dep "home-manager"; in ownOptions (mods: hm.lib.homeManagerConfiguration {
+  host = name: let
+    cfg = src.nixosConfigurations.${name};
+    bare = import "${cfg.pkgs.path}/nixos/lib/eval-config.nix" {
+      system = null;
+      modules = [ { nixpkgs.hostPlatform = cfg.pkgs.stdenv.hostPlatform.system; system.stateVersion = cfg.config.system.stateVersion; } ];
+    };
+  in removeAttrs (doc cfg) (builtins.attrNames (doc bare));
+
+  home = name: let hm = dep "home-manager"; in ownOptions (mods: hm.lib.homeManagerConfiguration {
     inherit pkgs;
     modules = mods ++ [ {
       home = {
@@ -103,8 +123,10 @@ in
         stateVersion = (builtins.fromJSON (builtins.readFile "${hm}/release.json")).release;
       };
     } ];
-  }) "${homeModules}.default" src.${homeModules}.default;
-}.${kind}
+  }) "${homeModules}.${name}" src.${homeModules}.${name};
+  };
+in
+if parts == null then outputs.${kind} else outputs.${builtins.head parts} (builtins.elemAt parts 1)
 '
 
 # Helper: evaluate nix_find_expr purely, without import-from-derivation, native code or an unbounded run
@@ -112,7 +134,7 @@ nix_find_eval() {
 	local kind=$1 root=$2 system=$3 input=$4
 	timeout -k 10 120 nix eval --option pure-eval true --option allow-import-from-derivation false \
 		--option allow-unsafe-native-code-during-evaluation false "${@:5}" \
-		--expr "($nix_find_expr) { kind = \"$kind\"; root = $(nix_find_str "$root"); system = $(nix_find_str "$system"); input = $(nix_find_str "$input"); }"
+		--expr "($nix_find_expr) { kind = $(nix_find_str "$kind"); root = $(nix_find_str "$root"); system = $(nix_find_str "$system"); input = $(nix_find_str "$input"); }"
 }
 
 # Helper: bash string as a Nix string literal
@@ -133,33 +155,35 @@ nix_find_warn() {
 	echo "nix-find: $1: ${reason:-nix gave no error message}" >&2
 }
 
-# Helper: index one input into $tmp/inputs/<input>.json and record its flake ref in $tmp/refs
-nix_find_index_input() {
-	local root=$1 system=$2 input=$3 tmp=$4 ref kinds kind rc files=()
+# Helper: write what to index of one input to $tmp/eval/<input>/plan and record its flake ref in $tmp/refs
+nix_find_plan() {
+	local root=$1 system=$2 input=$3 tmp=$4 ref kinds
 	local out=$tmp/eval/$input
 	mkdir -p "$out"
 	nix_find_eval plan "$root" "$system" "$input" --raw >"$out/plan" 2>"$out/err" || {
 		nix_find_warn "skipped $input" "$out/err" "$?"
+		rm -f "$out/plan"
 		touch "$tmp/skipped"
 		return 0
 	}
 	read -r ref kinds <"$out/plan" || :
-	[[ -n $ref ]] || return 0
-	printf '%s\t%s\n' "$input" "$ref" >>"$tmp/refs"
-	for kind in $kinds; do
-		nix_find_eval "$kind" "$root" "$system" "$input" --json >"$out/$kind" 2>"$out/err" && rc=0 || rc=$?
-		if ((rc != 0)) && [[ $kind == packages && ! -e $tmp/aborted ]]; then
-			nix_find_eval packageNames "$root" "$system" "$input" --json >"$out/$kind" 2>>"$out/err" && rc=0 || rc=$?
-		fi
-		if ((rc == 0)); then
-			files+=("$out/$kind")
-		else
-			nix_find_warn "skipped $kind of $input" "$out/err" "$rc"
-			touch "$tmp/skipped"
-		fi
-	done
-	# shortcut: NixOS and HM options sharing a name collapse into one entry, split the index if they ever differ
-	((${#files[@]})) && jq -s 'add' "${files[@]}" >"$tmp/inputs/$input.json"
+	[[ -n $ref ]] && printf '%s\t%s\n' "$input" "$ref" >>"$tmp/refs"
+	return 0
+}
+
+# Helper: evaluate one kind of one input into $tmp/eval/<input>/<kind>.json
+nix_find_index_kind() {
+	local root=$1 system=$2 input=$3 kind=$4 tmp=$5 rc
+	local out=$tmp/eval/$input/$kind
+	nix_find_eval "$kind" "$root" "$system" "$input" --json >"$out.json" 2>"$out.err" && rc=0 || rc=$?
+	if ((rc != 0)) && [[ $kind == packages && ! -e $tmp/aborted ]]; then
+		nix_find_eval packageNames "$root" "$system" "$input" --json >"$out.json" 2>>"$out.err" && rc=0 || rc=$?
+	fi
+	if ((rc != 0)); then
+		rm -f "$out.json"
+		nix_find_warn "skipped $kind of $input" "$out.err" "$rc"
+		touch "$tmp/skipped"
+	fi
 	return 0
 }
 
@@ -206,7 +230,7 @@ nix_find_locate() {
 
 # Helper: index $root's inputs as nix-search-tv options_file indexes into $cache
 nix_find_build() {
-	local tmp locked system names input files
+	local tmp locked system names input files plan kinds kind dir
 	mkdir -p "${cache%/*}"
 	tmp=
 	trap 'nix_find_abort "$tmp"' INT TERM HUP
@@ -235,9 +259,33 @@ nix_find_build() {
 			continue
 		}
 		while (($(jobs -rp | wc -l) >= 4)); do wait -n; done
-		nix_find_index_input "$locked" "$system" "$input" "$tmp" &
+		nix_find_plan "$locked" "$system" "$input" "$tmp" &
 	done <<<"$names"
 	wait
+	for plan in "$tmp"/eval/*/plan; do
+		[[ -e $plan ]] || continue
+		input=$(basename "$(dirname "$plan")")
+		read -r _ kinds <"$plan" || :
+		for kind in $kinds; do
+			[[ $kind =~ ^[[:alnum:]_][[:alnum:]_.+-]*$ ]] || {
+				printf 'nix-find: skipped %q of %s: unsafe name\n' "$kind" "$input" >&2
+				continue
+			}
+			while (($(jobs -rp | wc -l) >= 4)); do wait -n; done
+			nix_find_index_kind "$locked" "$system" "$input" "$kind" "$tmp" &
+		done
+	done
+	wait
+	for dir in "$tmp"/eval/*/; do
+		files=("$dir"*.json)
+		# shortcut: NixOS and HM options sharing a name collapse into one entry, split the index if they ever differ
+		[[ -e ${files[0]} ]] || continue
+		jq -s 'add' "${files[@]}" >"$tmp/inputs/$(basename "$dir").json" || {
+			rm -f "$tmp/inputs/$(basename "$dir").json"
+			echo "nix-find: skipped $(basename "$dir"): its indexes do not merge" >&2
+			touch "$tmp/skipped"
+		}
+	done
 	files=("$tmp"/inputs/*.json)
 	if [[ -e $tmp/skipped && ! -e ${files[0]} ]]; then
 		echo "nix-find: nothing indexed, retrying on the next run" >&2

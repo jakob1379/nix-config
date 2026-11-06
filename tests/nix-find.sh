@@ -35,6 +35,14 @@ if [[ -n ${CONCURRENCY:-} && $* == *"kind = \"plan\""* ]]; then
 	echo start >>"$CONCURRENCY"
 	sleep 0.5
 	echo end >>"$CONCURRENCY"
+	echo "github:o/c/abc nixos.a nixos.b"
+	exit
+fi
+if [[ -n ${CONCURRENCY:-} && $* == *"kind = \"nixos."* ]]; then
+	echo start >>"$CONCURRENCY.kinds"
+	sleep 0.5
+	echo end >>"$CONCURRENCY.kinds"
+	echo "{}"
 	exit
 fi
 if [[ -n ${SLOW_PLAN:-} && $* == *"kind = \"plan\""* ]]; then
@@ -45,7 +53,9 @@ case "$*" in
 	"flake metadata"*) echo "{\"path\": \"/nix/store/stub-source\", \"locked\": {\"narHash\": \"sha256-stub\"}}" ;;
 	"config show system") echo x86_64-linux ;;
 	*"kind = \"inputs\""*) printf "foo\nskipped\nifd\n../../evil\n" ;;
-	*"kind = \"plan\""*"input = \"foo\""* | *"kind = \"plan\""*evil*) echo "github:o/foo/abc packages" ;;
+	*"kind = \"plan\""*"input = \"foo\""* | *"kind = \"plan\""*evil*) echo "github:o/foo/abc packages nixos.ok host.h ../../evil" ;;
+	*"kind = \"nixos.ok\""*) echo "{\"services.ok.enable\": {\"description\": \"\", \"type\": \"boolean\"}}" ;;
+	*"kind = \"host.h\""*) echo "{\"host.only\": {\"description\": \"\", \"type\": \"string\"}}" ;;
 	*"kind = \"plan\""*"input = \"ifd\""*) echo "github:o/ifd/abc packages" ;;
 	*"kind = \"packages\""*"input = \"ifd\""*) exit 1 ;;
 	*"kind = \"packageNames\""*) echo "{\"packages.built\": {\"description\": \"\", \"type\": \"package\"}}" ;;
@@ -67,6 +77,14 @@ check() {
 }
 
 check 'nixpkgs/ hello' 'nix-shell -p hello'
+jq -e '.["packages.bar"] and .["services.ok.enable"] and .["host.only"]' "$(jq -r '.experimental.options_file["inputs.foo"]' "$work/seen-config")" >/dev/null || {
+	echo "FAIL: the inputs.foo index does not merge its packages, module and host options" >&2
+	exit 1
+}
+grep -q "skipped ../../evil of foo: unsafe name" "$work/check.err" || {
+	echo "FAIL: an unsafe module name was not rejected" >&2
+	exit 1
+}
 check $'nixpkgs/ hello\ninputs.foo/ packages.bar' 'nix shell nixpkgs#hello github:o/foo/abc#bar'
 check 'inputs.foo/ packages.bar.1' 'nix shell github:o/foo/abc#\"bar.1\"'
 ALT_ENTER=1 check 'inputs.foo/ packages.bar' 'nix run github:o/foo/abc#bar'
@@ -144,6 +162,11 @@ peak=$(awk '/start/ { if (++running > peak) peak = running } /end/ { running-- }
 	echo "FAIL: indexing ran $peak evals at once, expected parallel but at most 4" >&2
 	exit 1
 }
+peak=$(awk '/start/ { if (++running > peak) peak = running } /end/ { running-- } END { print peak + 0 }' "$work/concurrency.log.kinds")
+((peak >= 2 && peak <= 4)) || {
+	echo "FAIL: the module and host phase ran $peak evals at once, expected parallel but at most 4" >&2
+	exit 1
+}
 mkdir "$work/realbin" "$work/foo" "$work/fakepkgs" "$work/src" "$work/root"
 cp "$work/bin/fzf" "$work/bin/nix-search-tv" "$work/realbin/"
 export NIX_CONFIG=$'store = '"$work"$'/store\nexperimental-features = nix-command flakes'
@@ -156,6 +179,8 @@ cat >"$work/foo/flake.nix" <<NIX
       "bar.1" = { type = "derivation"; name = "bar"; };
       broken = { type = "derivation"; name = "broken"; meta.description = throw "broken"; };
     };
+    nixosModules."x inputs" = { };
+    nixosConfigurations = { default = { }; other = { }; };
   };
 }
 NIX
@@ -164,7 +189,7 @@ touch "$work/src/README"
 cat >"$work/root/flake.nix" <<NIX
 {
   inputs.foo.url = "path:$work/foo";
-  inputs.fakepkgs.url = "path:$work/fakepkgs";
+  inputs.nixpkgs.url = "path:$work/fakepkgs";
   inputs.src = { url = "path:$work/src"; flake = false; };
   inputs.alias.follows = "foo";
   outputs = _: { };
@@ -185,6 +210,14 @@ got=$(cd "$work/root" && SELECTION=$'inputs.foo/ packages.hello\ninputs.foo/ pac
 }
 jq -e '.experimental.options_file | keys == ["inputs.foo"]' "$work/real-config" >/dev/null || {
 	echo "FAIL: real nix eval did not index exactly inputs.foo" >&2
+	exit 1
+}
+grep -q 'skipped host.default of foo' "$work/real.err" || {
+	echo "FAIL: a host named default was not indexed" >&2
+	exit 1
+}
+jq -e 'type == "object"' "$(jq -r '.experimental.options_file["inputs.foo"]' "$work/real-config")" >/dev/null || {
+	echo "FAIL: a module name with a space injected another eval kind into the inputs.foo index" >&2
 	exit 1
 }
 jq -e '.["packages.hello"].description == "says hello" and .["packages.broken"].description == ""' \
