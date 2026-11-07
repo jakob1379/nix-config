@@ -32,8 +32,6 @@
 
   services.pcscd.enable = true;
 
-  services.portmaster.enable = true;
-
   services.xserver.xkb = {
     layout = "dk";
     variant = "";
