@@ -70,7 +70,7 @@ in
         ];
         text = builtins.readFile ../../bin/screenshot-ocr;
       })
-      brave
+      chromium
       dragon-drop
       feh
       inputs.ai-usagebar.packages.${system}.default
