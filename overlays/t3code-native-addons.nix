@@ -1,4 +1,4 @@
-# Drop once https://github.com/NixOS/nixpkgs/pull/570343 lands in nixos-unstable-small.
+# nixpkgs only rpaths node-pty (closed https://github.com/NixOS/nixpkgs/pull/570343 covered all addons); keyring, sharp, ffi-rs etc. still need libstdc++.
 final: prev:
 
 {
