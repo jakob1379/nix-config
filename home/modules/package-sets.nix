@@ -16,12 +16,15 @@ let
     ];
     text = builtins.readFile ../../bin/hm-switch-update;
   };
-  # gtk2 is marked broken; no onlyoffice ELF links it (main binary uses gtk3), it is a dead buildInput
-  onlyoffice =
-    if (lib.functionArgs pkgs.onlyoffice-desktopeditors.override) ? gtk2 then
-      pkgs.onlyoffice-desktopeditors.override { gtk2 = null; }
+  # upstream links rusqlite against system sqlite but leaves buildInputs empty
+  ai-usagebar =
+    let
+      upstream = inputs.ai-usagebar.packages.${system}.default;
+    in
+    if upstream.buildInputs == [ ] then
+      upstream.overrideAttrs { buildInputs = [ pkgs.sqlite ]; }
     else
-      lib.warn "onlyoffice-desktopeditors no longer takes gtk2: remove onlyoffice override in home/modules/package-sets.nix" pkgs.onlyoffice-desktopeditors;
+      lib.warn "ai-usagebar sets buildInputs upstream: remove ai-usagebar override in home/modules/package-sets.nix" upstream;
 in
 {
   core =
@@ -70,12 +73,11 @@ in
         ];
         text = builtins.readFile ../../bin/screenshot-ocr;
       })
-      brave
+      ai-usagebar
       dragon-drop
       feh
-      inputs.ai-usagebar.packages.${system}.default
       libnotify
-      onlyoffice
+      onlyoffice-desktopeditors
       pika-backup
       prettier
       signal-desktop
