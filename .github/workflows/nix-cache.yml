@@ -5,14 +5,17 @@ on:
     branches: [main]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
-        config: [pi@raspberrypi, jga@yoga, jsg@amd]
+        include:
+          - {config: pi@raspberrypi, runner: ubuntu-24.04-arm}
+          - {config: jga@yoga, runner: ubuntu-latest}
+          - {config: jsg@amd, runner: ubuntu-latest}
     steps:
       - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v25
+      - uses: cachix/install-nix-action@v31
       - uses: cachix/cachix-action@v14
         with:
           name: jakob1379
