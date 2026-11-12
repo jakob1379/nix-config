@@ -2,6 +2,11 @@ final: prev:
 
 {
   tana = prev.tana.overrideAttrs (old: {
+    postFixup =
+      if old.src.outputHash == "sha256-1FsoZLJBSi4BijlwO3VYwfU2z5TRapgMoSc+OfrpolU=" then
+        ""
+      else
+        prev.lib.warn "tana desktop-file postFixup fixed upstream: remove override in overlays/tana.nix" old.postFixup;
     postInstall = (old.postInstall or "") + ''
               main="$out/lib/tana/resources/app/build/main.js"
 
