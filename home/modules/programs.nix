@@ -761,7 +761,6 @@ in
 
         tmux = {
           enable = true;
-          newSession = true;
           clock24 = true;
           baseIndex = 1;
           escapeTime = 1;
