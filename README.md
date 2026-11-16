@@ -61,12 +61,12 @@ the fallback. It does nothing until the TPM is enrolled once per machine:
 
 1. `nixos-rebuild switch` to a generation with this change, so the installed
    initrd carries the option.
-2. Enrol every open LUKS mapping (needs LUKS2: `cryptsetup luksDump` shows
-   `Version: 2`):
+2. From this repo, enrol the devices in the host's `boot.initrd.luks.devices`
+   and nothing else (needs LUKS2: `cryptsetup luksDump` shows `Version: 2`):
 
    ```bash
-   for m in /dev/mapper/luks-*; do
-     dev=$(sudo cryptsetup status "$m" | awk '/device:/ {print $2}')
+   for dev in $(nix eval --raw ".#nixosConfigurations.$(hostname).config.boot.initrd.luks.devices" \
+     --apply 'd: toString (map (v: v.device) (builtins.attrValues d))'); do
      sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 "$dev"
      sudo cryptsetup luksDump "$dev" | grep -A2 Tokens # shows systemd-tpm2
    done
