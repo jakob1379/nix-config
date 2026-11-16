@@ -5,6 +5,7 @@
   - [Quick start](#quick-start)
   - [Layout](#layout)
   - [Main outputs](#main-outputs)
+  - [TPM disk unlock](#tpm-disk-unlock)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -51,3 +52,23 @@ nix flake show
 - `packages` / `apps` — exported packages and runnable apps
 - `devShells.default` — development environment with hooks
 - `formatter` / `checks` — formatting and validation
+
+## TPM disk unlock
+
+Every LUKS device has `tpm2-device=auto` in its initrd crypttab
+(`nixos/tpm-luks.nix`), so the TPM unlocks the disk and the passphrase stays as
+the fallback. It does nothing until the TPM is enrolled once per machine:
+
+```bash
+dev=$(sudo cryptsetup status /dev/mapper/luks-* | awk '/device:/ {print $2}')
+sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 "$dev"
+sudo cryptsetup luksDump "$dev" | grep -A2 Tokens   # shows systemd-tpm2
+```
+
+Reboot; it must reach the login screen without a prompt.
+
+- No Secure Boot means PCR 7 protects a removed disk, not a stolen laptop: any
+  OS booted on that machine gets the key.
+- After a firmware update or a Secure Boot change the TPM refuses. Type the
+  passphrase, then rerun the enrol command with `--wipe-slot=tpm2`.
+- Enrolment needs a LUKS2 header (`cryptsetup luksDump` shows `Version: 2`).
