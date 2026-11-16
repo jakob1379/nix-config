@@ -51,7 +51,11 @@ one correctness seat — diversity buys more than seat count.
 4. **Merge.** Deduplicate by `file:line` + claim. Normalise severity to Critical
    / Important / Minor. Record for each finding: seats that raised it, severity,
    and verdict — fix, reject with a reason, or defer with a `ponytail:` comment.
-   Agreement between correlated seats is weak evidence, not authority.
+   Then rank by agreement. A finding raised by three or more seats goes on the
+   **main list**; one raised by one or two seats goes on the **appendix**. Gate
+   failures always go on the main list. Step 5 fixes the main list first, then
+   the appendix. Agreement ranks importance, not truth: a main-list finding
+   still needs its red test, and most appendix findings are real, just smaller.
 5. **Fix.** Before fixing an accepted Critical or Important finding, make it
    **red**: a test, or failing that a repro command, that fails on the pinned
    code. The fix turns it green and the test stays in the suite, so the fix
@@ -116,9 +120,11 @@ Say so explicitly and list what is still open.
 
 ## Deliverable
 
-- A findings table — seat(s), file:line, severity, verdict, the red test behind
-  each accepted Critical or Important fix, and the evidence behind each
-  rejection.
+- The main list as a findings table — seat(s), file:line, severity, verdict,
+  the red test behind each accepted Critical or Important fix, and the evidence
+  behind each rejection.
+- The appendix — every finding raised by fewer than three seats, one line each
+  with its seats and verdict.
 - Gate results from the first and last run.
 - Coverage — files any seat skipped and why, and axes that did not run (no spec,
   no standards docs, no runnable checks).
