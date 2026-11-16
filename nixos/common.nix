@@ -195,7 +195,7 @@
     initrd.kernelModules = [ "evdi" ];
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
-    kernelPackages = pkgs.linuxKernel.packages.linux_7_2;
+    kernelPackages = pkgs.linuxPackages_latest;
     kernelModules = [ ];
     kernelParams = [
       "acpi_backlight=native"
