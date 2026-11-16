@@ -59,16 +59,23 @@ Every LUKS device has `tpm2-device=auto` in its initrd crypttab
 (`nixos/tpm-luks.nix`), so the TPM unlocks the disk and the passphrase stays as
 the fallback. It does nothing until the TPM is enrolled once per machine:
 
-```bash
-dev=$(sudo cryptsetup status /dev/mapper/luks-* | awk '/device:/ {print $2}')
-sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 "$dev"
-sudo cryptsetup luksDump "$dev" | grep -A2 Tokens   # shows systemd-tpm2
-```
+1. `nixos-rebuild switch` to a generation with this change, so the installed
+   initrd carries the option.
+2. Enrol every open LUKS mapping (needs LUKS2: `cryptsetup luksDump` shows
+   `Version: 2`):
 
-Reboot; it must reach the login screen without a prompt.
+   ```bash
+   for m in /dev/mapper/luks-*; do
+     dev=$(sudo cryptsetup status "$m" | awk '/device:/ {print $2}')
+     sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 "$dev"
+     sudo cryptsetup luksDump "$dev" | grep -A2 Tokens # shows systemd-tpm2
+   done
+   ```
+
+3. Reboot; it must reach the login screen without a prompt.
 
 - No Secure Boot means PCR 7 protects a removed disk, not a stolen laptop: any
   OS booted on that machine gets the key.
-- After a firmware update or a Secure Boot change the TPM refuses. Type the
-  passphrase, then rerun the enrol command with `--wipe-slot=tpm2`.
-- Enrolment needs a LUKS2 header (`cryptsetup luksDump` shows `Version: 2`).
+- A change to the Secure Boot state or keys, including a dbx update from fwupd,
+  changes PCR 7 and the TPM refuses. Type the passphrase, then rerun the loop
+  with `--wipe-slot=tpm2` added to the enrol command.
