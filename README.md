@@ -59,8 +59,8 @@ Every LUKS device has `tpm2-device=auto` in its initrd crypttab
 (`nixos/tpm-luks.nix`), so the TPM unlocks the disk and the passphrase stays as
 the fallback. It does nothing until the TPM is enrolled once per machine:
 
-1. `nixos-rebuild switch` to a generation with this change, so the installed
-   initrd carries the option.
+1. From this repo, `nh os switch .` (the host's flake output, not `/etc/nixos`),
+   so the installed initrd carries the option.
 2. From this repo, enrol the devices in the host's `boot.initrd.luks.devices`
    and nothing else (needs LUKS2: `cryptsetup luksDump` shows `Version: 2`):
 
