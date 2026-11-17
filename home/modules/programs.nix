@@ -15,32 +15,7 @@ let
       })
     else
       lib.warn "emacs31-pgtk is no longer 31.1: check the fill-column-indicator crash fix landed upstream, then remove emacsPgtk patch in home/modules/programs.nix" pkgs.emacs31-pgtk;
-  tmuxNetStatus = pkgs.writeShellApplication {
-    name = "tmux-net-status";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.iputils
-      pkgs.iproute2
-      pkgs.tmux
-    ];
-    text = builtins.readFile ../../scripts/tmux/net-status.sh;
-  };
-  tmuxWindowLabel = pkgs.writeShellApplication {
-    name = "tmux-window-label";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.git
-    ];
-    text = builtins.readFile ../../scripts/tmux/window-label.sh;
-  };
-  tmuxHostColor = pkgs.writeShellApplication {
-    name = "tmux-host-color";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.tmux
-    ];
-    text = builtins.readFile ../../scripts/tmux/host-color.sh;
-  };
+  tmuxScripts = import ../../nix/tmux-scripts.nix { inherit pkgs; };
 in
 {
   imports = [
@@ -774,15 +749,15 @@ in
               extraConfig = ''
                 set -ag update-environment " SSH_CLIENT SSH_CONNECTION"
                 run-shell 'set -- $SSH_CLIENT; client_ip=$1; client_source_port=$2; ssh_server_port=$3; if [ -z "$client_ip" ]; then set -- $SSH_CONNECTION; client_ip=$1; client_source_port=$2; ssh_server_port=$4; fi; tmux set -g @tmux-net-client-host "$client_ip"; tmux set -g @tmux-net-client-source-port "$client_source_port"; tmux set -g @tmux-net-ssh-server-port "$ssh_server_port"; tmux set -g @tmux-net-timeout "1"'
-                run-shell '${tmuxHostColor}/bin/tmux-host-color'
+                run-shell '${tmuxScripts.hostColor}/bin/tmux-host-color'
                 setw -g automatic-rename on
-                setw -g automatic-rename-format "#(${tmuxWindowLabel}/bin/tmux-window-label '#{pane_current_path}' '#{pane_current_command}')"
+                setw -g automatic-rename-format "#(${tmuxScripts.windowLabel}/bin/tmux-window-label '#{pane_current_path}' '#{pane_current_command}')"
                 set -g @tmux-dotbar-session-text " #H "
                 set -g status-left-length 80
                 set -g @tmux-dotbar-status-left '#[bg=#0B0E14]#{?client_prefix,#[fg=#95E6CB]#[bg=#95E6CB]#[fg=#0B0E14]#[bold]#{?#{@tmux-net-client-host},󰌘 #H,#H}#[nobold]#[bg=#0B0E14]#[fg=#95E6CB],#{?#{@tmux-net-client-host},#[fg=#{@host-color}]#[bold] 󰌘 #H #[nobold],#[fg=#565B66] #H }}#[bg=#0B0E14]#[fg=#565B66]'
                 set -g @tmux-dotbar-window-status-format " #W "
                 set -g @tmux-dotbar-right true
-                set -g @tmux-dotbar-status-right-text " #(${tmuxNetStatus}/bin/tmux-net-status) "
+                set -g @tmux-dotbar-status-right-text " #(${tmuxScripts.netStatus}/bin/tmux-net-status) "
                 set -g @tmux-dotbar-ssh-enabled true
                 set -g @tmux-dotbar-ssh-icon-only false
               '';

@@ -97,6 +97,9 @@
     {
       homeConfigurations = import ./home { inherit lib; };
       nixosConfigurations = import ./nixos { inherit nixpkgs inputs lib; };
+      packages.x86_64-linux.tmux-bundle = import ./nix/tmux-bundle.nix {
+        hm = self.homeConfigurations."jsg@amd";
+      };
       checks = forAllSystems (pkgs: {
         pre-commit-check = git-hooks.lib.${pkgs.stdenv.hostPlatform.system}.run (
           import ./nix/git-hooks.nix {
