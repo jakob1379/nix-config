@@ -55,5 +55,15 @@ nix flake show
 - `homeConfigurations` — Home Manager profiles
 - `nixosConfigurations` — NixOS host configs
 - `packages` / `apps` — exported packages and runnable apps
+- `packages.x86_64-linux.tmux-bundle` — static tmux plus this config for hosts
+  without Nix:
+
+  ```bash
+  nix build .#tmux-bundle
+  rsync -rlL --chmod=u+w --delete result/ host:.local/tmux/
+  ssh host 'mkdir -p ~/.config/tmux && ln -sf ~/.local/tmux/tmux.conf ~/.config/tmux/tmux.conf'
+  # then add to the remote ~/.bashrc: . ~/.local/tmux/env.sh
+  ```
+
 - `devShells.default` — development environment with hooks
 - `formatter` / `checks` — formatting and validation
