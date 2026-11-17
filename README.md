@@ -60,9 +60,10 @@ nix flake show
 
   ```bash
   nix build .#tmux-bundle
-  rsync -rlL --chmod=u+w --delete result/ host:.local/tmux/
-  ssh host 'mkdir -p ~/.config/tmux && ln -sf ~/.local/tmux/tmux.conf ~/.config/tmux/tmux.conf'
-  # then add to the remote ~/.bashrc: . ~/.local/tmux/env.sh
+  ssh host 'mkdir -p ~/.local/tmux ~/.config/tmux'
+  rsync -rLc --chmod=u+w --delete result/ host:.local/tmux/
+  # once: ssh host 'ln -s ~/.local/tmux/tmux.conf ~/.config/tmux/tmux.conf'
+  # and add to the remote ~/.bashrc: . ~/.local/tmux/env.sh
   ```
 
 - `devShells.default` — development environment with hooks

@@ -37,12 +37,19 @@ pkgs.runCommand "tmux-bundle"
     cp ${../scripts/tmux/host-color.sh} $out/bin/tmux-host-color
     cp ${../scripts/tmux/window-label.sh} $out/bin/tmux-window-label
     cp ${../scripts/tmux/net-status.sh} $out/bin/tmux-net-status
-    chmod +x $out/bin/*
     cp -r ${dotbar}/share/tmux-plugins/dotbar $out/plugins/dotbar
-    cp -r ${pkgs.ncurses}/share/terminfo $out/share/terminfo
+    cp -r --no-preserve=mode ${pkgs.ncurses}/share/terminfo $out/share/terminfo
+    cp -r --no-preserve=mode ${pkgs.kitty.terminfo}/share/terminfo/. $out/share/terminfo/
+
+    for entry in t/tmux-256color x/xterm-kitty; do
+      test -e $out/share/terminfo/$entry || { echo "missing terminfo $entry" >&2; exit 1; }
+    done
+    grep -o '[$]HOME/[.]local/tmux/[[:alnum:]/._-]*' $out/tmux.conf | while read -r ref; do
+      test -e "$out/''${ref#*/.local/tmux/}" || { echo "tmux.conf references missing $ref" >&2; exit 1; }
+    done
 
     cat > $out/env.sh <<'SH'
     export PATH="${prefix}/bin:$PATH"
-    export TERMINFO_DIRS="${prefix}/share/terminfo:/usr/share/terminfo"
+    export TERMINFO_DIRS="${prefix}/share/terminfo:''${TERMINFO_DIRS:-/usr/share/terminfo}"
     SH
   ''
