@@ -5,6 +5,7 @@
   - [Quick start](#quick-start)
   - [Layout](#layout)
   - [Main outputs](#main-outputs)
+  - [TPM disk unlock](#tpm-disk-unlock)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -51,3 +52,30 @@ nix flake show
 - `packages` / `apps` — exported packages and runnable apps
 - `devShells.default` — development environment with hooks
 - `formatter` / `checks` — formatting and validation
+
+## TPM disk unlock
+
+Every LUKS device has `tpm2-device=auto` in its initrd crypttab
+(`nixos/tpm-luks.nix`), so the TPM unlocks the disk and the passphrase stays as
+the fallback. It does nothing until the TPM is enrolled once per machine:
+
+1. From this repo, `nh os switch .` (the host's flake output, not `/etc/nixos`),
+   so the installed initrd carries the option.
+2. From this repo, enrol the devices in the host's `boot.initrd.luks.devices`
+   and nothing else (needs LUKS2: `cryptsetup luksDump` shows `Version: 2`):
+
+   ```bash
+   for dev in $(nix eval --raw ".#nixosConfigurations.$(hostname).config.boot.initrd.luks.devices" \
+     --apply 'd: toString (map (v: v.device) (builtins.attrValues d))'); do
+     sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 "$dev"
+     sudo cryptsetup luksDump "$dev" | grep -A2 Tokens # shows systemd-tpm2
+   done
+   ```
+
+3. Reboot; it must reach the login screen without a prompt.
+
+- No Secure Boot means PCR 7 protects a removed disk, not a stolen laptop: any
+  OS booted on that machine gets the key.
+- A change to the Secure Boot state or keys, including a dbx update from fwupd,
+  changes PCR 7 and the TPM refuses. Type the passphrase, then rerun the loop
+  with `--wipe-slot=tpm2` added to the enrol command.

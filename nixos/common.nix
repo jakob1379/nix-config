@@ -5,6 +5,8 @@
   ...
 }:
 {
+  imports = [ ./tpm-luks.nix ];
+
   # Disable screenreader
   services.orca.enable = false;
 
