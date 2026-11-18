@@ -28,11 +28,6 @@ pkgs.runCommand "tmux-bundle"
   ''
     mkdir -p $out/bin $out/plugins $out/share
     cp $confPath $out/tmux.conf
-    if grep -n /nix/store $out/tmux.conf; then
-      echo "tmux.conf still references the Nix store" >&2
-      exit 1
-    fi
-
     cp ${pkgs.pkgsStatic.tmux}/bin/tmux $out/bin/tmux
     cp ${../scripts/tmux/host-color.sh} $out/bin/tmux-host-color
     cp ${../scripts/tmux/window-label.sh} $out/bin/tmux-window-label
@@ -52,4 +47,9 @@ pkgs.runCommand "tmux-bundle"
     export PATH="${prefix}/bin:$PATH"
     export TERMINFO_DIRS="${prefix}/share/terminfo:''${TERMINFO_DIRS:-/usr/share/terminfo}"
     SH
+
+    if grep -rn /nix/store $out/tmux.conf $out/env.sh $out/bin/tmux-* $out/plugins; then
+      echo "bundle still references the Nix store" >&2
+      exit 1
+    fi
   ''
