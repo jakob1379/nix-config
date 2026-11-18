@@ -70,6 +70,22 @@
         "type": "github"
       }
     },
+    "converge-review-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794905694,
+        "narHash": "sha256-15M5lre5sO9IMNVj3MCwduJH8K+sprxOyPYLaE/9uyk=",
+        "owner": "jakob1379",
+        "repo": "converge-review",
+        "rev": "e633427bc802d4243341e64cc91ded0174c36eed",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jakob1379",
+        "repo": "converge-review",
+        "type": "github"
+      }
+    },
     "crane": {
       "locked": {
         "lastModified": 1792350552,
@@ -587,6 +603,7 @@
       "inputs": {
         "ai-usagebar": "ai-usagebar",
         "claude-plugins-src": "claude-plugins-src",
+        "converge-review-src": "converge-review-src",
         "cursor-plugins-src": "cursor-plugins-src",
         "flake-utils": "flake-utils",
         "flyline": "flyline",

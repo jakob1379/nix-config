@@ -49,6 +49,10 @@
       url = "github:anthropics/claude-plugins-official";
       flake = false;
     };
+    converge-review-src = {
+      url = "github:jakob1379/converge-review";
+      flake = false;
+    };
     cursor-plugins-src = {
       url = "github:cursor/plugins";
       flake = false;
