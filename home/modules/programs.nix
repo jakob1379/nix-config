@@ -250,6 +250,7 @@ in
             env = {
               SUPERPOWERS_DISABLE_TELEMETRY = "1";
               DISABLE_AUTOUPDATER = "1";
+              CLAUDE_CODE_EXPERIMENTAL_CODE_MODE = "1";
             };
             autoMemoryEnabled = false;
             tui = "fullscreen";
