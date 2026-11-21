@@ -210,6 +210,10 @@ in
         };
 
         # keep-sorted start block=yes newline_separated=yes
+        antigravity-cli = {
+          enable = true;
+        };
+
         bat = {
           enable = true;
           extraPackages = with pkgs.bat-extras; [ batman ];
