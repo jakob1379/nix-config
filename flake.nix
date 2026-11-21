@@ -163,7 +163,7 @@
           );
         }
         // nixpkgs.lib.optionalAttrs (pkgs.stdenv.hostPlatform.system == "x86_64-linux") {
-          tmux-bundle = import ./nix/tmux-bundle.nix {
+          portable-shell = import ./nix/portable-shell.nix {
             hm = self.homeConfigurations."jsg@amd";
           };
         }

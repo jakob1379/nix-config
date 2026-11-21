@@ -55,15 +55,16 @@ nix flake show
 - `homeConfigurations` — Home Manager profiles
 - `nixosConfigurations` — NixOS host configs
 - `packages` / `apps` — exported packages and runnable apps
-- `packages.x86_64-linux.tmux-bundle` — static tmux plus this config for hosts
+- `packages.x86_64-linux.portable-shell` — static tmux, flyline and CLI tools
+  (bat, eza, fd, fzf, ripgrep, starship, zoxide) with this config, for hosts
   without Nix:
 
   ```bash
-  nix build .#tmux-bundle
-  ssh host 'mkdir -p ~/.local/tmux ~/.config/tmux'
-  rsync -rLc --chmod=u+w --delete result/ host:.local/tmux/
-  # once: ssh host 'ln -s ~/.local/tmux/tmux.conf ~/.config/tmux/tmux.conf'
-  # and add to the remote ~/.bashrc: . ~/.local/tmux/env.sh
+  nix build .#portable-shell
+  ssh host 'mkdir -p ~/.local/portable ~/.config/tmux'
+  rsync -rLc --chmod=u+w --delete result/ host:.local/portable/
+  # once: ssh host 'ln -s ~/.local/portable/tmux.conf ~/.config/tmux/tmux.conf'
+  # and add to the remote ~/.bashrc: . ~/.local/portable/bashrc
   ```
 
 - `devShells.default` — development environment with hooks
