@@ -272,6 +272,11 @@ in
               dest = ".gemini/antigravity/skills";
               structure = "link";
             };
+            antigravity-cli = {
+              enable = true;
+              dest = ".gemini/antigravity-cli/skills";
+              structure = "link";
+            };
           };
         };
 
