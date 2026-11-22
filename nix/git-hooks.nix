@@ -42,7 +42,13 @@
       entry = "${lib.getExe pkgs.doctoc} --notitle";
       files = "^README\\.md$";
     };
-    end-of-file-fixer.enable = true;
+    end-of-file-fixer = {
+      enable = true;
+      stages = [
+        "pre-commit"
+        "pre-push"
+      ];
+    };
     fix-byte-order-marker.enable = true;
     keep-sorted = {
       enable = true;
@@ -85,6 +91,10 @@
     trim-trailing-whitespace = {
       enable = true;
       excludes = [ "\\.patch$" ];
+      stages = [
+        "pre-commit"
+        "pre-push"
+      ];
     };
     check-github-workflows = {
       enable = true;
