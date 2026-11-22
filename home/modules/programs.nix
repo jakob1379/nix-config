@@ -327,6 +327,11 @@ in
             includeCoAuthoredBy = false;
             attribution.sessionUrl = false;
             permissions.defaultMode = "auto";
+            enabledPlugins = {
+              "design@knowledge-work-plugins" = false;
+              "product-management@knowledge-work-plugins" = false;
+              "productivity@knowledge-work-plugins" = false;
+            };
             statusLine = {
               type = "command";
               command = "bash ~/.claude/statusline-command.sh";
