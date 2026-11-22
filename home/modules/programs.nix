@@ -41,6 +41,15 @@ let
     ];
     text = builtins.readFile ../../scripts/tmux/host-color.sh;
   };
+  aiSkills = {
+    aggregate-code-quality-report = ../../dotfiles/skills/aggregate-code-quality-report;
+    converge-review = "${inputs.converge-review-src}/skills/converge-review";
+    frontend-design = "${inputs.claude-plugins-src}/plugins/frontend-design/skills/frontend-design";
+    progress-party = ../../dotfiles/skills/progress-party;
+    unslop = "${inputs.cursor-plugins-src}/pstack/skills/unslop";
+  };
+  mattpocockSkills =
+    (lib.importJSON "${inputs.mattpocock-skills-src}/.claude-plugin/plugin.json").skills;
 in
 {
   imports = [
@@ -210,6 +219,62 @@ in
         };
 
         # keep-sorted start block=yes newline_separated=yes
+        agent-skills = {
+          enable = true;
+          sources =
+            lib.mapAttrs (name: p: {
+              path = dirOf p;
+              filter.nameRegex = "^${name}$";
+            }) aiSkills
+            // {
+              superpowers = {
+                input = "superpowers-src";
+                subdir = "skills";
+              };
+              ponytail = {
+                input = "ponytail-src";
+                subdir = "skills";
+              };
+              open-code-review = {
+                input = "open-code-review-src";
+                subdir = "skills";
+              };
+              mattpocock = {
+                input = "mattpocock-skills-src";
+                subdir = "skills";
+              };
+            };
+          skills = {
+            enable = lib.attrNames aiSkills;
+            enableAll = [
+              "superpowers"
+              "ponytail"
+              "open-code-review"
+            ];
+            explicit = lib.listToAttrs (
+              map (
+                p:
+                lib.nameValuePair (baseNameOf p) {
+                  from = "mattpocock";
+                  path = lib.removePrefix "./skills/" p;
+                }
+              ) mattpocockSkills
+            );
+          };
+          targets = {
+            agents = {
+              enable = true;
+              dest = ".agents/skills";
+              structure = "link";
+            };
+            antigravity = {
+              enable = true;
+              dest = ".gemini/antigravity/skills";
+              structure = "link";
+            };
+          };
+        };
+
         antigravity-cli = {
           enable = true;
         };
@@ -234,13 +299,7 @@ in
           enable = true;
           context = ../../dotfiles/AGENTS.md;
 
-          skills = {
-            aggregate-code-quality-report = ../../dotfiles/skills/aggregate-code-quality-report;
-            converge-review = "${inputs.converge-review-src}/skills/converge-review";
-            frontend-design = "${inputs.claude-plugins-src}/plugins/frontend-design/skills/frontend-design";
-            progress-party = ../../dotfiles/skills/progress-party;
-            unslop = "${inputs.cursor-plugins-src}/pstack/skills/unslop";
-          };
+          skills = aiSkills;
 
           mcpServers.context7 = {
             type = "http";
