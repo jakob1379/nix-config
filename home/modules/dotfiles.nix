@@ -33,6 +33,9 @@
           (lib.mkIf config.customPackages.gui.enable {
             ".local/share/bash-completion/completions/noctalia".source =
               ../../scripts/completions/noctalia-completions.sh;
+            ".config/ai-usagebar/config.toml".source = config.lib.file.mkOutOfStoreSymlink (
+              config.home.homeDirectory + "/.config/home-manager/dotfiles/ai-usagebar/config.toml"
+            );
             ".config/niri/config.kdl".source = ../../dotfiles/niri/config.kdl;
             ".config/vicinae/settings.json".source = config.lib.file.mkOutOfStoreSymlink (
               config.home.homeDirectory + "/.config/home-manager/dotfiles/vicinae/settings.json"
