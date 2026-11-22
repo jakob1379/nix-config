@@ -871,7 +871,7 @@ in
             "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
             "jakob1379.cachix.org-1:BGOTkTeW2DuuYzV6PJ1VlLwGNYRgPLHfKukS6XyxDm0="
           ];
-          max-jobs = 1;
+          max-jobs = 4;
           experimental-features = [
             "nix-command"
             "flakes"
