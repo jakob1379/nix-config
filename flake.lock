@@ -137,6 +137,22 @@
         "type": "github"
       }
     },
+    "emil-skill-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794746570,
+        "narHash": "sha256-zZnblPcn3vvekGH4YIHMOZ2XMA3sBngwhwLBnNFpD/E=",
+        "owner": "emilkowalski",
+        "repo": "skill",
+        "rev": "64eb3deb9a5fbfa041faf783e0bc3fd635872e9c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "emilkowalski",
+        "repo": "skill",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -626,6 +642,7 @@
         "claude-plugins-src": "claude-plugins-src",
         "converge-review-src": "converge-review-src",
         "cursor-plugins-src": "cursor-plugins-src",
+        "emil-skill-src": "emil-skill-src",
         "flake-utils": "flake-utils",
         "flyline": "flyline",
         "git-hooks": "git-hooks",

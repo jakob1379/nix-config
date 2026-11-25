@@ -61,6 +61,10 @@
       url = "github:cursor/plugins";
       flake = false;
     };
+    emil-skill-src = {
+      url = "github:emilkowalski/skill";
+      flake = false;
+    };
     mattpocock-skills-src = {
       url = "github:mattpocock/skills";
       flake = false;
@@ -106,6 +110,7 @@
       homeConfigurations = import ./home { inherit lib; };
       nixosConfigurations = import ./nixos { inherit nixpkgs inputs lib; };
       checks = forAllSystems (pkgs: {
+        inherit (self.packages.${pkgs.stdenv.hostPlatform.system}) agent-skills;
         pre-commit-check = git-hooks.lib.${pkgs.stdenv.hostPlatform.system}.run (
           import ./nix/git-hooks.nix {
             inherit pkgs;
@@ -126,6 +131,24 @@
               bash ${./tests/nix-find.sh} ${./bin/nix-find}
               touch $out
             '';
+      });
+      packages = forAllSystems (pkgs: {
+        agent-skills = pkgs.runCommand "agent-skills" { } (
+          nixpkgs.lib.concatStrings (
+            nixpkgs.lib.mapAttrsToList
+              (name: src: ''
+                mkdir -p $out
+                cp -rL ${src} $out/${name}
+                test -f $out/${name}/SKILL.md
+              '')
+              (
+                import ./lib/ai-skills.nix {
+                  inherit inputs;
+                  inherit (nixpkgs) lib;
+                }
+              )
+          )
+        );
       });
       formatter = forAllSystems (
         pkgs:
