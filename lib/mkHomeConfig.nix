@@ -28,7 +28,6 @@ inputs.home-manager.lib.homeManagerConfiguration {
       (_: _: inputs.nixpkgs.lib.getAttrs fromSmall smallPkgs)
       (import ../overlays/t3code-native-addons.nix)
       (import ../overlays/t3code-preview-browser.nix)
-      (import ../overlays/claude-code.nix)
       (final: _: { solidcraft = inputs.solidcraft.packages.${final.stdenv.hostPlatform.system}.default; })
     ];
   };
