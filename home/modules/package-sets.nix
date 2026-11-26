@@ -107,7 +107,6 @@ in
       })
       bun
       dive
-      frogmouth
       glab
       graphviz
       mermaid-cli
