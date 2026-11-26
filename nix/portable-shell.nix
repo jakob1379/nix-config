@@ -17,22 +17,22 @@ let
   static = pkgs.pkgsStatic // {
     ripgrep =
       if lib.any (p: (p.pname or "") == "rust-jemalloc-sys") pkgs.pkgsStatic.ripgrep.buildInputs then
-        lib.warn "pkgsStatic.ripgrep links jemalloc upstream: remove ripgrep override in nix/portable-shell.nix" pkgs.pkgsStatic.ripgrep
+        throw "pkgsStatic.ripgrep links jemalloc upstream: remove ripgrep override in nix/portable-shell.nix"
       else
         pkgs.pkgsStatic.ripgrep.overrideAttrs (old: {
           buildInputs = old.buildInputs ++ [ pkgs.pkgsStatic.rust-jemalloc-sys ];
         });
   };
-  flylineVersion = "1.10.0";
+  flylineVersion = "1.11.0";
   flylineRelease = pkgs.fetchurl {
     url = "https://github.com/HalFrgrd/flyline/releases/download/v${flylineVersion}/libflyline-v${flylineVersion}-x86_64-unknown-linux-gnu.tar.gz";
-    hash = "sha256-/2ZsPI2YLjoLsI0aUVoZ2kcZr0chZJIgyb49AI8mC+s=";
+    hash = "sha256-QLMMiKq8i68j5Uevn/0ziMv6SwRN8atT8rqZema/Q2o=";
   };
   flyline =
     if pkgs.flyline.version == flylineVersion then
       flylineRelease
     else
-      lib.warn "flyline is ${pkgs.flyline.version} locally but ${flylineVersion} in the portable shell: bump flylineVersion and hash in nix/portable-shell.nix" flylineRelease;
+      throw "flyline is ${pkgs.flyline.version} locally but ${flylineVersion} in the portable shell: bump flylineVersion and hash in nix/portable-shell.nix";
   rewrite =
     builtins.replaceStrings
       (
