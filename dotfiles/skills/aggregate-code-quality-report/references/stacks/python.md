@@ -14,12 +14,16 @@ subset of `src`, `scripts`, and `profiles` as the production surface. Record the
 actual target list. Do not silently replace missing production targets with a
 whole-repository scan.
 
+Keep `--no-project` on every command: without it `uv run` creates `.venv` and
+writes `uv.lock` in the scanned repository. Skylos then traces only the tests
+that import without the project's dependencies.
+
 ## Skylos
 
 Run the equivalent of:
 
 ```bash
-uv run skylos --trace -a src scripts profiles \
+uv run --no-project --with skylos skylos --trace -a src scripts profiles \
   --no-upload \
   --format json \
   --output .scanner-report-artifacts/skylos.json \
@@ -35,7 +39,7 @@ external-LLM analysis.
 Run:
 
 ```bash
-uv run --with pyscn pyscn analyze --html --no-open src/
+uv run --no-project --with pyscn pyscn analyze --html --no-open src/
 ```
 
 If `src/` does not exist, record the scanner as unavailable for the requested
@@ -52,7 +56,7 @@ complexity, duplication, clone groups, hotspots, and architecture observations.
 Run:
 
 ```bash
-uv run --with ai-slop-detector slop-detector src/ \
+uv run --no-project --with ai-slop-detector slop-detector src/ \
   --json \
   --no-history \
   > .scanner-report-artifacts/slop-detector.json

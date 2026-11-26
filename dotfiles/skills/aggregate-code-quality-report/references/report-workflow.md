@@ -56,10 +56,11 @@ by real urgency and impact.
 5. Record the repository name, current branch, current commit SHA, `origin/main`
    SHA when present, ahead/behind counts, and UTC generation timestamp.
 6. Run `git status --short --branch` again.
-7. If `.scanner-report-artifacts/baseline.json` exists, read its `repo` and
-   `commit`. The baseline is usable when git does not track the file, its `repo`
-   is this repository, and `git merge-base --is-ancestor <baseline commit> HEAD`
-   succeeds. Then write `git diff --name-only --no-renames <baseline commit>` to
+7. If `.scanner-report-artifacts/baseline.json` exists, read its `repo`,
+   `commit` and `dirty`. The baseline is usable when git does not track the
+   file, its `repo` is this repository, its `dirty` is not `true`, and
+   `git merge-base --is-ancestor <baseline commit> HEAD` succeeds. Then write
+   `git diff --name-only --no-renames <baseline commit>` to
    `.scanner-report-artifacts/changed-files.txt`. With no second commit it
    compares against the working tree, so uncommitted edits to tracked files
    count, and a renamed file lists both its old and its new path; this is an
@@ -467,6 +468,7 @@ them again:
   "commit": "<current commit SHA>",
   "generated": "<UTC timestamp>",
   "baseline": "<baseline commit, or null on a full run>",
+  "dirty": false,
   "lanes_done": ["5.4", "5.7", "5.10", "5.10:mobile-native"],
   "findings": [
     {
@@ -476,6 +478,12 @@ them again:
       "title": "<concise title>",
       "path": "<main file>",
       "line": 0,
+      "locations": ["<path>:<line>"],
+      "impact": "<impact and evidence>",
+      "trigger": "<trigger or reachability>",
+      "confidence": "high | medium | low",
+      "agreement": "<tool agreement or disagreement>",
+      "action": "<recommended next action>",
       "classification": "<as above>",
       "lanes": ["<each reporting tool or lane>"]
     }
@@ -483,11 +491,21 @@ them again:
 }
 ```
 
+`dirty` is `true` when the status of section 2 step 6 listed a change to a
+tracked file (any entry but `??`). Such a run reviewed code that `commit` does
+not hold and that no later diff against `commit` can show, so the next run
+refuses it as a baseline (section 2).
+
 `lanes_done` lists the lanes among 5.4, 5.6 to 5.8 and 5.10 to 5.12 whose review
 is complete for this commit, and each conditional skill that ran inside one as
 `<lane>:<skill>` (`5.10:mobile-native`): each one that finished in this run,
 plus each one the baseline finished that had no changed files. Leave out a lane
 that failed, was skipped, or stopped early.
+
+`locations` lists every affected location and each caller the trigger rests on.
+`impact`, `trigger`, `confidence`, `agreement` and `action` hold the items of
+the list above in full: a later run reports a carried-over finding from this
+record alone, without reading its source again.
 
 A false positive or noise has status `dismissed`, on every kind of run and
 whatever the rules below would otherwise give it. Drop a `dismissed` finding
@@ -496,21 +514,28 @@ holds the code it was about. Graphify coupling observations, architecture
 candidates, the lean backlog, the shortcut ledger and advisory design and motion
 findings have severity `Advisory`, since they carry no operational severity; the
 delta counts them like any other finding. On a full run every other status is
-`new`. On an incremental run:
+`new`. On an incremental run, drop every baseline finding already `fixed` before
+applying the rules below, as if the baseline never held it: it was reported as
+fixed once, and the same defect found again is `new`. A finding's file is
+changed when its `path` or any file in its `locations` is in
+`changed-files.txt`. Then:
 
 - First, a baseline finding whose file was renamed
   (`git diff --name-status -M <baseline commit>` marks the pair `R`) follows the
   file: put the new path in its id and validate it there. A rename alone makes
   no finding `fixed` or `new`.
-- A baseline finding whose file is not in `changed-files.txt` carries over
-  unchanged with status `open`, unless a whole-tree tool in this run no longer
+- A baseline finding whose file is unchanged carries over with every recorded
+  field and status `open`, unless a whole-tree tool in this run no longer
   reports it; then check the source and mark it `fixed` or keep it.
 - A baseline finding whose file changed is validated again: `open` when it still
-  holds, `fixed` when it does not. A baseline finding already `fixed` is
-  dropped.
+  holds, `fixed` when it does not.
 - A finding whose id is not in the baseline is `new`.
 - A `dismissed` baseline finding whose file is unchanged stays `dismissed`
   without another look.
+
+A change in a file that a carried-over finding does not list can still make it
+reachable or unreachable, and stays unseen until one of its own files changes or
+a full run is requested; say so in the limitations of every incremental run.
 
 Never average tool scores. Compare the tools by purpose. Each stack profile
 states its tools' purposes; the always-on and conditional lanes are:

@@ -19,10 +19,15 @@ version the lockfile resolves it to, or the declared version when no lockfile
 pins it, so the repository's own `biome.json` schema parses. Otherwise use the
 current release. Record the resolved version from `--version` either way.
 
-Configuration: if `biome.json` or `biome.jsonc` exists, Biome applies it; record
-its path. Without one, Biome runs its recommended defaults; state in the tab
-that findings reflect Biome defaults, not the project's chosen rules. If the
-project lints with ESLint instead, record that, and classify default-rule style
+Configuration: if `biome.json` or `biome.jsonc` exists at the repository root,
+Biome applies it; record its path. Without one, Biome runs its recommended
+defaults; state in the tab that findings reflect Biome defaults, not the
+project's chosen rules. A config in a subdirectory takes effect in this root run
+only on Biome 2.x and only when it sets `"root": false`: Biome 1.x ignores it
+without warning, and Biome 2.x otherwise writes no report and fails the Success
+check with `Found a nested root configuration`. Record each config that was not
+applied as a limitation; do not run Biome once per directory. If the project
+lints with ESLint instead, record that, and classify default-rule style
 diagnostics that contradict the project's conventions as noise.
 
 Run, without installing project dependencies. Redirect stdout rather than using

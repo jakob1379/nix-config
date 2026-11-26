@@ -16,8 +16,9 @@ own directory walk does not skip `node_modules/`. Split the list:
 
 - **Bash files**: `.bash`, a bash shebang, or `.sh` without a non-bash shebang.
   Both tools run on these.
-- **POSIX sh files**: a `#!/bin/sh` or `#!/usr/bin/env sh` shebang. Only
-  ShellCheck runs on these; the ysap rules assume bash.
+- **Other shell files**: every other file on the list, such as one with an `sh`,
+  `dash` or `ksh` shebang. Only ShellCheck runs on these; the ysap rules assume
+  bash.
 
 Do not run a tool that has no files to scan: with no file arguments ShellCheck
 exits 3 and ysap-lint exits 2, both usage errors. Record its lane as
