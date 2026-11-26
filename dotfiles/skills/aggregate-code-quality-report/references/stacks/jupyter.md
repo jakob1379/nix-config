@@ -1,28 +1,50 @@
 # Stack profile: Jupyter notebooks
 
-Detect: 10 or more tracked `.ipynb` files outside vendored paths.
+Detect: 10 or more tracked `.ipynb` files outside vendored and generated paths.
 
 Tools, in tab order:
 
 - Ruff: Python correctness (Pyflakes), syntax errors and lint rules on the code
   cells of notebooks, read natively from the `.ipynb` JSON.
 
-Production targets: every tracked `.ipynb` from `git ls-files '*.ipynb'`,
-excluding vendored paths. Write the list to
-`.scanner-report-artifacts/notebook-files.txt` and pass the files explicitly, so
-Ruff does not walk untracked or ignored notebooks.
+Production targets: every tracked `.ipynb`, excluding the vendored and generated
+paths from the workflow's stack detection. Write the list NUL-delimited and pass
+the files explicitly, so Ruff does not walk untracked or ignored notebooks and
+paths with spaces or glob characters stay whole:
+
+```bash
+git ls-files -z -- '*.ipynb' \
+  ':(exclude,glob)**/node_modules/**' ':(exclude,glob)**/vendor/**' \
+  ':(exclude,glob)**/third_party/**' ':(exclude,glob)**/dist/**' \
+  ':(exclude,glob)**/build/**' \
+  > .scanner-report-artifacts/notebook-files.txt
+```
+
+Coverage: Ruff skips a notebook whose `metadata.language_info.name`, or without
+it `metadata.kernelspec.language`, is not `python`; a notebook with neither is
+read as Python. List the skipped notebooks as uncovered in the report, and never
+call the stack clean when none of its notebooks were analyzed.
 
 ## Ruff
 
-Version rule: run the newest release, `uvx ruff@<version>`, with the version
-resolved by `uvx ruff@latest --version` just before the run. Record the resolved
-version.
+Version rule: use the Ruff the repository pins, from its lockfile (`uv.lock`,
+`pylock.toml`, `requirements*.txt`) or its declared dependencies; with no pin,
+use the newest release. Record the version the run reports.
 
-Run:
+Environment: run inside the repository's own Python environment with
+`uv run --no-sync`, so a Ruff already installed in its `.venv` is the one that
+runs and `uv.lock` is never written. When the repository has a `flake.nix` with
+a dev shell, prefix the command with `nix develop -c` so it gets the
+repository's Python and `uv`; if `nix develop` fails, run without it and record
+the failure. In a Python project without a `.venv`, `uv run` creates an empty
+one: delete it afterwards.
+
+Run, with `ruff==<pinned>` in place of `ruff` when the repository pins one:
 
 ```bash
-uvx ruff@<version> check --no-fix --no-cache --isolated \
-  --output-format json $(cat .scanner-report-artifacts/notebook-files.txt) \
+mapfile -d '' -t notebooks < .scanner-report-artifacts/notebook-files.txt
+[nix develop -c] uv run --no-sync --with ruff ruff check --no-fix --no-cache \
+  --isolated --output-format json -- "${notebooks[@]}" \
   > .scanner-report-artifacts/ruff-notebooks.json \
   2> .scanner-report-artifacts/ruff-notebooks.stderr
 ```
@@ -42,24 +64,29 @@ Success check: the stdout file parses as a JSON array, and every element has
 `code`, `filename`, `cell` and `location.row`. An exit status of 2 or a non-JSON
 stdout is a failed run.
 
-Extract: count by `code`; for each finding the notebook, `cell` (1-based code
-cell index) and `location.row` (line inside that cell), and the `message`.
-Report locations as `<notebook>#cell<n>:<row>`.
+Extract: count by `code`; for each finding the notebook, `cell` (1-based index
+over all of the notebook's cells, Markdown included) and `location.row` (line
+inside that cell), and the `message`. Report locations as
+`<notebook>#cell<n>:<row>`.
 
 Triage: validate every `F` (Pyflakes: undefined names, unused imports and
 variables) and every `invalid-syntax`/`E9` finding against the cell source; an
 undefined name can be defined in an earlier cell that Ruff did see, so check
-cell order. Treat `UP`, `I`, `PIE`, `SIM`, `FURB`, `PLC`, `PLR` and `RUF` as Low
-style. `W605` (invalid escape sequence) is Low unless the string is not meant
-for LaTeX.
+cell order. Validate every `RUF016` (indexing with a non-integer key, a
+`TypeError` when the cell runs) the same way. Treat `UP`, `I`, `PIE`, `SIM`,
+`FURB`, `PLC`, `PLR` and the other `RUF` rules as Low style. `W605` (invalid
+escape sequence) is Low unless the string is not meant for LaTeX.
 
 Known noise: with `--isolated`, Ruff's default rule set includes the pyupgrade
 (`UP031`, `UP032`), isort (`I001`) and Ruff (`RUF059`) rules, which made up most
 of the trial's results on teaching notebooks. Matplotlib labels written as
 non-raw strings (`'$\phi$'`) raise `W605`. Shell and magic lines (`!pip`,
-`%matplotlib`) are skipped by Ruff and raise nothing.
+`%matplotlib`) are skipped by Ruff and raise nothing. Outside a Python project
+`uv run` warns on stderr that `--no-sync` has no effect.
 
 Provenance: proposed 2026-11-26 from jakob1379/AMAS@e43b48e with Ruff 0.17.6 (10
-notebooks, exit 1, 67 results, none of them `F821` or syntax errors).
-Unverified: exit status 2, notebooks with non-Python kernels (Ruff skips them),
-and a repository with its own `[tool.ruff]` configuration.
+notebooks, exit 1, 67 results, none of them `F821` or syntax errors). The
+`uv run` command, the NUL-delimited list, the `cell` numbering and the skipped R
+notebooks were checked on 2026-11-26 with Ruff 0.17.6. Unverified: exit status
+2, a repository that pins Ruff, the `nix develop` path, and a repository with
+its own `[tool.ruff]` configuration.
