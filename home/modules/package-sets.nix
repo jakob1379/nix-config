@@ -108,7 +108,6 @@ in
       antigravity-acp
       bun
       dive
-      frogmouth
       glab
       graphviz
       mermaid-cli

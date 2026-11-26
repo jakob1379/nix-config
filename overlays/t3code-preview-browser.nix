@@ -19,5 +19,5 @@ in
         });
       }
     else
-      final.lib.warn "t3code no longer downloads chrome-headless-shell: drop overlays/t3code-preview-browser.nix" prev.t3code;
+      throw "t3code no longer downloads chrome-headless-shell: drop overlays/t3code-preview-browser.nix";
 }
