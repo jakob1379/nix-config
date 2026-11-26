@@ -39,17 +39,16 @@ signals, and rank real risks without modifying production code.
    extraction run by host-agent subagents as defined in the reference.
 7. Keep source inspection read-only. Allow only Git update operations authorized
    by the workflow plus scanner state and report artifacts.
-8. Generate the detailed offline report at `scanner-aggregate-report.html` and
+8. Draft stack-profile proposals for unprofiled stacks and broken profiles under
+   `.scanner-report-artifacts/proposed-stacks/`, before findings are reconciled.
+9. Generate the detailed offline report at `scanner-aggregate-report.html` and
    fresh supporting evidence under `.scanner-report-artifacts/`, with the
    reconciled findings as `findings.json`. When the caller placed an earlier
    run's `findings.json` at `.scanner-report-artifacts/baseline.json`, review
    only what changed since and report the delta.
-9. Validate all machine-readable artifacts, HTML structure, accessibility
-   wiring, revision references, redactions, and final repository status before
-   reporting completion.
-10. Draft stack-profile proposals for unprofiled stacks and broken profiles
-    under `.scanner-report-artifacts/proposed-stacks/`. The workflow runs this
-    before it reconciles findings.
+10. Validate all machine-readable artifacts, HTML structure, accessibility
+    wiring, revision references, redactions, and final repository status before
+    reporting completion.
 
 ## Integrity rules
 
