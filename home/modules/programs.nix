@@ -235,6 +235,7 @@ in
             converge-review = ../../dotfiles/skills/converge-review;
             frontend-design = "${inputs.claude-plugins-src}/plugins/frontend-design/skills/frontend-design";
             progress-party = ../../dotfiles/skills/progress-party;
+            redesign = ../../dotfiles/skills/redesign;
             unslop = "${inputs.cursor-plugins-src}/pstack/skills/unslop";
           };
 
