@@ -1,0 +1,25 @@
+---
+name: VM install test
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  vm-install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            system-features = nixos-test benchmark big-parallel kvm
+      - uses: cachix/cachix-action@v14
+        with:
+          name: jakob1379
+      - name: Run VM install test
+        run: nix build -L .#checks.x86_64-linux.vm-install

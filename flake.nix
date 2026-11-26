@@ -109,29 +109,39 @@
     {
       homeConfigurations = import ./home { inherit lib; };
       nixosConfigurations = import ./nixos { inherit nixpkgs inputs lib; };
-      checks = forAllSystems (pkgs: {
-        inherit (self.packages.${pkgs.stdenv.hostPlatform.system}) agent-skills;
-        pre-commit-check = git-hooks.lib.${pkgs.stdenv.hostPlatform.system}.run (
-          import ./nix/git-hooks.nix {
-            inherit pkgs;
-            inherit (nixpkgs) lib;
-          }
-        );
-        nix-find =
-          pkgs.runCommand "nix-find-test"
-            {
-              nativeBuildInputs = [
-                pkgs.git
-                pkgs.jq
-                pkgs.nix
-                pkgs.procps
-              ];
+      checks = forAllSystems (
+        pkgs:
+        {
+          inherit (self.packages.${pkgs.stdenv.hostPlatform.system}) agent-skills;
+          pre-commit-check = git-hooks.lib.${pkgs.stdenv.hostPlatform.system}.run (
+            import ./nix/git-hooks.nix {
+              inherit pkgs;
+              inherit (nixpkgs) lib;
             }
-            ''
-              bash ${./tests/nix-find.sh} ${./bin/nix-find}
-              touch $out
-            '';
-      });
+          );
+          nix-find =
+            pkgs.runCommand "nix-find-test"
+              {
+                nativeBuildInputs = [
+                  pkgs.git
+                  pkgs.jq
+                  pkgs.nix
+                  pkgs.procps
+                ];
+              }
+              ''
+                bash ${./tests/nix-find.sh} ${./bin/nix-find}
+                touch $out
+              '';
+        }
+        // nixpkgs.lib.optionalAttrs (pkgs.stdenv.hostPlatform.system == "x86_64-linux") {
+          vm-install = import ./tests/install.nix {
+            inherit pkgs;
+            home = self.homeConfigurations."jsg@amd";
+            installScript = ./install.sh;
+          };
+        }
+      );
       packages = forAllSystems (pkgs: {
         agent-skills = pkgs.runCommand "agent-skills" { } (
           nixpkgs.lib.concatStrings (

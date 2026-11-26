@@ -950,16 +950,20 @@ in
       qt.enable = gui;
 
       xdg = {
-        configFile = lib.mkIf gui {
-          "mimeapps.list".force = true;
-          "yazi/theme.toml".force = true;
-          # The ghostty HM module writes the unit via xdg.configFile, which
-          # bypasses HM's systemd handling, so its [Install] section is never
-          # realised. Wire it up so the instance is warm before the first
-          # Mod+Return instead of costing ~1.8s on the first launch.
-          "systemd/user/graphical-session.target.wants/app-com.mitchellh.ghostty.service".source =
-            "${config.programs.ghostty.package}/share/systemd/user/app-com.mitchellh.ghostty.service";
-        };
+        configFile = lib.mkMerge [
+          # install.sh bootstraps this file before the first switch; take it over.
+          { "nix/nix.conf".force = true; }
+          (lib.mkIf gui {
+            "mimeapps.list".force = true;
+            "yazi/theme.toml".force = true;
+            # The ghostty HM module writes the unit via xdg.configFile, which
+            # bypasses HM's systemd handling, so its [Install] section is never
+            # realised. Wire it up so the instance is warm before the first
+            # Mod+Return instead of costing ~1.8s on the first launch.
+            "systemd/user/graphical-session.target.wants/app-com.mitchellh.ghostty.service".source =
+              "${config.programs.ghostty.package}/share/systemd/user/app-com.mitchellh.ghostty.service";
+          })
+        ];
         mimeApps = {
           enable = gui;
           defaultApplications = {
