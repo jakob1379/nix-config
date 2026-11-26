@@ -78,9 +78,9 @@ let
 
     ${aliases}
     eval "$(fzf --bash)"
-    eval "$(zoxide init bash ${lib.concatStringsSep " " config.programs.zoxide.options})"
-    eval "$(starship init bash --print-full-init)"
     eval "$(up --init bash)"
+    eval "$(starship init bash --print-full-init)"
+    eval "$(zoxide init bash ${lib.concatStringsSep " " config.programs.zoxide.options})"
 
     enable -f "${prefix}/lib/libflyline.so" flyline
     ${builtins.readFile ../dotfiles/bash/flyline.bash}
