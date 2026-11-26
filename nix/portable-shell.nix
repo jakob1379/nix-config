@@ -103,7 +103,10 @@ pkgs.runCommand "portable-shell"
     cp ${config.xdg.configFile."bat/config".source} $out/bat.conf
 
     cp ${static.tmux}/bin/tmux $out/bin/tmux
-    ${lib.concatMapStrings (t: "cp ${lib.getExe static.${t}} $out/bin/\n") tools}
+    for exe in ${lib.concatMapStringsSep " " (t: lib.getExe static.${t}) tools}; do
+      wrapped=$(dirname $exe)/.$(basename $exe)-wrapped
+      cp $(test -e $wrapped && echo $wrapped || echo $exe) $out/bin/$(basename $exe)
+    done
     cp ${../scripts/tmux/host-color.sh} $out/bin/tmux-host-color
     cp ${../scripts/tmux/window-label.sh} $out/bin/tmux-window-label
     cp ${../scripts/tmux/net-status.sh} $out/bin/tmux-net-status
@@ -122,13 +125,17 @@ pkgs.runCommand "portable-shell"
       test -e "$out/''${ref#*/.local/portable/}" || { echo "missing $ref" >&2; exit 1; }
     done
     for f in $out/bin/*; do
-      if ${pkgs.binutils-unwrapped}/bin/readelf -l "$f" 2>/dev/null | grep -q 'program interpreter'; then
+      if [ "$(head -c2 "$f")" = '#!' ]; then
+        if grep -n /nix/store "$f"; then
+          echo "$f references the Nix store" >&2
+          exit 1
+        fi
+      elif ${pkgs.binutils-unwrapped}/bin/readelf -l "$f" 2>/dev/null | grep -q 'program interpreter'; then
         echo "$f is dynamically linked" >&2
         exit 1
       fi
     done
-    if grep -rn /nix/store $out/tmux.conf $out/bashrc $out/starship.toml $out/bat.conf $out/plugins \
-      $out/bin/tmux-* $out/bin/up $out/bin/rg-fuzzy; then
+    if grep -rn /nix/store $out/tmux.conf $out/bashrc $out/starship.toml $out/bat.conf $out/plugins; then
       echo "bundle still references the Nix store" >&2
       exit 1
     fi
