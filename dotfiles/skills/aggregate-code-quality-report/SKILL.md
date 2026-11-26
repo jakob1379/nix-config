@@ -1,12 +1,16 @@
 ---
 name: aggregate-code-quality-report
-description:
+description: >-
   Generate a fresh, source-validated, offline aggregate code-quality report for
-  a repository using Skylos, PySCN, AI Slop Detector, Desloppify, Graphify, and
-  Ponytail Audit. Use when the user asks for an aggregate scanner report, a
-  clean code-health baseline, a multi-scanner technical-debt report, or the
-  exact `scanner-aggregate-report.html` artifact. Do not use for a single-tool
-  scan, ordinary code review, or requests to fix findings.
+  a repository. Combines stack-profile scanners (Python: Skylos, PySCN, AI Slop
+  Detector; JS/TS: Biome; Shell: ShellCheck, ysap-lint) with every installed
+  security, design, and quality skill: Desloppify, Graphify, architecture,
+  Ponytail, OCR and standards review, branch-delta review seats, and conditional
+  accessibility, frontend-design, motion, and language lanes. Use when the user
+  asks for an aggregate scanner report, a clean code-health baseline, a
+  multi-scanner technical-debt report, or the exact
+  `scanner-aggregate-report.html` artifact. Do not use for a single-tool scan,
+  ordinary code review, or requests to fix findings.
 ---
 
 # Aggregate Code Quality Report
@@ -22,27 +26,37 @@ signals, and rank real risks without modifying production code.
 2. Inspect repository-local `AGENTS.md` files and obey stricter repository
    instructions. Do not let a review hook broaden this task into production
    edits.
-3. Execute the referenced workflow in order. Continue past unavailable scanners
+3. Detect the repository's stacks against every profile in
+   [references/stacks/](references/stacks/), and the active skill lanes against
+   [references/skill-roster.md](references/skill-roster.md), as the workflow
+   defines.
+4. Execute the referenced workflow in order. Continue past unavailable scanners
    and make every limitation prominent.
-4. Invoke `$ponytail:ponytail-audit ultra` for the simplification lane. If that
-   skill is unavailable, perform the compatible manual audit defined in the
-   reference and disclose the fallback.
-5. Invoke `$graphify . --no-viz` for the structural-coupling lane, with semantic
+5. Invoke `$ponytail:ponytail-audit` and `$ponytail:ponytail-debt` for the
+   Ponytail lane. If either skill is unavailable, perform the compatible manual
+   audit defined in the reference and disclose the fallback.
+6. Invoke `$graphify . --no-viz` for the structural-coupling lane, with semantic
    extraction run by host-agent subagents as defined in the reference.
-6. Keep source inspection read-only. Allow only Git update operations authorized
+7. Keep source inspection read-only. Allow only Git update operations authorized
    by the workflow plus scanner state and report artifacts.
-7. Generate the detailed offline report at `scanner-aggregate-report.html` and
-   fresh supporting evidence under `.scanner-report-artifacts/`.
-8. Validate all machine-readable artifacts, HTML structure, accessibility
-   wiring, revision references, redactions, and final repository status before
-   reporting completion.
+8. Draft stack-profile proposals for unprofiled stacks and broken profiles under
+   `.scanner-report-artifacts/proposed-stacks/`, before findings are reconciled.
+9. Generate the detailed offline report at `scanner-aggregate-report.html` and
+   fresh supporting evidence under `.scanner-report-artifacts/`, with the
+   reconciled findings as `findings.json`. When the caller placed an earlier
+   run's `findings.json` at `.scanner-report-artifacts/baseline.json`, review
+   only what changed since and report the delta.
+10. Validate all machine-readable artifacts, HTML structure, accessibility
+    wiring, revision references, redactions, and final repository status before
+    reporting completion.
 
 ## Integrity rules
 
 - Never average, normalize, or directly compare incompatible scanner scores.
 - Never promote a scanner finding without checking current source and reachable
   callers.
-- Keep Graphify coupling observations and Ponytail simplification findings
+- Keep Graphify coupling observations, architecture candidates, Ponytail lean
+  findings, the shortcut ledger, and advisory design and motion findings
   separate from operational severity unless independent evidence establishes
   actual risk.
 - Never claim latest `main`, successful review, browser validation, or tool
@@ -51,6 +65,9 @@ signals, and rank real risks without modifying production code.
   observational task.
 - Never commit, push, open a PR, upload source/scanner data, or discard
   unrelated work.
+- Never edit this skill's installed directory; it may be a read-only Nix store
+  path. Profile changes are proposals the user promotes into the skill source at
+  `~/.config/home-manager/dotfiles/skills/aggregate-code-quality-report/`.
 
 ## Deliverables
 

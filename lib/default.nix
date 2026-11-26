@@ -9,6 +9,7 @@ let
   allowUnfreePredicate =
     pkg:
     builtins.elem (pkg.pname or "") [
+      "antigravity-acp"
       "clockify"
       "zen-browser"
       "claude-code"

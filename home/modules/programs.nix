@@ -41,6 +41,9 @@ let
     ];
     text = builtins.readFile ../../scripts/tmux/host-color.sh;
   };
+  aiSkills = import ../../lib/ai-skills.nix { inherit inputs lib; };
+  mattpocockSkills =
+    (lib.importJSON "${inputs.mattpocock-skills-src}/.claude-plugin/plugin.json").skills;
 in
 {
   imports = [
@@ -210,6 +213,71 @@ in
         };
 
         # keep-sorted start block=yes newline_separated=yes
+        agent-skills = {
+          enable = true;
+          sources =
+            lib.mapAttrs (name: p: {
+              path = dirOf p;
+              filter.nameRegex = "^${name}$";
+            }) aiSkills
+            // {
+              superpowers = {
+                input = "superpowers-src";
+                subdir = "skills";
+              };
+              ponytail = {
+                input = "ponytail-src";
+                subdir = "skills";
+              };
+              open-code-review = {
+                input = "open-code-review-src";
+                subdir = "skills";
+              };
+              mattpocock = {
+                input = "mattpocock-skills-src";
+                subdir = "skills";
+              };
+            };
+          skills = {
+            enable = lib.attrNames aiSkills;
+            enableAll = [
+              "superpowers"
+              "ponytail"
+              "open-code-review"
+            ];
+            explicit = lib.listToAttrs (
+              map (
+                p:
+                lib.nameValuePair (baseNameOf p) {
+                  from = "mattpocock";
+                  path = lib.removePrefix "./skills/" p;
+                }
+              ) mattpocockSkills
+            );
+          };
+          targets = {
+            agents = {
+              enable = true;
+              dest = ".agents/skills";
+              structure = "link";
+            };
+            antigravity = {
+              enable = true;
+              dest = ".gemini/antigravity/skills";
+              structure = "link";
+            };
+            antigravity-cli = {
+              enable = true;
+              dest = ".gemini/antigravity-cli/skills";
+              structure = "link";
+            };
+          };
+        };
+
+        antigravity-cli = {
+          enable = true;
+        };
+
         bat = {
           enable = true;
           extraPackages = with pkgs.bat-extras; [ batman ];
@@ -230,14 +298,7 @@ in
           enable = true;
           context = ../../dotfiles/AGENTS.md;
 
-          skills = {
-            aggregate-code-quality-report = ../../dotfiles/skills/aggregate-code-quality-report;
-            converge-review = "${inputs.converge-review-src}/skills/converge-review";
-            frontend-design = "${inputs.claude-plugins-src}/plugins/frontend-design/skills/frontend-design";
-            progress-party = ../../dotfiles/skills/progress-party;
-            redesign = ../../dotfiles/skills/redesign;
-            unslop = "${inputs.cursor-plugins-src}/pstack/skills/unslop";
-          };
+          skills = aiSkills;
 
           mcpServers.context7 = {
             type = "http";
@@ -251,6 +312,7 @@ in
             env = {
               SUPERPOWERS_DISABLE_TELEMETRY = "1";
               DISABLE_AUTOUPDATER = "1";
+              CLAUDE_CODE_EXPERIMENTAL_CODE_MODE = "1";
             };
             autoMemoryEnabled = false;
             tui = "fullscreen";
@@ -259,6 +321,11 @@ in
             includeCoAuthoredBy = false;
             attribution.sessionUrl = false;
             permissions.defaultMode = "auto";
+            enabledPlugins = {
+              "design@knowledge-work-plugins" = false;
+              "product-management@knowledge-work-plugins" = false;
+              "productivity@knowledge-work-plugins" = false;
+            };
             statusLine = {
               type = "command";
               command = "bash ~/.claude/statusline-command.sh";
@@ -867,7 +934,7 @@ in
             "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
             "jakob1379.cachix.org-1:BGOTkTeW2DuuYzV6PJ1VlLwGNYRgPLHfKukS6XyxDm0="
           ];
-          max-jobs = 1;
+          max-jobs = 4;
           experimental-features = [
             "nix-command"
             "flakes"

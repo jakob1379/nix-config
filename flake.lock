@@ -1,5 +1,25 @@
 {
   "nodes": {
+    "agent-skills": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794456227,
+        "narHash": "sha256-qu7S1arVl+Q6H/yZhJ2VdeDY/kBxY8mK8m6U49M0alk=",
+        "owner": "Kyure-A",
+        "repo": "agent-skills-nix",
+        "rev": "93a02cb60eda167de8c5baa085e4a2bcfc71b885",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Kyure-A",
+        "repo": "agent-skills-nix",
+        "type": "github"
+      }
+    },
     "ai-usagebar": {
       "inputs": {
         "nixpkgs": [
@@ -114,6 +134,22 @@
       "original": {
         "owner": "cursor",
         "repo": "plugins",
+        "type": "github"
+      }
+    },
+    "emil-skill-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794746570,
+        "narHash": "sha256-zZnblPcn3vvekGH4YIHMOZ2XMA3sBngwhwLBnNFpD/E=",
+        "owner": "emilkowalski",
+        "repo": "skill",
+        "rev": "64eb3deb9a5fbfa041faf783e0bc3fd635872e9c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "emilkowalski",
+        "repo": "skill",
         "type": "github"
       }
     },
@@ -601,10 +637,12 @@
     },
     "root": {
       "inputs": {
+        "agent-skills": "agent-skills",
         "ai-usagebar": "ai-usagebar",
         "claude-plugins-src": "claude-plugins-src",
         "converge-review-src": "converge-review-src",
         "cursor-plugins-src": "cursor-plugins-src",
+        "emil-skill-src": "emil-skill-src",
         "flake-utils": "flake-utils",
         "flyline": "flyline",
         "git-hooks": "git-hooks",

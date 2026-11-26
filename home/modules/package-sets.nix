@@ -105,6 +105,7 @@ in
         enableCodex = false;
         enableClaude = true;
       })
+      antigravity-acp
       bun
       dive
       glab
