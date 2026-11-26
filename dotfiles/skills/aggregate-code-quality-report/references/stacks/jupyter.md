@@ -41,6 +41,20 @@ a dev shell, prefix the `uv run` line with
 record the failure. In a Python project without a `.venv`, `uv run` creates an
 empty one: delete it afterwards.
 
+A dev shell's `shellHook` can install git hooks and change `.git/config`, which
+the read-only rule forbids. Snapshot both before `nix develop` and restore them
+after it, whatever its exit status:
+
+```bash
+git_dir=$(git rev-parse --git-common-dir)
+cp -a "$git_dir/hooks" .scanner-report-artifacts/git-hooks.before
+cp "$git_dir/config" .scanner-report-artifacts/git-config.before
+# ... nix develop --no-update-lock-file -c <Run command> ...
+rm -rf "$git_dir/hooks"
+cp -a .scanner-report-artifacts/git-hooks.before "$git_dir/hooks"
+cp .scanner-report-artifacts/git-config.before "$git_dir/config"
+```
+
 Run, with `ruff==<pinned>` in place of `ruff` when the repository pins one:
 
 ```bash
@@ -48,14 +62,16 @@ mapfile -d '' -t notebooks < .scanner-report-artifacts/notebook-files.txt
 uv run --no-sync --with ruff ruff check --no-fix --no-cache \
   --isolated --output-format json \
   --output-file .scanner-report-artifacts/ruff-notebooks.json \
-  -- "${notebooks[@]}" 2> .scanner-report-artifacts/ruff-notebooks.stderr
+  -- "${notebooks[@]}" \
+  > .scanner-report-artifacts/ruff-notebooks.stdout \
+  2> .scanner-report-artifacts/ruff-notebooks.stderr
 ```
 
 `--isolated` ignores the repository's Ruff configuration, so every repository is
 judged by the same rules; run a second pass without it when the repository
 configures Ruff and its own policy matters. `--no-cache` keeps `.ruff_cache/`
 out of the scanned tree. `--output-file` keeps anything a dev shell's
-`shellHook` prints out of the JSON.
+`shellHook` prints out of the JSON; that output lands in the `.stdout` file.
 
 Never: `--fix`, `--unsafe-fixes`, `--add-noqa`, `ruff format` without `--check`,
 `--watch`.
@@ -88,14 +104,14 @@ Known noise: with `--isolated`, Ruff's default rule set includes the pyupgrade
 of the trial's results on teaching notebooks. Matplotlib labels written as
 non-raw strings (`'$\phi$'`) raise `W605`. Shell and magic lines (`!pip`,
 `%matplotlib`) are skipped by Ruff and raise nothing. Outside a Python project
-`uv run` warns on stderr that `--no-sync` has no effect. A dev shell's
-`shellHook` can install git hooks under `.git/hooks`; record any it adds.
+`uv run` warns on stderr that `--no-sync` has no effect.
 
 Provenance: proposed 2026-11-26 from jakob1379/AMAS@e43b48e with Ruff 0.17.6 (10
 notebooks, exit 1, 67 results, none of them `F821` or syntax errors). The
 `uv run` command, the NUL-delimited list, the `cell` numbering and the skipped R
 notebooks were checked on 2026-11-26 with Ruff 0.17.6.
 `nix develop --no-update-lock-file -c` was checked on jakob1379/nix-config,
-where its dev shell supplied `uv` and Python and installed a `pre-push` hook.
-Unverified: exit status 2, a repository that pins Ruff, Ruff run inside a dev
-shell, and a repository with its own `[tool.ruff]` configuration.
+where its dev shell supplied `uv` and Python, installed three git hooks and
+changed `.git/config`, and the snapshot restored the hooks exactly. Unverified:
+exit status 2, a repository that pins Ruff, Ruff run inside a dev shell, and a
+repository with its own `[tool.ruff]` configuration.
