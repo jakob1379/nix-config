@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 440" width="920" height="440" role="img" aria-labelledby="t d">
+<title id="t">nix-config flake graph</title>
+<desc id="d">22 flake inputs evaluate through flake.nix into 6 NixOS hosts and 7 Home Manager profiles.</desc>
+<style>
+:root{--bg:#eef3fa;--ink:#1b2a4a;--mute:#6b7fa3;--wire:#c3d1e6;--a:#5277c3;--b:#7ebae4}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1a2e;--ink:#dce6f5;--mute:#7f93b8;--wire:#253656;--a:#7ebae4;--b:#5277c3}}
+.bg{fill:var(--bg)}
+text{fill:var(--ink);font:13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.h{fill:var(--mute);font:12px -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;letter-spacing:.02em}
+.m{fill:var(--mute)}
+.w{fill:none;stroke:var(--wire);stroke-width:1.2}
+.p{fill:none;stroke-width:2.6;stroke-linecap:round;stroke-dasharray:7 300;stroke-dashoffset:12;animation:7.0s linear infinite backwards}
+.pi{stroke:var(--b);animation-name:in}
+.po{stroke:var(--a);animation-name:out}
+.dot{fill:var(--bg);stroke:var(--wire);stroke-width:1.4}
+.lit{fill:var(--a);opacity:0;animation:lit 7.0s ease-out infinite backwards}
+.hex{fill:var(--bg);stroke:var(--a);stroke-width:2}
+.ring{fill:none;stroke:var(--b);stroke-width:1.5;opacity:0;transform-origin:430px 230px;animation:ring 7.0s ease-out infinite}
+.core{fill:var(--a);transform-origin:430px 230px;animation:spin 42s linear infinite}
+.fl{font-size:14px;font-weight:600}
+@keyframes in{0%{stroke-dashoffset:12}34%{stroke-dashoffset:-104}100%{stroke-dashoffset:-104}}
+@keyframes out{0%,44%{stroke-dashoffset:12}80%{stroke-dashoffset:-104}100%{stroke-dashoffset:-104}}
+@keyframes lit{0%,78%{opacity:0}82%{opacity:1}100%{opacity:0}}
+@keyframes ring{0%,34%{opacity:0;transform:scale(1)}38%{opacity:.9}58%{opacity:0;transform:scale(1.9)}100%{opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.p,.ring{display:none}.core,.lit{animation:none}}
+</style>
+<rect class="bg" width="920" height="440" rx="14"/>
+<text class="h" x="226" y="64" text-anchor="end">inputs</text>
+<path class="w" d="M234.0 88.0C318.7 88.0 303.3 213.0 388.0 213.0"/>
+<path class="w" d="M234.0 134.9C318.7 134.9 303.3 218.6 388.0 218.6"/>
+<path class="w" d="M234.0 181.7C318.7 181.7 303.3 224.2 388.0 224.2"/>
+<path class="w" d="M234.0 228.6C318.7 228.6 303.3 229.8 388.0 229.8"/>
+<path class="w" d="M234.0 275.4C318.7 275.4 303.3 235.5 388.0 235.5"/>
+<path class="w" d="M234.0 322.3C318.7 322.3 303.3 241.1 388.0 241.1"/>
+<path class="w" d="M234.0 369.1C318.7 369.1 303.3 246.7 388.0 246.7"/>
+<path class="w" d="M234.0 416.0C318.7 416.0 303.3 252.3 388.0 252.3"/>
+<path class="w" d="M472.0 213.0C569.9 213.0 552.1 88.0 650.0 88.0"/>
+<path class="w" d="M472.0 215.8C569.9 215.8 552.1 112.0 650.0 112.0"/>
+<path class="w" d="M472.0 218.7C569.9 218.7 552.1 136.0 650.0 136.0"/>
+<path class="w" d="M472.0 221.6C569.9 221.6 552.1 160.0 650.0 160.0"/>
+<path class="w" d="M472.0 224.5C569.9 224.5 552.1 184.0 650.0 184.0"/>
+<path class="w" d="M472.0 227.4C569.9 227.4 552.1 208.0 650.0 208.0"/>
+<path class="w" d="M472.0 234.8C569.9 234.8 552.1 270.0 650.0 270.0"/>
+<path class="w" d="M472.0 237.7C569.9 237.7 552.1 294.0 650.0 294.0"/>
+<path class="w" d="M472.0 240.6C569.9 240.6 552.1 318.0 650.0 318.0"/>
+<path class="w" d="M472.0 243.4C569.9 243.4 552.1 342.0 650.0 342.0"/>
+<path class="w" d="M472.0 246.3C569.9 246.3 552.1 366.0 650.0 366.0"/>
+<path class="w" d="M472.0 249.2C569.9 249.2 552.1 390.0 650.0 390.0"/>
+<path class="w" d="M472.0 252.1C569.9 252.1 552.1 414.0 650.0 414.0"/>
+<path class="p pi" pathLength="100" d="M234.0 88.0C318.7 88.0 303.3 213.0 388.0 213.0" style="animation-delay:0.00s"/>
+<path class="p pi" pathLength="100" d="M234.0 134.9C318.7 134.9 303.3 218.6 388.0 218.6" style="animation-delay:0.11s"/>
+<path class="p pi" pathLength="100" d="M234.0 181.7C318.7 181.7 303.3 224.2 388.0 224.2" style="animation-delay:0.22s"/>
+<path class="p pi" pathLength="100" d="M234.0 228.6C318.7 228.6 303.3 229.8 388.0 229.8" style="animation-delay:0.33s"/>
+<path class="p pi" pathLength="100" d="M234.0 275.4C318.7 275.4 303.3 235.5 388.0 235.5" style="animation-delay:0.44s"/>
+<path class="p pi" pathLength="100" d="M234.0 322.3C318.7 322.3 303.3 241.1 388.0 241.1" style="animation-delay:0.55s"/>
+<path class="p pi" pathLength="100" d="M234.0 369.1C318.7 369.1 303.3 246.7 388.0 246.7" style="animation-delay:0.66s"/>
+<path class="p pi" pathLength="100" d="M234.0 416.0C318.7 416.0 303.3 252.3 388.0 252.3" style="animation-delay:0.77s"/>
+<path class="p po" pathLength="100" d="M472.0 213.0C569.9 213.0 552.1 88.0 650.0 88.0" style="animation-delay:0.00s"/>
+<path class="p po" pathLength="100" d="M472.0 215.8C569.9 215.8 552.1 112.0 650.0 112.0" style="animation-delay:0.09s"/>
+<path class="p po" pathLength="100" d="M472.0 218.7C569.9 218.7 552.1 136.0 650.0 136.0" style="animation-delay:0.18s"/>
+<path class="p po" pathLength="100" d="M472.0 221.6C569.9 221.6 552.1 160.0 650.0 160.0" style="animation-delay:0.27s"/>
+<path class="p po" pathLength="100" d="M472.0 224.5C569.9 224.5 552.1 184.0 650.0 184.0" style="animation-delay:0.36s"/>
+<path class="p po" pathLength="100" d="M472.0 227.4C569.9 227.4 552.1 208.0 650.0 208.0" style="animation-delay:0.45s"/>
+<path class="p po" pathLength="100" d="M472.0 234.8C569.9 234.8 552.1 270.0 650.0 270.0" style="animation-delay:0.54s"/>
+<path class="p po" pathLength="100" d="M472.0 237.7C569.9 237.7 552.1 294.0 650.0 294.0" style="animation-delay:0.63s"/>
+<path class="p po" pathLength="100" d="M472.0 240.6C569.9 240.6 552.1 318.0 650.0 318.0" style="animation-delay:0.72s"/>
+<path class="p po" pathLength="100" d="M472.0 243.4C569.9 243.4 552.1 342.0 650.0 342.0" style="animation-delay:0.81s"/>
+<path class="p po" pathLength="100" d="M472.0 246.3C569.9 246.3 552.1 366.0 650.0 366.0" style="animation-delay:0.90s"/>
+<path class="p po" pathLength="100" d="M472.0 249.2C569.9 249.2 552.1 390.0 650.0 390.0" style="animation-delay:0.99s"/>
+<path class="p po" pathLength="100" d="M472.0 252.1C569.9 252.1 552.1 414.0 650.0 414.0" style="animation-delay:1.08s"/>
+<polygon class="ring" points="476.0,230.0 453.0,269.8 407.0,269.8 384.0,230.0 407.0,190.2 453.0,190.2"/>
+<polygon class="hex" points="476.0,230.0 453.0,269.8 407.0,269.8 384.0,230.0 407.0,190.2 453.0,190.2"/>
+<g class="core" opacity=".9"><rect x="432.0" y="234.9" width="22" height="5.2" rx="2.6" style="fill:var(--b)" transform="rotate(90 443.0 237.5)"/><rect x="419.0" y="242.4" width="22" height="5.2" rx="2.6" style="fill:var(--a)" transform="rotate(150 430.0 245.0)"/><rect x="406.0" y="234.9" width="22" height="5.2" rx="2.6" style="fill:var(--b)" transform="rotate(210 417.0 237.5)"/><rect x="406.0" y="219.9" width="22" height="5.2" rx="2.6" style="fill:var(--a)" transform="rotate(270 417.0 222.5)"/><rect x="419.0" y="212.4" width="22" height="5.2" rx="2.6" style="fill:var(--b)" transform="rotate(330 430.0 215.0)"/><rect x="432.0" y="219.9" width="22" height="5.2" rx="2.6" style="fill:var(--a)" transform="rotate(390 443.0 222.5)"/></g>
+<text class="fl" x="430" y="302" text-anchor="middle">flake.nix</text>
+<text x="220" y="92.5" text-anchor="end">nixpkgs</text>
+<circle class="dot" cx="230" cy="88.0" r="3.6"/>
+<text x="220" y="139.4" text-anchor="end">home-manager</text>
+<circle class="dot" cx="230" cy="134.9" r="3.6"/>
+<text x="220" y="186.2" text-anchor="end">nix-index-database</text>
+<circle class="dot" cx="230" cy="181.7" r="3.6"/>
+<text x="220" y="233.1" text-anchor="end">git-hooks</text>
+<circle class="dot" cx="230" cy="228.6" r="3.6"/>
+<text x="220" y="279.9" text-anchor="end">zen-browser</text>
+<circle class="dot" cx="230" cy="275.4" r="3.6"/>
+<text x="220" y="326.8" text-anchor="end">vicinae-extensions</text>
+<circle class="dot" cx="230" cy="322.3" r="3.6"/>
+<text x="220" y="373.6" text-anchor="end">superpowers-src</text>
+<circle class="dot" cx="230" cy="369.1" r="3.6"/>
+<text class="m" x="220" y="420.5" text-anchor="end">+15 more</text>
+<circle class="dot" cx="230" cy="416.0" r="3.6"/>
+<text class="h" x="664" y="64">nixosConfigurations</text>
+<circle class="dot" cx="654" cy="88" r="3.6"/>
+<circle class="lit" cx="654" cy="88" r="3.6" style="animation-delay:0.00s"/>
+<text x="664" y="92.5">yoga</text>
+<circle class="dot" cx="654" cy="112" r="3.6"/>
+<circle class="lit" cx="654" cy="112" r="3.6" style="animation-delay:0.09s"/>
+<text x="664" y="116.5">amd</text>
+<circle class="dot" cx="654" cy="136" r="3.6"/>
+<circle class="lit" cx="654" cy="136" r="3.6" style="animation-delay:0.18s"/>
+<text x="664" y="140.5">seeqdx-666</text>
+<circle class="dot" cx="654" cy="160" r="3.6"/>
+<circle class="lit" cx="654" cy="160" r="3.6" style="animation-delay:0.27s"/>
+<text x="664" y="164.5">seeq</text>
+<circle class="dot" cx="654" cy="184" r="3.6"/>
+<circle class="lit" cx="654" cy="184" r="3.6" style="animation-delay:0.36s"/>
+<text x="664" y="188.5">ku</text>
+<circle class="dot" cx="654" cy="208" r="3.6"/>
+<circle class="lit" cx="654" cy="208" r="3.6" style="animation-delay:0.45s"/>
+<text x="664" y="212.5">vm-docker-main</text>
+<text class="h" x="664" y="246">homeConfigurations</text>
+<circle class="dot" cx="654" cy="270" r="3.6"/>
+<circle class="lit" cx="654" cy="270" r="3.6" style="animation-delay:0.54s"/>
+<text x="664" y="274.5">jsg@amd</text>
+<circle class="dot" cx="654" cy="294" r="3.6"/>
+<circle class="lit" cx="654" cy="294" r="3.6" style="animation-delay:0.63s"/>
+<text x="664" y="298.5">jsg@seeq</text>
+<circle class="dot" cx="654" cy="318" r="3.6"/>
+<circle class="lit" cx="654" cy="318" r="3.6" style="animation-delay:0.72s"/>
+<text x="664" y="322.5">jsg@seeqdx-666</text>
+<circle class="dot" cx="654" cy="342" r="3.6"/>
+<circle class="lit" cx="654" cy="342" r="3.6" style="animation-delay:0.81s"/>
+<text x="664" y="346.5">jsg@seeqws-001</text>
+<circle class="dot" cx="654" cy="366" r="3.6"/>
+<circle class="lit" cx="654" cy="366" r="3.6" style="animation-delay:0.90s"/>
+<text x="664" y="370.5">jsg@seeqws-002</text>
+<circle class="dot" cx="654" cy="390" r="3.6"/>
+<circle class="lit" cx="654" cy="390" r="3.6" style="animation-delay:0.99s"/>
+<text x="664" y="394.5">jga@yoga</text>
+<circle class="dot" cx="654" cy="414" r="3.6"/>
+<circle class="lit" cx="654" cy="414" r="3.6" style="animation-delay:1.08s"/>
+<text x="664" y="418.5">pi@raspberrypi</text>
+</svg>

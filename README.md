@@ -10,6 +10,10 @@
 
 # Nix config
 
+<p align="center">
+  <img src=".github/assets/flake-graph.svg" width="920" alt="Flake inputs such as nixpkgs and home-manager flow through flake.nix into six NixOS hosts and seven Home Manager profiles">
+</p>
+
 Personal Nix flake for NixOS systems, Home Manager profiles, dotfiles, and
 custom helper scripts.
 
