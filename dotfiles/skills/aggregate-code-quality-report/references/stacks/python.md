@@ -19,7 +19,7 @@ whole-repository scan.
 Run the equivalent of:
 
 ```bash
-uv run skylos --trace -a src backend python \
+uv run skylos --trace -a src scripts profiles \
   --no-upload \
   --format json \
   --output .scanner-report-artifacts/skylos.json \

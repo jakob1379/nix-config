@@ -59,13 +59,13 @@ by real urgency and impact.
 7. If `.scanner-report-artifacts/baseline.json` exists, read its `repo` and
    `commit`. The baseline is usable when git does not track the file, its `repo`
    is this repository, and `git merge-base --is-ancestor <baseline commit> HEAD`
-   succeeds. Then write
-   `git diff --name-only --no-renames <baseline commit> HEAD` to
-   `.scanner-report-artifacts/changed-files.txt`, so a renamed file lists both
-   its old and its new path; this is an incremental run. Otherwise this is a
-   full run: say why in the Overview and ignore the baseline. A branch that step
-   4 rebased has usually lost the baseline commit as an ancestor, so expect a
-   full run there.
+   succeeds. Then write `git diff --name-only --no-renames <baseline commit>` to
+   `.scanner-report-artifacts/changed-files.txt`. With no second commit it
+   compares against the working tree, so uncommitted edits to tracked files
+   count, and a renamed file lists both its old and its new path; this is an
+   incremental run. Otherwise this is a full run: say why in the Overview and
+   ignore the baseline. A branch that step 4 rebased has usually lost the
+   baseline commit as an ancestor, so expect a full run there.
 
 Do not claim coverage of latest `main` unless the update succeeded.
 
@@ -124,7 +124,9 @@ independent, so run them as parallel subagents when the host supports it. Give
 each subagent the repository root, its lane section verbatim, the roster rules
 for loading skills, this skill's directory (the roster looks beside it), its
 artifact paths, and the read-only rule. Collect each lane's output into
-`.scanner-report-artifacts/` before section 6.
+`.scanner-report-artifacts/` before section 6. Then run section 9, also before
+section 6: its trial findings need that validation and the report lists its
+output.
 
 Scope every whole-tree review (5.4, 5.7, 5.8, 5.10, 5.11, 5.12) to production
 source: skip tests, fixtures, generated code, vendored code, and docs unless the
@@ -489,12 +491,17 @@ that failed, was skipped, or stopped early.
 
 A false positive or noise has status `dismissed`, on every kind of run and
 whatever the rules below would otherwise give it. Drop a `dismissed` finding
-whose file no longer exists. Graphify coupling observations, architecture
+whose file is gone and was not renamed, or whose file changed and no longer
+holds the code it was about. Graphify coupling observations, architecture
 candidates, the lean backlog, the shortcut ledger and advisory design and motion
 findings have severity `Advisory`, since they carry no operational severity; the
 delta counts them like any other finding. On a full run every other status is
 `new`. On an incremental run:
 
+- First, a baseline finding whose file was renamed
+  (`git diff --name-status -M <baseline commit>` marks the pair `R`) follows the
+  file: put the new path in its id and validate it there. A rename alone makes
+  no finding `fixed` or `new`.
 - A baseline finding whose file is not in `changed-files.txt` carries over
   unchanged with status `open`, unless a whole-tree tool in this run no longer
   reports it; then check the source and mark it `fixed` or keep it.
@@ -663,7 +670,8 @@ Run all applicable checks:
 
 ## 9. Propose stack-profile updates
 
-The installed skill may be read-only. Never edit it. Write proposals under
+Run this section after the lanes of section 5 and before section 6. The
+installed skill may be read-only. Never edit it. Write proposals under
 `.scanner-report-artifacts/proposed-stacks/` for the user to promote.
 
 For each unprofiled stack:

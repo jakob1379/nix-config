@@ -48,7 +48,8 @@ signals, and rank real risks without modifying production code.
    wiring, revision references, redactions, and final repository status before
    reporting completion.
 10. Draft stack-profile proposals for unprofiled stacks and broken profiles
-    under `.scanner-report-artifacts/proposed-stacks/`.
+    under `.scanner-report-artifacts/proposed-stacks/`. The workflow runs this
+    before it reconciles findings.
 
 ## Integrity rules
 

@@ -19,6 +19,10 @@ own directory walk does not skip `node_modules/`. Split the list:
 - **POSIX sh files**: a `#!/bin/sh` or `#!/usr/bin/env sh` shebang. Only
   ShellCheck runs on these; the ysap rules assume bash.
 
+Do not run a tool that has no files to scan: with no file arguments ShellCheck
+exits 3 and ysap-lint exits 2, both usage errors. Record its lane as
+`not applicable: no files to scan`.
+
 ## ShellCheck
 
 Version rule: `nix run nixpkgs#shellcheck -- --version`; record it.
@@ -60,10 +64,10 @@ nix flake metadata github:jakob1379/ysap-lint --json
 
 and read `locked.rev`.
 
-Run on the bash files only:
+Run that revision, on the bash files only:
 
 ```bash
-nix run github:jakob1379/ysap-lint -- check <bash files> \
+nix run github:jakob1379/ysap-lint/<locked.rev> -- check <bash files> \
   > .scanner-report-artifacts/ysap-lint.txt \
   2> .scanner-report-artifacts/ysap-lint-stderr.txt
 ```

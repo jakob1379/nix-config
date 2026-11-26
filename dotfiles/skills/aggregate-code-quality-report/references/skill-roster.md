@@ -27,8 +27,10 @@ find -L ~/.claude/skills ~/.agents/skills -path '*/<name>/SKILL.md' | head -1
 If it is not installed, use the fallback in its lane section and mark it
 `missing` or `fallback`. Every skill runs under this report's rules: read-only
 on source, offline report, no fixes, no commits, no files in the repository
-outside `.scanner-report-artifacts/` and the report. Where a skill's own steps
-write files, open a browser, ask the user, or apply fixes, skip those steps.
+outside `.scanner-report-artifacts/`, the report, and the scanner state of lanes
+5.2 and 5.3 (`.desloppify/`, `graphify-out/`). Where a skill's own steps write
+files anywhere else, open a browser, ask the user, or apply fixes, skip those
+steps.
 
 ## Predicates
 

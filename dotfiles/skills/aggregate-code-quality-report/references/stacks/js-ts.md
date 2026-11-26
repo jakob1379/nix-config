@@ -14,9 +14,10 @@ configuration was used.
 
 ## Biome
 
-Version rule: if any tracked `package.json` declares `@biomejs/biome`, use that
-exact version so the repository's own `biome.json` schema parses. Otherwise use
-the current release and record the resolved version from `--version`.
+Version rule: if any tracked `package.json` declares `@biomejs/biome`, use the
+version the lockfile resolves it to, or the declared version when no lockfile
+pins it, so the repository's own `biome.json` schema parses. Otherwise use the
+current release. Record the resolved version from `--version` either way.
 
 Configuration: if `biome.json` or `biome.jsonc` exists, Biome applies it; record
 its path. Without one, Biome runs its recommended defaults; state in the tab
@@ -28,7 +29,9 @@ Run, without installing project dependencies. Redirect stdout rather than using
 `--reporter-file`, which Biome 1.x lacks. When the repository has no root
 `.gitignore`, leave out the three `--vcs-*` flags and say in the tab that VCS
 filtering was off: with them, Biome exits 1 with `couldn't find an ignore file`
-and writes nothing.
+and writes nothing. Before Biome 1.9.0, replace `--max-diagnostics=none` with
+`--max-diagnostics=65535`: those releases reject `none`, take no larger number,
+and otherwise stop at 20 diagnostics.
 
 ```bash
 npx --yes @biomejs/biome@<version> lint \
@@ -54,7 +57,11 @@ configuration or version mismatch.
 Extract: `summary.errors`, `summary.warnings`, `summary.infos`, diagnostic
 counts by `category`, and the files with the most diagnostics. Each diagnostic
 has `severity`, `message`, `category`, and `location.path` with
-`location.start.line`.
+`location.start.line`. Before Biome 2.4.0 the shape differs: the text is in
+`description`, the path in `location.path.file`, and the line is 1 plus the
+newlines before byte offset `location.span[0]` of `location.sourceCode`; when
+`span` is null, report the finding without a line. Before 2.3.0 there is no
+`summary.infos`; count the diagnostics whose `severity` is `information`.
 
 Triage:
 
