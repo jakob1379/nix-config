@@ -34,7 +34,7 @@ use the newest release. Record the version the run reports.
 Environment: run inside the repository's own Python environment with
 `uv run --no-sync`, so a Ruff already installed in its `.venv` is the one that
 runs and `uv.lock` is never written. When the repository has a `flake.nix` with
-a dev shell, prefix the command with `nix develop -c` so it gets the
+a dev shell, prefix the `uv run` line with `nix develop -c` so it gets the
 repository's Python and `uv`; if `nix develop` fails, run without it and record
 the failure. In a Python project without a `.venv`, `uv run` creates an empty
 one: delete it afterwards.
@@ -43,7 +43,7 @@ Run, with `ruff==<pinned>` in place of `ruff` when the repository pins one:
 
 ```bash
 mapfile -d '' -t notebooks < .scanner-report-artifacts/notebook-files.txt
-[nix develop -c] uv run --no-sync --with ruff ruff check --no-fix --no-cache \
+uv run --no-sync --with ruff ruff check --no-fix --no-cache \
   --isolated --output-format json -- "${notebooks[@]}" \
   > .scanner-report-artifacts/ruff-notebooks.json \
   2> .scanner-report-artifacts/ruff-notebooks.stderr
