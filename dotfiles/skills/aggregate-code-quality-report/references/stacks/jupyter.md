@@ -22,8 +22,9 @@ git ls-files -z -- '*.ipynb' \
 
 Coverage: Ruff skips a notebook whose `metadata.language_info.name`, or without
 it `metadata.kernelspec.language`, is not `python`; a notebook with neither is
-read as Python. List the skipped notebooks as uncovered in the report, and never
-call the stack clean when none of its notebooks were analyzed.
+read as Python. List the skipped notebooks as uncovered in the report. Call the
+stack clean only when every notebook was analyzed; when some were skipped, say
+the result covers only the analyzed ones.
 
 ## Ruff
 
@@ -78,8 +79,9 @@ cell order. Validate the same way every `RUF008` (mutable dataclass default, a
 `ValueError` when the cell runs), `RUF009` (call in a dataclass default) and
 `RUF016` (indexing with a non-integer key, a `TypeError`), and any other finding
 whose message describes a runtime error. Treat `UP`, `I`, `PIE`, `SIM`, `FURB`,
-`PLC`, `PLR` and the other `RUF` rules as Low style. `W605` (invalid escape
-sequence) is Low unless the string is not meant for LaTeX.
+`PLC` and `PLR` as Low style. For any other `RUF` code, read the rule's
+documentation and treat it as Low only when the rule is about style. `W605`
+(invalid escape sequence) is Low unless the string is not meant for LaTeX.
 
 Known noise: with `--isolated`, Ruff's default rule set includes the pyupgrade
 (`UP031`, `UP032`), isort (`I001`) and Ruff (`RUF059`) rules, which made up most
