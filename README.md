@@ -63,7 +63,7 @@ nix flake show
   nix build .#portable-shell
   ssh host 'mkdir -p ~/.local/portable ~/.config/tmux'
   rsync -rLc --chmod=u+w --delete result/ host:.local/portable/
-  # once: ssh host 'ln -s ~/.local/portable/tmux.conf ~/.config/tmux/tmux.conf'
+  # once: ssh host 'ln -sfn ~/.local/portable/tmux.conf ~/.config/tmux/tmux.conf'
   # and add to the remote ~/.bashrc: . ~/.local/portable/bashrc
   ```
 

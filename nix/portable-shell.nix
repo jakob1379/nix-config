@@ -82,7 +82,9 @@ let
     eval "$(starship init bash --print-full-init)"
     eval "$(zoxide init bash ${lib.concatStringsSep " " config.programs.zoxide.options})"
 
-    enable -f "${prefix}/lib/libflyline.so" flyline
+    if (( BASH_VERSINFO[0] * 100 + BASH_VERSINFO[1] >= 404 )); then
+      enable -f "${prefix}/lib/libflyline.so" flyline
+    fi
     ${builtins.readFile ../dotfiles/bash/flyline.bash}
   '';
 in

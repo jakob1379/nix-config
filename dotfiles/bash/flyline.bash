@@ -33,7 +33,7 @@ if [[ $(type -t flyline) == builtin ]]; then
         if (n && c[2] !~ /Key\(s\)/) { $0 = c[2] "\t" c[4] "\t" c[5] "\t" c[3]; gsub(/ +/, " "); print }
         n = 0; delete c
       }
-      /^[├╰]/ || /Keybindings:/ { flush(); next }
+      /^(├|╰)/ || /Keybindings:/ { flush(); next }
       NF == 6 { n = 1; for (i = 2; i <= 5; i++) c[i] = c[i] substr($i, 2, length($i) - 2) }
       END { flush() }
     ' | column -t -s $'\t' | fzf --no-sort --prompt='keys> ' >/dev/null
