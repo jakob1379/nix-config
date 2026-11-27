@@ -55,12 +55,12 @@ nix flake show
 - `homeConfigurations` — Home Manager profiles
 - `nixosConfigurations` — NixOS host configs
 - `packages` / `apps` — exported packages and runnable apps
-- `packages.x86_64-linux.portable-shell` — static tmux, flyline and CLI tools
-  (bat, eza, fd, fzf, ripgrep, starship, zoxide) with this config, for hosts
-  without Nix:
+- `packages.x86_64-linux.portable-shell` — static tmux and CLI tools (bat, eza,
+  fd, fzf, ripgrep, starship, zoxide) plus the flyline bash module, with this
+  config, for hosts without Nix:
 
   ```bash
-  nix build .#portable-shell
+  nix build .#packages.x86_64-linux.portable-shell
   ssh host 'mkdir -p ~/.local/portable ~/.config/tmux'
   rsync -rLc --chmod=u+w --delete result/ host:.local/portable/
   # once: ssh host 'ln -sfn ~/.local/portable/tmux.conf ~/.config/tmux/tmux.conf'
