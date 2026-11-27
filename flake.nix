@@ -142,24 +142,32 @@
           };
         }
       );
-      packages = forAllSystems (pkgs: {
-        agent-skills = pkgs.runCommand "agent-skills" { } (
-          nixpkgs.lib.concatStrings (
-            nixpkgs.lib.mapAttrsToList
-              (name: src: ''
-                mkdir -p $out
-                cp -rL ${src} $out/${name}
-                test -f $out/${name}/SKILL.md
-              '')
-              (
-                import ./lib/ai-skills.nix {
-                  inherit inputs;
-                  inherit (nixpkgs) lib;
-                }
-              )
-          )
-        );
-      });
+      packages = forAllSystems (
+        pkgs:
+        {
+          agent-skills = pkgs.runCommand "agent-skills" { } (
+            nixpkgs.lib.concatStrings (
+              nixpkgs.lib.mapAttrsToList
+                (name: src: ''
+                  mkdir -p $out
+                  cp -rL ${src} $out/${name}
+                  test -f $out/${name}/SKILL.md
+                '')
+                (
+                  import ./lib/ai-skills.nix {
+                    inherit inputs;
+                    inherit (nixpkgs) lib;
+                  }
+                )
+            )
+          );
+        }
+        // nixpkgs.lib.optionalAttrs (pkgs.stdenv.hostPlatform.system == "x86_64-linux") {
+          tmux-bundle = import ./nix/tmux-bundle.nix {
+            hm = self.homeConfigurations."jsg@amd";
+          };
+        }
+      );
       formatter = forAllSystems (
         pkgs:
         let
